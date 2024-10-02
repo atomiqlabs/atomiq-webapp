@@ -6,11 +6,11 @@ import ValidatedInput, {ValidatedInputRef} from "../../ValidatedInput";
 import {FromBTCSwap, FromBTCSwapState} from "sollightning-sdk";
 import Icon from "react-icons-kit";
 import {clipboard} from "react-icons-kit/fa/clipboard";
-import {LNNFCReader} from "../../lnnfc/LNNFCReader";
+import {LNNFCReader} from "../../../lnnfc/LNNFCReader";
 import * as React from "react";
 import {useLocation} from "react-router-dom";
 import {useNavigate} from "react-router-dom";
-import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
+import {BitcoinWalletContext} from "../../../context/BitcoinWalletContext";
 import * as BN from "bn.js";
 import {externalLink} from 'react-icons-kit/fa/externalLink';
 import {elementInViewport, getDeltaText, getDeltaTextHours} from "../../../utils/Utils";
@@ -77,7 +77,7 @@ export function FromBTCQuoteSummary(props: {
         setSendTransactionLoading(true);
         txLoading.current = true;
         setBitcoinError(null);
-        bitcoinWallet.sendTransaction(props.quote.getAddress(), props.quote.getInAmount(), props.feeRate!=null && props.feeRate!==0 ? props.feeRate : null).then(txId => {
+        bitcoinWallet.sendTransaction(props.quote.getBitcoinAddress(), props.quote.getInAmount(), props.feeRate!=null && props.feeRate!==0 ? props.feeRate : null).then(txId => {
             setSendTransactionLoading(false);
             txLoading.current = false;
             setTransactionSent(txId);
@@ -138,7 +138,7 @@ export function FromBTCQuoteSummary(props: {
                     }
                 });
                 if(!paymentSubscribed) {
-                    props.quote.waitForPayment(abortController.signal, null, (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
+                    props.quote.waitForBitcoinTransaction(abortController.signal, null, (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
                         console.log("Tx eta: ", txEtaMs);
                         setTxData({
                             txId,
@@ -194,6 +194,7 @@ export function FromBTCQuoteSummary(props: {
             if(props.setAmountLock) props.setAmountLock(true);
             await props.quote.commit();
         } catch (e) {
+            console.error(e);
             if(props.setAmountLock) props.setAmountLock(false);
             setError(e.toString());
             expiryTime.current = 0;
@@ -209,6 +210,7 @@ export function FromBTCQuoteSummary(props: {
             setLoading(false);
             setSuccess(true);
         } catch (e) {
+            console.error(e);
             setSuccess(false);
             setError(e.toString());
         }
@@ -379,7 +381,7 @@ export function FromBTCQuoteSummary(props: {
                                     <label>Please send exactly <strong>{toHumanReadableString(props.quote.getInAmount(), btcCurrency)}</strong> {btcCurrency.ticker} to the address</label>
                                     <ValidatedInput
                                         type={"text"}
-                                        value={props.quote.getAddress()}
+                                        value={props.quote.getBitcoinAddress()}
                                         textEnd={(
                                             <a href="javascript:void(0);" ref={copyBtnRef} onClick={() => {
                                                 copy(1);

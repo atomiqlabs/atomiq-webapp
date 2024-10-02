@@ -1,11 +1,12 @@
-import {useEffect, useRef, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {Alert, Button, Card, ProgressBar, Spinner} from "react-bootstrap";
-import {IToBTCSwap, SwapType, ToBTCLNSwap, ToBTCSwapState} from "sollightning-sdk";
+import {IToBTCSwap, Swapper, SwapType, ToBTCLNSwap, ToBTCSwap, ToBTCSwapState} from "sollightning-sdk";
 import {getCurrencySpec, toHumanReadableString} from "../../../utils/Currencies";
 import * as React from "react";
 import * as bolt11 from "bolt11";
 import * as BN from "bn.js";
 import {FEConstants} from "../../../FEConstants";
+import {SwapsContext} from "../../../context/SwapsContext";
 
 const SNOWFLAKE_LIST: Set<string> = new Set([
     "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6",
@@ -21,6 +22,7 @@ export function ToBTCQuoteSummary(props: {
     autoContinue?: boolean,
     notEnoughForGas: boolean
 }) {
+    const {swapper} = useContext(SwapsContext);
 
     const [quoteTimeRemaining, setQuoteTimeRemaining] = useState<number>();
     const [initialQuoteTimeout, setInitialQuoteTimeout] = useState<number>();
@@ -44,7 +46,7 @@ export function ToBTCQuoteSummary(props: {
         try {
             if(props.setAmountLock) props.setAmountLock(true);
             await props.quote.commit(null, null, skipChecks);
-            const success = await props.quote.waitForPayment(null, 1);
+            const success = await props.quote.waitForPayment(null, 2);
             if(success) {
                 setSuccess(true);
                 setNonCustodialWarning(false);
@@ -56,6 +58,7 @@ export function ToBTCQuoteSummary(props: {
                 setError("Swap failed, you can refund your prior deposit");
             }
         } catch (e) {
+            console.error(e);
             setSuccess(false);
             setError(e.toString());
             if(props.setAmountLock) props.setAmountLock(false);
@@ -87,8 +90,8 @@ export function ToBTCQuoteSummary(props: {
             if(props.quote instanceof ToBTCLNSwap && props.quote.getConfidence()===0) {
                 let isSnowflake: boolean = false;
                 let isNonCustodial: boolean = false;
-                if(props.quote.pr!=null) {
-                    const parsedRequest = bolt11.decode(props.quote.pr);
+                if(props.quote.getLightningInvoice()!=null) {
+                    const parsedRequest = bolt11.decode(props.quote.getLightningInvoice());
 
                     if(parsedRequest.tagsObject.routing_info!=null) {
                         for (let route of parsedRequest.tagsObject.routing_info) {
@@ -111,7 +114,7 @@ export function ToBTCQuoteSummary(props: {
             if(props.balance!=null) {
                 balancePromise = Promise.resolve(props.balance);
             } else {
-                balancePromise = props.quote.getWrapper().getBalance(props.quote.data.getToken());
+                balancePromise = swapper.getBalance(props.quote.data.getToken());
             }
 
             balancePromise.then(balance => {
@@ -119,7 +122,7 @@ export function ToBTCQuoteSummary(props: {
                 const hasEnoughBalance = balance.gte(neededToPay);
 
                 if(!hasEnoughBalance) {
-                    const currency = getCurrencySpec(props.quote.getToken());
+                    const currency = getCurrencySpec(props.quote.getInToken());
                     setSuccess(false);
                     setError("You don't have enough funds to initiate the swap, balance: "+toHumanReadableString(balance, currency)+" "+currency.ticker);
                     setLoading(false);
@@ -201,8 +204,8 @@ export function ToBTCQuoteSummary(props: {
                     <Alert variant="success" className="mb-0">
                         <strong>Swap successful</strong>
                         <label>Swap was concluded successfully</label>
-                        {props.quote.getType()===SwapType.TO_BTC ? (
-                            <Button href={FEConstants.btcBlockExplorer+props.quote.getTxId()} target="_blank" variant="success" className="mt-3">View transaction</Button>
+                        {props.quote instanceof ToBTCSwap ? (
+                            <Button href={FEConstants.btcBlockExplorer+props.quote.getBitcoinTxId()} target="_blank" variant="success" className="mt-3">View transaction</Button>
                         ) : ""}
                     </Alert>
                 ) : (

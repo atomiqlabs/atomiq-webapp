@@ -1,5 +1,5 @@
 import * as BN from "bn.js";
-import {FromBTCLNSwap, FromBTCSwap, ISwap, IToBTCSwap} from "sollightning-sdk";
+import {FromBTCLNSwap, FromBTCSwap, IFromBTCSwap, ISwap, IToBTCSwap} from "sollightning-sdk";
 
 export function getDeltaTextHours(delta: number): string {
     const deltaSeconds = Math.floor(delta/1000);
@@ -89,26 +89,19 @@ export function elementInViewport(el): boolean {
 }
 
 //Workaround to variable returned PPM fee due to referral programme
-export function getFeePPM(swap: ISwap): BN {
-    if(swap instanceof IToBTCSwap) {
-        const fee = swap.getSwapFee();
-        const baseFeeInToken = swap.pricingInfo.satsBaseFee.mul(swap.getInAmountWithoutFee()).div(swap.getOutAmount());
-        const feeWithoutBaseFee = fee.sub(baseFeeInToken);
-        return feeWithoutBaseFee.mul(new BN(1000000)).div(swap.getInAmountWithoutFee());
-    } else if(swap instanceof FromBTCLNSwap) {
-        const fee = swap.getFee();
-        const baseFeeInToken = swap.pricingInfo.satsBaseFee.mul(swap.getOutAmountWithoutFee()).div(swap.getInAmount());
-        const feeWithoutBaseFee = fee.sub(baseFeeInToken);
-        return feeWithoutBaseFee.mul(new BN(1000000)).div(swap.getOutAmountWithoutFee());
-    } else if(swap instanceof FromBTCSwap) {
-        const fee = swap.getFee();
-        const baseFeeInToken = swap.pricingInfo.satsBaseFee.mul(swap.getOutAmountWithoutFee()).div(swap.getInAmount());
-        const feeWithoutBaseFee = fee.sub(baseFeeInToken);
-        return feeWithoutBaseFee.mul(new BN(1000000)).div(swap.getOutAmountWithoutFee());
-    }
-}
-export function getFeePct(swap: ISwap, digits: number): BN {
-    const feeOriginal = getFeePPM(swap);
+// export function getFeePPM(swap: ISwap<any>): BN {
+//     if(swap instanceof IToBTCSwap) {
+//         const fee = swap.getSwapFee().amountInDstToken;
+//         const feeWithoutBaseFee = fee.sub(swap.pricingInfo.satsBaseFee);
+//         return feeWithoutBaseFee.mul(new BN(1000000)).div(swap.getOutAmount());
+//     } else if(swap instanceof IFromBTCSwap) {
+//         const fee = swap.getFee().amountInSrcToken;
+//         const feeWithoutBaseFee = fee.sub(swap.pricingInfo.satsBaseFee);
+//         return feeWithoutBaseFee.mul(new BN(1000000)).div(swap.getInAmountWithoutFee());
+//     }
+// }
+export function getFeePct(swap: ISwap<any>, digits: number): BN {
+    const feeOriginal = swap.getRealSwapFeePercentagePPM();
     // console.log("Fee PPM: ", feeOriginal.toString(10));
     const feePPM = feeOriginal.add(new BN(9).mul(new BN(10).pow(new BN(3-digits))));
     // console.log("Fee PPM: ", feePPM.toString(10));

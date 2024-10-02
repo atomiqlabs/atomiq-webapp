@@ -1,19 +1,19 @@
 import './App.css';
 import * as React from "react";
-import WalletTab from "./components/WalletTab";
+import SolanaWalletProvider from "./context/SolanaWalletProvider";
 //import WrappedApp from "./WrappedApp";
-import {QuickScanScreen} from "./components/quickscan/QuickScanScreen";
-import {Step2Screen} from "./components/quickscan/Step2Screen";
+import {QuickScan} from "./pages/quickscan/QuickScan";
+import {QuickScanExecute} from "./pages/quickscan/QuickScanExecute";
 import {useAnchorWallet, useConnection} from '@solana/wallet-adapter-react';
-import {createSwapperOptions, NetworkError, SolanaSwapData, SolanaSwapper, SolanaSwapperOptions, UserError} from "sollightning-sdk/dist";
+import {createSwapperOptions, SolanaSwapper, SolanaSwapperOptions} from "sollightning-sdk/dist";
 import {AnchorProvider} from "@coral-xyz/anchor";
 import {FEConstants} from "./FEConstants";
-import {SwapTab} from "./components/swap/SwapTab2";
+import {Swap} from "./pages/Swap";
 import {smartChainCurrencies} from "./utils/Currencies";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
-import {SwapsContext} from "./components/context/SwapsContext";
-import {ChainUtils, FromBTCSwap, ISwap, SolanaFeeEstimator} from "sollightning-sdk";
-import {HistoryScreen} from "./components/history/HistoryScreen";
+import {SwapsContext} from "./context/SwapsContext";
+import {ISwap, SolanaFees} from "sollightning-sdk";
+import {History} from "./pages/History";
 import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
 import {
     Alert,
@@ -29,28 +29,26 @@ import {
     Spinner,
     Tooltip
 } from "react-bootstrap";
-import {FAQ} from "./info/FAQ";
-import {About} from "./info/About";
-import {Map} from "./info/Map";
+import {FAQ} from "./pages/FAQ";
+import {About} from "./pages/About";
+import {Map} from "./pages/Map";
 import {map} from 'react-icons-kit/fa/map';
 import {info} from 'react-icons-kit/fa/info';
 import {question} from 'react-icons-kit/fa/question';
 import {exchange} from 'react-icons-kit/fa/exchange';
-import {AddressPurpose, BitcoinNetworkType, getAddress, sendBtcTransaction} from 'sats-connect';
 import Icon from "react-icons-kit";
 import * as BN from "bn.js";
-import {LNNFCReader, LNNFCStartResult} from './components/lnnfc/LNNFCReader';
+import {LNNFCReader, LNNFCStartResult} from './lnnfc/LNNFCReader';
 import {ic_contactless} from 'react-icons-kit/md/ic_contactless';
-import {BitcoinWalletButton} from "./components/wallet/BitcoinWalletButton";
-import {SwapForGasScreen} from "./components/swapforgas/SwapForGasScreen";
-import {SwapExplorer} from "./components/explorer/SwapExplorer";
+import {SwapForGas} from "./pages/SwapForGas";
+import {SwapExplorer} from "./pages/SwapExplorer";
 import {ic_explore} from 'react-icons-kit/md/ic_explore';
-import {AffiliateScreen} from "./components/affiliate/AffiliateScreen";
+import {Affiliate} from "./pages/Affiliate";
 import {gift} from 'react-icons-kit/fa/gift';
-import {BitcoinWallet} from './components/wallet/BitcoinWallet';
-import {BitcoinWalletContext} from './components/context/BitcoinWalletContext';
+import {BitcoinWallet} from './bitcoin/onchain/BitcoinWallet';
+import {BitcoinWalletContext} from './context/BitcoinWalletContext';
 import {WebLNProvider} from "webln";
-import {WebLNContext} from './components/context/WebLNContext';
+import {WebLNContext} from './context/WebLNContext';
 import {heart} from 'react-icons-kit/fa/heart';
 import {useCallback, useRef} from "react";
 
@@ -74,9 +72,7 @@ function WrappedApp() {
     const [swapper, setSwapper] = React.useState<SolanaSwapper>();
     const [swapperLoadingError, setSwapperLoadingError] = React.useState<string>();
     const [swapperLoading, setSwapperLoading] = React.useState<boolean>(false);
-    const [actionableSwaps, setActionableSwaps] = React.useState<ISwap[]>([]);
-
-    // const [btcConnectionState, setBtcConnectionState] = React.useState<BtcConnectionState>(null);
+    const [actionableSwaps, setActionableSwaps] = React.useState<ISwap<any>[]>([]);
 
     // @ts-ignore
     const pathName = window.location.pathname.split("?")[0];
@@ -113,14 +109,14 @@ function WrappedApp() {
             options.retryPolicy = {
                 transactionResendInterval: 3000
             };
-            options.feeEstimator = new SolanaFeeEstimator(_provider.connection, 250000, 2, 100, "auto", () => new BN(25000)/*, {
+            options.feeEstimator = new SolanaFees(_provider.connection as any, 250000, 2, 100, "auto", () => new BN(25000)/*, {
                 address: jitoPubkey,
                 endpoint: jitoEndpoint,
                 getStaticFee:() => new BN(250000)
             }*/);
-            // options.defaultTrustedIntermediaryUrl = "http://localhost:24521";
+            // options.defaultTrusted   IntermediaryUrl = "http://localhost:24521";
 
-            console.log("Created swapper options: ", options);
+            //console.log("Created swapper options: ", options);
 
             const swapper = new SolanaSwapper(_provider, options);
 
@@ -333,7 +329,8 @@ function WrappedApp() {
                             if(i>=0) cpy.splice(i, 1);
                             return cpy;
                         });
-                    }
+                    },
+                    swapper
                 }}>
                     <div className="d-flex flex-grow-1 flex-column">
                         {(provider==null || swapperLoading) && !noWalletPaths.has(pathName) ? (
@@ -372,18 +369,18 @@ function WrappedApp() {
                         <BrowserRouter>
                             <Routes>
                                 <Route path="/">
-                                    <Route index element={<SwapTab swapper={swapper} supportedCurrencies={smartChainCurrencies}/>}></Route>
+                                    <Route index element={<Swap supportedCurrencies={smartChainCurrencies}/>}></Route>
                                     <Route path="scan">
-                                        <Route index element={<QuickScanScreen/>}/>
-                                        <Route path="2" element={<Step2Screen swapper={swapper}/>}/>
+                                        <Route index element={<QuickScan/>}/>
+                                        <Route path="2" element={<QuickScanExecute/>}/>
                                     </Route>
-                                    <Route path="history" element={<HistoryScreen swapper={swapper}/>}/>
-                                    <Route path="gas" element={<SwapForGasScreen swapper={swapper}/>}/>
+                                    <Route path="history" element={<History/>}/>
+                                    <Route path="gas" element={<SwapForGas/>}/>
                                     <Route path="faq" element={<FAQ/>}/>
                                     <Route path="about" element={<About/>}/>
                                     <Route path="map" element={<Map/>}/>
                                     <Route path="explorer" element={<SwapExplorer/>}/>
-                                    <Route path="referral" element={<AffiliateScreen swapper={swapper}/>}/>
+                                    <Route path="referral" element={<Affiliate/>}/>
                                 </Route>
                             </Routes>
                         </BrowserRouter>
@@ -423,9 +420,9 @@ function WrappedApp() {
 function App() {
     return (
         <div className="App d-flex flex-column">
-            <WalletTab>
+            <SolanaWalletProvider>
                 <WrappedApp/>
-            </WalletTab>
+            </SolanaWalletProvider>
         </div>
     );
 }

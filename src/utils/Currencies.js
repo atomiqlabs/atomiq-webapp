@@ -56,7 +56,14 @@ export function getNativeCurrency() {
     return smartChainCurrencies[0];
 }
 export function getCurrencySpec(address) {
-    return scCurrencyMap[address.toString()];
+    if (typeof (address) === "string" || address instanceof PublicKey)
+        return scCurrencyMap[address.toString()];
+    if (address.chain === "BTC") {
+        return bitcoinCurrencies[address.lightning ? 1 : 0];
+    }
+    else {
+        return scCurrencyMap[address.address.toString()];
+    }
 }
 export function toHumanReadable(amount, currencySpec) {
     let spec;

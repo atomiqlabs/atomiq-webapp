@@ -2,6 +2,7 @@ import {PublicKey} from "@solana/web3.js";
 import {FEConstants} from "../FEConstants";
 import * as BN from "bn.js";
 import BigNumber from "bignumber.js";
+import {Token} from "sollightning-sdk";
 
 export const btcCurrency: CurrencySpec = {
     name: "Bitcoin (on-chain)",
@@ -73,8 +74,13 @@ export function getNativeCurrency(): CurrencySpec {
     return smartChainCurrencies[0];
 }
 
-export function getCurrencySpec(address: PublicKey | string) {
-    return scCurrencyMap[address.toString()];
+export function getCurrencySpec(address: PublicKey | string | Token) {
+    if(typeof(address)==="string" || address instanceof PublicKey) return scCurrencyMap[address.toString()];
+    if(address.chain==="BTC") {
+        return bitcoinCurrencies[address.lightning ? 1 : 0];
+    } else {
+        return scCurrencyMap[address.address.toString()];
+    }
 }
 
 export function toHumanReadable(amount: BN, currencySpec: CurrencySpec | PublicKey | string): BigNumber {

@@ -18,15 +18,15 @@ import ValidatedInput, {ValidatedInputRef} from "../../ValidatedInput";
 import {FromBTCLNSwap, FromBTCLNSwapState, LNURLPay, LNURLWithdraw, Swapper} from "sollightning-sdk";
 import {clipboard} from 'react-icons-kit/fa/clipboard'
 import Icon from "react-icons-kit";
-import {LNNFCReader, LNNFCStartResult} from "../../lnnfc/LNNFCReader";
+import {LNNFCReader, LNNFCStartResult} from "../../../lnnfc/LNNFCReader";
 import {useLocation, useNavigate} from "react-router-dom";
-import {WebLNContext} from "../../context/WebLNContext";
+import {WebLNContext} from "../../../context/WebLNContext";
 import {externalLink} from 'react-icons-kit/fa/externalLink';
 import {info} from 'react-icons-kit/fa/info';
 import {elementInViewport} from "../../../utils/Utils";
+import {SwapsContext} from "../../../context/SwapsContext";
 
 export function FromBTCLNQuoteSummary(props: {
-    swapper: Swapper<any, any, any, any>,
     quote: FromBTCLNSwap<any>,
     refreshQuote: () => void,
     setAmountLock: (isLocked: boolean) => void,
@@ -34,6 +34,8 @@ export function FromBTCLNQuoteSummary(props: {
     abortSwap?: () => void,
     notEnoughForGas: boolean
 }) {
+    const {swapper} = useContext(SwapsContext);
+
     const {lnWallet, setLnWallet} = useContext(WebLNContext);
     const [bitcoinError, setBitcoinError] = useState<string>(null);
     const [sendTransactionLoading, setSendTransactionLoading] = useState<boolean>(false);
@@ -72,7 +74,7 @@ export function FromBTCLNQuoteSummary(props: {
             console.log("LNURL read: ", lnurls);
 
             if(lnurls[0]!=null) {
-                props.swapper.getLNURLTypeAndData(lnurls[0]).then((result: LNURLPay | LNURLWithdraw) => {
+                swapper.getLNURLTypeAndData(lnurls[0]).then((result: LNURLPay | LNURLWithdraw) => {
                     if(result==null) return;
                     if(result.type!=="withdraw") return;
                     nfcScanner.stop();
@@ -97,7 +99,7 @@ export function FromBTCLNQuoteSummary(props: {
         if(sendTransactionLoading) return;
         setSendTransactionLoading(true);
         setBitcoinError(null);
-        lnWallet.sendPayment(props.quote.getAddress()).then(resp => {
+        lnWallet.sendPayment(props.quote.getLightningInvoice()).then(resp => {
             setSendTransactionLoading(false);
         }).catch(e => {
             setSendTransactionLoading(false);
@@ -432,7 +434,7 @@ export function FromBTCLNQuoteSummary(props: {
                                     <label>Please initiate a payment to this lightning network invoice</label>
                                     <ValidatedInput
                                         type={"text"}
-                                        value={props.quote.getAddress()}
+                                        value={props.quote.getLightningInvoice()}
                                         textEnd={(
                                             <a href="javascript:void(0);" ref={copyBtnRef} onClick={() => {
                                                 copy(1);

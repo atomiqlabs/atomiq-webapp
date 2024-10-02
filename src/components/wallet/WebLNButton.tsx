@@ -3,12 +3,12 @@ import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
 import * as React from "react";
 import {BitcoinNetworkType, getAddress, getCapabilities} from "sats-connect";
 import {useContext, useEffect, useState} from "react";
-import {BitcoinWalletContext} from "../context/BitcoinWalletContext";
-import {BitcoinWalletType, getInstalledBitcoinWallets} from "./BitcoinWalletUtils";
+import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
+import {BitcoinWalletType, getInstalledBitcoinWallets} from "../../bitcoin/onchain/BitcoinWalletUtils";
 import {ic_brightness_1} from 'react-icons-kit/md/ic_brightness_1';
 import Icon from "react-icons-kit";
-import {connectWebLN, isWebLNInstalled} from "./WebLNUtils";
-import {WebLNContext} from "../context/WebLNContext";
+import {connectWebLN, isWebLNInstalled} from "../../bitcoin/lightning/WebLNUtils";
+import {WebLNContext} from "../../context/WebLNContext";
 
 export function useWebLNWalletChooser() {
 

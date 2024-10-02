@@ -5,13 +5,13 @@ import {FromBTCLNQuoteSummary} from "./frombtc/FromBTCLNQuoteSummary";
 import {FromBTCQuoteSummary} from "./frombtc/FromBTCQuoteSummary";
 import * as React from "react";
 import * as BN from "bn.js";
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
+import {SwapsContext} from "../../context/SwapsContext";
 
 //The getBalance automatically discounts the WSOL ATA deposit + commit fee (including deposit for EscrowState)
 const minNativeTokenBalance = new BN(500000);
 
 export function QuoteSummary(props: {
-    swapper: Swapper<any, any, any, any>,
     quote: ISwap,
     refreshQuote: () => void,
     setAmountLock?: (isLocked: boolean) => void,
@@ -21,6 +21,7 @@ export function QuoteSummary(props: {
     autoContinue?: boolean,
     feeRate?: number
 }) {
+    const {swapper} = useContext(SwapsContext);
 
     const [notEnoughForGas, setNotEnoughForGas] = useState<boolean>(false);
 
@@ -28,8 +29,7 @@ export function QuoteSummary(props: {
         setNotEnoughForGas(false);
 
         //Check if the user has enough lamports to cover solana transaction fees
-        const swapContract = props.swapper.swapContract;
-        swapContract.getBalance(swapContract.getNativeCurrencyAddress(), false).then(balance => {
+        swapper.getBalance(swapper.getNativeCurrency()).then(balance => {
             console.log("NATIVE balance: ", balance.toString(10));
             if(balance.lt(minNativeTokenBalance)) {
                 setNotEnoughForGas(true);
@@ -59,7 +59,6 @@ export function QuoteSummary(props: {
                 />;
             } else {
                 return <FromBTCLNQuoteSummary
-                    swapper={props.swapper}
                     type={props.type}
                     setAmountLock={props.setAmountLock}
                     quote={props.quote}

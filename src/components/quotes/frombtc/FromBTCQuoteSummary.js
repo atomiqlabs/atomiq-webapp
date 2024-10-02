@@ -9,7 +9,7 @@ import Icon from "react-icons-kit";
 import { clipboard } from "react-icons-kit/fa/clipboard";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { BitcoinWalletContext } from "../../context/BitcoinWalletContext";
+import { BitcoinWalletContext } from "../../../context/BitcoinWalletContext";
 import { externalLink } from 'react-icons-kit/fa/externalLink';
 import { elementInViewport, getDeltaText, getDeltaTextHours } from "../../../utils/Utils";
 import { FEConstants } from "../../../FEConstants";
@@ -51,7 +51,7 @@ export function FromBTCQuoteSummary(props) {
         setSendTransactionLoading(true);
         txLoading.current = true;
         setBitcoinError(null);
-        bitcoinWallet.sendTransaction(props.quote.getAddress(), props.quote.getInAmount(), props.feeRate != null && props.feeRate !== 0 ? props.feeRate : null).then(txId => {
+        bitcoinWallet.sendTransaction(props.quote.getBitcoinAddress(), props.quote.getInAmount(), props.feeRate != null && props.feeRate !== 0 ? props.feeRate : null).then(txId => {
             setSendTransactionLoading(false);
             txLoading.current = false;
             setTransactionSent(txId);
@@ -101,7 +101,7 @@ export function FromBTCQuoteSummary(props) {
                     }
                 });
                 if (!paymentSubscribed) {
-                    props.quote.waitForPayment(abortController.signal, null, (txId, confirmations, confirmationTarget, txEtaMs) => {
+                    props.quote.waitForBitcoinTransaction(abortController.signal, null, (txId, confirmations, confirmationTarget, txEtaMs) => {
                         console.log("Tx eta: ", txEtaMs);
                         setTxData({
                             txId,
@@ -155,6 +155,7 @@ export function FromBTCQuoteSummary(props) {
             await props.quote.commit();
         }
         catch (e) {
+            console.error(e);
             if (props.setAmountLock)
                 props.setAmountLock(false);
             setError(e.toString());
@@ -171,6 +172,7 @@ export function FromBTCQuoteSummary(props) {
             setSuccess(true);
         }
         catch (e) {
+            console.error(e);
             setSuccess(false);
             setError(e.toString());
         }
@@ -242,7 +244,7 @@ export function FromBTCQuoteSummary(props) {
                             });
                         }, children: "Swap for gas" })] }), state === FromBTCSwapState.PR_CREATED ? (_jsxs(_Fragment, { children: [_jsxs("div", { className: success === null && !loading ? "d-flex flex-column mb-3 tab-accent" : "d-none", children: [quoteTimeRemaining === 0 ? (_jsx("label", { children: "Quote expired!" })) : (_jsxs("label", { children: ["Quote expires in ", getDeltaTextHours(quoteTimeRemaining)] })), _jsx(ProgressBar, { animated: true, now: quoteTimeRemaining, max: initialQuoteTimeout, min: 0 })] }), quoteTimeRemaining === 0 && !loading ? (_jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })) : (_jsxs(Button, { onClick: onCommit, disabled: loading || props.notEnoughForGas || !hasEnoughBalance, size: "lg", className: "d-flex flex-row", children: [loading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Initiate swap"] }))] })) : "", state === FromBTCSwapState.CLAIM_COMMITED ? (txData == null ? (_jsxs(_Fragment, { children: [quoteTimeRemaining === 0 ? "" : (_jsx("div", { className: "mb-3 tab-accent", children: bitcoinWallet != null ? (_jsxs(_Fragment, { children: [bitcoinError != null ? (_jsxs(Alert, { variant: "danger", className: "mb-2", children: [_jsx("strong", { children: "Btc TX failed" }), _jsx("label", { children: bitcoinError })] })) : "", _jsx("div", { className: "d-flex flex-column align-items-center justify-content-center", children: transactionSent != null ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx(Spinner, {}), _jsx("label", { children: "Sending Bitcoin transaction..." })] })) : (_jsxs(_Fragment, { children: [_jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center", disabled: sendTransactionLoading, onClick: sendBitcoinTransaction, children: [sendTransactionLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Pay with", _jsx("img", { width: 20, height: 20, src: bitcoinWallet.getIcon(), className: "ms-2 me-1" }), bitcoinWallet.getName()] }), _jsx("small", { className: "mt-2", children: _jsx("a", { href: "javascript:void(0);", onClick: () => setBitcoinWallet(null), children: "Or use a QR code/wallet address" }) })] })) })] })) : (_jsxs(_Fragment, { children: [_jsx(Overlay, { target: showCopyOverlay === 1 ? copyBtnRef.current : (showCopyOverlay === 2 ? qrCodeRef.current : null), show: showCopyOverlay > 0, placement: "top", children: (props) => (_jsx(Tooltip, { id: "overlay-example", ...props, children: "Address copied to clipboard!" })) }), _jsx(Alert, { variant: "warning", className: "mb-3", children: _jsxs("label", { children: ["Please make sure that you send an ", _jsx("b", { children: _jsx("u", { children: "EXACT" }) }), " amount in BTC, different amount wouldn't be accepted and you might loose funds!"] }) }), _jsx("div", { ref: qrCodeRef, className: "mb-2", children: _jsx(QRCodeSVG, { value: props.quote.getQrData(), size: 300, includeMargin: true, className: "cursor-pointer", onClick: () => {
                                             copy(2);
-                                        } }) }), _jsxs("label", { children: ["Please send exactly ", _jsx("strong", { children: toHumanReadableString(props.quote.getInAmount(), btcCurrency) }), " ", btcCurrency.ticker, " to the address"] }), _jsx(ValidatedInput, { type: "text", value: props.quote.getAddress(), textEnd: (_jsx("a", { href: "javascript:void(0);", ref: copyBtnRef, onClick: () => {
+                                        } }) }), _jsxs("label", { children: ["Please send exactly ", _jsx("strong", { children: toHumanReadableString(props.quote.getInAmount(), btcCurrency) }), " ", btcCurrency.ticker, " to the address"] }), _jsx(ValidatedInput, { type: "text", value: props.quote.getBitcoinAddress(), textEnd: (_jsx("a", { href: "javascript:void(0);", ref: copyBtnRef, onClick: () => {
                                             copy(1);
                                         }, children: _jsx(Icon, { icon: clipboard }) })), inputRef: textFieldRef }), _jsx("div", { className: "d-flex justify-content-center mt-2", children: _jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center justify-content-center", onClick: () => {
                                             window.location.href = props.quote.getQrData();

@@ -2,8 +2,8 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { Button, CloseButton, Dropdown, ListGroup, Modal } from "react-bootstrap";
 import * as React from "react";
 import { useContext, useEffect, useState } from "react";
-import { BitcoinWalletContext } from "../context/BitcoinWalletContext";
-import { getInstalledBitcoinWallets } from "./BitcoinWalletUtils";
+import { BitcoinWalletContext } from "../../context/BitcoinWalletContext";
+import { getInstalledBitcoinWallets } from "../../bitcoin/onchain/BitcoinWalletUtils";
 import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
 import Icon from "react-icons-kit";
 export function useBitcoinWalletChooser() {
@@ -66,7 +66,7 @@ export function useBitcoinWalletChooser() {
 }
 export function BitcoinWalletModal(props) {
     return (_jsxs(Modal, { contentClassName: "text-white bg-dark", size: "sm", centered: true, show: props.modalOpened, onHide: () => props.setModalOpened(false), dialogClassName: "min-width-400px", children: [_jsx(Modal.Header, { className: "border-0", children: _jsxs(Modal.Title, { id: "contained-modal-title-vcenter", className: "d-flex flex-grow-1", children: ["Select a Bitcoin wallet", _jsx(CloseButton, { className: "ms-auto", variant: "white", onClick: () => props.setModalOpened(false) })] }) }), _jsx(Modal.Body, { children: _jsx(ListGroup, { variant: "flush", children: props.usableWallets.map((e, index) => {
-                        return (_jsxs(ListGroup.Item, { action: true, onClick: () => props.connectWallet(e), className: "d-flex flex-row bg-transparent text-white border-0", children: [_jsx("img", { width: 20, height: 20, src: e.iconUrl, className: "me-2" }), _jsx("span", { children: e.name })] }));
+                        return (_jsxs(ListGroup.Item, { action: true, onClick: () => props.connectWallet(e), className: "d-flex flex-row bg-transparent text-white border-0", children: [_jsx("img", { width: 20, height: 20, src: e.iconUrl, className: "me-2" }), _jsx("span", { children: e.name })] }, e.name));
                     }) }) })] }));
 }
 export function BitcoinWalletButton(props) {

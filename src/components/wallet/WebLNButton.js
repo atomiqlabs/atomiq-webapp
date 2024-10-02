@@ -4,8 +4,8 @@ import * as React from "react";
 import { useContext } from "react";
 import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
 import Icon from "react-icons-kit";
-import { connectWebLN, isWebLNInstalled } from "./WebLNUtils";
-import { WebLNContext } from "../context/WebLNContext";
+import { connectWebLN, isWebLNInstalled } from "../../bitcoin/lightning/WebLNUtils";
+import { WebLNContext } from "../../context/WebLNContext";
 export function useWebLNWalletChooser() {
     const { lnWallet, setLnWallet } = useContext(WebLNContext);
     const isInstalled = isWebLNInstalled();

@@ -65,6 +65,7 @@ export function LNURLWithdrawQuoteSummary(props) {
                 await props.quote.waitForPayment(null, 1);
             }
             catch (e) {
+                console.error(e);
                 setSuccess(false);
                 setError(e.toString());
                 setLoading(false);

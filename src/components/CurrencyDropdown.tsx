@@ -20,7 +20,7 @@ export function CurrencyDropdown(props: {
             <Dropdown.Menu>
                 {props.currencyList.map(curr => {
                     return (
-                        <Dropdown.Item onClick={() => {
+                        <Dropdown.Item key={curr.ticker} onClick={() => {
                             props.onSelect(curr);
                         }}>
                             <img className="currency-icon" src={curr.icon}/>

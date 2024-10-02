@@ -1,11 +1,11 @@
 import {Alert, Button, CloseButton, Dropdown, ListGroup, Modal} from "react-bootstrap";
 import * as React from "react";
 import {useContext, useEffect, useState} from "react";
-import {BitcoinWalletContext} from "../context/BitcoinWalletContext";
-import {BitcoinWalletType, getInstalledBitcoinWallets} from "./BitcoinWalletUtils";
+import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
+import {BitcoinWalletType, getInstalledBitcoinWallets} from "../../bitcoin/onchain/BitcoinWalletUtils";
 import {ic_brightness_1} from 'react-icons-kit/md/ic_brightness_1';
 import Icon from "react-icons-kit";
-import {BitcoinWallet} from "./BitcoinWallet";
+import {BitcoinWallet} from "../../bitcoin/onchain/BitcoinWallet";
 
 export function useBitcoinWalletChooser() {
 
@@ -88,7 +88,7 @@ export function BitcoinWalletModal(props: {
                 <ListGroup variant="flush">
                     {props.usableWallets.map((e, index) => {
                         return (
-                            <ListGroup.Item action onClick={() => props.connectWallet(e)} className="d-flex flex-row bg-transparent text-white border-0">
+                            <ListGroup.Item action key={e.name} onClick={() => props.connectWallet(e)} className="d-flex flex-row bg-transparent text-white border-0">
                                 <img width={20} height={20} src={e.iconUrl} className="me-2"/>
                                 <span>{e.name}</span>
                             </ListGroup.Item>

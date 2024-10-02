@@ -79,6 +79,7 @@ export function LNURLWithdrawQuoteSummary(props: {
                 if(props.setAmountLock) props.setAmountLock(true);
                 await props.quote.waitForPayment(null, 1);
             } catch (e) {
+                console.error(e);
                 setSuccess(false);
                 setError(e.toString());
                 setLoading(false);

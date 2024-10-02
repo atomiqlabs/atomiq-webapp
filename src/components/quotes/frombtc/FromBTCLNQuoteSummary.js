@@ -6,13 +6,15 @@ import ValidatedInput from "../../ValidatedInput";
 import { FromBTCLNSwapState } from "sollightning-sdk";
 import { clipboard } from 'react-icons-kit/fa/clipboard';
 import Icon from "react-icons-kit";
-import { LNNFCReader, LNNFCStartResult } from "../../lnnfc/LNNFCReader";
+import { LNNFCReader, LNNFCStartResult } from "../../../lnnfc/LNNFCReader";
 import { useLocation, useNavigate } from "react-router-dom";
-import { WebLNContext } from "../../context/WebLNContext";
+import { WebLNContext } from "../../../context/WebLNContext";
 import { externalLink } from 'react-icons-kit/fa/externalLink';
 import { info } from 'react-icons-kit/fa/info';
 import { elementInViewport } from "../../../utils/Utils";
+import { SwapsContext } from "../../../context/SwapsContext";
 export function FromBTCLNQuoteSummary(props) {
+    const { swapper } = useContext(SwapsContext);
     const { lnWallet, setLnWallet } = useContext(WebLNContext);
     const [bitcoinError, setBitcoinError] = useState(null);
     const [sendTransactionLoading, setSendTransactionLoading] = useState(false);
@@ -42,7 +44,7 @@ export function FromBTCLNQuoteSummary(props) {
         nfcScanner.onScanned((lnurls) => {
             console.log("LNURL read: ", lnurls);
             if (lnurls[0] != null) {
-                props.swapper.getLNURLTypeAndData(lnurls[0]).then((result) => {
+                swapper.getLNURLTypeAndData(lnurls[0]).then((result) => {
                     if (result == null)
                         return;
                     if (result.type !== "withdraw")
@@ -67,7 +69,7 @@ export function FromBTCLNQuoteSummary(props) {
             return;
         setSendTransactionLoading(true);
         setBitcoinError(null);
-        lnWallet.sendPayment(props.quote.getAddress()).then(resp => {
+        lnWallet.sendPayment(props.quote.getLightningInvoice()).then(resp => {
             setSendTransactionLoading(false);
         }).catch(e => {
             setSendTransactionLoading(false);
@@ -272,7 +274,7 @@ export function FromBTCLNQuoteSummary(props) {
                                                 excavate: true,
                                                 height: 50,
                                                 width: 50
-                                            } : null }) }), _jsx("label", { children: "Please initiate a payment to this lightning network invoice" }), _jsx(ValidatedInput, { type: "text", value: props.quote.getAddress(), textEnd: (_jsx("a", { href: "javascript:void(0);", ref: copyBtnRef, onClick: () => {
+                                            } : null }) }), _jsx("label", { children: "Please initiate a payment to this lightning network invoice" }), _jsx(ValidatedInput, { type: "text", value: props.quote.getLightningInvoice(), textEnd: (_jsx("a", { href: "javascript:void(0);", ref: copyBtnRef, onClick: () => {
                                                 copy(1);
                                             }, children: _jsx(Icon, { icon: clipboard }) })), inputRef: textFieldRef }), _jsx("div", { className: "d-flex justify-content-center mt-2", children: _jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center justify-content-center", onClick: () => {
                                                 setOpenAppModalOpened(true);
