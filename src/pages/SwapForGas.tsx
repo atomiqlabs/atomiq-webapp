@@ -107,11 +107,8 @@ export function SwapForGas() {
             setQuoteTimeRemaining(dt);
 
             return swap.waitForPayment(abortControllerRef.current.signal, 2);
-        }).then((result: {is_paid: boolean, scTxId?: string} | void) => {
-            if(result==null) return;
-            if(result instanceof Object) {
-                setSuccess(true);
-            }
+        }).then(() => {
+            setSuccess(true);
         }).catch(err => {
             console.error(err);
             setError(err.toString());

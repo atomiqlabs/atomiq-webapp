@@ -89,12 +89,8 @@ export function SwapForGas() {
             setInitialQuoteTimeout(dt);
             setQuoteTimeRemaining(dt);
             return swap.waitForPayment(abortControllerRef.current.signal, 2);
-        }).then((result) => {
-            if (result == null)
-                return;
-            if (result instanceof Object) {
-                setSuccess(true);
-            }
+        }).then(() => {
+            setSuccess(true);
         }).catch(err => {
             console.error(err);
             setError(err.toString());
