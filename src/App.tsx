@@ -61,7 +61,7 @@ require('@solana/wallet-adapter-react-ui/styles.css');
 //     sendTransaction?: (address: string, amount: BN) => Promise<void>
 // };
 
-const noWalletPaths = new Set(["/about", "/faq", "/map", "/explorer"]);
+const noWalletPaths = new Set(["/about", "/faq", "/map", "/46jh456f45f"]);
 const jitoPubkey = "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL";
 const jitoEndpoint = "https://mainnet.block-engine.jito.wtf/api/v1/transactions";
 
@@ -248,7 +248,6 @@ function WrappedApp() {
                                 </Nav.Link>
                                 <Nav.Link href="/about" className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
                                 <Nav.Link href="/faq" className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
-                                <Nav.Link href="/explorer" className="d-flex flex-row align-items-center"><Icon icon={ic_explore} className="d-flex me-1"/><span>Explorer</span></Nav.Link>
                                 <Nav.Link href="/referral" className="d-flex flex-row align-items-center">
                                     <Icon icon={gift} className="d-flex me-1"/>
                                     <span className="me-1">Referral</span>
@@ -284,7 +283,6 @@ function WrappedApp() {
 
                                 <Nav.Link href="/about" className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
                                 <Nav.Link href="/faq" className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
-                                <Nav.Link href="/explorer" className="d-flex flex-row align-items-center"><Icon icon={ic_explore} className="d-flex me-1"/><span>Explorer</span></Nav.Link>
 
                                 <Nav.Link href="/referral" className="d-flex flex-column align-items-center">
                                     <div className="d-flex flex-row align-items-center">
@@ -379,7 +377,7 @@ function WrappedApp() {
                                     <Route path="faq" element={<FAQ/>}/>
                                     <Route path="about" element={<About/>}/>
                                     <Route path="map" element={<Map/>}/>
-                                    <Route path="explorer" element={<SwapExplorer/>}/>
+                                    <Route path="46jh456f45f" element={<SwapExplorer/>}/>
                                     <Route path="referral" element={<Affiliate/>}/>
                                 </Route>
                             </Routes>
