@@ -294,11 +294,13 @@ export function SimpleFeeSummaryScreen(props: {
         return () => abortController.abort();
     }, [props.swap, swapper]);
 
+    const allFees = (btcTxFee!=null ? [btcTxFee] : []).concat(scSideFees || []);
+
     return (<FeeSummary
         srcCurrency={getCurrencySpec(props.swap.getInToken())}
         dstCurrency={getCurrencySpec(props.swap.getOutToken())}
         swapPrice={props.swap.getSwapPrice()}
-        feeBreakdown={scSideFees || []}
+        feeBreakdown={allFees}
         loading={scSideFees==null || btcTxFeeLoading}
     />);
 }

@@ -142,5 +142,6 @@ export function SimpleFeeSummaryScreen(props) {
         });
         return () => abortController.abort();
     }, [props.swap, swapper]);
-    return (_jsx(FeeSummary, { srcCurrency: getCurrencySpec(props.swap.getInToken()), dstCurrency: getCurrencySpec(props.swap.getOutToken()), swapPrice: props.swap.getSwapPrice(), feeBreakdown: scSideFees || [], loading: scSideFees == null || btcTxFeeLoading }));
+    const allFees = (btcTxFee != null ? [btcTxFee] : []).concat(scSideFees || []);
+    return (_jsx(FeeSummary, { srcCurrency: getCurrencySpec(props.swap.getInToken()), dstCurrency: getCurrencySpec(props.swap.getOutToken()), swapPrice: props.swap.getSwapPrice(), feeBreakdown: allFees, loading: scSideFees == null || btcTxFeeLoading }));
 }
