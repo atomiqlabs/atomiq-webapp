@@ -12,21 +12,28 @@ import ValidatedInput, {ValidatedInputRef} from "../components/ValidatedInput";
 import {ChainSwapType} from "sollightning-sdk";
 import {getTimeDeltaText} from "../utils/Utils";
 
+const timeframes = ["24h", "7d", "30d"];
+
 export function SwapExplorer(props: {}) {
 
     const refreshTable = useRef<() => void>(null);
 
+    const [displayTimeframeIndex, setDisplayTimeframeIndex] = useState<number>(0);
+    const changeTimeframe = () => setDisplayTimeframeIndex((prevState) => (prevState+1) % timeframes.length)
+    const displayTimeframe = timeframes[displayTimeframeIndex];
     const [statsLoading, setStatsLoading] = useState<boolean>(false);
     const [stats, setStats] = useState<{
         "totalSwapCount": number,
         "totalUsdVolume": number,
         "currencyData": {
-            "SOL": {
+            [currency in "USDC" | "SOL"]: {
                 "count": number,
                 "volume": number,
                 "volumeUsd": number
-            },
-            "USDC": {
+            }
+        }
+        "timeframes": {
+            [timeframe in "24h" | "7d" | "30d"]: {
                 "count": number,
                 "volume": number,
                 "volumeUsd": number
@@ -71,17 +78,41 @@ export function SwapExplorer(props: {}) {
                 <Col xs={12} md={6} className="pb-3">
                     <Card className="px-3 pt-3 bg-dark bg-opacity-25 height-100 border-0">
                         <span className="">Total swaps</span>
-                        <h3>{statsLoading ? (
-                            <Placeholder xs={6} />
-                        ) : stats?.totalSwapCount}</h3>
+                        <div className={"flex-row align-items-baseline" + (statsLoading ? "" : " d-flex")}>
+                            {statsLoading ? (
+                                <h3><Placeholder xs={6}/></h3>
+                            ) : (
+                                <>
+                                    <h3 className="">{stats?.totalSwapCount}</h3>
+                                    <h6 className="ms-1 text-success d-flex flex-row align-items-center cursor-pointer"
+                                        onClick={changeTimeframe}>
+                                        <span>+{stats?.timeframes?.[displayTimeframe]?.count}</span>
+                                        <Badge className="font-smallest ms-1 text-dark"
+                                               bg="light">{displayTimeframe}</Badge>
+                                    </h6>
+                                </>
+                            )}
+                        </div>
                     </Card>
                 </Col>
                 <Col xs={12} md={6} className="pb-3">
                     <Card className="px-3 pt-3 bg-dark bg-opacity-25 height-100 border-0">
                         <span>Total volume</span>
-                        <h3>{statsLoading ? (
-                            <Placeholder xs={6} />
-                        ) : (stats?.totalUsdVolume==null ? null : FEConstants.USDollar.format(stats.totalUsdVolume))}</h3>
+                        <div className={"flex-row align-items-baseline" + (statsLoading ? "" : " d-flex")}>
+                            {statsLoading ? (
+                                <h3><Placeholder xs={6}/></h3>
+                            ) : (
+                                <>
+                                    <h3 className="">{stats?.totalUsdVolume == null ? null : FEConstants.USDollar.format(stats.totalUsdVolume)}</h3>
+                                    <h6 className="ms-1 text-success d-flex flex-row align-items-center cursor-pointer"
+                                        onClick={changeTimeframe}>
+                                        <span>+{stats?.timeframes?.[displayTimeframe]?.volumeUsd == null ? null : FEConstants.USDollar.format(stats?.timeframes?.[displayTimeframe]?.volumeUsd)}</span>
+                                        <Badge className="font-smallest ms-1 text-dark"
+                                               bg="light">{displayTimeframe}</Badge>
+                                    </h6>
+                                </>
+                            )}
+                        </div>
                     </Card>
                 </Col>
             </Row>
@@ -97,7 +128,7 @@ export function SwapExplorer(props: {}) {
                 />
                 <Button className="ms-2" onClick={() => {
                     const val = searchRef.current.getValue();
-                    if(val==="") {
+                    if (val === "") {
                         setSearch(null);
                     } else {
                         setSearch(val);
