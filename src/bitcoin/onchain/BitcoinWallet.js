@@ -4,6 +4,7 @@ import { coinSelect, maxSendable } from "./coinselect2";
 import * as bitcoin from "bitcoinjs-lib";
 import { MempoolApi } from "sollightning-sdk";
 import * as randomBytes from "randombytes";
+import { toXOnly, } from 'bitcoinjs-lib/src/psbt/bip371';
 const bitcoinNetwork = FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 const ChainUtils = new MempoolApi(FEConstants.chain === "DEVNET" ?
     "https://mempool.space/testnet/api/" :
@@ -66,7 +67,17 @@ export class BitcoinWallet {
         });
         console.log("Inputs: ", coinselectResult.inputs);
         psbt.addInputs(await Promise.all(coinselectResult.inputs.map(async (input) => {
-            switch (sendingAddressType) {
+            switch (input.type) {
+                case "p2tr":
+                    return {
+                        hash: input.txId,
+                        index: input.vout,
+                        witnessUtxo: {
+                            script: input.outputScript,
+                            value: input.value
+                        },
+                        tapInternalKey: toXOnly(Buffer.from(sendingPubkey, "hex"))
+                    };
                 case "p2wpkh":
                     return {
                         hash: input.txId,
