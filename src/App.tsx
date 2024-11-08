@@ -97,12 +97,10 @@ function WrappedApp() {
         if(abortController.current!=null) abortController.current.abort();
         abortController.current = new AbortController();
         try {
+            const useLp = searchParams.get("UNSAFE_LP_URL");
             console.log("init start");
 
-            const options: SolanaSwapperOptions = createSwapperOptions(FEConstants.chain, new BN(50000), /*[
-                "https://161-97-73-23.sslip.io:4000",
-                "https://node3.gethopa.com:14003"
-            ]*/ null, null, {
+            const options: SolanaSwapperOptions = createSwapperOptions(FEConstants.chain, new BN(50000), useLp==null ? null : [useLp], null, {
                 getTimeout: 15000,
                 postTimeout: 30000,
             });
