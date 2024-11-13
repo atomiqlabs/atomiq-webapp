@@ -9,6 +9,7 @@ const bitcoinNetwork = FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet
 const ChainUtils = new MempoolApi(FEConstants.chain === "DEVNET" ?
     "https://mempool.space/testnet/api/" :
     "https://mempool.space/api/");
+const feeMultiplier = 1.25;
 export class BitcoinWallet {
     _sendTransaction(rawHex) {
         return ChainUtils.sendTransaction(rawHex);
@@ -46,7 +47,7 @@ export class BitcoinWallet {
     }
     async _getPsbt(sendingPubkey, sendingAddress, sendingAddressType, address, amount, feeRate) {
         if (feeRate == null)
-            feeRate = (await ChainUtils.getFees()).fastestFee;
+            feeRate = Math.floor((await ChainUtils.getFees()).fastestFee * feeMultiplier);
         const utxoPool = await this._getUtxoPool(sendingAddress, sendingAddressType);
         const targets = [
             {
@@ -131,10 +132,11 @@ export class BitcoinWallet {
             hash: randomBytes(32),
             network: FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
         });
-        let coinselectResult = maxSendable(utxoPool, target.output, "p2wsh", feeRate.fastestFee);
+        const useFeeRate = Math.floor(feeRate.fastestFee * feeMultiplier);
+        let coinselectResult = maxSendable(utxoPool, target.output, "p2wsh", useFeeRate);
         console.log("Max spendable result: ", coinselectResult);
         return {
-            feeRate: feeRate.fastestFee,
+            feeRate: useFeeRate,
             balance: new BN(coinselectResult.value),
             totalFee: coinselectResult.fee
         };
