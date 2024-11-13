@@ -1,11 +1,9 @@
-import {ButtonGroup, Card, ListGroup, Spinner, Table} from "react-bootstrap";
+import {ButtonGroup, Card, ListGroup, Spinner} from "react-bootstrap";
 import * as React from "react";
 import {MutableRefObject, useCallback, useEffect, useRef} from "react";
 import Button from "react-bootstrap/Button";
 
 import { Icon } from "react-icons-kit";
-import {caretUp} from 'react-icons-kit/fa/caretUp';
-import {caretDown} from 'react-icons-kit/fa/caretDown';
 import {angleRight} from 'react-icons-kit/fa/angleRight';
 import {angleLeft} from 'react-icons-kit/fa/angleLeft';
 import {angleDoubleRight} from 'react-icons-kit/fa/angleDoubleRight';

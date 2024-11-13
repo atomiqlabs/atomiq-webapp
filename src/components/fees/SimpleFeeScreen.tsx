@@ -1,14 +1,12 @@
 import {
+    Fee,
     FromBTCSwap,
     ISwap,
-    IToBTCSwap,
-    Swapper,
-    ToBTCSwap
-} from "sollightning-sdk";
+    IToBTCSwap, SwapType,
+    ToBTCSwap, Token, Tokens, toTokenAmount
+} from "@atomiqlabs/sdk";
 import {
-    bitcoinCurrencies, CurrencySpec,
-    getCurrencySpec, getNativeCurrency,
-    toHumanReadable,
+    bitcoinTokenArray,
     toHumanReadableString
 } from "../../utils/Currencies";
 import * as BN from "bn.js";
@@ -19,22 +17,19 @@ import {getFeePct} from "../../utils/Utils";
 import * as React from "react";
 import Icon from "react-icons-kit";
 import {ic_receipt_outline} from 'react-icons-kit/md/ic_receipt_outline';
-import {FEConstants} from "../../FEConstants";
 import {SwapsContext} from "../../context/SwapsContext";
+import {TokenIcon} from "../TokenIcon";
 
 function FeePart(props: {
     bold?: boolean,
     text: string,
-    currency1: CurrencySpec,
-    amount1: BN,
-    currency2?: CurrencySpec,
-    amount2?: BN,
+    fee: Fee,
     usdValue?: number,
     className?: string,
 
     feePPM?: BN,
     feeBase?: BN,
-    feeCurrency?: CurrencySpec,
+    feeCurrency?: Token,
     description?: string
 }) {
 
@@ -67,30 +62,31 @@ function FeePart(props: {
             <span className="ms-auto fw-bold d-flex align-items-center">
                 <OverlayTrigger placement="left" overlay={
                     <Tooltip id={"fee-tooltip-" + props.text} className="font-default">
-                        {props.currency2==null ? (
+                        {props.fee.amountInDstToken==null ? (
                             <span className="ms-auto d-flex align-items-center">
-                                <img src={props.currency1.icon} className="currency-icon-small" style={{marginTop: "-2px"}}/>
-                                <span>{toHumanReadableString(props.amount1, props.currency1)} {props.currency1.ticker}</span>
+                                <TokenIcon tokenOrTicker={props.fee.amountInSrcToken.token} className="currency-icon-small" style={{marginTop: "-2px"}}/>
+                                <span>{props.fee.amountInSrcToken.amount} {props.fee.amountInSrcToken.token.ticker}</span>
                             </span>
                         ) : (
                             <span className="ms-auto text-end">
                                 <span className="d-flex align-items-center justify-content-start">
-                                    <img src={props.currency1.icon} className="currency-icon-small"
-                                         style={{marginTop: "-1px"}}/>
-                                    <span>{toHumanReadableString(props.amount1, props.currency1)} {props.currency1.ticker}</span>
+                                    <TokenIcon tokenOrTicker={props.fee.amountInSrcToken.token}
+                                               className="currency-icon-small" style={{marginTop: "-1px"}}/>
+                                    <span>{props.fee.amountInSrcToken.amount} {props.fee.amountInSrcToken.token.ticker}</span>
                                 </span>
                                 <span className="d-flex align-items-center justify-content-center fw-bold">
                                     =
                                 </span>
                                 <span className="d-flex align-items-center justify-content-start">
-                                    <img src={props.currency2.icon} className="currency-icon-small"/>
-                                    <span>{toHumanReadableString(props.amount2, props.currency2)} {props.currency2.ticker}</span>
+                                    <TokenIcon tokenOrTicker={props.fee.amountInDstToken.token}
+                                               className="currency-icon-small"/>
+                                    <span>{props.fee.amountInDstToken.amount} {props.fee.amountInDstToken.token.ticker}</span>
                                 </span>
                             </span>
                         )}
                     </Tooltip>
                 }>
-                        <span className="text-decoration-dotted font-monospace">${(props.usdValue==null ? 0 : props.usdValue).toFixed(2)}</span>
+                    <span className="text-decoration-dotted font-monospace">${(props.usdValue==null ? 0 : props.usdValue).toFixed(2)}</span>
                 </OverlayTrigger>
             </span>
         </div>
@@ -99,22 +95,19 @@ function FeePart(props: {
 
 type SingleFee = {
     text: string,
-    currency1: CurrencySpec,
-    amount1: BN,
+    fee: Fee,
     usdValue?: number,
-    currency2?: CurrencySpec,
-    amount2?: BN,
     className?: string,
 
     feePPM?: BN,
     feeBase?: BN,
-    feeCurrency?: CurrencySpec,
+    feeCurrency?: Token,
     description?: string
 }
 
 function FeeSummary(props: {
-    srcCurrency: CurrencySpec,
-    dstCurrency: CurrencySpec,
+    srcCurrency: Token,
+    dstCurrency: Token,
     feeBreakdown: SingleFee[],
     swapPrice: number,
     loading?: boolean
@@ -140,10 +133,7 @@ function FeeSummary(props: {
                                 usdValue={e.usdValue}
                                 text={e.text}
                                 description={e.description}
-                                currency1={e.currency1}
-                                currency2={e.currency2}
-                                amount1={e.amount1}
-                                amount2={e.amount2}
+                                fee={e.fee}
                                 feePPM={e.feePPM}
                                 feeBase={e.feeBase}
                                 feeCurrency={e.feeCurrency}
@@ -167,34 +157,39 @@ export function SimpleFeeSummaryScreen(props: {
 
     const [btcTxFee, setBtcTxFee] = useState<SingleFee>();
     const [_btcTxFeeLoading, setBtcTxFeeLoading] = useState<boolean>(false);
-    const btcTxFeeLoading = bitcoinWallet!=null && props.btcFeeRate!=null && props.btcFeeRate!=0 && props.swap!=null && props.swap instanceof FromBTCSwap && _btcTxFeeLoading;
+    const btcTxFeeLoading = bitcoinWallet!=null && props.btcFeeRate!=null && props.btcFeeRate!=0 && props.swap!=null && props.swap.getType()===SwapType.FROM_BTC && _btcTxFeeLoading;
     useEffect(() => {
         if(swapper==null) return;
         setBtcTxFee(null);
-        if(bitcoinWallet==null || props.btcFeeRate==null || props.btcFeeRate==0 || props.swap==null || !(props.swap instanceof FromBTCSwap)) return;
+        if(bitcoinWallet==null || props.btcFeeRate==null || props.btcFeeRate==0 || props.swap==null || props.swap.getType()!==SwapType.FROM_BTC) return;
         const swap = props.swap as FromBTCSwap<any>;
         setBtcTxFeeLoading(true);
         let cancelled = false;
         (async() => {
             try {
-                const [usdcPrice, btcTxFee] = await Promise.all([
-                    swapper.prices.preFetchPrice(FEConstants.usdcToken),
-                    bitcoinWallet.getTransactionFee(swap.address, props.swap.getInAmount(), props.btcFeeRate)
+                const input = props.swap.getInput();
+                const [usdPrice, btcTxFee] = await Promise.all([
+                    swapper.prices.preFetchUsdPrice(),
+                    bitcoinWallet.getTransactionFee(swap.address, input.rawAmount, props.btcFeeRate)
                 ]);
                 if(btcTxFee==null) {
                     if(cancelled) return;
                     setBtcTxFeeLoading(false);
                     return;
                 }
-                const btcTxFeeBN = new BN(btcTxFee);
-                const usdcNetworkFee = await swapper.prices.getFromBtcSwapAmount(btcTxFeeBN, FEConstants.usdcToken, null, usdcPrice);
+                const feeInBtc = toTokenAmount(new BN(btcTxFee), Tokens.BITCOIN.BTC, swapper.prices);
+
+                const btcNetworkFee: Fee = {
+                    amountInSrcToken: feeInBtc,
+                    amountInDstToken: null,
+                    usdValue: feeInBtc.usdValue
+                };
                 if(cancelled) return;
                 setBtcTxFee({
                     text: "Network fee",
                     description: "Bitcoin transaction fee paid to bitcoin miners (this is a fee on top of your specified input amount)",
-                    currency1: bitcoinCurrencies[0],
-                    amount1: btcTxFeeBN,
-                    usdValue: toHumanReadable(usdcNetworkFee, FEConstants.usdcToken).toNumber()
+                    fee: btcNetworkFee,
+                    usdValue: await btcNetworkFee.usdValue(null, usdPrice)
                 });
                 setBtcTxFeeLoading(false);
             } catch (e) {
@@ -212,75 +207,57 @@ export function SimpleFeeSummaryScreen(props: {
     useEffect(() => {
         if(swapper==null) return;
         setScSideFees(null);
-        const inputCurrency = getCurrencySpec(props.swap.getInToken());
-        const outputCurrency = getCurrencySpec(props.swap.getOutToken());
-        const isFromBtc = props.swap.getInToken().chain==="BTC";
-        const btcCurrency = isFromBtc ? inputCurrency : outputCurrency;
 
         const abortController = new AbortController();
         const fees: Promise<SingleFee>[] = [];
-        const usdcPricePromise = swapper.prices.preFetchPrice(FEConstants.usdcToken, abortController.signal);
+        const usdPricePromise = swapper.prices.preFetchUsdPrice(abortController.signal);
 
         const swapFee = props.swap.getSwapFee();
-        const swapFeeBtc = isFromBtc ? swapFee.amountInSrcToken : swapFee.amountInDstToken;
+        const isFromBtc = swapFee.amountInSrcToken.token.chain==="BTC";
+        const btcCurrency = isFromBtc ? swapFee.amountInSrcToken.token : swapFee.amountInDstToken.token;
 
-        fees.push(usdcPricePromise.then(usdcPrice => swapper.prices.getFromBtcSwapAmount(
-            swapFeeBtc, FEConstants.usdcToken, abortController.signal, usdcPrice
-        )).then(swapFeeUsdc => {
+        fees.push(usdPricePromise.then(usdPrice => swapFee.usdValue(abortController.signal, usdPrice)).then(swapFeeUsd => {
             return {
                 text: "Swap fee",
                 feePPM: getFeePct(props.swap, 1),
                 feeBase: props.swap.pricingInfo.satsBaseFee,
                 feeCurrency: btcCurrency,
-                currency1: inputCurrency,
-                amount1: swapFee.amountInSrcToken,
-                currency2: outputCurrency,
-                amount2: swapFee.amountInDstToken,
-                usdValue: toHumanReadable(swapFeeUsdc, FEConstants.usdcToken).toNumber()
+                fee: swapFee,
+                usdValue: swapFeeUsd
             };
         }))
 
-        if(props.swap instanceof IToBTCSwap) {
-            const networkFee = props.swap.getNetworkFee();
+        if(props.swap.getType()===SwapType.TO_BTC || props.swap.getType()===SwapType.FROM_BTCLN) {
+            const networkFee = (props.swap as IToBTCSwap).getNetworkFee();
 
-            fees.push(usdcPricePromise.then(usdcPrice => swapper.prices.getFromBtcSwapAmount(
-                networkFee.amountInDstToken, FEConstants.usdcToken, abortController.signal, usdcPrice
-            )).then(networkFeeUsdc => {
+            fees.push(usdPricePromise.then(usdPrice => networkFee.usdValue(abortController.signal, usdPrice)).then(networkFeeUsd => {
                 return {
                     text: "Network fee",
                     description: props.swap instanceof ToBTCSwap ?
                         "Bitcoin transaction fee paid to bitcoin miners" :
                         "Lightning network fee paid for routing the payment through the network",
-                    currency1: inputCurrency,
-                    amount1: networkFee.amountInSrcToken,
-                    currency2: outputCurrency,
-                    amount2: networkFee.amountInDstToken,
-                    usdValue: toHumanReadable(networkFeeUsdc, FEConstants.usdcToken).toNumber()
+                    fee: networkFee,
+                    usdValue: networkFeeUsd
                 };
             }));
         }
 
-        if(props.swap instanceof FromBTCSwap) {
-            const nativeCurrency = swapper.getNativeCurrency();
-            const claimerBounty = props.swap.getClaimerBounty();
+        if(props.swap.getType()===SwapType.FROM_BTC) {
+            const claimerBounty = (props.swap as FromBTCSwap).getClaimerBounty();
             fees.push(
-                Promise.all([
-                    usdcPricePromise,
-                    swapper.prices.getToBtcSwapAmount(claimerBounty, nativeCurrency, abortController.signal)
-                ])
-                    .then(([usdcPrice, claimerBountyBtc]) =>
-                        swapper.prices.getFromBtcSwapAmount(claimerBountyBtc, FEConstants.usdcToken, abortController.signal, usdcPrice)
-                    )
-                    .then(claimerBountyUsdc => {
-                        return {
-                            text: "Watchtower fee",
-                            description: "Fee paid to swap watchtowers which automatically claim the swap for you as soon as the bitcoin transaction confirms.",
-                            currency1: getNativeCurrency(),
-                            amount1: claimerBounty,
-                            usdValue: toHumanReadable(claimerBountyUsdc, FEConstants.usdcToken).toNumber()
-                        };
-                    })
-            )
+                usdPricePromise.then(usdPrice => claimerBounty.usdValue(abortController.signal, usdPrice)).then(claimerBountyUsd => {
+                    return {
+                        text: "Watchtower fee",
+                        description: "Fee paid to swap watchtowers which automatically claim the swap for you as soon as the bitcoin transaction confirms.",
+                        fee: {
+                            amountInSrcToken: claimerBounty,
+                            amountInDstToken: null,
+                            usdValue: claimerBounty.usdValue
+                        },
+                        usdValue: claimerBountyUsd
+                    };
+                })
+            );
         }
 
         Promise.all(fees).then(fees => {
@@ -297,8 +274,8 @@ export function SimpleFeeSummaryScreen(props: {
     const allFees = (btcTxFee!=null ? [btcTxFee] : []).concat(scSideFees || []);
 
     return (<FeeSummary
-        srcCurrency={getCurrencySpec(props.swap.getInToken())}
-        dstCurrency={getCurrencySpec(props.swap.getOutToken())}
+        srcCurrency={props.swap.getInput().token}
+        dstCurrency={props.swap.getOutput().token}
         swapPrice={props.swap.getSwapPrice()}
         feeBreakdown={allFees}
         loading={scSideFees==null || btcTxFeeLoading}

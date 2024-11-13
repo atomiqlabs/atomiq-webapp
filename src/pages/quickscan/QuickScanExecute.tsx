@@ -1,28 +1,69 @@
 import ValidatedInput, {ValidatedInputRef} from "../../components/ValidatedInput";
 import {CurrencyDropdown} from "../../components/CurrencyDropdown";
+import * as React from "react";
 import {useContext, useEffect, useRef, useState} from "react";
 import {FeeSummaryScreen} from "../../components/fees/FeeSummaryScreen";
 import {Alert, Badge, Button, Form, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
-import {ISwap, LNURLPay, LNURLWithdraw, SolanaSwapper, SwapType, TokenAddress} from "sollightning-sdk";
+import {
+    AbstractSigner,
+    ISwap,
+    LNURLPay,
+    LNURLWithdraw,
+    MultichainSwapBounds,
+    MultichainSwapper,
+    SCToken,
+    SwapType,
+    Tokens
+} from "@atomiqlabs/sdk";
 import BigNumber from "bignumber.js";
 import * as BN from "bn.js";
 import {
-    btcCurrency,
-    CurrencySpec,
-    fromHumanReadable,
-    smartChainCurrencies,
-    toHumanReadable
+    fromHumanReadableString,
+    smartChainTokenArray,
+    toHumanReadable,
+    toHumanReadableString
 } from "../../utils/Currencies";
 import {QuoteSummary} from "../../components/quotes/QuoteSummary";
 import {useLocation, useNavigate} from "react-router-dom";
 import {SwapTopbar} from "../../components/SwapTopbar";
-import * as React from "react";
 import {SwapsContext} from "../../context/SwapsContext";
+import {TokenIcon} from "../../components/TokenIcon";
 
 const balanceExpiryTime = 30000;
 
+function useCachedBalance(swapper: MultichainSwapper) {
+    const balanceCache = useRef<{
+        [chainIdentifier: string]: {
+            [signer: string]: {
+                [tokenAddress: string]: {
+                    balance: BN | void,
+                    timestamp: number
+                }
+            }
+        }
+    }>({});
+
+    const getBalance: (token: SCToken, signer: AbstractSigner) => Promise<BN> = async (token: SCToken, signer: AbstractSigner) => {
+        balanceCache.current[token.chainId] ??= {};
+        const signerCache = balanceCache.current[token.chainId][signer.getAddress()] ??= {};
+        if(
+            signerCache[token.address]==null ||
+            signerCache[token.address].balance==null ||
+            Date.now()-signerCache[token.address].timestamp > balanceExpiryTime
+        ) {
+            signerCache[token.address] = {
+                balance: await swapper.getBalance(token.chainId, signer.getAddress(), token.address).catch(e => console.error(e)),
+                timestamp: Date.now()
+            };
+        }
+        return balanceCache.current[token.chainId][signer.getAddress()][token.address].balance as BN;
+    };
+
+    return {getBalance};
+}
+
 export function QuickScanExecute() {
-    const {swapper} = useContext(SwapsContext);
+    const {swapper, getSigner} = useContext(SwapsContext);
 
     const navigate = useNavigate();
 
@@ -36,7 +77,8 @@ export function QuickScanExecute() {
         max: new BN(state.lnurlParams.max)
     } : null;
 
-    const [selectedCurrency, setSelectedCurrency] = useState<CurrencySpec>(null);
+    const [selectedCurrency, setSelectedCurrency] = useState<SCToken>(null);
+    const signer = getSigner(selectedCurrency);
 
     const [lnurlLoading, setLnurlLoading] = useState<boolean>(false);
     const [addressError, setAddressError] = useState<string>(null);
@@ -44,18 +86,29 @@ export function QuickScanExecute() {
     const [isLnurl, setLnurl] = useState<boolean>(false);
 
     const [amountConstraints, setAmountConstraints] = useState<{
-        [token: string]: {
-            min: BigNumber,
-            max: BigNumber
+        [chainId: string]: {
+            [token: string]: {
+                min: BigNumber,
+                max: BigNumber
+            }
         }
     }>(null);
+    const selectedTokenConstraints = amountConstraints==null ?
+        null : amountConstraints[selectedCurrency.chainId]==null ?
+            null : amountConstraints[selectedCurrency.chainId][selectedCurrency.address]==null ?
+                amountConstraints[""][""] : amountConstraints[selectedCurrency.chainId][selectedCurrency.address];
+    const selectableCurrencies = amountConstraints==null ?
+        smartChainTokenArray :
+        smartChainTokenArray.filter(token => amountConstraints[token.chainId]!=null && amountConstraints[token.chainId][token.address]!=null);
+
     const [amount, setAmount] = useState<string>(null);
     const amountRef = useRef<ValidatedInputRef>();
 
     const [lnurlParams, setLnurlParams] = useState<LNURLWithdraw | LNURLPay>(null);
     const computedLnurlParams = stateLnurlParams || lnurlParams;
-    const [type, setType] = useState<"send" | "receive">("send");
-    const [network, setNetwork] = useState<"ln" | "btc">("ln");
+    const [type, setType] = useState<SwapType>(SwapType.TO_BTCLN);
+    const isSend = type===SwapType.TO_BTC || type===SwapType.TO_BTCLN;
+    const btcToken = type===SwapType.TO_BTC || type===SwapType.FROM_BTC ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
 
     const [quoteLoading, setQuoteLoading] = useState<boolean>(null);
     const [quoteError, setQuoteError] = useState<string>(null);
@@ -63,39 +116,22 @@ export function QuickScanExecute() {
 
     const [isLocked, setLocked] = useState<boolean>(false);
 
-    const balanceCache = useRef<{
-        [tokenAddress: string]: {
-            balance: any | void,
-            timestamp: number
-        }
-    }>({});
-
-    const getBalance: (tokenAddress: TokenAddress) => Promise<BN> = async (tokenAddress: TokenAddress) => {
-        if(balanceCache.current[tokenAddress.toString()]==null || balanceCache.current[tokenAddress.toString()].balance==null || Date.now()-balanceCache.current[tokenAddress.toString()].timestamp>balanceExpiryTime) {
-            balanceCache.current[tokenAddress.toString()] = {
-                balance: await swapper.getBalance(tokenAddress).catch(e => console.error(e)),
-                timestamp: Date.now()
-            };
-        }
-        return balanceCache.current[tokenAddress.toString()].balance as BN;
-    };
+    const {getBalance} = useCachedBalance(swapper);
 
     useEffect(() => {
         const propToken = params.get("token");
+        const propChainId = params.get("chainId");
         console.log("Prop token: ", propToken);
-        if(propToken!=null) {
-            setSelectedCurrency(smartChainCurrencies.find(token => token.ticker===propToken));
+        if(propToken!=null && propChainId!=null) {
+            setSelectedCurrency(Tokens[propChainId][propToken]);
         }
     }, []);
 
     const [autoContinue, setAutoContinue] = useState<boolean>();
 
     useEffect(() => {
-
         const config = window.localStorage.getItem("crossLightning-autoContinue");
-
         setAutoContinue(config==null ? true : config==="true");
-
     }, []);
 
     const setAndSaveAutoContinue = (value: boolean) => {
@@ -113,7 +149,6 @@ export function QuickScanExecute() {
 
         if(swapper!=null) {
 
-            let lightning: boolean = false;
             let resultText: string = propAddress;
             if(resultText.startsWith("lightning:")) {
                 resultText = resultText.substring(10);
@@ -142,26 +177,28 @@ export function QuickScanExecute() {
             setLnurl(false);
             setAddress(resultText);
 
-            const callback = (type: "send" | "receive", network: "btc" | "ln", swapType: SwapType, amount?: BN, min?: BN, max?: BN) => {
-                setType(type);
-                setNetwork(network);
+            const callback = (swapType: SwapType, amount?: BN, min?: BN, max?: BN) => {
+                setType(swapType);
 
-                const bounds = swapper.getSwapBounds()[swapType];
+                const bounds: MultichainSwapBounds = swapper.getSwapBounds()[swapType];
                 let lpsMin: BN;
                 let lpsMax: BN;
-                for(let token in bounds) {
-                    lpsMin==null ? lpsMin = bounds[token].min : lpsMin = BN.min(lpsMin, bounds[token].min);
-                    lpsMax==null ? lpsMax = bounds[token].max : lpsMax = BN.max(lpsMax, bounds[token].max);
+                for(let chainId in bounds) {
+                    const tokenBounds = bounds[chainId];
+                    for(let token in bounds) {
+                        lpsMin==null ? lpsMin = tokenBounds[token].min : lpsMin = BN.min(lpsMin, tokenBounds[token].min);
+                        lpsMax==null ? lpsMax = tokenBounds[token].max : lpsMax = BN.max(lpsMax, tokenBounds[token].max);
+                    }
                 }
 
                 if(amount!=null) {
-                    const amountBN = toHumanReadable(amount, btcCurrency);
+                    const amountBN = toHumanReadable(amount, btcToken);
                     if(amount.lt(lpsMin)) {
-                        setAddressError("Payment amount ("+amountBN.toString(10)+" BTC) is below minimum swappable amount ("+toHumanReadable(lpsMin, btcCurrency).toString(10)+" BTC)");
+                        setAddressError("Payment amount ("+amountBN.toString(10)+" BTC) is below minimum swappable amount ("+toHumanReadableString(lpsMin, btcToken)+" BTC)");
                         return;
                     }
                     if(amount.gt(lpsMax)) {
-                        setAddressError("Payment amount ("+amountBN.toString(10)+" BTC) is above maximum swappable amount ("+toHumanReadable(lpsMax, btcCurrency).toString(10)+" BTC)");
+                        setAddressError("Payment amount ("+amountBN.toString(10)+" BTC) is above maximum swappable amount ("+toHumanReadableString(lpsMax, btcToken)+" BTC)");
                         return;
                     }
                     setAmount(amountBN.toString(10));
@@ -169,11 +206,11 @@ export function QuickScanExecute() {
 
                 if(min!=null && max!=null) {
                     if(min.gt(lpsMax)) {
-                        setAddressError("Minimum payable amount ("+toHumanReadable(min, btcCurrency).toString(10)+" BTC) is above maximum swappable amount ("+toHumanReadable(lpsMax, btcCurrency).toString(10)+" BTC)");
+                        setAddressError("Minimum payable amount ("+toHumanReadableString(min, btcToken)+" BTC) is above maximum swappable amount ("+toHumanReadableString(lpsMax, btcToken)+" BTC)");
                         return;
                     }
                     if(max.lt(lpsMin)) {
-                        setAddressError("Maximum payable amount ("+toHumanReadable(max, btcCurrency).toString(10)+" BTC) is below minimum swappable amount ("+toHumanReadable(lpsMin, btcCurrency).toString(10)+" BTC)");
+                        setAddressError("Maximum payable amount ("+toHumanReadableString(max, btcToken)+" BTC) is below minimum swappable amount ("+toHumanReadableString(lpsMin, btcToken)+" BTC)");
                         return;
                     }
                     for(let token in bounds) {
@@ -187,26 +224,34 @@ export function QuickScanExecute() {
                         bounds[token].min = BN.max(min, bounds[token].min);
                         bounds[token].max = BN.min(max, bounds[token].max);
                     }
-                    setAmount(toHumanReadable(BN.max(min, lpsMin), btcCurrency).toString(10));
+                    setAmount(toHumanReadableString(BN.max(min, lpsMin), btcToken));
                 }
 
                 const boundsBN: {
-                    [token: string]: {
-                        min: BigNumber,
-                        max: BigNumber
+                    [chainIds: string]: {
+                        [token: string]: {
+                            min: BigNumber,
+                            max: BigNumber
+                        }
                     }
                 } = {};
-                for(let token in bounds) {
-                    boundsBN[token] = {
-                        min: toHumanReadable(bounds[token].min, btcCurrency),
-                        max: toHumanReadable(bounds[token].max, btcCurrency)
+                for(let chainId in bounds) {
+                    boundsBN[chainId] = {};
+                    const tokenBounds = bounds[chainId];
+                    for(let token in bounds) {
+                        boundsBN[chainId][token] = {
+                            min: toHumanReadable(tokenBounds[token].min, btcToken),
+                            max: toHumanReadable(tokenBounds[token].max, btcToken)
+                        }
                     }
                 }
 
                 boundsBN[""] = {
-                    min: toHumanReadable(lpsMin, btcCurrency),
-                    max: toHumanReadable(lpsMax, btcCurrency)
-                }
+                    "": {
+                        min: toHumanReadable(lpsMin, btcToken),
+                        max: toHumanReadable(lpsMax, btcToken)
+                    }
+                };
 
                 setAmountConstraints(boundsBN);
             }
@@ -214,21 +259,20 @@ export function QuickScanExecute() {
             if(swapper.isValidBitcoinAddress(resultText)) {
                 //On-chain send
                 let amountSolBN: BN = null;
-                if(_amount!=null) amountSolBN = fromHumanReadable(new BigNumber(_amount), btcCurrency);
-                callback("send", "btc", SwapType.TO_BTC, amountSolBN);
+                if(_amount!=null) amountSolBN = fromHumanReadableString(_amount, btcToken);
+                callback(SwapType.TO_BTC, amountSolBN);
                 return;
             }
             if(swapper.isValidLightningInvoice(resultText)) {
                 //Lightning send
                 const amountSolBN = swapper.getLightningInvoiceValue(resultText);
-                callback("send", "ln", SwapType.TO_BTCLN, amountSolBN);
+                callback(SwapType.TO_BTCLN, amountSolBN);
                 return;
             }
             if(swapper.isValidLNURL(resultText)) {
                 //Check LNURL type
                 setLnurlLoading(true);
                 setLnurl(true);
-                setNetwork("ln");
                 const processLNURL = (result: LNURLWithdraw | LNURLPay, doSetState: boolean) => {
                     console.log(result);
                     setLnurlLoading(false);
@@ -238,10 +282,10 @@ export function QuickScanExecute() {
                     }
                     if(doSetState) setLnurlParams(result);
                     if(result.type==="pay") {
-                        callback("send", "ln", SwapType.TO_BTCLN, null, result.min, result.max);
+                        callback(SwapType.TO_BTCLN, null, result.min, result.max);
                     }
                     if(result.type==="withdraw") {
-                        callback("receive", "ln", SwapType.FROM_BTCLN, null, result.min, result.max);
+                        callback(SwapType.FROM_BTCLN, null, result.min, result.max);
                     }
                 };
                 if(stateLnurlParams!=null) {
@@ -269,58 +313,96 @@ export function QuickScanExecute() {
     const currentQuotation = useRef<Promise<any>>(Promise.resolve());
 
     const getQuote = () => {
-        if(amount!=null && selectedCurrency!=null) {
-            setQuote(null);
-            setQuoteError(null);
-            quoteUpdates.current++;
-            const updateNum = quoteUpdates.current;
-            if(!amountRef.current.validate()) return;
-            const process = () => {
+        if(amount==null || selectedCurrency==null || signer==null) return;
+
+        setQuote(null);
+        setQuoteError(null);
+        quoteUpdates.current++;
+        const updateNum = quoteUpdates.current;
+        if(!amountRef.current.validate()) return;
+        const process = () => {
+            if(quoteUpdates.current!==updateNum) {
+                return;
+            }
+            setQuoteLoading(true);
+
+            let additionalParam: Record<string, any>;
+            const affiliate = window.localStorage.getItem("atomiq-affiliate");
+            if(affiliate!=null) {
+                additionalParam = {
+                    affiliate
+                };
+            }
+
+            let swapPromise: Promise<ISwap>;
+            if(isSend) {
+                if(!btcToken.lightning) {
+                    swapPromise = swapper.createToBTCSwap(
+                        selectedCurrency.chainId,
+                        signer.getAddress(),
+                        selectedCurrency.address,
+                        address,
+                        fromHumanReadableString(amount, btcToken),
+                        null,
+                        null,
+                        null,
+                        additionalParam
+                    );
+                } else {
+                    if(isLnurl) {
+                        swapPromise = swapper.createToBTCLNSwapViaLNURL(
+                            selectedCurrency.chainId,
+                            signer.getAddress(),
+                            selectedCurrency.address,
+                            computedLnurlParams as LNURLPay,
+                            fromHumanReadableString(amount, btcToken),
+                            "", 5*24*60*60,
+                            null,
+                            null,
+                            null,
+                            additionalParam
+                        );
+                    } else {
+                        swapPromise = swapper.createToBTCLNSwap(
+                            selectedCurrency.chainId,
+                            signer.getAddress(),
+                            selectedCurrency.address,
+                            address,
+                            5*24*60*60,
+                            null,
+                            null,
+                            additionalParam
+                        );
+                    }
+                }
+            } else {
+                swapPromise = swapper.createFromBTCLNSwapViaLNURL(
+                    selectedCurrency.chainId,
+                    signer.getAddress(),
+                    selectedCurrency.address,
+                    computedLnurlParams as LNURLWithdraw,
+                    fromHumanReadableString(amount, btcToken),
+                    false,
+                    additionalParam
+                );
+            }
+            const balancePromise = getBalance(selectedCurrency, signer);
+            currentQuotation.current = Promise.all([swapPromise, balancePromise]).then((swapAndBalance) => {
                 if(quoteUpdates.current!==updateNum) {
                     return;
                 }
-                setQuoteLoading(true);
-
-                let additionalParam: Record<string, any>;
-                const affiliate = window.localStorage.getItem("atomiq-affiliate");
-                if(affiliate!=null) {
-                    additionalParam = {
-                        affiliate
-                    };
+                setQuoteLoading(false);
+                setQuote(swapAndBalance);
+            }).catch(e => {
+                if(quoteUpdates.current!==updateNum) {
+                    return;
                 }
+                setQuoteLoading(false);
+                setQuoteError(e.toString());
+            });
+        };
+        currentQuotation.current.then(process, process);
 
-                let swapPromise;
-                if(type==="send") {
-                    if(network==="btc") {
-                        swapPromise = swapper.createToBTCSwap(selectedCurrency.address, address, fromHumanReadable(new BigNumber(amount), btcCurrency), null, null, null, additionalParam);
-                    }
-                    if(network==="ln") {
-                        if(isLnurl) {
-                            swapPromise = swapper.createToBTCLNSwapViaLNURL(selectedCurrency.address, computedLnurlParams as LNURLPay, fromHumanReadable(new BigNumber(amount), btcCurrency), "", 5*24*60*60, null, null, null, additionalParam);
-                        } else {
-                            swapPromise = swapper.createToBTCLNSwap(selectedCurrency.address, address, 5*24*60*60, null, null, additionalParam);
-                        }
-                    }
-                } else {
-                    swapPromise = swapper.createFromBTCLNSwapViaLNURL(selectedCurrency.address, computedLnurlParams as LNURLWithdraw, fromHumanReadable(new BigNumber(amount), btcCurrency), false, additionalParam);
-                }
-                const balancePromise = getBalance(selectedCurrency.address);
-                currentQuotation.current = Promise.all([swapPromise, balancePromise]).then((swapAndBalance) => {
-                    if(quoteUpdates.current!==updateNum) {
-                        return;
-                    }
-                    setQuoteLoading(false);
-                    setQuote(swapAndBalance);
-                }).catch(e => {
-                    if(quoteUpdates.current!==updateNum) {
-                        return;
-                    }
-                    setQuoteLoading(false);
-                    setQuoteError(e.toString());
-                });
-            };
-            currentQuotation.current.then(process, process);
-        }
     };
 
     useEffect(() => {
@@ -332,7 +414,7 @@ export function QuickScanExecute() {
 
     useEffect(() => {
         getQuote();
-    }, [amount, selectedCurrency]);
+    }, [amount, selectedCurrency, signer]);
 
     const goBack = () => {
         navigate("/scan");
@@ -368,21 +450,21 @@ export function QuickScanExecute() {
 
                         {addressError==null && swapper!=null && !lnurlLoading ? (
                             <div className="mt-3 tab-accent-p3 text-center">
-                                <label className="fw-bold mb-1">{type==="send" ? "Pay" : "Withdraw"}</label>
+                                <label className="fw-bold mb-1">{isSend ? "Pay" : "Withdraw"}</label>
 
                                 <ValidatedInput
                                     type={"number"}
                                     textEnd={(
                                         <span className="text-white font-bigger d-flex align-items-center">
-                                            <img src={btcCurrency.icon} className="currency-icon"/>
+                                            <TokenIcon tokenOrTicker={btcToken} className="currency-icon"/>
                                             BTC
                                         </span>
                                     )}
-                                    step={new BigNumber(10).pow(new BigNumber(-btcCurrency.decimals))}
-                                    min={amountConstraints==null ? new BigNumber(0) : amountConstraints[selectedCurrency?.address?.toString() || ""].min}
-                                    max={amountConstraints==null ? null : amountConstraints[selectedCurrency?.address?.toString() || ""].max}
+                                    step={new BigNumber(10).pow(new BigNumber(-btcToken.decimals))}
+                                    min={selectedTokenConstraints?.min ?? new BigNumber(0)}
+                                    max={selectedTokenConstraints?.max}
                                     disabled={
-                                        (amountConstraints!=null && amountConstraints[""].min.eq(amountConstraints[""].max)) ||
+                                        (amountConstraints!=null && amountConstraints[""][""].min.eq(amountConstraints[""][""].max)) ||
                                         isLocked
                                     }
                                     size={"lg"}
@@ -392,10 +474,10 @@ export function QuickScanExecute() {
                                     placeholder={"Input amount"}
                                 />
 
-                                <label className="fw-bold mb-1">{type==="send" ? "with" : "to"}</label>
+                                <label className="fw-bold mb-1">{isSend ? "with" : "to"}</label>
 
                                 <div className="d-flex justify-content-center">
-                                    <CurrencyDropdown currencyList={amountConstraints==null ? smartChainCurrencies : smartChainCurrencies.filter(currency => amountConstraints[currency.address.toString()]!=null)} onSelect={val => {
+                                    <CurrencyDropdown currencyList={selectableCurrencies} onSelect={val => {
                                         if(isLocked) return;
                                         setSelectedCurrency(val);
                                     }} value={selectedCurrency} className="bg-black bg-opacity-10 text-white"/>
@@ -408,7 +490,7 @@ export function QuickScanExecute() {
                                         onChange={(val) => setAndSaveAutoContinue(val.target.checked)}
                                         checked={autoContinue}
                                     />
-                                    <label title="" htmlFor="autoclaim-pay" className="form-check-label me-2">{type==="send" ? "Auto-pay" : "Auto-claim"}</label>
+                                    <label title="" htmlFor="autoclaim-pay" className="form-check-label me-2">{isSend ? "Auto-pay" : "Auto-claim"}</label>
                                     <OverlayTrigger overlay={<Tooltip id="autoclaim-pay-tooltip">
                                         Automatically requests authorization of the transaction through your wallet - as soon as the swap pricing is returned.
                                     </Tooltip>}>

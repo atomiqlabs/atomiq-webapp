@@ -1,12 +1,13 @@
 import {useContext, useEffect, useRef, useState} from "react";
-import {Alert, Button, Card, ProgressBar, Spinner} from "react-bootstrap";
-import {IToBTCSwap, Swapper, SwapType, ToBTCLNSwap, ToBTCSwap, ToBTCSwapState} from "sollightning-sdk";
-import {getCurrencySpec, toHumanReadableString} from "../../../utils/Currencies";
+import {Alert, Button, ProgressBar, Spinner} from "react-bootstrap";
+import {IToBTCSwap, ToBTCLNSwap, ToBTCSwap, ToBTCSwapState} from "@atomiqlabs/sdk";
+import {toHumanReadableString} from "../../../utils/Currencies";
 import * as React from "react";
 import * as bolt11 from "bolt11";
 import * as BN from "bn.js";
 import {FEConstants} from "../../../FEConstants";
 import {SwapsContext} from "../../../context/SwapsContext";
+import {ButtonWithSigner} from "../../ButtonWithSigner";
 
 const SNOWFLAKE_LIST: Set<string> = new Set([
     "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6",
@@ -14,7 +15,7 @@ const SNOWFLAKE_LIST: Set<string> = new Set([
 ]);
 
 export function ToBTCQuoteSummary(props: {
-    quote: IToBTCSwap<any>,
+    quote: IToBTCSwap,
     refreshQuote: () => void,
     setAmountLock: (isLocked: boolean) => void,
     type?: "payment" | "swap",
@@ -22,7 +23,8 @@ export function ToBTCQuoteSummary(props: {
     autoContinue?: boolean,
     notEnoughForGas: boolean
 }) {
-    const {swapper} = useContext(SwapsContext);
+    const {swapper, getSigner} = useContext(SwapsContext);
+    const signer = getSigner(props.quote);
 
     const [quoteTimeRemaining, setQuoteTimeRemaining] = useState<number>();
     const [initialQuoteTimeout, setInitialQuoteTimeout] = useState<number>();
@@ -45,7 +47,7 @@ export function ToBTCQuoteSummary(props: {
         setLoading(true);
         try {
             if(props.setAmountLock) props.setAmountLock(true);
-            await props.quote.commit(null, null, skipChecks);
+            await props.quote.commit(signer, null, null, skipChecks);
             const success = await props.quote.waitForPayment(null, 2);
             if(success) {
                 setSuccess(true);
@@ -69,7 +71,7 @@ export function ToBTCQuoteSummary(props: {
     const onRefund = async () => {
         setRefunding(true);
         try {
-            await props.quote.refund();
+            await props.quote.refund(signer);
             setRefunded(true);
             setError("Deposit refunded successfully");
             if(props.setAmountLock) props.setAmountLock(false);
@@ -107,24 +109,25 @@ export function ToBTCQuoteSummary(props: {
                 setNonCustodialWarning(!confidenceWarning && isNonCustodial);
             }
 
+            if(signer==null) return;
+
             //Check that we have enough funds!
-            const neededToPay = props.quote.getInAmount();
+            const swapInput = props.quote.getInput();
 
             let balancePromise: Promise<BN>;
             if(props.balance!=null) {
                 balancePromise = Promise.resolve(props.balance);
             } else {
-                balancePromise = swapper.getBalance(props.quote.data.getToken());
+                balancePromise = swapper.getBalance(props.quote.chainIdentifier, signer.getAddress(), props.quote.data.getToken());
             }
 
             balancePromise.then(balance => {
                 if(cancelled) return;
-                const hasEnoughBalance = balance.gte(neededToPay);
+                const hasEnoughBalance = balance.gte(swapInput.rawAmount);
 
                 if(!hasEnoughBalance) {
-                    const currency = getCurrencySpec(props.quote.getInToken());
                     setSuccess(false);
-                    setError("You don't have enough funds to initiate the swap, balance: "+toHumanReadableString(balance, currency)+" "+currency.ticker);
+                    setError("You don't have enough funds to initiate the swap, balance: "+toHumanReadableString(balance, swapInput.token)+" "+swapInput.token.ticker);
                     setLoading(false);
                     return;
                 }
@@ -194,10 +197,10 @@ export function ToBTCQuoteSummary(props: {
                         New quote
                     </Button>
                 ) : (
-                    <Button onClick={() => onContinue()} disabled={loading || props.notEnoughForGas} size="lg">
+                    <ButtonWithSigner signer={signer} chainId={props.quote.chainIdentifier} onClick={() => onContinue()} disabled={loading || props.notEnoughForGas} size="lg">
                         {loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                         {props.type==="payment" ? "Pay" : "Swap"}
-                    </Button>
+                    </ButtonWithSigner>
                 )
             ) : (
                 success ? (
@@ -215,10 +218,10 @@ export function ToBTCQuoteSummary(props: {
                             <label>{error}</label>
                         </Alert>
                         {refund ? (
-                            <Button onClick={onRefund} className={refunded ? "d-none" : ""} disabled={refunding} variant="secondary">
+                            <ButtonWithSigner signer={signer} chainId={props.quote.chainIdentifier} onClick={onRefund} className={refunded ? "d-none" : ""} disabled={refunding} variant="secondary">
                                 {refunding ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                                 Refund deposit
-                            </Button>
+                            </ButtonWithSigner>
                         ) : (
                             <Button onClick={props.refreshQuote} variant="secondary">New quote</Button>
                         )}

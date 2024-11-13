@@ -1,10 +1,6 @@
-import {Button, CloseButton, Dropdown, ListGroup, Modal} from "react-bootstrap";
-import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
+import {Button, Dropdown} from "react-bootstrap";
 import * as React from "react";
-import {BitcoinNetworkType, getAddress, getCapabilities} from "sats-connect";
-import {useContext, useEffect, useState} from "react";
-import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
-import {BitcoinWalletType, getInstalledBitcoinWallets} from "../../bitcoin/onchain/BitcoinWalletUtils";
+import {useContext} from "react";
 import {ic_brightness_1} from 'react-icons-kit/md/ic_brightness_1';
 import Icon from "react-icons-kit";
 import {connectWebLN, isWebLNInstalled} from "../../bitcoin/lightning/WebLNUtils";

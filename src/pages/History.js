@@ -1,8 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { SwapTopbar } from "../components/SwapTopbar";
-import { FromBTCSwapState } from "sollightning-sdk/dist";
 import { Alert, Badge, Button, Card, Col, ListGroup, Spinner } from "react-bootstrap";
-import { FromBTCLNSwap, FromBTCSwap, IFromBTCSwap, IToBTCSwap, SwapType } from "sollightning-sdk";
+import { FromBTCSwapState, FromBTCLNSwap, FromBTCSwap, IFromBTCSwap, IToBTCSwap, SwapType } from "@atomiqlabs/sdk";
 import { getCurrencySpec, toHumanReadableString } from "../utils/Currencies";
 import { useContext, useState } from "react";
 import { SwapsContext } from "../context/SwapsContext";

@@ -1,12 +1,11 @@
-import {useContext, useEffect, useRef, useState} from "react";
+import {useContext, useEffect, useMemo, useRef, useState} from "react";
 import {Alert, Badge, Button, Overlay, ProgressBar, Spinner, Tooltip} from "react-bootstrap";
 import {QRCodeSVG} from "qrcode.react";
-import {btcCurrency, toHumanReadableString} from "../../../utils/Currencies";
+import {toHumanReadableString} from "../../../utils/Currencies";
 import ValidatedInput, {ValidatedInputRef} from "../../ValidatedInput";
-import {FromBTCSwap, FromBTCSwapState} from "sollightning-sdk";
+import {FromBTCSwap, FromBTCSwapState, Tokens} from "@atomiqlabs/sdk";
 import Icon from "react-icons-kit";
 import {clipboard} from "react-icons-kit/fa/clipboard";
-import {LNNFCReader} from "../../../lnnfc/LNNFCReader";
 import * as React from "react";
 import {useLocation} from "react-router-dom";
 import {useNavigate} from "react-router-dom";
@@ -15,6 +14,8 @@ import * as BN from "bn.js";
 import {externalLink} from 'react-icons-kit/fa/externalLink';
 import {elementInViewport, getDeltaText, getDeltaTextHours} from "../../../utils/Utils";
 import {FEConstants} from "../../../FEConstants";
+import {SwapsContext} from "../../../context/SwapsContext";
+import {ButtonWithSigner} from "../../ButtonWithSigner";
 
 export function FromBTCQuoteSummary(props: {
     quote: FromBTCSwap<any>,
@@ -26,6 +27,9 @@ export function FromBTCQuoteSummary(props: {
     feeRate?: number,
     balance?: BN
 }) {
+    const {getSigner} = useContext(SwapsContext);
+    const signer = getSigner(props.quote);
+
     const {bitcoinWallet, setBitcoinWallet} = useContext(BitcoinWalletContext);
     const [bitcoinError, setBitcoinError] = useState<string>(null);
     const [sendTransactionLoading, setSendTransactionLoading] = useState<boolean>(false);
@@ -77,7 +81,7 @@ export function FromBTCQuoteSummary(props: {
         setSendTransactionLoading(true);
         txLoading.current = true;
         setBitcoinError(null);
-        bitcoinWallet.sendTransaction(props.quote.getBitcoinAddress(), props.quote.getInAmount(), props.feeRate!=null && props.feeRate!==0 ? props.feeRate : null).then(txId => {
+        bitcoinWallet.sendTransaction(props.quote.getBitcoinAddress(), props.quote.getInput().rawAmount, props.feeRate!=null && props.feeRate!==0 ? props.feeRate : null).then(txId => {
             setSendTransactionLoading(false);
             txLoading.current = false;
             setTransactionSent(txId);
@@ -192,7 +196,7 @@ export function FromBTCQuoteSummary(props: {
         setLoading(true);
         try {
             if(props.setAmountLock) props.setAmountLock(true);
-            await props.quote.commit();
+            await props.quote.commit(signer);
         } catch (e) {
             console.error(e);
             if(props.setAmountLock) props.setAmountLock(false);
@@ -206,7 +210,7 @@ export function FromBTCQuoteSummary(props: {
     const onClaim = async () => {
         setLoading(true);
         try {
-            await props.quote.claim();
+            await props.quote.claim(signer);
             setLoading(false);
             setSuccess(true);
         } catch (e) {
@@ -277,7 +281,10 @@ export function FromBTCQuoteSummary(props: {
         setShowCopyOverlay(num);
     };
 
-    const hasEnoughBalance = props.balance==null || props.quote==null ? true : props.balance.gte(props.quote.getInAmount());
+    const hasEnoughBalance = useMemo(
+        () => props.balance==null || props.quote==null ? true : props.balance.gte(props.quote.getInput().rawAmount),
+        [props.balance, props.quote]
+    );
 
     //TODO: Add subtitle to the button: "Create bitcoin swap address"
     return (
@@ -295,7 +302,8 @@ export function FromBTCQuoteSummary(props: {
                 <Button className="mt-2" variant="secondary" onClick={() => {
                     navigate("/gas", {
                         state: {
-                            returnPath: location.pathname+location.search
+                            returnPath: location.pathname+location.search,
+                            chainId: props.quote.chainIdentifier
                         }
                     });
                 }}>Swap for gas</Button>
@@ -316,10 +324,10 @@ export function FromBTCQuoteSummary(props: {
                             New quote
                         </Button>
                     ) : (
-                        <Button onClick={onCommit} disabled={loading || props.notEnoughForGas || !hasEnoughBalance} size="lg" className="d-flex flex-row">
+                        <ButtonWithSigner signer={signer} chainId={props.quote.chainIdentifier} onClick={onCommit} disabled={loading || props.notEnoughForGas || !hasEnoughBalance} size="lg" className="d-flex flex-row">
                             {loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                             Initiate swap
-                        </Button>
+                        </ButtonWithSigner>
                     )}
                 </>
             ) : ""}
@@ -378,7 +386,7 @@ export function FromBTCQuoteSummary(props: {
                                             }}
                                         />
                                     </div>
-                                    <label>Please send exactly <strong>{toHumanReadableString(props.quote.getInAmount(), btcCurrency)}</strong> {btcCurrency.ticker} to the address</label>
+                                    <label>Please send exactly <strong>{props.quote.getInput().amount}</strong> {Tokens.BITCOIN.BTC.ticker} to the address</label>
                                     <ValidatedInput
                                         type={"text"}
                                         value={props.quote.getBitcoinAddress()}
@@ -441,10 +449,10 @@ export function FromBTCQuoteSummary(props: {
                         <label>Transaction received & confirmed</label>
                     </div>
 
-                    <Button onClick={onClaim} disabled={loading} size="lg">
+                    <ButtonWithSigner signer={signer} chainId={props.quote.chainIdentifier} onClick={onClaim} disabled={loading} size="lg">
                         {loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                         Finish swap (claim funds)
-                    </Button>
+                    </ButtonWithSigner>
                 </>
             ) : ""}
 

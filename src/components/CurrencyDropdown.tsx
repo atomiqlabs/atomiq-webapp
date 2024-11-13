@@ -1,4 +1,4 @@
-import {Dropdown, DropdownButton} from "react-bootstrap";
+import {Dropdown} from "react-bootstrap";
 import * as React from "react";
 import {CurrencySpec} from "../utils/Currencies";
 
@@ -8,7 +8,6 @@ export function CurrencyDropdown(props: {
     value: CurrencySpec,
     className?: string
 }) {
-
 
     return (
         <Dropdown>

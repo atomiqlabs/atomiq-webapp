@@ -5,23 +5,20 @@ import {
     ISwap,
     IToBTCSwap,
     LNURLPay,
-    LNURLWithdraw,
-    SolanaSwapper,
+    LNURLWithdraw, MultichainTokenBounds, SCToken,
     Swapper,
     SwapType, ToBTCLNSwap,
     ToBTCSwap,
-    ToBTCSwapState, TokenBounds
-} from "sollightning-sdk";
-import {Accordion, Alert, Badge, Button, Card, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
+    ToBTCSwapState, Token, TokenBounds, Tokens
+} from "@atomiqlabs/sdk";
+import {Alert, Button, Card, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
 import {MutableRefObject, useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
 import ValidatedInput, {ValidatedInputRef} from "../components/ValidatedInput";
 import BigNumber from "bignumber.js";
 import * as React from "react";
 import {
-    bitcoinCurrencies,
-    btcCurrency,
-    CurrencySpec,
-    fromHumanReadableString, getCurrencySpec, smartChainCurrencies,
+    bitcoinTokenArray,
+    fromHumanReadableString, smartChainTokenArray,
     toHumanReadable, toHumanReadableString
 } from "../utils/Currencies";
 import {CurrencyDropdown} from "../components/CurrencyDropdown";
@@ -66,8 +63,8 @@ function isCreated(swap: ISwap) {
     return false;
 }
 
-function usePricing(swapper: Swapper<any, any, any, any>, _amount: string, currency: CurrencySpec): BigNumber {
-    const [value, setValue] = useState<BigNumber>();
+function usePricing(swapper: Swapper<any>, _amount: string, currency: Token): number {
+    const [value, setValue] = useState<number>();
 
     const pricing = useRef<{
         updates: number,
@@ -95,20 +92,12 @@ function usePricing(swapper: Swapper<any, any, any, any>, _amount: string, curre
 
         const process = () => {
             pricing.current.promise = (async () => {
-                if(currency.ticker==="USDC") {
-                    return amount;
-                }
-                const usdcPrice = swapper.prices.preFetchPrice(FEConstants.usdcToken);
-                let btcAmount = amount;
-                if(currency.ticker!=="BTC" && currency.ticker!=="BTC-LN") {
-                    btcAmount = await swapper.prices.getToBtcSwapAmount(amount, currency.address);
-                }
-                return await swapper.prices.getFromBtcSwapAmount(btcAmount, FEConstants.usdcToken, null, await usdcPrice);
+                return await swapper.prices.getUsdValue(amount, currency);
             })().then(value => {
                 if(pricing.current.updates!==updateNum) {
                     return;
                 }
-                setValue(toHumanReadable(value, FEConstants.usdcToken));
+                setValue(value);
             });
         };
 
@@ -118,22 +107,22 @@ function usePricing(swapper: Swapper<any, any, any, any>, _amount: string, curre
     return value;
 }
 
-function useConstraints(swapper: Swapper<any, any, any, any>, address: string, exactIn: boolean, inCurrency: CurrencySpec, outCurrency: CurrencySpec): {
+function useConstraints(swapper: Swapper<any>, address: string, exactIn: boolean, inCurrency: Token, outCurrency: Token): {
     inConstraints: {min: BigNumber, max: BigNumber},
     outConstraints: {min: BigNumber, max: BigNumber},
-    updateTokenConstraints: (currency: CurrencySpec, data: {min: BN, max: BN}) => void,
-    updateAddressConstraints: (currency: CurrencySpec, address: string, data: {min: BN, max: BN}) => void
+    updateTokenConstraints: (swapType: SwapType, currency: SCToken, data: {min: BN, max: BN}) => void,
+    updateAddressConstraints: (currency: SCToken, address: string, data: {min: BN, max: BN}) => void
 } {
 
     const [addressConstraintsOverride, setAddressConstraintsOverride] = useState<{
-        currency: CurrencySpec,
+        currency: SCToken,
         address: string,
         data: {
             min: BigNumber,
             max: BigNumber
         }
     }>();
-    const updateAddressConstraints = (currency: CurrencySpec, address: string, data: {min: BN, max: BN}) => {
+    const updateAddressConstraints = (currency: SCToken, address: string, data: {min: BN, max: BN}) => {
         setAddressConstraintsOverride({
             currency,
             address,
@@ -167,9 +156,11 @@ function useConstraints(swapper: Swapper<any, any, any, any>, address: string, e
 
     const btcAmountConstraints = useMemo<{
         [key in SwapType]?: {
-            [token: string]: {
-                min: BigNumber,
-                max: BigNumber
+            [chainId: string]: {
+                [token: string]: {
+                    min: BigNumber,
+                    max: BigNumber
+                }
             }
         }
     }>(() => {
@@ -179,23 +170,28 @@ function useConstraints(swapper: Swapper<any, any, any, any>, address: string, e
 
         const constraints: {
             [key in SwapType]?: {
-                [token: string]: {
-                    min: BigNumber,
-                    max: BigNumber
+                [chainId: string]: {
+                    [token: string]: {
+                        min: BigNumber,
+                        max: BigNumber
+                    }
                 }
             }
         } = {};
 
         const bounds = swapper.getSwapBounds();
-
         for(let swapType in bounds) {
-            const tokenBounds: TokenBounds = bounds[swapType];
             constraints[swapType] = {};
-            for(let token in tokenBounds) {
-                constraints[swapType][token] = {
-                    min: toHumanReadable(tokenBounds[token].min, btcCurrency),
-                    max: toHumanReadable(tokenBounds[token].max, btcCurrency)
-                };
+            const chainBounds: MultichainTokenBounds = bounds[swapType];
+            for(let chainId in chainBounds) {
+                constraints[swapType][chainId] = {};
+                const tokenBounds: TokenBounds = chainBounds[chainId];
+                for(let token in tokenBounds) {
+                    constraints[swapType][chainId][token] = {
+                        min: toHumanReadable(tokenBounds[token].min, Tokens.BITCOIN.BTC),
+                        max: toHumanReadable(tokenBounds[token].max, Tokens.BITCOIN.BTC)
+                    };
+                }
             }
         }
 
@@ -204,46 +200,45 @@ function useConstraints(swapper: Swapper<any, any, any, any>, address: string, e
         return constraints;
     }, [swapper, lpsUpdateCount]);
 
-    const [tokenConstraints, setTokenConstraints] = useState<{
-        [token: string] : {
-            [key: number]: {
-                min: BigNumber,
-                max: BigNumber
-            }
-        }
-    }>();
-    const updateTokenConstraints = (currency: CurrencySpec, data: {min: BN, max: BN}) => {
-        setTokenConstraints(val => {
-            if(val==null) val = {};
-            if(val[currency.address.toString()]==null) val[currency.address.toString()] = {};
-            val[currency.address.toString()][swapType] = {
-                min: toHumanReadable(data.min, currency),
-                max: toHumanReadable(data.max, currency)
-            };
-            console.log(val);
-            return val;
-        });
-    };
-
     let swapType: SwapType;
     if(outCurrency?.ticker==="BTC") swapType = SwapType.TO_BTC;
     if(outCurrency?.ticker==="BTC-LN") swapType = SwapType.TO_BTCLN;
     if(inCurrency?.ticker==="BTC") swapType = SwapType.FROM_BTC;
     if(inCurrency?.ticker==="BTC-LN") swapType = SwapType.FROM_BTCLN;
 
-    let kind: "frombtc" | "tobtc";
-    if(swapType===SwapType.TO_BTC || swapType===SwapType.TO_BTCLN) {
-        kind = "tobtc";
-    } else {
-        kind = "frombtc";
-    }
+    const [tokenConstraints, setTokenConstraints] = useState<{
+        [key in SwapType]?: {
+            [chainId: string]: {
+                [token: string]: {
+                    min: BigNumber,
+                    max: BigNumber
+                }
+            }
+        }
+    }>();
+    const updateTokenConstraints = (swapType: SwapType, currency: SCToken, data: {min: BN, max: BN}) => {
+        setTokenConstraints(val => {
+            val ??= {};
+            val[swapType] ??= {};
+            val[swapType][currency.chainId] ??= {};
+            val[swapType][currency.chainId][currency.address] ??= {
+                min: toHumanReadable(data.min, currency),
+                max: toHumanReadable(data.max, currency)
+            };
+            return val;
+        });
+    };
+
+    let isSend: boolean = swapType===SwapType.TO_BTC || swapType===SwapType.TO_BTCLN;
 
     let inConstraints: {min: BigNumber, max: BigNumber};
     let outConstraints: {min: BigNumber, max: BigNumber};
     if(exactIn) {
         outConstraints = defaultConstraints;
-        if(kind==="frombtc") {
-            inConstraints = btcAmountConstraints==null || btcAmountConstraints[swapType]==null ? defaultConstraints : (btcAmountConstraints[swapType][outCurrency.address.toString()] || defaultConstraints);
+        if(!isSend) {
+            inConstraints = btcAmountConstraints==null || btcAmountConstraints[swapType]==null
+                ? defaultConstraints :
+                (btcAmountConstraints[swapType][outCurrency.address.toString()] || defaultConstraints);
         } else {
             const constraint = tokenConstraints==null ? null : tokenConstraints[inCurrency.address.toString()];
             if(constraint!=null) {
@@ -254,7 +249,7 @@ function useConstraints(swapper: Swapper<any, any, any, any>, address: string, e
         }
     } else { //exact out
         inConstraints = defaultConstraints;
-        if(kind==="frombtc") {
+        if(!isSend) {
             const constraint = tokenConstraints==null ? null : tokenConstraints[outCurrency.address.toString()];
             if(constraint!=null) {
                 outConstraints = constraint[swapType] || defaultConstraints;
@@ -281,7 +276,7 @@ function useConstraints(swapper: Swapper<any, any, any, any>, address: string, e
 }
 
 function useQuote(
-    swapper: Swapper<any, any, any ,any>,
+    swapper: Swapper<any>,
     address: string,
     amount: string,
     inCurrency: CurrencySpec,
@@ -423,24 +418,29 @@ function useQuote(
             }
 
             let promise: Promise<ISwap>;
+            let swapType: SwapType;
             let tokenCurrency: CurrencySpec;
             let quoteCurrency: CurrencySpec;
             if(inCurrency?.ticker==="BTC") {
+                swapType = SwapType.FROM_BTC;
                 tokenCurrency = outCurrency;
                 quoteCurrency = exactIn ? inCurrency : outCurrency;
                 promise = swapper.createFromBTCSwap(outCurrency.address, fromHumanReadableString(amount, quoteCurrency), !exactIn, additionalParam);
             }
             if(inCurrency?.ticker==="BTC-LN") {
+                swapType = SwapType.FROM_BTCLN;
                 tokenCurrency = outCurrency;
                 quoteCurrency = exactIn ? inCurrency : outCurrency;
                 promise = swapper.createFromBTCLNSwap(outCurrency.address, fromHumanReadableString(amount, quoteCurrency), !exactIn, null, additionalParam);
             }
             if(outCurrency?.ticker==="BTC") {
+                swapType = SwapType.TO_BTC;
                 tokenCurrency = inCurrency;
                 quoteCurrency = exactIn ? inCurrency : outCurrency;
                 promise = swapper.createToBTCSwap(inCurrency.address, useAddress, fromHumanReadableString(amount, quoteCurrency), null, null, exactIn, additionalParam);
             }
             if(outCurrency?.ticker==="BTC-LN") {
+                swapType = SwapType.TO_BTCLN;
                 tokenCurrency = inCurrency;
                 quoteCurrency = outCurrency;
                 if(dataLNURL!=null) {
@@ -460,7 +460,7 @@ function useQuote(
                 let doSetError = true;
                 if(e.min!=null && e.max!=null) {
                     if(tokenCurrency===quoteCurrency) {
-                        updateTokenConstraints(tokenCurrency, e);
+                        updateTokenConstraints(swapType, tokenCurrency, e);
                         doSetError = false;
                     }
                 }
@@ -605,7 +605,7 @@ export function Swap(props: {
 
     const [locked, setLocked] = useState<boolean>(false);
     const [inCurrency, setInCurrency] = useState<CurrencySpec>(btcCurrency);
-    const [outCurrency, setOutCurrency] = useState<CurrencySpec>(smartChainCurrencies[0]);
+    const [outCurrency, setOutCurrency] = useState<CurrencySpec>(smartChainTokenArray[0]);
     const [amount, setAmount] = useState<string>("");
     const [exactIn, setExactIn] = useState<boolean>(true);
     const [address, _setAddress] = useState<string>();
@@ -615,15 +615,15 @@ export function Swap(props: {
     const setAddress = (val: string) => {
         _setAddress(val);
         if(swapper.isValidLNURL(val)) {
-            setOutCurrency(bitcoinCurrencies[1]);
+            setOutCurrency(bitcoinTokenArray[1]);
             return;
         }
         if(swapper.isValidBitcoinAddress(val)) {
-            setOutCurrency(bitcoinCurrencies[0]);
+            setOutCurrency(bitcoinTokenArray[0]);
             return;
         }
         if(swapper.isValidLightningInvoice(val)) {
-            setOutCurrency(bitcoinCurrencies[1]);
+            setOutCurrency(bitcoinTokenArray[1]);
             const outAmt = swapper.getLightningInvoiceValue(val);
             setAmount(toHumanReadableString(outAmt, btcCurrency));
             setExactIn(false);
@@ -879,7 +879,7 @@ export function Swap(props: {
                                 return null;
                             }}
                             elementEnd={(
-                                <CurrencyDropdown currencyList={kind==="frombtc" ? bitcoinCurrencies : allowedSCTokens} onSelect={val => {
+                                <CurrencyDropdown currencyList={kind==="frombtc" ? bitcoinTokenArray : allowedSCTokens} onSelect={val => {
                                     if(locked) return;
                                     setInCurrency(val);
                                 }} value={inCurrency} className="round-right text-white bg-black bg-opacity-10"/>
@@ -934,7 +934,7 @@ export function Swap(props: {
                                     return null;
                                 }}
                                 elementEnd={(
-                                    <CurrencyDropdown currencyList={kind==="tobtc" ? bitcoinCurrencies : allowedSCTokens} onSelect={(val) => {
+                                    <CurrencyDropdown currencyList={kind==="tobtc" ? bitcoinTokenArray : allowedSCTokens} onSelect={(val) => {
                                         if(locked) return;
                                         setOutCurrency(val);
                                         if(kind==="tobtc" && val!==outCurrency) {
@@ -948,7 +948,7 @@ export function Swap(props: {
                             <>
                                 <ValidatedInput
                                     type={"text"}
-                                    className={"flex-fill mt-3 "+(lnWallet!=null && outCurrency===bitcoinCurrencies[1] && (address==null || address==="") ? "d-none" : "")}
+                                    className={"flex-fill mt-3 "+(lnWallet!=null && outCurrency===bitcoinTokenArray[1] && (address==null || address==="") ? "d-none" : "")}
                                     value={address}
                                     onChange={(val) => {
                                         setAddress(val);
@@ -957,11 +957,11 @@ export function Swap(props: {
                                     placeholder={"Paste Bitcoin/Lightning address"}
                                     onValidate={addressValidator}
                                     validated={quoteAddressError?.error}
-                                    disabled={locked || (lnWallet!=null && outCurrency===bitcoinCurrencies[1])}
+                                    disabled={locked || (lnWallet!=null && outCurrency===bitcoinTokenArray[1])}
                                     textStart={quoteAddressLoading ? (
                                         <Spinner size="sm" className="text-white"/>
                                     ) : null}
-                                    textEnd={lnWallet!=null && outCurrency===bitcoinCurrencies[1] ? null : (
+                                    textEnd={lnWallet!=null && outCurrency===bitcoinTokenArray[1] ? null : (
                                         <OverlayTrigger
                                             placement="top"
                                             overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
@@ -976,7 +976,7 @@ export function Swap(props: {
                                     )}
                                     successFeedback={bitcoinWallet!=null && address===bitcoinWallet.getReceiveAddress() ? "Address fetched from your "+bitcoinWallet.getName()+" wallet!" : null}
                                 />
-                                {lnWallet!=null && outCurrency===bitcoinCurrencies[1] ? (
+                                {lnWallet!=null && outCurrency===bitcoinTokenArray[1] ? (
                                     <>
                                         {address==null || address==="" ? (
                                             <div className="mt-2">
@@ -990,7 +990,7 @@ export function Swap(props: {
                                         ) : ""}
                                     </>
                                 ) : ""}
-                                {lnWallet==null && outCurrency===bitcoinCurrencies[1] && !swapper.isValidLightningInvoice(address) && !swapper.isValidLNURL(address) ? (
+                                {lnWallet==null && outCurrency===bitcoinTokenArray[1] && !swapper.isValidLightningInvoice(address) && !swapper.isValidLNURL(address) ? (
                                     <Alert variant={"success"} className="mt-3 mb-0 text-center">
                                         <label>Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount.</label>
                                     </Alert>

@@ -4,19 +4,19 @@ import {useNavigate} from "react-router-dom";
 import {SwapTopbar} from "../../components/SwapTopbar";
 import * as React from "react";
 import {useEffect, useRef, useState} from "react";
-import {CurrencySpec, smartChainCurrencies} from "../../utils/Currencies";
+import {smartChainTokenArray} from "../../utils/Currencies";
 import {CurrencyDropdown} from "../../components/CurrencyDropdown";
 import Icon from "react-icons-kit";
 import {ic_contactless} from 'react-icons-kit/md/ic_contactless';
-import {ic_disabled_by_default} from 'react-icons-kit/md/ic_disabled_by_default';
 import {LNNFCReader, LNNFCStartResult} from "../../lnnfc/LNNFCReader";
+import {SCToken} from "@atomiqlabs/sdk";
 
 export function QuickScan(props: {
     onScanned?: (data: string) => void
 }) {
     const navigate = useNavigate();
 
-    const [selectedCurrency, setSelectedCurrency] = useState<CurrencySpec>(null);
+    const [selectedCurrency, setSelectedCurrency] = useState<SCToken>(null);
     const [NFCScanning, setNFCScanning] = useState<LNNFCStartResult>(null);
 
     const nfcScannerRef = useRef<LNNFCReader>(null);
@@ -73,7 +73,9 @@ export function QuickScan(props: {
                             } else {
                                 console.log("selected currency: ", selectedCurrency);
                                 navigate("/scan/2?address="+encodeURIComponent(result)+(
-                                    selectedCurrency==null ? "" : "&token="+encodeURIComponent(selectedCurrency.ticker)
+                                    selectedCurrency==null ?
+                                        "" :
+                                        "&token="+encodeURIComponent(selectedCurrency.ticker)+"&chainId="+encodeURIComponent(selectedCurrency.chainId)
                                 ));
                             }
                         }
@@ -101,7 +103,7 @@ export function QuickScan(props: {
                         <div className={"mx-auto "+(NFCScanning===LNNFCStartResult.OK ? "" : "mb-5")}>
                             <div className="text-white p-3 position-relative">
                                 <label>Pay with</label>
-                                <CurrencyDropdown currencyList={smartChainCurrencies} onSelect={val => {
+                                <CurrencyDropdown currencyList={smartChainTokenArray} onSelect={val => {
                                     setSelectedCurrency(val);
                                 }} value={selectedCurrency} className="bg-dark bg-opacity-25 text-white"/>
                             </div>

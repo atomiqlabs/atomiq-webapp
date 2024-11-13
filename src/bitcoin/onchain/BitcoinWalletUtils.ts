@@ -1,6 +1,4 @@
-import {BitcoinNetworkType, getCapabilities} from "sats-connect";
 import {PhantomBitcoinWallet} from "./wallets/PhantomBitcoinWallet";
-import {SatsConnectBitcoinWallet} from "./wallets/SatsConnectBitcoinWallet";
 import {BitcoinWallet} from "./BitcoinWallet";
 import {XverseBitcoinWallet} from "./wallets/XverseBitcoinWallet";
 import {MagicEdenBitcoinWallet} from "./wallets/MagicEdenBitcoinWallet";

@@ -1,18 +1,25 @@
 import './App.css';
 import * as React from "react";
+import {useCallback, useEffect, useRef} from "react";
 import SolanaWalletProvider from "./context/SolanaWalletProvider";
-//import WrappedApp from "./WrappedApp";
 import {QuickScan} from "./pages/quickscan/QuickScan";
 import {QuickScanExecute} from "./pages/quickscan/QuickScanExecute";
 import {useAnchorWallet, useConnection} from '@solana/wallet-adapter-react';
-import {createSwapperOptions, SolanaSwapper, SolanaSwapperOptions} from "sollightning-sdk/dist";
 import {AnchorProvider} from "@coral-xyz/anchor";
 import {FEConstants} from "./FEConstants";
 import {Swap} from "./pages/Swap";
-import {smartChainCurrencies} from "./utils/Currencies";
+import {smartChainTokenArray} from "./utils/Currencies";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {SwapsContext} from "./context/SwapsContext";
-import {ISwap, SolanaFees} from "sollightning-sdk";
+import {
+    AbstractSigner,
+    BitcoinNetwork, isSCToken,
+    ISwap,
+    MultichainSwapper,
+    SCToken,
+    SolanaFees,
+    SolanaSigner
+} from "@atomiqlabs/sdk";
 import {History} from "./pages/History";
 import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
 import {
@@ -42,7 +49,6 @@ import {LNNFCReader, LNNFCStartResult} from './lnnfc/LNNFCReader';
 import {ic_contactless} from 'react-icons-kit/md/ic_contactless';
 import {SwapForGas} from "./pages/SwapForGas";
 import {SwapExplorer} from "./pages/SwapExplorer";
-import {ic_explore} from 'react-icons-kit/md/ic_explore';
 import {Affiliate} from "./pages/Affiliate";
 import {gift} from 'react-icons-kit/fa/gift';
 import {BitcoinWallet} from './bitcoin/onchain/BitcoinWallet';
@@ -50,29 +56,35 @@ import {BitcoinWalletContext} from './context/BitcoinWalletContext';
 import {WebLNProvider} from "webln";
 import {WebLNContext} from './context/WebLNContext';
 import {heart} from 'react-icons-kit/fa/heart';
-import {useCallback, useRef} from "react";
+import {Connection} from "@solana/web3.js";
+import {sign} from "node:crypto";
 
 require('@solana/wallet-adapter-react-ui/styles.css');
-
-// export type BtcConnectionState = {
-//     declined: boolean,
-//     address: string,
-//     getBalance?: () => Promise<BN>,
-//     sendTransaction?: (address: string, amount: BN) => Promise<void>
-// };
 
 const noWalletPaths = new Set(["/about", "/faq", "/map", "/46jh456f45f"]);
 const jitoPubkey = "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL";
 const jitoEndpoint = "https://mainnet.block-engine.jito.wtf/api/v1/transactions";
 
 function WrappedApp() {
-    const wallet: any = useAnchorWallet();
+
+    const [signers, setSigners] = React.useState<{
+        [chainId: string]: {
+            signer: AbstractSigner,
+            random: boolean
+        }
+    }>({});
+    const solanaWallet = useAnchorWallet();
+    useEffect(() => {
+        setSigners((prevValue) => {
+            return {...prevValue,SOLANA: {signer: new SolanaSigner(solanaWallet), random: false}};
+        });
+    }, [solanaWallet]);
+
     const {connection} = useConnection();
-    const [provider, setProvider] = React.useState<AnchorProvider>();
-    const [swapper, setSwapper] = React.useState<SolanaSwapper>();
+
+    const [swapper, setSwapper] = React.useState<MultichainSwapper>();
     const [swapperLoadingError, setSwapperLoadingError] = React.useState<string>();
     const [swapperLoading, setSwapperLoading] = React.useState<boolean>(false);
-    const [actionableSwaps, setActionableSwaps] = React.useState<ISwap<any>[]>([]);
 
     // @ts-ignore
     const pathName = window.location.pathname.split("?")[0];
@@ -86,12 +98,13 @@ function WrappedApp() {
 
     const swapListener = useCallback((swap: ISwap) => {
         if(swap.isFinished()) {
-            setActionableSwaps((val: ISwap[]) => val.filter(e => e!==swap));
+            //TODO: Change this to support multiple signers
+            // setActionableSwaps((val: ISwap[]) => val.filter(e => e!==swap));
         }
     }, []);
     const abortController = useRef<AbortController>();
 
-    const loadSwapper: (_provider: AnchorProvider) => Promise<SolanaSwapper> = async(_provider: AnchorProvider) => {
+    const loadSwapper: () => Promise<MultichainSwapper> = async() => {
         setSwapperLoadingError(null);
         setSwapperLoading(true);
         if(abortController.current!=null) abortController.current.abort();
@@ -100,41 +113,46 @@ function WrappedApp() {
             const useLp = searchParams.get("UNSAFE_LP_URL");
             console.log("init start");
 
-            const options: SolanaSwapperOptions = createSwapperOptions(FEConstants.chain, new BN(50000), useLp==null ? null : [useLp], null, {
-                getTimeout: 15000,
-                postTimeout: 30000,
-            });
-            options.retryPolicy = {
-                transactionResendInterval: 3000
-            };
-            options.feeEstimator = new SolanaFees(_provider.connection as any, 250000, 2, 100, "auto", () => new BN(25000)/*, {
+            // const connection = new Connection(FEConstants.rpcUrl);
+
+            const solanaFees = new SolanaFees(connection, 250000, 2, 100, "auto", () => new BN(25000)/*, {
                 address: jitoPubkey,
                 endpoint: jitoEndpoint,
                 getStaticFee:() => new BN(250000)
             }*/);
-            // options.defaultTrusted   IntermediaryUrl = "http://localhost:24521";
 
-            //console.log("Created swapper options: ", options);
-
-            const swapper = new SolanaSwapper(_provider, options);
+            const swapper = new MultichainSwapper({
+                chains: {
+                    SOLANA: {
+                        rpcUrl: connection,
+                        retryPolicy: {
+                            transactionResendInterval: 3000
+                        },
+                        fees: solanaFees
+                    }
+                },
+                intermediaryUrl: useLp,
+                getRequestTimeout: 15000,
+                postRequestTimeout: 30000,
+                bitcoinNetwork: FEConstants.chain==="DEVNET" ? BitcoinNetwork.TESTNET : BitcoinNetwork.MAINNET,
+                pricingFeeDifferencePPM: new BN(50000)
+            });
 
             await swapper.init();
             if(abortController.current.signal.aborted) return;
 
             console.log(swapper);
-
             console.log("Swapper initialized, getting claimable swaps...");
 
             setSwapper(swapper);
-
-            const actionableSwaps = (await swapper.getActionableSwaps());
-            if(abortController.current.signal.aborted) return;
-            console.log("actionable swaps: ", actionableSwaps);
-            setActionableSwaps(actionableSwaps);
-
-            console.log("Initialized");
-
             setSwapperLoading(false);
+            setSigners((prevValue) => {
+                const cpy = {...prevValue};
+                for(let chainId of swapper.getChains()) {
+                    if(cpy[chainId]==null) cpy[chainId] = {signer: swapper.randomSigner(chainId), random: true};
+                }
+                return cpy;
+            });
 
             swapper.on("swapState", swapListener);
 
@@ -154,24 +172,8 @@ function WrappedApp() {
     }, [swapper]);
 
     React.useEffect(() => {
-
-        if(noWalletPaths.has(pathName)) return;
-
-        if(wallet==null) {
-            // setSwapper(null);
-            setProvider(null);
-            setActionableSwaps([]);
-            return;
-        }
-
-        const _provider = new AnchorProvider(connection, wallet, {preflightCommitment: "processed"});
-
-        console.log("New signer set: ", wallet.publicKey);
-
-        setProvider(_provider);
-        loadSwapper(_provider);
-
-    }, [wallet]);
+        if(!noWalletPaths.has(pathName)) loadSwapper();
+    }, []);
 
     const [nfcSupported, setNfcSupported] = React.useState<boolean>(false);
     const [nfcEnabled, setNfcEnabled] = React.useState<boolean>(true);
@@ -306,9 +308,9 @@ function WrappedApp() {
                             </Nav>
                             <Nav className="ms-auto">
                                 <div className="d-flex flex-row align-items-center" style={{height: "3rem"}}>
-                                    {provider!=null ? (<div className="d-flex ms-auto">
+                                    <div className="d-flex ms-auto">
                                         <WalletMultiButton className="bg-primary"/>
-                                    </div>) : ""}
+                                    </div>
                                 </div>
                             </Nav>
                         </Navbar.Collapse>
@@ -317,19 +319,28 @@ function WrappedApp() {
                 </Navbar>
 
                 <SwapsContext.Provider value={{
-                    actionableSwaps,
+                    actionableSwaps: [],
                     removeSwap: (swap: ISwap) => {
-                        setActionableSwaps((val) => {
-                            const cpy = [...val];
-                            const i = cpy.indexOf(swap);
-                            if(i>=0) cpy.splice(i, 1);
-                            return cpy;
-                        });
+                        // setActionableSwaps((val) => {
+                        //     const cpy = [...val];
+                        //     const i = cpy.indexOf(swap);
+                        //     if(i>=0) cpy.splice(i, 1);
+                        //     return cpy;
+                        // });
                     },
-                    swapper
+                    chains: signers,
+                    swapper,
+                    getSigner: (swap: ISwap | SCToken) => {
+                        if(swap==null) return null;
+                        const chainIdentifier: string = isSCToken(swap) ? swap.chainId : swap.chainIdentifier;
+                        if(signers[chainIdentifier]==null) return undefined;
+                        if(signers[chainIdentifier].random) return undefined;
+                        if(!isSCToken(swap) && signers[chainIdentifier].signer.getAddress()!==swap.getInitiator()) return null;
+                        return signers[chainIdentifier].signer;
+                    }
                 }}>
                     <div className="d-flex flex-grow-1 flex-column">
-                        {(provider==null || swapperLoading) && !noWalletPaths.has(pathName) ? (
+                        {!noWalletPaths.has(pathName) ? (
                             <div className="no-wallet-overlay d-flex align-items-center">
                                 <div className="mt-auto height-50 d-flex justify-content-center align-items-center flex-fill">
                                     <div className="text-white text-center">
@@ -346,18 +357,13 @@ function WrappedApp() {
                                                             <strong>atomiq network connection error</strong>
                                                             <p>{swapperLoadingError}</p>
                                                             <Button variant="light" onClick={() => {
-                                                                loadSwapper(provider)
+                                                                loadSwapper()
                                                             }}>Retry</Button>
                                                         </Alert>
                                                     </>
                                                 )}
                                             </>
-                                        ) : (
-                                            <>
-                                                <WalletMultiButton />
-                                                <h2 className="mt-3">Connect your wallet to start</h2>
-                                            </>
-                                        )}
+                                        ) : ""}
                                     </div>
                                 </div>
                             </div>
@@ -365,7 +371,7 @@ function WrappedApp() {
                         <BrowserRouter>
                             <Routes>
                                 <Route path="/">
-                                    <Route index element={<Swap supportedCurrencies={smartChainCurrencies}/>}></Route>
+                                    <Route index element={<Swap supportedCurrencies={smartChainTokenArray}/>}></Route>
                                     <Route path="scan">
                                         <Route index element={<QuickScan/>}/>
                                         <Route path="2" element={<QuickScanExecute/>}/>

@@ -1,4 +1,4 @@
-import {FromBTCLNSwap, FromBTCLNSwapState, FromBTCSwap, FromBTCSwapState, IFromBTCSwap, ISwap, IToBTCSwap, Swapper} from "sollightning-sdk";
+import {FromBTCLNSwap, FromBTCSwap, IFromBTCSwap, ISwap, IToBTCSwap} from "@atomiqlabs/sdk";
 import {ToBTCQuoteSummary} from "./tobtc/ToBTCQuoteSummary";
 import {LNURLWithdrawQuoteSummary} from "./frombtc/LNURLWithdrawQuoteSummary";
 import {FromBTCLNQuoteSummary} from "./frombtc/FromBTCLNQuoteSummary";
@@ -21,21 +21,24 @@ export function QuoteSummary(props: {
     autoContinue?: boolean,
     feeRate?: number
 }) {
-    const {swapper} = useContext(SwapsContext);
+    const {swapper, getSigner} = useContext(SwapsContext);
+    const signer = getSigner(props.quote);
 
     const [notEnoughForGas, setNotEnoughForGas] = useState<boolean>(false);
 
     useEffect(() => {
         setNotEnoughForGas(false);
 
+        if(signer==null) return;
+
         //Check if the user has enough lamports to cover solana transaction fees
-        swapper.getBalance(swapper.getNativeCurrency()).then(balance => {
+        swapper.getNativeBalance(props.quote.chainIdentifier, signer.getAddress()).then(balance => {
             console.log("NATIVE balance: ", balance.toString(10));
             if(balance.lt(minNativeTokenBalance)) {
                 setNotEnoughForGas(true);
             }
         });
-    }, [props.quote]);
+    }, [props.quote, signer]);
 
     if(props.quote instanceof IToBTCSwap) return <ToBTCQuoteSummary
         type={props.type}

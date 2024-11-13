@@ -1,5 +1,4 @@
 import * as React from "react";
-import {Card, Col, Row} from "react-bootstrap";
 
 export function Map(props: {}) {
 

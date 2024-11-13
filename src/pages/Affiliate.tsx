@@ -7,23 +7,20 @@ import {
     Placeholder,
     Row,
 } from "react-bootstrap";
-import {FromBTCLNSwap, FromBTCSwap, IFromBTCSwap, ISwap, IToBTCSwap, ToBTCSwap, FromBTCSwapState, SolanaSwapper} from "sollightning-sdk";
 import {
-    bitcoinCurrencies,
-    CurrencySpec,
-    getCurrencySpec,
+    bitcoinTokenArray,
     toHumanReadableString
 } from "../utils/Currencies";
 import {useContext, useEffect, useState} from "react";
 import * as React from "react";
 import ValidatedInput from "../components/ValidatedInput";
-import {clipboard} from "react-icons-kit/fa/*";
 import {FEConstants} from "../FEConstants";
 import * as BN from "bn.js";
 import {SingleColumnStaticTable} from "../components/table/SingleColumnTable";
-import {ic_arrow_downward, ic_arrow_forward} from "react-icons-kit/md/*";
 import {getTimeDeltaText} from "../utils/Utils";
 import {SwapsContext} from "../context/SwapsContext";
+import {TokenIcon} from "../components/TokenIcon";
+import {TokenResolver, Tokens} from "@atomiqlabs/sdk";
 
 type AffiliatePayout = {
     timestamp: number,
@@ -34,8 +31,10 @@ type AffiliatePayout = {
     state: "pending" | "fail" | "success"
 };
 
+const chain = "SOLANA";
+
 export function Affiliate() {
-    const {swapper} = useContext(SwapsContext);
+    const {swapper, chains} = useContext(SwapsContext);
 
     const [data, setData] = useState<{
         stats: {
@@ -58,9 +57,9 @@ export function Affiliate() {
     const [error, setError] = useState<string>();
 
     useEffect(() => {
-        if(swapper==null) return;
+        if(swapper==null || chains==null || chains[chain]==null || chains[chain].random) return;
 
-        const address: string = swapper.getAddress();
+        const address: string = chains[chain].signer.getAddress();
         if(address!=null) {
             setLoading(true);
             setError(null);
@@ -82,7 +81,7 @@ export function Affiliate() {
         }
     }, [swapper]);
 
-    const currencySpec = data?.token==null ? null : getCurrencySpec(data.token);
+    const currencySpec = data?.token==null ? null : TokenResolver[chain].getToken(data.token);
 
     return (
         <>
@@ -94,7 +93,7 @@ export function Affiliate() {
                         Invite your friends to use atomiq via your invite link, they can enjoy reduced <strong>0.2%</strong> fee rate (instead of regular 0.3%), and you get a kickback for <strong>0.1%</strong> of their swap volume.
                     </p>
                     <p>
-                        Your kickback is accrued in BTC and payed out automatically to your Solana wallet address in {data?.token==null ? null : getCurrencySpec(data?.token)?.ticker} every day (minimum amount for payout is <strong>{toHumanReadableString(new BN(data?.minPayoutSats), bitcoinCurrencies[0])} BTC</strong>).
+                        Your kickback is accrued in BTC and payed out automatically to your Solana wallet address in {currencySpec?.ticker} every day (minimum amount for payout is <strong>{toHumanReadableString(new BN(data?.minPayoutSats), Tokens.BITCOIN.BTC)} BTC</strong>).
                     </p>
                     <p>
                         Next payout: <strong>{new Date(data?.nextPayoutTimestamp).toLocaleString()}</strong> (in {getTimeDeltaText(data?.nextPayoutTimestamp || 0, true)})
@@ -120,8 +119,8 @@ export function Affiliate() {
                                 <Placeholder xs={6} />
                             ) : (
                                 <>
-                                    <img src={bitcoinCurrencies[0].icon} className="currency-icon-medium pb-2"/>
-                                    {toHumanReadableString(new BN(data?.stats?.totalVolumeSats), bitcoinCurrencies[0])+" BTC"}
+                                    <TokenIcon tokenOrTicker={Tokens.BITCOIN.BTC} className="currency-icon-medium pb-2"/>
+                                    {toHumanReadableString(new BN(data?.stats?.totalVolumeSats), bitcoinTokenArray[0])+" BTC"}
                                 </>
                             )}</h4>
                             <small className="mb-2" style={{marginTop: "-6px"}}>{loading || currencySpec==null ? (
@@ -136,8 +135,8 @@ export function Affiliate() {
                                 <Placeholder xs={6} />
                             ) : (
                                 <>
-                                    <img src={bitcoinCurrencies[0].icon} className="currency-icon-medium pb-2"/>
-                                    {toHumanReadableString(new BN(data?.stats?.totalFeeSats), bitcoinCurrencies[0])+" BTC"}
+                                    <TokenIcon tokenOrTicker={Tokens.BITCOIN.BTC} className="currency-icon-medium pb-2"/>
+                                    {toHumanReadableString(new BN(data?.stats?.totalFeeSats), bitcoinTokenArray[0])+" BTC"}
                                 </>
                             )}</h4>
                         </Card>
@@ -149,15 +148,15 @@ export function Affiliate() {
                                 <Placeholder xs={6} />
                             ) : (
                                 <>
-                                    <img src={bitcoinCurrencies[0].icon} className="currency-icon-medium pb-2"/>
-                                    {toHumanReadableString(new BN(data?.stats?.unclaimedFeeSats), bitcoinCurrencies[0])+" BTC"}
+                                    <TokenIcon tokenOrTicker={Tokens.BITCOIN.BTC} className="currency-icon-medium pb-2"/>
+                                    {toHumanReadableString(new BN(data?.stats?.unclaimedFeeSats), bitcoinTokenArray[0])+" BTC"}
                                 </>
                             )}</h4>
                             <label className="mb-2">{loading || currencySpec==null ? (
                                 <Placeholder xs={6} />
                             ) : (
                                 <>
-                                    <img src={currencySpec.icon} className="currency-icon-small pb-2"/>
+                                    <TokenIcon tokenOrTicker={Tokens.BITCOIN.BTC} className="currency-icon-small pb-2"/>
                                     {"~"+toHumanReadableString(new BN(data?.unclaimedUsdcValue), currencySpec)+" "+currencySpec.ticker}
                                 </>
                             )}</label>
@@ -172,9 +171,9 @@ export function Affiliate() {
                     column={{
                         renderer: (row: AffiliatePayout) => {
                             let inputAmount: BN = new BN(row.amountSats);
-                            let inputCurrency: CurrencySpec = bitcoinCurrencies[0];
+                            let inputCurrency = Tokens.BITCOIN.BTC;
                             let outputAmount: BN = new BN(row.amountToken);
-                            let outputCurrency: CurrencySpec = getCurrencySpec(row.token);
+                            let outputCurrency = TokenResolver[chain].getToken(row.token);
 
                             let txIdInput: string = row.txId;
 
@@ -202,13 +201,13 @@ export function Affiliate() {
                                     <Col xl={10} md={12} className="d-flex">
                                         <div className="card border-0 bg-white bg-opacity-10 p-2 width-fill container-fluid">
                                             <div className="min-width-0">
-                                                <a className="font-small single-line-ellipsis" target="_blank" href={txIdInput==null ? null : FEConstants.solBlockExplorer+txIdInput}>{txIdInput || "None"}</a>
+                                                <a className="font-small single-line-ellipsis" target="_blank" href={txIdInput==null ? null : FEConstants.blockExplorers[chain]+txIdInput}>{txIdInput || "None"}</a>
                                                 <span className="d-flex align-items-center font-weight-500 my-1">
-                                                    <img src={outputCurrency.icon} className="currency-icon-medium"/>
+                                                    <TokenIcon tokenOrTicker={outputCurrency} className="currency-icon-medium"/>
                                                     {toHumanReadableString(outputAmount, outputCurrency)} {outputCurrency.ticker}
                                                 </span>
                                                 <small className="d-flex align-items-center">
-                                                    <img src={inputCurrency.icon} className="currency-icon-small"/>
+                                                    <TokenIcon tokenOrTicker={inputCurrency} className="currency-icon-small"/>
                                                     {toHumanReadableString(inputAmount, inputCurrency)} {inputCurrency.ticker}
                                                 </small>
                                             </div>

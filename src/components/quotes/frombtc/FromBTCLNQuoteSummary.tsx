@@ -15,7 +15,7 @@ import {
 } from "react-bootstrap";
 import {QRCodeSVG} from "qrcode.react";
 import ValidatedInput, {ValidatedInputRef} from "../../ValidatedInput";
-import {FromBTCLNSwap, FromBTCLNSwapState, LNURLPay, LNURLWithdraw, Swapper} from "sollightning-sdk";
+import {FromBTCLNSwap, FromBTCLNSwapState, LNURLPay, LNURLWithdraw} from "@atomiqlabs/sdk";
 import {clipboard} from 'react-icons-kit/fa/clipboard'
 import Icon from "react-icons-kit";
 import {LNNFCReader, LNNFCStartResult} from "../../../lnnfc/LNNFCReader";
@@ -25,16 +25,18 @@ import {externalLink} from 'react-icons-kit/fa/externalLink';
 import {info} from 'react-icons-kit/fa/info';
 import {elementInViewport} from "../../../utils/Utils";
 import {SwapsContext} from "../../../context/SwapsContext";
+import {ButtonWithSigner} from "../../ButtonWithSigner";
 
 export function FromBTCLNQuoteSummary(props: {
-    quote: FromBTCLNSwap<any>,
+    quote: FromBTCLNSwap,
     refreshQuote: () => void,
     setAmountLock: (isLocked: boolean) => void,
     type?: "payment" | "swap",
     abortSwap?: () => void,
     notEnoughForGas: boolean
 }) {
-    const {swapper} = useContext(SwapsContext);
+    const {swapper, getSigner} = useContext(SwapsContext);
+    const signer = getSigner(props.quote);
 
     const {lnWallet, setLnWallet} = useContext(WebLNContext);
     const [bitcoinError, setBitcoinError] = useState<string>(null);
@@ -142,7 +144,7 @@ export function FromBTCLNQuoteSummary(props: {
         setLoading(true);
         setError(null);
         try {
-            await props.quote.commitAndClaim(null, skipChecks);
+            await props.quote.commitAndClaim(signer, null, skipChecks);
             setSuccess(true);
         } catch (e) {
             setSuccess(false);
@@ -350,7 +352,8 @@ export function FromBTCLNQuoteSummary(props: {
                 <Button className="mt-2" variant="secondary" onClick={() => {
                     navigate("/gas", {
                         state: {
-                            returnPath: location.pathname+location.search
+                            returnPath: location.pathname+location.search,
+                            chainId: props.quote.chainIdentifier
                         }
                     });
                 }}>Swap for gas</Button>
@@ -371,10 +374,10 @@ export function FromBTCLNQuoteSummary(props: {
                             New quote
                         </Button>
                     ) : (
-                        <Button onClick={onCommit} disabled={loading || props.notEnoughForGas} size="lg">
+                        <ButtonWithSigner signer={signer} chainId={props.quote?.chainIdentifier} onClick={onCommit} disabled={loading || props.notEnoughForGas} size="lg">
                             {loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                             Initiate swap
-                        </Button>
+                        </ButtonWithSigner>
                     )}
                 </>
             ) : (
@@ -520,10 +523,10 @@ export function FromBTCLNQuoteSummary(props: {
                             New quote
                         </Button>
                     ) : (
-                        <Button onClick={() => onClaim()} disabled={loading} size="lg">
+                        <ButtonWithSigner signer={signer} chainId={props.quote?.chainIdentifier} onClick={() => onClaim()} disabled={loading} size="lg">
                             {loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                             Finish swap (claim funds)
-                        </Button>
+                        </ButtonWithSigner>
                     )}
                 </>
             ) : ""}

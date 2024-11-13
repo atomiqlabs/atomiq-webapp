@@ -1,5 +1,5 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { FromBTCLNSwap, FromBTCSwap, IFromBTCSwap, IToBTCSwap } from "sollightning-sdk";
+import { FromBTCLNSwap, FromBTCSwap, IFromBTCSwap, IToBTCSwap } from "@atomiqlabs/sdk";
 import { ToBTCQuoteSummary } from "./tobtc/ToBTCQuoteSummary";
 import { LNURLWithdrawQuoteSummary } from "./frombtc/LNURLWithdrawQuoteSummary";
 import { FromBTCLNQuoteSummary } from "./frombtc/FromBTCLNQuoteSummary";
@@ -10,18 +10,21 @@ import { SwapsContext } from "../../context/SwapsContext";
 //The getBalance automatically discounts the WSOL ATA deposit + commit fee (including deposit for EscrowState)
 const minNativeTokenBalance = new BN(500000);
 export function QuoteSummary(props) {
-    const { swapper } = useContext(SwapsContext);
+    const { swapper, getSigner } = useContext(SwapsContext);
+    const signer = getSigner(props.quote);
     const [notEnoughForGas, setNotEnoughForGas] = useState(false);
     useEffect(() => {
         setNotEnoughForGas(false);
+        if (signer == null)
+            return;
         //Check if the user has enough lamports to cover solana transaction fees
-        swapper.getBalance(swapper.getNativeCurrency()).then(balance => {
+        swapper.getNativeBalance(props.quote.chainIdentifier, signer.getAddress()).then(balance => {
             console.log("NATIVE balance: ", balance.toString(10));
             if (balance.lt(minNativeTokenBalance)) {
                 setNotEnoughForGas(true);
             }
         });
-    }, [props.quote]);
+    }, [props.quote, signer]);
     if (props.quote instanceof IToBTCSwap)
         return _jsx(ToBTCQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: props.quote, refreshQuote: props.refreshQuote, balance: props.balance, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas });
     if (props.quote instanceof IFromBTCSwap) {

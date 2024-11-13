@@ -3,14 +3,15 @@ import {Badge, Button, Card, Col, OverlayTrigger, Placeholder, Row, Tooltip} fro
 import {FEConstants} from "../FEConstants";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {SingleColumnBackendTable} from "../components/table/SingleColumnTable";
-import {bitcoinCurrencies, CurrencySpec, getCurrencySpec, toHumanReadable, toHumanReadableString} from "../utils/Currencies";
+import {toHumanReadableString} from "../utils/Currencies";
 import * as BN from "bn.js";
 import Icon from "react-icons-kit";
 import {ic_arrow_forward} from 'react-icons-kit/md/ic_arrow_forward';
 import {ic_arrow_downward} from 'react-icons-kit/md/ic_arrow_downward';
 import ValidatedInput, {ValidatedInputRef} from "../components/ValidatedInput";
-import {ChainSwapType} from "sollightning-sdk";
+import {ChainSwapType, Token, TokenResolver, Tokens} from "@atomiqlabs/sdk";
 import {getTimeDeltaText} from "../utils/Utils";
+import {TokenIcon} from "../components/TokenIcon";
 
 const timeframes = ["24h", "7d", "30d"];
 
@@ -138,6 +139,7 @@ export function SwapExplorer(props: {}) {
 
             <div>
                 <SingleColumnBackendTable<{
+                    chainId?: string,
                     paymentHash: string,
 
                     timestampInit: number,
@@ -181,10 +183,12 @@ export function SwapExplorer(props: {}) {
                 }>
                     column={{
                         renderer: (row) => {
+                            const chainId: string = row.chainId ?? "SOLANA";
+
                             let inputAmount: BN;
-                            let inputCurrency: CurrencySpec;
+                            let inputCurrency: Token;
                             let outputAmount: BN;
-                            let outputCurrency: CurrencySpec;
+                            let outputCurrency: Token;
 
                             let inputExplorer;
                             let txIdInput;
@@ -199,12 +203,12 @@ export function SwapExplorer(props: {}) {
 
                             if(row.direction==="ToBTC") {
                                 inputAmount = new BN(row.rawAmount);
-                                inputCurrency = getCurrencySpec(row.token);
+                                inputCurrency = TokenResolver[chainId].getToken(row.token);
                                 outputAmount = row.btcRawAmount==null ? null : new BN(row.btcRawAmount);
-                                outputCurrency = row.type==="CHAIN" ? bitcoinCurrencies[0] : bitcoinCurrencies[1];
+                                outputCurrency = row.type==="CHAIN" ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
                                 txIdInput = row.txInit;
                                 txIdOutput = row.type==="CHAIN" ? row.btcTx : row.paymentHash;
-                                inputExplorer = FEConstants.solBlockExplorer;
+                                inputExplorer = FEConstants.blockExplorers[chainId];
                                 outputExplorer = row.type==="CHAIN" ? FEConstants.btcBlockExplorer : null;
                                 if(row.type==="LN") {
                                     outputInfo = "Lightning network amounts and addresses are private!";
@@ -217,12 +221,12 @@ export function SwapExplorer(props: {}) {
                                 if(row.type==="CHAIN") outputAddress = row.btcAddress || "Unknown";
                             } else {
                                 outputAmount = new BN(row.rawAmount);
-                                outputCurrency = getCurrencySpec(row.token);
+                                outputCurrency = TokenResolver[chainId].getToken(row.token);
                                 inputAmount = row.btcRawAmount==null ? null : new BN(row.btcRawAmount);
-                                inputCurrency = row.type==="CHAIN" ? bitcoinCurrencies[0] : bitcoinCurrencies[1];
+                                inputCurrency = row.type==="CHAIN" ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
                                 txIdOutput = row.txInit;
                                 txIdInput = row.type==="CHAIN" ? row.btcTx : row.paymentHash;
-                                outputExplorer = FEConstants.solBlockExplorer;
+                                outputExplorer = FEConstants.blockExplorers[chainId];
                                 inputExplorer = row.type==="CHAIN" ? FEConstants.btcBlockExplorer : null;
                                 if(row.type==="LN") {
                                     inputInfo = "Lightning network amounts and addresses are private!";
@@ -279,7 +283,7 @@ export function SwapExplorer(props: {}) {
                                                     <div className="min-width-0 me-md-2">
                                                         <a className="font-small single-line-ellipsis" target="_blank" href={inputExplorer==null || txIdInput==null ? null : inputExplorer+txIdInput}>{txIdInput || "None"}</a>
                                                         <span className="d-flex align-items-center font-weight-500 my-1">
-                                                            <img src={inputCurrency?.icon} className="currency-icon-medium"/>
+                                                            <TokenIcon tokenOrTicker={inputCurrency} className="currency-icon-medium"/>
                                                             {inputAmount==null || inputCurrency==null ? "???" : toHumanReadableString(inputAmount, inputCurrency)} {inputCurrency?.ticker || "???"}
                                                             {inputInfo!=null ? (
                                                                 <OverlayTrigger overlay={<Tooltip id={"explorer-tooltip-in-"+row.id}>
@@ -299,7 +303,7 @@ export function SwapExplorer(props: {}) {
                                                 <Col md={6} xs={12} className="ps-md-4">
                                                     <a className="font-small single-line-ellipsis" target="_blank" href={outputExplorer==null || txIdOutput==null ? null : outputExplorer+txIdOutput}>{txIdOutput || "..."}</a>
                                                     <span className="d-flex align-items-center font-weight-500 my-1">
-                                                        <img src={outputCurrency?.icon} className="currency-icon-medium"/>
+                                                        <TokenIcon tokenOrTicker={outputCurrency} className="currency-icon-medium"/>
                                                         {outputAmount==null || outputCurrency==null ? "???" : toHumanReadableString(outputAmount, outputCurrency)} {outputCurrency?.ticker || "???"}
                                                         {outputInfo!=null ? (
                                                             <OverlayTrigger overlay={<Tooltip id={"explorer-tooltip-out-"+row.id}>

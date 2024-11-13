@@ -1,4 +1,4 @@
-import {FloatingLabel, Form, InputGroup, OverlayTrigger, Tooltip} from "react-bootstrap";
+import {Form, InputGroup, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as React from "react";
 import {useEffect, useRef} from "react";
 import BigNumber from "bignumber.js";

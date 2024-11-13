@@ -1,6 +1,8 @@
-import {useEffect, useRef, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {Alert, Button, ProgressBar, Spinner} from "react-bootstrap";
-import {FromBTCLNSwap, FromBTCLNSwapState} from "sollightning-sdk";
+import {FromBTCLNSwap, FromBTCLNSwapState} from "@atomiqlabs/sdk";
+import {SwapsContext} from "../../../context/SwapsContext";
+import {ButtonWithSigner} from "../../ButtonWithSigner";
 
 export function LNURLWithdrawQuoteSummary(props: {
     quote: FromBTCLNSwap<any>,
@@ -10,6 +12,8 @@ export function LNURLWithdrawQuoteSummary(props: {
     autoContinue?: boolean,
     notEnoughForGas: boolean
 }) {
+    const {getSigner} = useContext(SwapsContext);
+    const signer = getSigner(props.quote);
 
     const [quoteTimeRemaining, setQuoteTimeRemaining] = useState<number>();
     const [initialQuoteTimeout, setInitialQuoteTimeout] = useState<number>();
@@ -64,7 +68,7 @@ export function LNURLWithdrawQuoteSummary(props: {
         if(props.quote.getState()===FromBTCLNSwapState.CLAIM_COMMITED) {
             setLoading(true);
             try {
-                await props.quote.commitAndClaim(null, skipChecks);
+                await props.quote.commitAndClaim(signer, null, skipChecks);
                 setSuccess(true);
             } catch (e) {
                 setError(e.toString());
@@ -88,7 +92,7 @@ export function LNURLWithdrawQuoteSummary(props: {
             }
 
             try {
-                await props.quote.commitAndClaim(null, skipChecks);
+                await props.quote.commitAndClaim(signer, null, skipChecks);
                 setSuccess(true);
             } catch (e) {
                 setError(e.toString());
@@ -123,10 +127,10 @@ export function LNURLWithdrawQuoteSummary(props: {
                         New quote
                     </Button>
                 ) : (
-                    <Button onClick={() => onContinue()} disabled={loading} size="lg">
+                    <ButtonWithSigner signer={signer} chainId={props.quote.chainIdentifier} onClick={() => onContinue()} disabled={loading} size="lg">
                         {loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                         Claim
-                    </Button>
+                    </ButtonWithSigner>
                 )
             ) : (
                 success ? (

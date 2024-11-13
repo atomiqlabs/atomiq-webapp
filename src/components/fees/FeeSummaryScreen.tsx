@@ -1,29 +1,24 @@
-import {FromBTCLNSwap, FromBTCSwap, ISwap, IToBTCSwap, ToBTCLNSwap, ToBTCSwap} from "sollightning-sdk";
+import {FromBTCSwap, IFromBTCSwap, ISwap, IToBTCSwap, SwapType, Token, TokenAmount} from "@atomiqlabs/sdk";
 import {
-    bitcoinCurrencies,
-    CurrencySpec,
-    getCurrencySpec,
-    getNativeCurrency,
-    toHumanReadable,
     toHumanReadableString
 } from "../../utils/Currencies";
 import * as BN from "bn.js";
 import {Badge, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as React from "react";
 import {getFeePct} from "../../utils/Utils";
+import {TokenIcon} from "../TokenIcon";
 
 function FeePart(props: {
     text: string,
     isApproximate?: boolean,
 
-    currency: CurrencySpec,
-    amount: BN,
+    amount: TokenAmount,
 
     className?: string,
 
     feePPM?: BN,
     feeBase?: BN,
-    feeCurrency?: CurrencySpec,
+    feeCurrency?: Token,
 
     description?: string
 }) {
@@ -52,7 +47,7 @@ function FeePart(props: {
                     </OverlayTrigger>
                 ) : ""}
             </span>
-            <span className="ms-auto">{props.isApproximate? "~" : ""}{toHumanReadableString(props.amount, props.currency)} {props.currency.ticker}</span>
+            <span className="ms-auto">{props.isApproximate? "~" : ""}{props.amount.amount} {props.amount.token.ticker}</span>
         </div>
     );
 }
@@ -64,28 +59,25 @@ export function FeeSummaryScreen(props: {
 
     let className: string = props.className;
 
-    if(props.swap instanceof IToBTCSwap) {
-        const currency = getCurrencySpec(props.swap.getInToken());
-        const btcCurrency = getCurrencySpec(props.swap.getOutToken());
+    if(props.swap.getType()===SwapType.TO_BTC || props.swap.getType()===SwapType.TO_BTCLN) {
+        const input = props.swap.getInput();
 
         return (<div className={className}>
             <FeePart
                 text="Amount"
-                currency={currency}
-                amount={props.swap.getInAmountWithoutFee()}
+                amount={props.swap.getInputWithoutFee()}
             />
             <FeePart
                 text="Swap fee"
-                currency={currency}
                 amount={props.swap.getSwapFee().amountInSrcToken}
-                feePPM={getFeePct(props.swap, 1)} feeBase={props.swap.pricingInfo.satsBaseFee} feeCurrency={btcCurrency}
+                feePPM={getFeePct(props.swap, 1)} feeBase={props.swap.pricingInfo.satsBaseFee}
+                feeCurrency={props.swap.getOutput().token}
             />
             <FeePart
                 text="Network fee"
-                currency={currency}
-                amount={props.swap.getNetworkFee().amountInSrcToken}
+                amount={(props.swap as IToBTCSwap).getNetworkFee().amountInSrcToken}
                 description={
-                    props.swap instanceof ToBTCSwap ?
+                    props.swap.getType()===SwapType.TO_BTC ?
                         "Bitcoin transaction fee paid to bitcoin miners" :
                         "Lightning network fee paid for routing the payment through the network"
                 }
@@ -94,65 +86,62 @@ export function FeeSummaryScreen(props: {
             <div className="d-flex fw-bold border-top border-light font-bigger">
                 <span>Total:</span>
                 <span className="ms-auto d-flex align-items-center">
-                    <img src={currency.icon} className="currency-icon-small"/>
-                    {toHumanReadableString(props.swap.getInAmount(), currency)} {currency.ticker}
+                    <TokenIcon tokenOrTicker={input.token} className="currency-icon-small"/>
+                    {input.amount} {input.token.ticker}
                 </span>
             </div>
         </div>);
     }
 
-    const currency = getCurrencySpec(props.swap.getOutToken());
-    const btcCurrency = getCurrencySpec(props.swap.getInToken());
-
-    if(props.swap instanceof FromBTCSwap) {
+    if(props.swap.getType()===SwapType.FROM_BTC) {
+        const output = props.swap.getOutput();
 
         return (<div className={className}>
             <FeePart
                 text="Amount"
-                currency={currency}
-                amount={props.swap.getOutAmount().add(props.swap.getFee().amountInDstToken)}
+                amount={(props.swap as IFromBTCSwap).getOutputWithoutFee()}
             />
             <FeePart
                 text="Swap fee"
-                currency={currency}
                 amount={props.swap.getFee().amountInDstToken}
-                feePPM={getFeePct(props.swap, 1)} feeBase={props.swap.pricingInfo.satsBaseFee} feeCurrency={btcCurrency}
+                feePPM={getFeePct(props.swap, 1)} feeBase={props.swap.pricingInfo.satsBaseFee}
+                feeCurrency={props.swap.getInput().token}
             />
             <FeePart
                 text="Watchtower fee"
-                currency={getNativeCurrency()}
-                amount={props.swap.getClaimerBounty()}
+                amount={(props.swap as FromBTCSwap).getClaimerBounty()}
                 description="Fee paid to swap watchtowers which automatically claim the swap for you as soon as the bitcoin transaction confirms."
             />
 
             <div className="d-flex fw-bold border-top border-light font-bigger">
                 <span>Total:</span>
                 <span className="ms-auto d-flex align-items-center">
-                    <img src={currency.icon} className="currency-icon-small"/>
-                    {toHumanReadableString(props.swap.getOutAmount(), currency)} {currency.ticker}
+                    <TokenIcon tokenOrTicker={output.token} className="currency-icon-small"/>
+                    {output.amount} {output.token.ticker}
                 </span>
             </div>
         </div>);
     }
-    if(props.swap instanceof FromBTCLNSwap) {
+    if(props.swap.getType()===SwapType.FROM_BTCLN) {
+        const output = props.swap.getOutput();
+
         return (<div className={className}>
             <FeePart
                 text="Amount"
-                currency={currency}
-                amount={props.swap.getOutAmount().add(props.swap.getFee().amountInDstToken)}
+                amount={(props.swap as IFromBTCSwap).getOutputWithoutFee()}
             />
             <FeePart
                 text="Swap fee"
-                currency={currency}
                 amount={props.swap.getFee().amountInDstToken}
-                feePPM={getFeePct(props.swap, 1)} feeBase={props.swap.pricingInfo.satsBaseFee} feeCurrency={btcCurrency}
+                feePPM={getFeePct(props.swap, 1)} feeBase={props.swap.pricingInfo.satsBaseFee}
+                feeCurrency={props.swap.getInput().token}
             />
 
             <div className="d-flex fw-bold border-top border-light font-bigger">
                 <span>Total:</span>
                 <span className="ms-auto d-flex align-items-center">
-                    <img src={currency.icon} className="currency-icon-small"/>
-                    {toHumanReadableString(props.swap.getOutAmount(), currency)} {currency.ticker}
+                    <TokenIcon tokenOrTicker={output.token} className="currency-icon-small"/>
+                    {output.amount} {output.token.ticker}
                 </span>
             </div>
         </div>);

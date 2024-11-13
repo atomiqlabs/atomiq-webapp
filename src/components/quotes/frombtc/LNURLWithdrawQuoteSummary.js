@@ -1,8 +1,12 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Alert, Button, ProgressBar, Spinner } from "react-bootstrap";
-import { FromBTCLNSwapState } from "sollightning-sdk";
+import { FromBTCLNSwapState } from "@atomiqlabs/sdk";
+import { SwapsContext } from "../../../context/SwapsContext";
+import { ButtonWithSigner } from "../../ButtonWithSigner";
 export function LNURLWithdrawQuoteSummary(props) {
+    const { getSigner } = useContext(SwapsContext);
+    const signer = getSigner(props.quote);
     const [quoteTimeRemaining, setQuoteTimeRemaining] = useState();
     const [initialQuoteTimeout, setInitialQuoteTimeout] = useState();
     const [state, setState] = useState(null);
@@ -46,7 +50,7 @@ export function LNURLWithdrawQuoteSummary(props) {
         if (props.quote.getState() === FromBTCLNSwapState.CLAIM_COMMITED) {
             setLoading(true);
             try {
-                await props.quote.commitAndClaim(null, skipChecks);
+                await props.quote.commitAndClaim(signer, null, skipChecks);
                 setSuccess(true);
             }
             catch (e) {
@@ -74,7 +78,7 @@ export function LNURLWithdrawQuoteSummary(props) {
                 return;
             }
             try {
-                await props.quote.commitAndClaim(null, skipChecks);
+                await props.quote.commitAndClaim(signer, null, skipChecks);
                 setSuccess(true);
             }
             catch (e) {
@@ -87,5 +91,5 @@ export function LNURLWithdrawQuoteSummary(props) {
             setLoading(false);
         }
     };
-    return (_jsxs(_Fragment, { children: [error != null ? (_jsxs(Alert, { variant: "danger", className: "mb-3", children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: error })] })) : "", _jsxs("div", { className: state !== FromBTCLNSwapState.CLAIM_COMMITED && success === null && !loading ? "d-flex flex-column mb-3 tab-accent" : "d-none", children: [quoteTimeRemaining === 0 ? (_jsx("label", { children: "Quote expired!" })) : (_jsxs("label", { children: ["Quote expires in ", quoteTimeRemaining, " seconds"] })), _jsx(ProgressBar, { animated: true, now: quoteTimeRemaining, max: initialQuoteTimeout, min: 0 })] }), success === null ? (state !== FromBTCLNSwapState.CLAIM_COMMITED && quoteTimeRemaining === 0 && !loading ? (_jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })) : (_jsxs(Button, { onClick: () => onContinue(), disabled: loading, size: "lg", children: [loading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Claim"] }))) : (success ? (_jsxs(Alert, { variant: "success", className: "mb-0", children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was concluded successfully" })] })) : (_jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })))] }));
+    return (_jsxs(_Fragment, { children: [error != null ? (_jsxs(Alert, { variant: "danger", className: "mb-3", children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: error })] })) : "", _jsxs("div", { className: state !== FromBTCLNSwapState.CLAIM_COMMITED && success === null && !loading ? "d-flex flex-column mb-3 tab-accent" : "d-none", children: [quoteTimeRemaining === 0 ? (_jsx("label", { children: "Quote expired!" })) : (_jsxs("label", { children: ["Quote expires in ", quoteTimeRemaining, " seconds"] })), _jsx(ProgressBar, { animated: true, now: quoteTimeRemaining, max: initialQuoteTimeout, min: 0 })] }), success === null ? (state !== FromBTCLNSwapState.CLAIM_COMMITED && quoteTimeRemaining === 0 && !loading ? (_jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })) : (_jsxs(ButtonWithSigner, { signer: signer, chainId: props.quote.chainIdentifier, onClick: () => onContinue(), disabled: loading, size: "lg", children: [loading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Claim"] }))) : (success ? (_jsxs(Alert, { variant: "success", className: "mb-0", children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was concluded successfully" })] })) : (_jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })))] }));
 }
