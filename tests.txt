@@ -1,0 +1,34 @@
+Testing:
+BTC-LN -> SC:
+[ ] Not enough for gas - has to swap for gas
+[ ] Initiate swap & internet disconnect
+[ ] Initiate swap & expired
+[ ] Pay invoice but don't claim
+[ ] Claim but don't approve txns
+[ ] Claim but approve late (blockhash expired)
+[ ] Claim but only commit tx sent
+[ ] Claim but only commit tx sent HTLC expire
+[ ] Claim but but only commit tx sent & send claim later
+[ ] Success swap
+
+BTC -> SC:
+[ ] Not enough for gas - has to swap for gas
+[ ] Initiate swap but don't approve tx
+[ ] Initiate swap but approve late (blockhash expired)
+[ ] Open swap address & internet disconnect
+[ ] Open swap address but never send BTC (swap address expiry)
+[ ] Open swap, send BTC & double-spend
+[ ] BTC confirm & client claim - don't approve tx
+[ ] BTC confirm & client claim
+[ ] BTC confirm watchtower claim
+
+SC -> BTC/BTC-LN:
+[ ] Not enough for gas
+[ ] Not enough balance
+[ ] Initiate swap but don't approve tx
+[ ] Initiate swap but approve late (blockhash expired)
+[ ] Initiated but internet disconnect
+[ ] Initiated but refundable
+[ ] Refundable but don't approve tx
+[ ] Refund
+[ ] Initiated and success
