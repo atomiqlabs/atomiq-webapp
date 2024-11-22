@@ -14,14 +14,17 @@ export const bitcoinTokenArray = [
     Tokens.BITCOIN.BTC,
     Tokens.BITCOIN.BTCLN
 ];
-export const smartChainTokenArray = [];
-for (let chainId in Tokens) {
-    if (chainId === "BITCOIN")
-        continue;
-    for (let ticker in Tokens[chainId]) {
-        smartChainTokenArray.push(Tokens[chainId][ticker]);
-    }
-}
+export const smartChainTokenArray = [
+    Tokens.SOLANA.SOL,
+    Tokens.SOLANA.USDC,
+    Tokens.SOLANA.BONK
+];
+// for(let chainId in Tokens) {
+//     if(chainId==="BITCOIN") continue;
+//     for(let ticker in Tokens[chainId]) {
+//         smartChainTokenArray.push(Tokens[chainId][ticker]);
+//     }
+// }
 export function toHumanReadable(amount, currencySpec) {
     if (amount == null)
         return null;

@@ -9,6 +9,8 @@ function FeePart(props) {
 }
 export function FeeSummaryScreen(props) {
     let className = props.className;
+    if (props.swap == null)
+        return null;
     if (props.swap.getType() === SwapType.TO_BTC || props.swap.getType() === SwapType.TO_BTCLN) {
         const input = props.swap.getInput();
         return (_jsxs("div", { className: className, children: [_jsx(FeePart, { text: "Amount", amount: props.swap.getInputWithoutFee() }), _jsx(FeePart, { text: "Swap fee", amount: props.swap.getSwapFee().amountInSrcToken, feePPM: getFeePct(props.swap, 1), feeBase: props.swap.pricingInfo.satsBaseFee, feeCurrency: props.swap.getOutput().token }), _jsx(FeePart, { text: "Network fee", amount: props.swap.getNetworkFee().amountInSrcToken, description: props.swap.getType() === SwapType.TO_BTC ?

@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
 import {PublicKey} from "@solana/web3.js";
 import {WalletAdapterNetwork} from "@solana/wallet-adapter-base";
+import * as BN from "bn.js";
 
 const solanaRpcUrl: string = process.env.REACT_APP_SOLANA_RPC_URL;
 const chain: "DEVNET" | "MAINNET" = process.env.REACT_APP_SOLANA_NETWORK as ("DEVNET" | "MAINNET"); //DEVNET or MAINNET
@@ -33,6 +34,12 @@ export const FEConstants = {
     btcBlockExplorer,
     blockExplorers: {
         SOLANA: solBlockExplorer
+    },
+    scBalances: {
+        SOLANA: {
+            minimum: new BN(1000000),
+            optimal: new BN(6000000)
+        }
     },
     statsUrl,
     solanaChain: chain==="MAINNET" ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet,

@@ -59,6 +59,8 @@ export function FeeSummaryScreen(props: {
 
     let className: string = props.className;
 
+    if(props.swap==null) return null;
+
     if(props.swap.getType()===SwapType.TO_BTC || props.swap.getType()===SwapType.TO_BTCLN) {
         const input = props.swap.getInput();
 

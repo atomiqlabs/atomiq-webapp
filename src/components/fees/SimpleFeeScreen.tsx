@@ -227,7 +227,7 @@ export function SimpleFeeSummaryScreen(props: {
             };
         }))
 
-        if(props.swap.getType()===SwapType.TO_BTC || props.swap.getType()===SwapType.FROM_BTCLN) {
+        if(props.swap.getType()===SwapType.TO_BTC || props.swap.getType()===SwapType.TO_BTCLN) {
             const networkFee = (props.swap as IToBTCSwap).getNetworkFee();
 
             fees.push(usdPricePromise.then(usdPrice => networkFee.usdValue(abortController.signal, usdPrice)).then(networkFeeUsd => {

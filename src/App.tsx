@@ -5,9 +5,7 @@ import SolanaWalletProvider from "./context/SolanaWalletProvider";
 import {QuickScan} from "./pages/quickscan/QuickScan";
 import {QuickScanExecute} from "./pages/quickscan/QuickScanExecute";
 import {useAnchorWallet, useConnection} from '@solana/wallet-adapter-react';
-import {AnchorProvider} from "@coral-xyz/anchor";
 import {FEConstants} from "./FEConstants";
-import {Swap} from "./pages/Swap";
 import {smartChainTokenArray} from "./utils/Currencies";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {SwapsContext} from "./context/SwapsContext";
@@ -56,8 +54,7 @@ import {BitcoinWalletContext} from './context/BitcoinWalletContext';
 import {WebLNProvider} from "webln";
 import {WebLNContext} from './context/WebLNContext';
 import {heart} from 'react-icons-kit/fa/heart';
-import {Connection} from "@solana/web3.js";
-import {sign} from "node:crypto";
+import {SwapNew} from "./pages/SwapNew";
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -67,6 +64,12 @@ const jitoEndpoint = "https://mainnet.block-engine.jito.wtf/api/v1/transactions"
 
 function WrappedApp() {
 
+    const {connection} = useConnection();
+
+    const [swapper, setSwapper] = React.useState<MultichainSwapper>();
+    const [swapperLoadingError, setSwapperLoadingError] = React.useState<string>();
+    const [swapperLoading, setSwapperLoading] = React.useState<boolean>(false);
+
     const [signers, setSigners] = React.useState<{
         [chainId: string]: {
             signer: AbstractSigner,
@@ -75,16 +78,11 @@ function WrappedApp() {
     }>({});
     const solanaWallet = useAnchorWallet();
     useEffect(() => {
+        if(swapper==null) return;
         setSigners((prevValue) => {
-            return {...prevValue,SOLANA: {signer: new SolanaSigner(solanaWallet), random: false}};
+            return {...prevValue,SOLANA: {signer: solanaWallet==null ? swapper.randomSigner("SOLANA") : new SolanaSigner(solanaWallet), random: solanaWallet==null}};
         });
-    }, [solanaWallet]);
-
-    const {connection} = useConnection();
-
-    const [swapper, setSwapper] = React.useState<MultichainSwapper>();
-    const [swapperLoadingError, setSwapperLoadingError] = React.useState<string>();
-    const [swapperLoading, setSwapperLoading] = React.useState<boolean>(false);
+    }, [solanaWallet, swapper]);
 
     // @ts-ignore
     const pathName = window.location.pathname.split("?")[0];
@@ -135,7 +133,10 @@ function WrappedApp() {
                 getRequestTimeout: 15000,
                 postRequestTimeout: 30000,
                 bitcoinNetwork: FEConstants.chain==="DEVNET" ? BitcoinNetwork.TESTNET : BitcoinNetwork.MAINNET,
-                pricingFeeDifferencePPM: new BN(50000)
+                pricingFeeDifferencePPM: new BN(50000),
+                defaultAdditionalParameters: {
+                    affiliate: affiliateLink
+                }
             });
 
             await swapper.init();
@@ -332,15 +333,19 @@ function WrappedApp() {
                     swapper,
                     getSigner: (swap: ISwap | SCToken) => {
                         if(swap==null) return null;
-                        const chainIdentifier: string = isSCToken(swap) ? swap.chainId : swap.chainIdentifier;
-                        if(signers[chainIdentifier]==null) return undefined;
-                        if(signers[chainIdentifier].random) return undefined;
-                        if(!isSCToken(swap) && signers[chainIdentifier].signer.getAddress()!==swap.getInitiator()) return null;
-                        return signers[chainIdentifier].signer;
+                        if(isSCToken(swap)) {
+                            if(signers[swap.chainId]==null) return undefined;
+                            return signers[swap.chainId].signer;
+                        } else {
+                            if(signers[swap.chainIdentifier]==null) return undefined;
+                            if(signers[swap.chainIdentifier].random) return undefined;
+                            if(signers[swap.chainIdentifier].signer.getAddress()!==swap.getInitiator()) return null;
+                            return signers[swap.chainIdentifier].signer;
+                        }
                     }
                 }}>
                     <div className="d-flex flex-grow-1 flex-column">
-                        {!noWalletPaths.has(pathName) ? (
+                        {!noWalletPaths.has(pathName) && swapper==null ? (
                             <div className="no-wallet-overlay d-flex align-items-center">
                                 <div className="mt-auto height-50 d-flex justify-content-center align-items-center flex-fill">
                                     <div className="text-white text-center">
@@ -371,7 +376,7 @@ function WrappedApp() {
                         <BrowserRouter>
                             <Routes>
                                 <Route path="/">
-                                    <Route index element={<Swap supportedCurrencies={smartChainTokenArray}/>}></Route>
+                                    <Route index element={<SwapNew supportedCurrencies={smartChainTokenArray}/>}></Route>
                                     <Route path="scan">
                                         <Route index element={<QuickScan/>}/>
                                         <Route path="2" element={<QuickScanExecute/>}/>

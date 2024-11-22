@@ -78,8 +78,9 @@
 }
 
 .quickscan-summary-panel {
-  max-width: 400px;
+  max-width: 450px;
   min-width: 370px;
+  width: calc(100% - 2rem);
 }
 
 .swap-panel {

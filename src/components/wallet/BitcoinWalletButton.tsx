@@ -1,4 +1,4 @@
-import {Button, CloseButton, Dropdown, ListGroup, Modal} from "react-bootstrap";
+import {CloseButton, Dropdown, ListGroup, Modal} from "react-bootstrap";
 import * as React from "react";
 import {useContext, useEffect, useState} from "react";
 import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
@@ -98,35 +98,6 @@ export function BitcoinWalletModal(props: {
             </Modal.Body>
         </Modal>
     )
-}
-
-export function BitcoinWalletButton(props: {}) {
-
-    const {loading, modalOpened, setModalOpened, usableWallets, bitcoinWallet, connectWallet} = useBitcoinWalletChooser();
-
-    if(usableWallets.length===0 && bitcoinWallet==null) return <></>;
-
-    return (
-        <>
-            <BitcoinWalletModal
-                modalOpened={modalOpened}
-                setModalOpened={setModalOpened}
-                usableWallets={usableWallets}
-                connectWallet={connectWallet}
-            />
-
-            {bitcoinWallet==null ? (
-                <Button variant="dark" className={"me-2 px-3"} onClick={() => connectWallet()}>
-                    Connect BTC wallet
-                </Button>
-            ) : (
-                <Button variant="dark" className={"me-2 px-3"}>
-                    <img width={20} height={20} src={bitcoinWallet.getIcon()} className="me-2"/>
-                    {bitcoinWallet.getName()}
-                </Button>
-            )}
-        </>
-    );
 }
 
 const BitcoinConnectedWallet = React.forwardRef<any, any>(({ bitcoinWallet, onClick, noText }, ref) => (

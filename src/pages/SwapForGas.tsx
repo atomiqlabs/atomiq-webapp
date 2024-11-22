@@ -3,9 +3,6 @@ import {useLocation, useNavigate} from "react-router-dom";
 import {SwapTopbar} from "../components/SwapTopbar";
 import * as React from "react";
 import {useEffect, useRef, useState} from "react";
-import {
-    toHumanReadableString
-} from "../utils/Currencies";
 import Icon from "react-icons-kit";
 import {LnForGasSwap, Tokens} from "@atomiqlabs/sdk";
 import * as BN from "bn.js";
@@ -20,16 +17,16 @@ import {externalLink} from 'react-icons-kit/fa/externalLink';
 import {SwapsContext} from "../context/SwapsContext";
 import {TokenIcon} from "../components/TokenIcon";
 
-const swapAmount = 12500000;
-const swapAmountSol = swapAmount/1000000000;
+const defaultSwapAmount = "12500000";
 
 export function SwapForGas() {
     const {swapper, chains} = useContext(SwapsContext);
 
     const navigate = useNavigate();
 
-    const {search, state} = useLocation() as {search: string, state: {returnPath?: string, chainId?: string}};
-    const chainId = state.chainId ?? "SOLANA";
+    const {search, state} = useLocation() as {search: string, state: {returnPath?: string, chainId?: string, amount: string}};
+    const chainId = state?.chainId ?? "SOLANA";
+    const amount = new BN(state?.amount ?? defaultSwapAmount);
 
     const {lnWallet, setLnWallet} = useContext(WebLNContext);
     const [bitcoinError, setBitcoinError] = useState<string>(null);
@@ -87,7 +84,7 @@ export function SwapForGas() {
         setLoading(true);
         setError(null);
         setSuccess(false);
-        swapper.createTrustedLNForGasSwap(chainId, chains[chainId].signer.getAddress(), new BN(swapAmount)).then(swap => {
+        swapper.createTrustedLNForGasSwap(chainId, chains[chainId].signer.getAddress(), amount).then(swap => {
             if(abortControllerRef.current.signal.aborted) return;
             setLoading(false);
             setSwapData(swap);
@@ -160,7 +157,7 @@ export function SwapForGas() {
         setShowCopyOverlay(num);
     };
 
-    const nativeCurrency = swapper.getNativeToken(chainId);
+    const nativeCurrency = swapper==null ? null : swapper.getNativeToken(chainId);
 
     return (
         <>
@@ -179,7 +176,7 @@ export function SwapForGas() {
                         {success ? (
                             <Alert variant={"success"} className="mb-3">
                                 <p><strong>Swap successful</strong></p>
-                                Successfully swapped {swapData.getInput().amount} BTC to {swapAmountSol} SOL
+                                Successfully swapped {swapData.getInput().amount} BTC to {swapData.getOutput().amount} SOL
                             </Alert>
                         ) : ""}
 

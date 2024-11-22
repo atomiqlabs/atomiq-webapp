@@ -1,12 +1,13 @@
 import {SwapTopbar} from "../components/SwapTopbar";
 import {Alert, Badge, Button, Card, Col, ListGroup, Spinner} from "react-bootstrap";
 import {FromBTCSwapState, FromBTCLNSwap, FromBTCSwap, IFromBTCSwap, ISwap, IToBTCSwap, SwapType} from "@atomiqlabs/sdk";
-import {getCurrencySpec, toHumanReadableString} from "../utils/Currencies";
 import {useContext, useState} from "react";
 import {SwapsContext} from "../context/SwapsContext";
 import {useNavigate} from "react-router-dom";
 import * as React from "react";
+import {TokenIcon} from "../components/TokenIcon";
 
+//TODO: Requires completion for multiple signers
 function HistoryEntry(props: {
     swap: ISwap,
     onError: (error: string) => void
@@ -14,12 +15,13 @@ function HistoryEntry(props: {
 
     const [loading, setLoading] = useState<boolean>(false);
 
-    const {removeSwap} = useContext(SwapsContext);
+    const {removeSwap, getSigner} = useContext(SwapsContext);
+    const signer = getSigner(props.swap);
 
     const navigate = useNavigate();
 
-    const fromCurrency = getCurrencySpec(props.swap.getInToken());
-    const toCurrency = getCurrencySpec(props.swap.getOutToken());
+    const input = props.swap.getInput();
+    const output = props.swap.getOutput();
 
     if(props.swap instanceof IToBTCSwap) {
 
@@ -27,7 +29,7 @@ function HistoryEntry(props: {
             setLoading(true);
             props.onError(null);
             try {
-                await (props.swap as IToBTCSwap<any>).refund();
+                await (props.swap as IToBTCSwap<any>).refund(signer);
                 removeSwap(props.swap);
             } catch (e) {
                 props.onError(e.toString());
@@ -43,9 +45,9 @@ function HistoryEntry(props: {
                         <Badge bg="danger" className="ms-2">Failed (refundable)</Badge>
                     </div>
                     <small>
-                        <img src={fromCurrency.icon} className="currency-icon-history me-1"/>
-                        {toHumanReadableString(props.swap.getInAmount(), fromCurrency)} -{">"} <img src={toCurrency.icon} className="currency-icon-history me-1"/>
-                        {toHumanReadableString(props.swap.getOutAmount(), toCurrency)}
+                        <TokenIcon tokenOrTicker={input.token} className="currency-icon-history me-1"/>
+                        {input.amount} -{">"} <TokenIcon tokenOrTicker={output.token} className="currency-icon-history me-1"/>
+                        {output.amount}
                     </small>
                 </Col>
                 <Col xs={3} className="d-flex">
@@ -64,9 +66,9 @@ function HistoryEntry(props: {
             props.onError(null);
             try {
                 if(props.swap instanceof FromBTCSwap) {
-                    await props.swap.claim();
+                    await props.swap.claim(signer);
                 } else if(props.swap instanceof FromBTCLNSwap) {
-                    await props.swap.commitAndClaim();
+                    await props.swap.commitAndClaim(signer);
                 }
                 removeSwap(props.swap);
             } catch (e) {
@@ -89,9 +91,9 @@ function HistoryEntry(props: {
                         </Badge>
                     </div>
                     <small>
-                        <img src={fromCurrency.icon} className="currency-icon-history me-1"/>
-                        {toHumanReadableString(props.swap.getInAmount(), fromCurrency)} -{">"} <img src={toCurrency.icon} className="currency-icon-history me-1"/>
-                        {toHumanReadableString(props.swap.getOutAmount(), toCurrency)}
+                        <TokenIcon tokenOrTicker={input.token} className="currency-icon-history me-1"/>
+                        {input.amount} -{">"} <TokenIcon tokenOrTicker={output.token} className="currency-icon-history me-1"/>
+                        {output.amount}
                     </small>
                 </Col>
                 <Col xs={3} className="d-flex">
