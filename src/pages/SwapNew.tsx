@@ -76,6 +76,15 @@ export function SwapNew(props: {
     const addressRef = useRef<ValidatedInputRef>();
     const addressValidator = useCallback((val) => {
         if(val==="") return "Destination address/lightning invoice required";
+        if(val.startsWith("lightning:")) {
+            val = val.substring(10);
+        }
+        if(val.startsWith("bitcoin:")) {
+            val = val.substring(8);
+            if (val.includes("?")) {
+                val = val.split("?")[0];
+            }
+        }
         if(swapper.isValidLNURL(val) || swapper.isValidBitcoinAddress(val) || swapper.isValidLightningInvoice(val)) return null;
         try {
             if(swapper.getLightningInvoiceValue(val)==null) return "Lightning invoice needs to contain a payment amount!";

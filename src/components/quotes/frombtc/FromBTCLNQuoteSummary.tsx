@@ -22,6 +22,7 @@ import {useAsync} from "../../../utils/useAsync";
 import {useAbortSignalRef} from "../../../utils/useAbortSignal";
 import {SwapForGasAlert} from "../../SwapForGasAlert";
 
+import {ic_refresh} from 'react-icons-kit/md/ic_refresh';
 import {ic_flash_on_outline} from 'react-icons-kit/md/ic_flash_on_outline';
 import {ic_hourglass_disabled_outline} from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import {ic_watch_later_outline} from 'react-icons-kit/md/ic_watch_later_outline';
@@ -50,10 +51,8 @@ export function FromBTCLNQuoteSummary(props: {
     const {getSigner} = useContext(SwapsContext);
     const signer = getSigner(props.quote);
 
-    const {state, totalQuoteTime, quoteTimeRemaining} = useSwapState(props.quote);
+    const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote);
     const {autoClaim, setAutoClaim} = useAutoClaim();
-
-    const [isStarted, setStarted] = useState<boolean>(false);
 
     const [payingWithLNURL, setPayingWithLNURL] = useState<boolean>(false);
     const NFCScanning = useLNNFCScanner((result) => {
@@ -73,9 +72,7 @@ export function FromBTCLNQuoteSummary(props: {
     const {walletConnected, disconnect, pay, payLoading, payError} = useLightningWallet();
 
     const [onCommit, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
-        setStarted(true);
         if(setAmountLockRef.current!=null) setAmountLockRef.current(true);
-        if(walletConnected) pay(props.quote.getLightningInvoice());
         return props.quote.waitForPayment(abortSignalRef.current, 2).then(() => true).catch(err => {
             if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
             throw err;
@@ -102,6 +99,8 @@ export function FromBTCLNQuoteSummary(props: {
     const isQuoteExpired = state === FromBTCLNSwapState.QUOTE_EXPIRED ||
         (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !claiming && !paymentWaiting);
 
+    const isQuoteExpiredClaim = isQuoteExpired && props.quote.signatureData!=null;
+
     const isFailed = state===FromBTCLNSwapState.FAILED ||
         state===FromBTCLNSwapState.EXPIRED;
 
@@ -116,7 +115,7 @@ export function FromBTCLNQuoteSummary(props: {
 
     useEffect(() => {
         if(isQuoteExpired || isFailed || isSuccess) {
-            if(props.setAmountLock!=null) props.setAmountLock(false);
+            if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
         }
     }, [isQuoteExpired, isFailed, isSuccess]);
 
@@ -125,18 +124,25 @@ export function FromBTCLNQuoteSummary(props: {
         {icon: ic_swap_horizontal_circle_outline, text: "Send claim transaction", type: "disabled"}
     ];
     if(isCreated) executionSteps[0] = {icon: ic_flash_on_outline, text: "Awaiting lightning payment", type: "loading"};
-    if(isQuoteExpired) executionSteps[0] = {icon: ic_hourglass_disabled_outline, text: "Quote expired", type: "failed"};
+    if(isQuoteExpired && !isQuoteExpiredClaim) executionSteps[0] = {icon: ic_hourglass_disabled_outline, text: "Quote expired", type: "failed"};
+    if(isQuoteExpiredClaim) {
+        executionSteps[0] = {icon: ic_refresh, text: "Lightning payment reverted", type: "failed"};
+        executionSteps[1] = {icon: ic_watch_later_outline, text: "Claim transaction expired", type: "failed"};
+    }
     if(isClaimable) executionSteps[1] = {icon: ic_swap_horizontal_circle_outline, text: claiming ? "Sending claim transaction" : "Send claim transaction", type: "loading"};
     if(isSuccess) executionSteps[1] = {icon: ic_verified_outline, text: "Claim success", type: "success"};
-    if(isFailed) executionSteps[1] = {icon: ic_watch_later_outline, text: "Swap expired", type: "failed"};
+    if(isFailed) {
+        executionSteps[0] = {icon: ic_refresh, text: "Lightning payment reverted", type: "failed"};
+        executionSteps[1] = {icon: ic_watch_later_outline, text: "Swap expired", type: "failed"};
+    }
 
     return (
         <>
             <LightningHyperlinkModal openRef={openModalRef} hyperlink={props.quote.getQrData()}/>
 
-            {isStarted ? <StepByStep steps={executionSteps}/> : ""}
+            {isInitiated ? <StepByStep steps={executionSteps}/> : ""}
 
-            {state===FromBTCLNSwapState.PR_CREATED && !paymentWaiting ? (
+            {isCreated && !paymentWaiting ? (
                 signer===undefined ? (
                     <ButtonWithSigner chainId={props.quote.chainIdentifier} signer={signer} size="lg"/>
                 ) : (
@@ -153,14 +159,17 @@ export function FromBTCLNQuoteSummary(props: {
                             totalTime={totalQuoteTime}
                         />
 
-                        <ButtonWithSigner signer={signer} chainId={props.quote?.chainIdentifier} onClick={onCommit} disabled={!!props.notEnoughForGas} size="lg">
+                        <ButtonWithSigner signer={signer} chainId={props.quote?.chainIdentifier} onClick={() => {
+                            if(walletConnected) pay(props.quote.getLightningInvoice());
+                            onCommit();
+                        }} disabled={!!props.notEnoughForGas} size="lg">
                             Initiate swap
                         </ButtonWithSigner>
                     </>
                 )
             ) : ""}
 
-            {state===FromBTCLNSwapState.PR_CREATED && paymentWaiting ? (
+            {isCreated && paymentWaiting ? (
                 <>
                     <div className="tab-accent mb-3">
                         {payingWithLNURL ? (
@@ -320,7 +329,7 @@ export function FromBTCLNQuoteSummary(props: {
                         timeRemaining={quoteTimeRemaining}
                         totalTime={totalQuoteTime}
                         expiryText={
-                            paymentSuccess ? "Swap expired! Your lightning payment should refund shortly." : "Swap expired!"
+                            isInitiated ? "Swap expired! Your lightning payment should refund shortly." : "Swap expired!"
                         } quoteAlias="Swap"
                     />
 
@@ -330,7 +339,7 @@ export function FromBTCLNQuoteSummary(props: {
                 </>
             ) : ""}
 
-            <ScrollAnchor trigger={isStarted}></ScrollAnchor>
+            <ScrollAnchor trigger={isInitiated}></ScrollAnchor>
 
         </>
     )

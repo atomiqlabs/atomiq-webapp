@@ -24,6 +24,7 @@ function getStateToString(swapType: SwapType, state: number) {
 export function useSwapState<S extends number>(quote: ISwap<any, S>) {
 
     const [state, setState] = useState<S>(null);
+    const [isInitiated, setInitiated] = useState<boolean>(null);
 
     const [quoteTimeRemaining, setQuoteTimeRemaining] = useState<number>();
     const [initialQuoteTimeout, setInitialQuoteTimeout] = useState<number>();
@@ -55,7 +56,7 @@ export function useSwapState<S extends number>(quote: ISwap<any, S>) {
                 }
             }
             if(quote.getType()===SwapType.FROM_BTC) {
-                if(state > FromBTCSwapState.CLAIM_COMMITED) {
+                if(state >= FromBTCSwapState.CLAIM_COMMITED) {
                     expiryTime.current = (quote as ISwap as FromBTCSwap<any>).getTimeoutTime();
                 }
             }
@@ -67,12 +68,14 @@ export function useSwapState<S extends number>(quote: ISwap<any, S>) {
 
         checkExpiry(quote.getState());
         setState(quote.getState());
+        setInitiated(quote.isInitiated());
 
         let listener;
         quote.events.on("swapState", listener = (quote: ISwap<any, S>) => {
             const state = quote.getState();
             checkExpiry(state);
             setState(state);
+            setInitiated(quote.isInitiated());
             console.log("useSwapState("+quote.getPaymentHashString()+"): State changed to: "+getStateToString(quote.getType(), state), quote);
             if(quote.isFinished()) {
                 setInitialQuoteTimeout(null);
@@ -90,6 +93,7 @@ export function useSwapState<S extends number>(quote: ISwap<any, S>) {
     return {
         state,
         quoteTimeRemaining,
-        totalQuoteTime: initialQuoteTimeout
+        totalQuoteTime: initialQuoteTimeout,
+        isInitiated
     };
 }

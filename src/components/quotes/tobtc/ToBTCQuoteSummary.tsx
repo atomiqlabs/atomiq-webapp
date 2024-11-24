@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useCallback, useContext, useEffect, useState} from "react";
+import {useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {Alert, Button, Spinner} from "react-bootstrap";
 import {IToBTCSwap, SwapType, ToBTCLNSwap, ToBTCSwap, ToBTCSwapState} from "@atomiqlabs/sdk";
 import {toHumanReadableString} from "../../../utils/Currencies";
@@ -14,8 +14,9 @@ import {useAsync} from "../../../utils/useAsync";
 import {useAbortSignalRef} from "../../../utils/useAbortSignal";
 import {useStateRef} from "../../../utils/useStateRef";
 
-import {ic_settings_backup_restore_outline} from 'react-icons-kit/md/ic_settings_backup_restore_outline'
-import {ic_error_outline_outline} from 'react-icons-kit/md/ic_error_outline_outline'
+import {ic_play_circle_outline} from 'react-icons-kit/md/ic_play_circle_outline';
+import {ic_settings_backup_restore_outline} from 'react-icons-kit/md/ic_settings_backup_restore_outline';
+import {ic_error_outline_outline} from 'react-icons-kit/md/ic_error_outline_outline';
 import {ic_flash_on_outline} from 'react-icons-kit/md/ic_flash_on_outline';
 import {ic_hourglass_disabled_outline} from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import {ic_hourglass_empty_outline} from 'react-icons-kit/md/ic_hourglass_empty_outline';
@@ -54,10 +55,31 @@ export function ToBTCQuoteSummary(props: {
     const {swapper, getSigner} = useContext(SwapsContext);
     const signer = getSigner(props.quote);
 
-    const {state, totalQuoteTime, quoteTimeRemaining} = useSwapState(props.quote);
+    const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote);
 
-    const [confidenceWarning, setConfidenceWarning] = useState<boolean>(false);
-    const [nonCustodialWarning, setNonCustodialWarning] = useState<boolean>(false);
+    const [nonCustodialWarning, confidenceWarning] = useMemo(() => {
+        if(props.quote.getType()===SwapType.TO_BTCLN) {
+            const _quote = props.quote as ToBTCLNSwap;
+            if(_quote.getConfidence()===0) {
+                let isSnowflake: boolean = false;
+                let isNonCustodial: boolean = false;
+
+                const parsedRequest = bolt11.decode(_quote.getLightningInvoice());
+
+                if(parsedRequest.tagsObject.routing_info!=null) {
+                    for (let route of parsedRequest.tagsObject.routing_info) {
+                        isNonCustodial = true;
+                        if (SNOWFLAKE_LIST.has(route.pubkey)) {
+                            isSnowflake = true;
+                        }
+                    }
+                }
+
+                return [isNonCustodial, !isSnowflake];
+            }
+        }
+        return [false, false];
+    }, [props.quote])
 
     const setAmountLockRef = useStateRef(props.setAmountLock);
 
@@ -93,38 +115,8 @@ export function ToBTCQuoteSummary(props: {
     useEffect(() => {
         const abortController = new AbortController();
 
-        if(state===ToBTCSwapState.CREATED && props.quote.getType()===SwapType.TO_BTCLN) {
-            const _quote = props.quote as ToBTCLNSwap;
-            if(_quote.getConfidence()===0) {
-                let isSnowflake: boolean = false;
-                let isNonCustodial: boolean = false;
-
-                const parsedRequest = bolt11.decode(_quote.getLightningInvoice());
-
-                if(parsedRequest.tagsObject.routing_info!=null) {
-                    for (let route of parsedRequest.tagsObject.routing_info) {
-                        isNonCustodial = true;
-                        if (SNOWFLAKE_LIST.has(route.pubkey)) {
-                            isSnowflake = true;
-                        }
-                    }
-                }
-
-                if(confidenceWarning===isSnowflake) setConfidenceWarning(!isSnowflake);
-                setNonCustodialWarning(!confidenceWarning && isNonCustodial);
-            }
-        }
-
         if(state===ToBTCSwapState.COMMITED) {
             retryWaitForPayment(abortController.signal);
-        }
-
-        if(state===ToBTCSwapState.SOFT_CLAIMED || state===ToBTCSwapState.CLAIMED || state===ToBTCSwapState.REFUNDED) {
-            console.log("ToBTCQuoteSummary: useEffect(state): Swap finished!");
-            if(setAmountLockRef.current!=null) {
-                console.log("ToBTCQuoteSummary: useEffect(state): Call unlock");
-                setAmountLockRef.current(false);
-            }
         }
 
         return () => abortController.abort();
@@ -178,10 +170,19 @@ export function ToBTCQuoteSummary(props: {
     const isRefunding = state===ToBTCSwapState.REFUNDABLE && refundLoading;
     const isRefunded = state===ToBTCSwapState.REFUNDED;
 
+    useEffect(() => {
+        console.log("ToBTCQuoteSummary: useEffect(state): Swap finished!");
+        if(isExpired || isSuccess || isRefunded) {
+            console.log("ToBTCQuoteSummary: useEffect(state): Call unlock");
+            if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
+        }
+    }, [isExpired, isSuccess, isRefunded]);
+
     const executionSteps: SingleStep[] = [
         {icon: ic_check_circle_outline, text: "Init transaction confirmed", type: "success"}
     ];
-    if(isCreated) executionSteps[0] = {icon: ic_hourglass_empty_outline, text: "Sending init transaction", type: "loading"};
+    if(isCreated && !continueLoading) executionSteps[0] = {icon: ic_play_circle_outline, text: "Send init transaction", type: "loading"};
+    if(isCreated && continueLoading) executionSteps[0] = {icon: ic_hourglass_empty_outline, text: "Sending init transaction", type: "loading"};
     if(isExpired) executionSteps[0] = {icon: ic_hourglass_disabled_outline, text: "Quote expired", type: "failed"};
     if(props.quote.getType()===SwapType.TO_BTCLN) {
         executionSteps[1] = {icon: ic_flash_on_outline, text: "Lightning payout", type: "disabled"};
@@ -200,17 +201,17 @@ export function ToBTCQuoteSummary(props: {
 
     return (
         <>
-            <Alert className="text-center mb-3" show={!continueSuccess && confidenceWarning} variant="warning" onClose={() => setConfidenceWarning(false)} dismissible closeVariant="white">
+            <Alert className="text-center mb-3" show={isCreated && confidenceWarning} variant="warning">
                 <strong>Payment might likely fail!</strong>
                 <label>We weren't able to check if the recipient is reachable (send probe request) on the Lightning network, this is common with some wallets, but could also indicate that the destination is unreachable and payment might therefore fail (you will get a refund in that case)!</label>
             </Alert>
 
-            <Alert className="text-center mb-3" show={!continueSuccess && nonCustodialWarning && props.type==="swap"} variant="success" onClose={() => setNonCustodialWarning(false)} dismissible closeVariant="white">
+            <Alert className="text-center mb-3" show={isCreated && nonCustodialWarning && props.type==="swap"} variant="success">
                 <strong>Non-custodial wallet info</strong>
                 <label>Please make sure your lightning wallet is online & running to be able to receive a lightning network payment, otherwise the payment will fail (you will get a refund in that case)!</label>
             </Alert>
 
-            {(!isCreated || continueLoading) && !isExpired ? <StepByStep steps={executionSteps}/> : ""}
+            {isInitiated ? <StepByStep steps={executionSteps}/> : ""}
 
             <Alert className="text-center mb-3" show={!!notEnoughBalanceError} variant="danger" closeVariant="white">
                 <strong>Not enough funds</strong>
@@ -223,6 +224,11 @@ export function ToBTCQuoteSummary(props: {
                 totalTime={totalQuoteTime}
                 show={(isExpired || isCreated) && !continueLoading && !props.notEnoughForGas && signer!==undefined && !notEnoughBalanceError}
             />
+
+            <Alert className="text-center mb-3" show={continueError!=null} variant="danger" closeVariant="white">
+                <strong>Swap initialization error</strong>
+                <label>{continueError?.message}</label>
+            </Alert>
 
             {(
                 (isCreated && !notEnoughBalanceError) ||
@@ -237,19 +243,14 @@ export function ToBTCQuoteSummary(props: {
                             <label>You need at least 0.005 SOL to pay for fees and deposits!</label>
                         </Alert>
 
-                        <Alert className="text-center mb-3" show={continueError!=null} variant="danger" closeVariant="white">
-                            <strong>Swap initialization error</strong>
-                            <label>{continueError?.message}</label>
-                        </Alert>
-
                         <ButtonWithSigner
                             signer={signer}
                             chainId={props.quote.chainIdentifier}
                             onClick={() => onContinue()}
-                            disabled={state===ToBTCSwapState.COMMITED || continueLoading || !!props.notEnoughForGas}
+                            disabled={isPaying || continueLoading || !!props.notEnoughForGas}
                             size="lg"
                         >
-                            {state===ToBTCSwapState.COMMITED || continueLoading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
+                            {isPaying || continueLoading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                             {props.type==="payment" ? "Pay" : "Swap"}
                         </ButtonWithSigner>
                     </>
@@ -286,6 +287,12 @@ export function ToBTCQuoteSummary(props: {
                         <strong>Swap failed</strong>
                         <label>Swap failed, you can refund your prior deposit</label>
                     </Alert>
+
+                    <Alert variant="danger" show={!!refundError} className="mb-3">
+                        <strong>Refund error</strong>
+                        <label>{refundError?.message}</label>
+                    </Alert>
+
                     <ButtonWithSigner signer={signer} chainId={props.quote.chainIdentifier} onClick={onRefund} disabled={refundLoading} variant="secondary">
                         {refundLoading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                         Refund deposit

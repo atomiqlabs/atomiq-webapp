@@ -49,15 +49,13 @@ export function useAddressData(addressString) {
             if (_amount != null)
                 amountBN = fromHumanReadableString(_amount, Tokens.BITCOIN.BTC);
             setResult({ swapType: SwapType.TO_BTC, address: resultText, amount: toHumanReadable(amountBN, Tokens.BITCOIN.BTC), isSend: true });
-            return;
         }
-        if (swapper.isValidLightningInvoice(resultText)) {
+        else if (swapper.isValidLightningInvoice(resultText)) {
             //Lightning send
             const amountBN = swapper.getLightningInvoiceValue(resultText);
             setResult({ swapType: SwapType.TO_BTCLN, address: resultText, amount: toHumanReadable(amountBN, Tokens.BITCOIN.BTCLN), isLnurl: false, isSend: true });
-            return;
         }
-        if (swapper.isValidLNURL(resultText)) {
+        else if (swapper.isValidLNURL(resultText)) {
             //Check LNURL type
             const processLNURL = (result) => {
                 console.log(result);
@@ -85,24 +83,26 @@ export function useAddressData(addressString) {
             if (stateLnurlParams != null) {
                 console.log("LNurl params passed: ", stateLnurlParams);
                 processLNURL(stateLnurlParams);
-                return;
             }
-            setResult(null);
-            setLoading(true);
-            swapper.getLNURLTypeAndData(resultText).then(resp => {
-                if (cancelled)
-                    return;
-                processLNURL(resp);
-                setLoading(false);
-            }).catch((e) => {
-                if (cancelled)
-                    return;
-                setResult({ address: resultText, isLnurl: true, error: "Failed to contact LNURL service, check you internet connection and retry later." });
-                setLoading(false);
-            });
-            return;
+            else {
+                setResult(null);
+                setLoading(true);
+                swapper.getLNURLTypeAndData(resultText).then(resp => {
+                    if (cancelled)
+                        return;
+                    processLNURL(resp);
+                    setLoading(false);
+                }).catch((e) => {
+                    if (cancelled)
+                        return;
+                    setResult({ address: resultText, isLnurl: true, error: "Failed to contact LNURL service, check your internet connection and retry later." });
+                    setLoading(false);
+                });
+            }
         }
-        setResult({ address: resultText, error: "Invalid address, lightning invoice or LNURL!" });
+        else {
+            setResult({ address: resultText, error: "Invalid address, lightning invoice or LNURL!" });
+        }
         return () => {
             cancelled = true;
             setLoading(false);

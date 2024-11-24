@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Alert, Button, Spinner } from "react-bootstrap";
 import { SwapType, ToBTCSwapState } from "@atomiqlabs/sdk";
 import { toHumanReadableString } from "../../../utils/Currencies";
@@ -12,6 +12,7 @@ import { SwapExpiryProgressBar } from "../../SwapExpiryProgressBar";
 import { useAsync } from "../../../utils/useAsync";
 import { useAbortSignalRef } from "../../../utils/useAbortSignal";
 import { useStateRef } from "../../../utils/useStateRef";
+import { ic_play_circle_outline } from 'react-icons-kit/md/ic_play_circle_outline';
 import { ic_settings_backup_restore_outline } from 'react-icons-kit/md/ic_settings_backup_restore_outline';
 import { ic_error_outline_outline } from 'react-icons-kit/md/ic_error_outline_outline';
 import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
@@ -39,9 +40,27 @@ Steps on-chain:
 export function ToBTCQuoteSummary(props) {
     const { swapper, getSigner } = useContext(SwapsContext);
     const signer = getSigner(props.quote);
-    const { state, totalQuoteTime, quoteTimeRemaining } = useSwapState(props.quote);
-    const [confidenceWarning, setConfidenceWarning] = useState(false);
-    const [nonCustodialWarning, setNonCustodialWarning] = useState(false);
+    const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
+    const [nonCustodialWarning, confidenceWarning] = useMemo(() => {
+        if (props.quote.getType() === SwapType.TO_BTCLN) {
+            const _quote = props.quote;
+            if (_quote.getConfidence() === 0) {
+                let isSnowflake = false;
+                let isNonCustodial = false;
+                const parsedRequest = bolt11.decode(_quote.getLightningInvoice());
+                if (parsedRequest.tagsObject.routing_info != null) {
+                    for (let route of parsedRequest.tagsObject.routing_info) {
+                        isNonCustodial = true;
+                        if (SNOWFLAKE_LIST.has(route.pubkey)) {
+                            isSnowflake = true;
+                        }
+                    }
+                }
+                return [isNonCustodial, !isSnowflake];
+            }
+        }
+        return [false, false];
+    }, [props.quote]);
     const setAmountLockRef = useStateRef(props.setAmountLock);
     const [onContinue, continueLoading, continueSuccess, continueError] = useAsync((skipChecks) => {
         if (setAmountLockRef.current)
@@ -71,34 +90,8 @@ export function ToBTCQuoteSummary(props) {
     //Check if we should display any warnings in CREATED state
     useEffect(() => {
         const abortController = new AbortController();
-        if (state === ToBTCSwapState.CREATED && props.quote.getType() === SwapType.TO_BTCLN) {
-            const _quote = props.quote;
-            if (_quote.getConfidence() === 0) {
-                let isSnowflake = false;
-                let isNonCustodial = false;
-                const parsedRequest = bolt11.decode(_quote.getLightningInvoice());
-                if (parsedRequest.tagsObject.routing_info != null) {
-                    for (let route of parsedRequest.tagsObject.routing_info) {
-                        isNonCustodial = true;
-                        if (SNOWFLAKE_LIST.has(route.pubkey)) {
-                            isSnowflake = true;
-                        }
-                    }
-                }
-                if (confidenceWarning === isSnowflake)
-                    setConfidenceWarning(!isSnowflake);
-                setNonCustodialWarning(!confidenceWarning && isNonCustodial);
-            }
-        }
         if (state === ToBTCSwapState.COMMITED) {
             retryWaitForPayment(abortController.signal);
-        }
-        if (state === ToBTCSwapState.SOFT_CLAIMED || state === ToBTCSwapState.CLAIMED || state === ToBTCSwapState.REFUNDED) {
-            console.log("ToBTCQuoteSummary: useEffect(state): Swap finished!");
-            if (setAmountLockRef.current != null) {
-                console.log("ToBTCQuoteSummary: useEffect(state): Call unlock");
-                setAmountLockRef.current(false);
-            }
         }
         return () => abortController.abort();
     }, [state]);
@@ -145,10 +138,20 @@ export function ToBTCQuoteSummary(props) {
     const isRefundable = state === ToBTCSwapState.REFUNDABLE && !refundLoading;
     const isRefunding = state === ToBTCSwapState.REFUNDABLE && refundLoading;
     const isRefunded = state === ToBTCSwapState.REFUNDED;
+    useEffect(() => {
+        console.log("ToBTCQuoteSummary: useEffect(state): Swap finished!");
+        if (isExpired || isSuccess || isRefunded) {
+            console.log("ToBTCQuoteSummary: useEffect(state): Call unlock");
+            if (setAmountLockRef.current != null)
+                setAmountLockRef.current(false);
+        }
+    }, [isExpired, isSuccess, isRefunded]);
     const executionSteps = [
         { icon: ic_check_circle_outline, text: "Init transaction confirmed", type: "success" }
     ];
-    if (isCreated)
+    if (isCreated && !continueLoading)
+        executionSteps[0] = { icon: ic_play_circle_outline, text: "Send init transaction", type: "loading" };
+    if (isCreated && continueLoading)
         executionSteps[0] = { icon: ic_hourglass_empty_outline, text: "Sending init transaction", type: "loading" };
     if (isExpired)
         executionSteps[0] = { icon: ic_hourglass_disabled_outline, text: "Quote expired", type: "failed" };
@@ -176,8 +179,8 @@ export function ToBTCQuoteSummary(props) {
         executionSteps[2] = { icon: ic_hourglass_empty_outline, text: "Sending refund transaction", type: "loading" };
     if (isRefunded)
         executionSteps[2] = { icon: ic_check_circle_outline, text: "Refunded", type: "success" };
-    return (_jsxs(_Fragment, { children: [_jsxs(Alert, { className: "text-center mb-3", show: !continueSuccess && confidenceWarning, variant: "warning", onClose: () => setConfidenceWarning(false), dismissible: true, closeVariant: "white", children: [_jsx("strong", { children: "Payment might likely fail!" }), _jsx("label", { children: "We weren't able to check if the recipient is reachable (send probe request) on the Lightning network, this is common with some wallets, but could also indicate that the destination is unreachable and payment might therefore fail (you will get a refund in that case)!" })] }), _jsxs(Alert, { className: "text-center mb-3", show: !continueSuccess && nonCustodialWarning && props.type === "swap", variant: "success", onClose: () => setNonCustodialWarning(false), dismissible: true, closeVariant: "white", children: [_jsx("strong", { children: "Non-custodial wallet info" }), _jsx("label", { children: "Please make sure your lightning wallet is online & running to be able to receive a lightning network payment, otherwise the payment will fail (you will get a refund in that case)!" })] }), (!isCreated || continueLoading) && !isExpired ? _jsx(StepByStep, { steps: executionSteps }) : "", _jsxs(Alert, { className: "text-center mb-3", show: !!notEnoughBalanceError, variant: "danger", closeVariant: "white", children: [_jsx("strong", { children: "Not enough funds" }), _jsx("label", { children: notEnoughBalanceError })] }), _jsx(SwapExpiryProgressBar, { expired: isExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: (isExpired || isCreated) && !continueLoading && !props.notEnoughForGas && signer !== undefined && !notEnoughBalanceError }), ((isCreated && !notEnoughBalanceError) ||
-                isPaying) ? (signer === undefined ? (_jsx(ButtonWithSigner, { chainId: props.quote.chainIdentifier, signer: signer, size: "lg" })) : (_jsxs(_Fragment, { children: [_jsxs(Alert, { className: "text-center mb-3", show: !!props.notEnoughForGas, variant: "danger", closeVariant: "white", children: [_jsx("strong", { children: "Not enough SOL for fees" }), _jsx("label", { children: "You need at least 0.005 SOL to pay for fees and deposits!" })] }), _jsxs(Alert, { className: "text-center mb-3", show: continueError != null, variant: "danger", closeVariant: "white", children: [_jsx("strong", { children: "Swap initialization error" }), _jsx("label", { children: continueError?.message })] }), _jsxs(ButtonWithSigner, { signer: signer, chainId: props.quote.chainIdentifier, onClick: () => onContinue(), disabled: state === ToBTCSwapState.COMMITED || continueLoading || !!props.notEnoughForGas, size: "lg", children: [state === ToBTCSwapState.COMMITED || continueLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", props.type === "payment" ? "Pay" : "Swap"] })] }))) : "", isPayError ? (_jsxs(_Fragment, { children: [_jsxs(Alert, { className: "text-center mb-3", variant: "danger", closeVariant: "white", children: [_jsx("strong", { children: "Swap error" }), _jsx("label", { children: paymentError })] }), _jsx(Button, { onClick: () => retryWaitForPayment(), variant: "secondary", children: "Retry" })] })) : "", isSuccess ? (_jsxs(Alert, { variant: "success", className: props.type === "payment" ? "mb-0" : "mb-3", children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was executed successfully" }), props.quote.getType() === SwapType.TO_BTC ? (_jsx(Button, { href: FEConstants.btcBlockExplorer + props.quote.getBitcoinTxId(), target: "_blank", variant: "success", className: "mt-3", children: "View transaction" })) : ""] })) : "", isRefundable || isRefunding ? (_jsxs(_Fragment, { children: [_jsxs(Alert, { variant: "danger", className: "mb-3", children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Swap failed, you can refund your prior deposit" })] }), _jsxs(ButtonWithSigner, { signer: signer, chainId: props.quote.chainIdentifier, onClick: onRefund, disabled: refundLoading, variant: "secondary", children: [refundLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Refund deposit"] })] })) : "", _jsxs(Alert, { variant: "danger", className: "mb-3", show: isRefunded, children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Deposit refunded successfully!" })] }), (isRefunded ||
+    return (_jsxs(_Fragment, { children: [_jsxs(Alert, { className: "text-center mb-3", show: isCreated && confidenceWarning, variant: "warning", children: [_jsx("strong", { children: "Payment might likely fail!" }), _jsx("label", { children: "We weren't able to check if the recipient is reachable (send probe request) on the Lightning network, this is common with some wallets, but could also indicate that the destination is unreachable and payment might therefore fail (you will get a refund in that case)!" })] }), _jsxs(Alert, { className: "text-center mb-3", show: isCreated && nonCustodialWarning && props.type === "swap", variant: "success", children: [_jsx("strong", { children: "Non-custodial wallet info" }), _jsx("label", { children: "Please make sure your lightning wallet is online & running to be able to receive a lightning network payment, otherwise the payment will fail (you will get a refund in that case)!" })] }), isInitiated ? _jsx(StepByStep, { steps: executionSteps }) : "", _jsxs(Alert, { className: "text-center mb-3", show: !!notEnoughBalanceError, variant: "danger", closeVariant: "white", children: [_jsx("strong", { children: "Not enough funds" }), _jsx("label", { children: notEnoughBalanceError })] }), _jsx(SwapExpiryProgressBar, { expired: isExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: (isExpired || isCreated) && !continueLoading && !props.notEnoughForGas && signer !== undefined && !notEnoughBalanceError }), _jsxs(Alert, { className: "text-center mb-3", show: continueError != null, variant: "danger", closeVariant: "white", children: [_jsx("strong", { children: "Swap initialization error" }), _jsx("label", { children: continueError?.message })] }), ((isCreated && !notEnoughBalanceError) ||
+                isPaying) ? (signer === undefined ? (_jsx(ButtonWithSigner, { chainId: props.quote.chainIdentifier, signer: signer, size: "lg" })) : (_jsxs(_Fragment, { children: [_jsxs(Alert, { className: "text-center mb-3", show: !!props.notEnoughForGas, variant: "danger", closeVariant: "white", children: [_jsx("strong", { children: "Not enough SOL for fees" }), _jsx("label", { children: "You need at least 0.005 SOL to pay for fees and deposits!" })] }), _jsxs(ButtonWithSigner, { signer: signer, chainId: props.quote.chainIdentifier, onClick: () => onContinue(), disabled: isPaying || continueLoading || !!props.notEnoughForGas, size: "lg", children: [isPaying || continueLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", props.type === "payment" ? "Pay" : "Swap"] })] }))) : "", isPayError ? (_jsxs(_Fragment, { children: [_jsxs(Alert, { className: "text-center mb-3", variant: "danger", closeVariant: "white", children: [_jsx("strong", { children: "Swap error" }), _jsx("label", { children: paymentError })] }), _jsx(Button, { onClick: () => retryWaitForPayment(), variant: "secondary", children: "Retry" })] })) : "", isSuccess ? (_jsxs(Alert, { variant: "success", className: props.type === "payment" ? "mb-0" : "mb-3", children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was executed successfully" }), props.quote.getType() === SwapType.TO_BTC ? (_jsx(Button, { href: FEConstants.btcBlockExplorer + props.quote.getBitcoinTxId(), target: "_blank", variant: "success", className: "mt-3", children: "View transaction" })) : ""] })) : "", isRefundable || isRefunding ? (_jsxs(_Fragment, { children: [_jsxs(Alert, { variant: "danger", className: "mb-3", children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Swap failed, you can refund your prior deposit" })] }), _jsxs(Alert, { variant: "danger", show: !!refundError, className: "mb-3", children: [_jsx("strong", { children: "Refund error" }), _jsx("label", { children: refundError?.message })] }), _jsxs(ButtonWithSigner, { signer: signer, chainId: props.quote.chainIdentifier, onClick: onRefund, disabled: refundLoading, variant: "secondary", children: [refundLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Refund deposit"] })] })) : "", _jsxs(Alert, { variant: "danger", className: "mb-3", show: isRefunded, children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Deposit refunded successfully!" })] }), (isRefunded ||
                 isExpired ||
                 !!notEnoughBalanceError ||
                 (isSuccess && props.type !== "payment")) ? (_jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })) : ""] }));

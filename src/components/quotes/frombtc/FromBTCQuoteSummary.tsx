@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useContext, useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {Alert, Badge, Button, Spinner} from "react-bootstrap";
 import {QRCodeSVG} from "qrcode.react";
 import ValidatedInput, {ValidatedInputRef} from "../../ValidatedInput";
@@ -20,6 +20,7 @@ import {useAsync} from "../../../utils/useAsync";
 import {SwapExpiryProgressBar} from "../../SwapExpiryProgressBar";
 import {SwapForGasAlert} from "../../SwapForGasAlert";
 
+import {ic_gavel_outline} from 'react-icons-kit/md/ic_gavel_outline';
 import {ic_hourglass_disabled_outline} from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import {ic_watch_later_outline} from 'react-icons-kit/md/ic_watch_later_outline';
 import {ic_hourglass_empty_outline} from 'react-icons-kit/md/ic_hourglass_empty_outline';
@@ -31,6 +32,7 @@ import {ic_swap_horizontal_circle_outline} from 'react-icons-kit/md/ic_swap_hori
 import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
 import {SingleStep, StepByStep} from "../../StepByStep";
 import {useStateRef} from "../../../utils/useStateRef";
+import {useAbortSignalRef} from "../../../utils/useAbortSignal";
 
 /*
 Steps:
@@ -52,26 +54,56 @@ export function FromBTCQuoteSummary(props: {
     const {getSigner} = useContext(SwapsContext);
     const signer = getSigner(props.quote);
 
-    const {state, totalQuoteTime, quoteTimeRemaining} = useSwapState(props.quote);
+    const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote);
+
+    const {walletConnected, disconnect, pay, payLoading, paySuccess, payTxId, payError} = useOnchainWallet();
+    const sendBitcoinTransactionRef = useRef(null);
+    sendBitcoinTransactionRef.current = () => {
+        if(!!walletConnected) pay(
+            props.quote.getBitcoinAddress(), props.quote.getInput().rawAmount,
+            props.feeRate!=null && props.feeRate!==0 ? props.feeRate : null
+        );
+    };
 
     const setAmountLockRef = useStateRef(props.setAmountLock);
 
     const [onCommit, commitLoading, commitSuccess, commitError] = useAsync(() => {
         if(setAmountLockRef.current!=null) setAmountLockRef.current(true);
-        return props.quote.commit(signer).catch(e => {
+        return props.quote.commit(signer).then(resp => {
+            sendBitcoinTransactionRef.current();
+            return resp;
+        }).catch(e => {
             if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
             throw e;
         });
     }, [props.quote, signer]);
+
+    const abortSignalRef = useAbortSignalRef([props.quote]);
+
+    const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => {
+        return props.quote.waitForBitcoinTransaction(
+            abortSignalRef.current, null,
+            (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
+                if(txId==null) {
+                    setTxData(null);
+                    return;
+                }
+                console.log("BTC tx eta: ", txEtaMs);
+                setTxData({
+                    txId,
+                    confirmations,
+                    confTarget: confirmationTarget,
+                    txEtaMs
+                });
+            }
+        );
+    }, [props.quote]);
 
     const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
         return props.quote.claim(signer);
     }, [props.quote, signer]);
 
     const textFieldRef = useRef<ValidatedInputRef>();
-
-    const {walletConnected, disconnect, pay, payLoading, paySuccess, payTxId, payError} = useOnchainWallet();
-    const sendBitcoinTransaction = () => pay(props.quote.getBitcoinAddress(), props.quote.getInput().rawAmount, props.feeRate!=null && props.feeRate!==0 ? props.feeRate : null)
 
     const [txData, setTxData] = useState<{
         txId: string,
@@ -81,30 +113,15 @@ export function FromBTCQuoteSummary(props: {
     }>(null);
 
     useEffect(() => {
-        const abortController = new AbortController();
-
-        if(state===FromBTCSwapState.CLAIM_COMMITED || state===FromBTCSwapState.EXPIRED) {
+        if(state===FromBTCSwapState.CLAIM_COMMITED) {
+            onWaitForPayment();
+        }
+        if(state===FromBTCSwapState.EXPIRED) {
             props.quote.getBitcoinPayment().then(resp => {
-                if(resp==null && walletConnected!=null) {
-                    sendBitcoinTransaction();
-                }
+                if(resp==null) return;
+                onWaitForPayment();
             });
-            props.quote.waitForBitcoinTransaction(abortController.signal, null, (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
-                console.log("BTC tx eta: ", txEtaMs);
-                setTxData({
-                    txId,
-                    confirmations,
-                    confTarget: confirmationTarget,
-                    txEtaMs
-                });
-            }).catch(e => console.error(e));
         }
-
-        if(state===FromBTCSwapState.FAILED || state===FromBTCSwapState.CLAIM_CLAIMED) {
-            if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
-        }
-
-        return () => abortController.abort();
     }, [state]);
 
     const hasEnoughBalance = useMemo(
@@ -124,6 +141,12 @@ export function FromBTCQuoteSummary(props: {
     const isFailed = state===FromBTCSwapState.FAILED;
     const isSuccess = state===FromBTCSwapState.CLAIM_CLAIMED;
 
+    useEffect(() => {
+        if(isSuccess || isFailed || isExpired) {
+            if (setAmountLockRef.current != null) setAmountLockRef.current(false);
+        }
+    }, [isSuccess, isFailed, isExpired]);
+
     /*
     Steps:
     1. Opening swap address -> Swap address opened
@@ -136,7 +159,8 @@ export function FromBTCQuoteSummary(props: {
         {icon: ic_swap_horizontal_circle_outline, text: "Claim transaction", type: "disabled"},
     ];
 
-    if(isCreated) executionSteps[0] = {icon: ic_hourglass_empty_outline, text: "Opening swap address", type: "loading"};
+    if(isCreated && !commitLoading) executionSteps[0] = {icon: ic_gavel_outline, text: "Open swap address", type: "loading"};
+    if(isCreated && commitLoading) executionSteps[0] = {icon: ic_hourglass_empty_outline, text: "Opening swap address", type: "loading"};
     if(isQuoteExpired) executionSteps[0] = {icon: ic_hourglass_disabled_outline, text: "Quote expired", type: "failed"};
 
     if(isCommited) executionSteps[1] = {icon: ic_pending_outline, text: "Awaiting bitcoin payment", type: "loading"};
@@ -150,7 +174,7 @@ export function FromBTCQuoteSummary(props: {
 
     return (
         <>
-            {(!isCreated || commitLoading) && !isQuoteExpired ? <StepByStep steps={executionSteps}/> : ""}
+            {isInitiated ? <StepByStep steps={executionSteps}/> : ""}
 
             <SwapExpiryProgressBar
                 expired={isQuoteExpired}
@@ -159,17 +183,17 @@ export function FromBTCQuoteSummary(props: {
                 show={(isCreated || isQuoteExpired) && !commitLoading && !props.notEnoughForGas && signer!==undefined && hasEnoughBalance}
             />
 
+            <Alert className="text-center mb-3" show={commitError!=null} variant="danger" closeVariant="white">
+                <strong>Swap initialization error</strong>
+                <label>{commitError?.message}</label>
+            </Alert>
+
             {isCreated && hasEnoughBalance ? (
                 signer===undefined ? (
                     <ButtonWithSigner chainId={props.quote.chainIdentifier} signer={signer} size="lg"/>
                 ) : (
                     <>
                         <SwapForGasAlert notEnoughForGas={props.notEnoughForGas} quote={props.quote}/>
-
-                        <Alert className="text-center mb-3" show={commitError!=null} variant="danger" closeVariant="white">
-                            <strong>Swap initialization error</strong>
-                            <label>{commitError?.message}</label>
-                        </Alert>
 
                         <ButtonWithSigner
                             signer={signer}
@@ -208,7 +232,7 @@ export function FromBTCQuoteSummary(props: {
                                                 variant="light"
                                                 className="d-flex flex-row align-items-center"
                                                 disabled={payLoading}
-                                                onClick={sendBitcoinTransaction}
+                                                onClick={sendBitcoinTransactionRef.current}
                                             >
                                                 {payLoading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                                                 Pay with <img width={20} height={20} src={walletConnected.getIcon()} className="ms-2 me-1"/> {walletConnected.getName()}
@@ -273,13 +297,27 @@ export function FromBTCQuoteSummary(props: {
                             </CopyOverlay>
                         )}
                     </div>
+
                     <SwapExpiryProgressBar
                         timeRemaining={quoteTimeRemaining} totalTime={totalQuoteTime}
                         expiryText="Swap address expired, please do not send any funds!" quoteAlias="Swap address"
                     />
-                    <Button onClick={props.abortSwap} variant="danger">
-                        Abort swap
-                    </Button>
+
+                    {waitPaymentError==null ? (
+                        <Button onClick={props.abortSwap} variant="danger">
+                            Abort swap
+                        </Button>
+                    ) : (
+                        <>
+                            <Alert className="text-center mb-3" show={true} variant="danger">
+                                <strong>Wait payment error</strong>
+                                <label>{waitPaymentError?.message}</label>
+                            </Alert>
+                            <Button onClick={onWaitForPayment} variant="secondary">
+                                Retry
+                            </Button>
+                        </>
+                    )}
                 </>
             ) : ""}
 

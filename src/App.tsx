@@ -113,7 +113,7 @@ function WrappedApp() {
 
             // const connection = new Connection(FEConstants.rpcUrl);
 
-            const solanaFees = new SolanaFees(connection, 250000, 2, 100, "auto", () => new BN(25000)/*, {
+            const solanaFees = new SolanaFees(connection as any, 250000, 2, 100, "auto", () => new BN(25000)/*, {
                 address: jitoPubkey,
                 endpoint: jitoEndpoint,
                 getStaticFee:() => new BN(250000)
