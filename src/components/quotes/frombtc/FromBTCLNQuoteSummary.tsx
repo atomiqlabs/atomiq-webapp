@@ -15,7 +15,6 @@ import {CopyOverlay} from "../../CopyOverlay";
 import {useSwapState} from "../../../utils/useSwapState";
 import {ScrollAnchor} from "../../ScrollAnchor";
 import {LightningHyperlinkModal} from "./LightningHyperlinkModal";
-import {useAutoClaim} from "../../../utils/useAutoClaim";
 import {useLightningWallet} from "../../../bitcoin/lightning/useLightningWallet";
 import {SwapExpiryProgressBar} from "../../SwapExpiryProgressBar";
 import {useAsync} from "../../../utils/useAsync";
@@ -32,6 +31,7 @@ import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
 import {SingleStep, StepByStep} from "../../StepByStep";
 import {useStateRef} from "../../../utils/useStateRef";
 import * as BN from "bn.js";
+import {useLocalStorage} from "../../../utils/useLocalStorage";
 
 /*
 Steps:
@@ -52,7 +52,7 @@ export function FromBTCLNQuoteSummary(props: {
     const signer = getSigner(props.quote);
 
     const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote);
-    const {autoClaim, setAutoClaim} = useAutoClaim();
+    const [autoClaim, setAutoClaim] = useLocalStorage("crossLightning-autoClaim", false);
 
     const [payingWithLNURL, setPayingWithLNURL] = useState<boolean>(false);
     const NFCScanning = useLNNFCScanner((result) => {
@@ -77,7 +77,7 @@ export function FromBTCLNQuoteSummary(props: {
             if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
             throw err;
         });
-    }, [props.quote, pay]);
+    }, [props.quote]);
 
     useEffect(() => {
         if(props.quote!=null && props.quote.isInitiated()) {

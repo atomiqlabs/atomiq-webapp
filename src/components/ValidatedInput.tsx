@@ -79,7 +79,8 @@ function ValidatedInput(props : {
     disabled?: boolean,
     validated?: string,
     readOnly?: boolean,
-    successFeedback?: string
+    successFeedback?: string,
+    onCopy?: () => void
 }) {
 
     const [state, setState] = React.useState<{value: string, validated: string}>({
@@ -187,6 +188,7 @@ function ValidatedInput(props : {
                     onChange={(evnt: any) => changeValueHandler(evnt.target.value)}
                     value={value}
                     className={inputClassName}
+                    onCopy={props.onCopy}
                 />
                 {props.copyEnabled ? (
                     <InputGroup.Text>
@@ -224,6 +226,7 @@ function ValidatedInput(props : {
                     step={props.step!=null ? props.step.toString(10): null}
                     value={value}
                     className={inputClassName}
+                    onCopy={props.onCopy}
                 />
                 {props.copyEnabled ? (
                     <InputGroup.Text>

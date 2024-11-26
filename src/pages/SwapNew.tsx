@@ -498,7 +498,14 @@ export function SwapNew(props: {
                                         quote={existingSwap ?? quote}
                                         balance={maxSpendable?.rawAmount ?? null}
                                         refreshQuote={() => {
-                                            if(existingSwap!=null) navigate("/");
+                                            if(existingSwap!=null) {
+                                                if(existingSwap.exactIn) {
+                                                    inputRef.current.setValue(existingSwap.getInput().amount, false);
+                                                } else {
+                                                    outputRef.current.setValue(existingSwap.getOutput().amount, false);
+                                                }
+                                                leaveExistingSwap();
+                                            }
                                             refreshQuote();
                                         }}
                                         setAmountLock={setAmountLock}

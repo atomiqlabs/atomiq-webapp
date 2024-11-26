@@ -33,6 +33,9 @@ import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
 import {SingleStep, StepByStep} from "../../StepByStep";
 import {useStateRef} from "../../../utils/useStateRef";
 import {useAbortSignalRef} from "../../../utils/useAbortSignal";
+import {LightningHyperlinkModal} from "./LightningHyperlinkModal";
+import {OnchainAddressCopyModal} from "./OnchainAddressCopyModal";
+import {useLocalStorage} from "../../../utils/useLocalStorage";
 
 /*
 Steps:
@@ -65,6 +68,10 @@ export function FromBTCQuoteSummary(props: {
         );
     };
 
+    const isAlreadyClaimable = useMemo(
+        () => props.quote!=null ? props.quote.isClaimable() : false,
+        [props.quote]
+    );
     const setAmountLockRef = useStateRef(props.setAmountLock);
 
     const [onCommit, commitLoading, commitSuccess, commitError] = useAsync(() => {
@@ -104,6 +111,7 @@ export function FromBTCQuoteSummary(props: {
     }, [props.quote, signer]);
 
     const textFieldRef = useRef<ValidatedInputRef>();
+    const openModalRef = useRef<() => void>(null);
 
     const [txData, setTxData] = useState<{
         txId: string,
@@ -112,15 +120,33 @@ export function FromBTCQuoteSummary(props: {
         txEtaMs: number
     }>(null);
 
+    const [claimable, setClaimable] = useState(false);
     useEffect(() => {
-        if(state===FromBTCSwapState.CLAIM_COMMITED) {
-            onWaitForPayment();
-        }
-        if(state===FromBTCSwapState.EXPIRED) {
+        if(state===FromBTCSwapState.CLAIM_COMMITED || state===FromBTCSwapState.EXPIRED) {
             props.quote.getBitcoinPayment().then(resp => {
-                if(resp==null) return;
+                if(state===FromBTCSwapState.EXPIRED) {
+                    if(resp==null) return;
+                }
+                if(resp!=null) setTxData({
+                    confTarget: resp.targetConfirmations,
+                    confirmations: resp.confirmations,
+                    txEtaMs: null,
+                    txId: resp.txId
+                });
                 onWaitForPayment();
             });
+        }
+
+        let timer: NodeJS.Timeout = null;
+        if(state===FromBTCSwapState.BTC_TX_CONFIRMED) {
+            timer = setTimeout(() => {
+                setClaimable(true);
+            }, 20*1000);
+        }
+
+        return () => {
+            if(timer!=null) clearTimeout(timer);
+            setClaimable(false);
         }
     }, [state]);
 
@@ -172,8 +198,61 @@ export function FromBTCQuoteSummary(props: {
     if(isClaiming) executionSteps[2] = {icon: ic_hourglass_empty_outline, text: "Sending claim transaction", type: "loading"};
     if(isSuccess) executionSteps[2] = {icon: ic_verified_outline, text: "Claim success", type: "success"};
 
+    const [_, setShowCopyWarning, showCopyWarningRef] = useLocalStorage("crossLightning-copywarning", true);
+    const addressContent = useCallback((show) => (
+        <>
+            <Alert variant="warning" className="mb-3">
+                <label>Please make sure that you send an <b><u>EXACT</u></b> amount in BTC, different amount wouldn't be accepted and you might loose funds!</label>
+            </Alert>
+
+            <div className="mb-2">
+                <QRCodeSVG
+                    value={props.quote.getQrData()}
+                    size={300}
+                    includeMargin={true}
+                    className="cursor-pointer"
+                    onClick={(event) => {
+                        show(event.target, props.quote.getBitcoinAddress(), textFieldRef.current?.input?.current);
+                    }}
+                />
+            </div>
+
+            <label>Please send exactly <strong>{props.quote.getInput().amount}</strong> {Tokens.BITCOIN.BTC.ticker} to the address</label>
+            <ValidatedInput
+                type={"text"}
+                value={props.quote.getBitcoinAddress()}
+                textEnd={(
+                    <a href="javascript:void(0);" onClick={(event) => {
+                        show(event.target as HTMLElement, props.quote.getBitcoinAddress(), textFieldRef.current?.input?.current);
+                    }}>
+                        <Icon icon={clipboard}/>
+                    </a>
+                )}
+                onCopy={() => {
+                    //Direct call to open the modal here breaks the copying, this is a workaround
+                    if(showCopyWarningRef.current) setTimeout(openModalRef.current, 100);
+                }}
+                inputRef={textFieldRef}
+            />
+
+            <div className="d-flex justify-content-center mt-2">
+                <Button
+                    variant="light"
+                    className="d-flex flex-row align-items-center justify-content-center"
+                    onClick={() => {
+                        window.location.href = props.quote.getQrData();
+                    }}
+                >
+                    <Icon icon={externalLink} className="d-flex align-items-center me-2"/> Open in BTC wallet app
+                </Button>
+            </div>
+        </>
+    ), [props.quote]);
+
     return (
         <>
+            <OnchainAddressCopyModal openRef={openModalRef} amountBtc={props.quote?.getInput()?.amount} setShowCopyWarning={setShowCopyWarning}/>
+
             {isInitiated ? <StepByStep steps={executionSteps}/> : ""}
 
             <SwapExpiryProgressBar
@@ -249,51 +328,7 @@ export function FromBTCQuoteSummary(props: {
                             </>
                         ) : (
                             <CopyOverlay placement={"top"}>
-                                {(show) => (
-                                    <>
-                                        <Alert variant="warning" className="mb-3">
-                                            <label>Please make sure that you send an <b><u>EXACT</u></b> amount in BTC, different amount wouldn't be accepted and you might loose funds!</label>
-                                        </Alert>
-
-                                        <div className="mb-2">
-                                            <QRCodeSVG
-                                                value={props.quote.getQrData()}
-                                                size={300}
-                                                includeMargin={true}
-                                                className="cursor-pointer"
-                                                onClick={(event) => {
-                                                    show(event.target, props.quote.getBitcoinAddress(), textFieldRef.current?.input?.current);
-                                                }}
-                                            />
-                                        </div>
-
-                                        <label>Please send exactly <strong>{props.quote.getInput().amount}</strong> {Tokens.BITCOIN.BTC.ticker} to the address</label>
-                                        <ValidatedInput
-                                            type={"text"}
-                                            value={props.quote.getBitcoinAddress()}
-                                            textEnd={(
-                                                <a href="javascript:void(0);" onClick={(event) => {
-                                                    show(event.target as HTMLElement, props.quote.getBitcoinAddress(), textFieldRef.current?.input?.current);
-                                                }}>
-                                                    <Icon icon={clipboard}/>
-                                                </a>
-                                            )}
-                                            inputRef={textFieldRef}
-                                        />
-
-                                        <div className="d-flex justify-content-center mt-2">
-                                            <Button
-                                                variant="light"
-                                                className="d-flex flex-row align-items-center justify-content-center"
-                                                onClick={() => {
-                                                    window.location.href = props.quote.getQrData();
-                                                }}
-                                            >
-                                                <Icon icon={externalLink} className="d-flex align-items-center me-2"/> Open in BTC wallet app
-                                            </Button>
-                                        </div>
-                                    </>
-                                )}
+                                {addressContent}
                             </CopyOverlay>
                         )}
                     </div>
@@ -337,15 +372,22 @@ export function FromBTCQuoteSummary(props: {
                     ><small>{txData.txId}</small></a>
 
                     <Badge
-                        className="text-black" bg="light" pill
+                        className={"text-black"+(txData.txEtaMs==null ? " d-none" : "")} bg="light" pill
                     >ETA: {txData.txEtaMs === -1 || txData.txEtaMs > (60 * 60 * 1000) ? ">1 hour" : "~" + getDeltaText(txData.txEtaMs)}</Badge>
                 </div>
             ) : ""}
 
-            {isClaimable || isClaiming ? (
+            {isClaimable && !(claimable || isAlreadyClaimable) ? (
+                <div className="d-flex flex-column align-items-center tab-accent">
+                    <Spinner/>
+                    <small className="mt-2">Transaction received & confirmed, waiting for claim by watchtowers...</small>
+                </div>
+            ) : ""}
+
+            {(isClaimable || isClaiming) && (claimable || isAlreadyClaimable) ? (
                 <>
                     <div className="d-flex flex-column align-items-center tab-accent mb-3">
-                        <label>Transaction received & confirmed</label>
+                        <label>Transaction received & confirmed, you can claim your funds manually now!</label>
                     </div>
 
                     <Alert variant="danger" className="mb-3" show={!!claimError}>
@@ -353,8 +395,10 @@ export function FromBTCQuoteSummary(props: {
                         <label>{claimError?.message}</label>
                     </Alert>
 
-                    <ButtonWithSigner signer={signer} chainId={props.quote.chainIdentifier} onClick={onClaim}
-                                      disabled={claimLoading} size="lg">
+                    <ButtonWithSigner
+                        signer={signer} chainId={props.quote.chainIdentifier}
+                        onClick={onClaim} disabled={claimLoading} size="lg"
+                    >
                         {claimLoading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                         Finish swap (claim funds)
                     </ButtonWithSigner>

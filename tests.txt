@@ -18,9 +18,9 @@ BTC -> SC:
 [x] Open swap address & internet disconnect
 [x] Open swap address but never send BTC (swap address expiry) (http://localhost:3000/?swapId=b18698b9b3f628fce97d8e149178f00dcc204ea297c52d7dfff46f0233cf6822)
 [x] Open swap, send BTC & double-spend
-[ ] BTC confirm & client claim - don't approve tx
-[ ] BTC confirm & client claim
-[ ] BTC confirm watchtower claim
+[x] BTC confirm & client claim - don't approve tx
+[x] BTC confirm & client claim
+[x] BTC confirm watchtower claim
 
 SC -> BTC/BTC-LN:
 [x] Not enough for gas

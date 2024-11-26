@@ -12,13 +12,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { SwapTopbar } from "../../components/SwapTopbar";
 import { SwapsContext } from "../../context/SwapsContext";
 import { TokenIcon } from "../../components/TokenIcon";
-import { useAutoContinue } from "../../utils/useAutoContinue";
 import { useAddressData } from "../../utils/useAddressData";
 import { useAmountConstraints } from "../../utils/useAmountConstraints";
 import { useQuote } from "../../utils/useQuote";
 import { useBigNumberState } from "../../utils/useBigNumberState";
 import { useWalletBalance } from "../../utils/useWalletBalance";
 import { ScrollAnchor } from "../../components/ScrollAnchor";
+import { useLocalStorage } from "../../utils/useLocalStorage";
 export function QuickScanExecute() {
     const { swapper, getSigner } = useContext(SwapsContext);
     const navigate = useNavigate();
@@ -44,7 +44,7 @@ export function QuickScanExecute() {
             setCurrencyPreselected(true);
         }
     }, []);
-    const { autoContinue, setAutoContinue } = useAutoContinue();
+    const [autoContinue, setAutoContinue] = useLocalStorage("crossLightning-autoContinue", false);
     const [addressLoading, addressResult] = useAddressData(propAddress);
     const inToken = addressResult?.swapType == null ? null :
         addressResult.swapType === SwapType.FROM_BTCLN ? Tokens.BITCOIN.BTCLN : selectedCurrency;

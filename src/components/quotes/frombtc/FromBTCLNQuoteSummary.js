@@ -15,7 +15,6 @@ import { CopyOverlay } from "../../CopyOverlay";
 import { useSwapState } from "../../../utils/useSwapState";
 import { ScrollAnchor } from "../../ScrollAnchor";
 import { LightningHyperlinkModal } from "./LightningHyperlinkModal";
-import { useAutoClaim } from "../../../utils/useAutoClaim";
 import { useLightningWallet } from "../../../bitcoin/lightning/useLightningWallet";
 import { SwapExpiryProgressBar } from "../../SwapExpiryProgressBar";
 import { useAsync } from "../../../utils/useAsync";
@@ -30,6 +29,7 @@ import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_ho
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { StepByStep } from "../../StepByStep";
 import { useStateRef } from "../../../utils/useStateRef";
+import { useLocalStorage } from "../../../utils/useLocalStorage";
 /*
 Steps:
 1. Awaiting lightning payment -> Lightning payment received
@@ -40,7 +40,7 @@ export function FromBTCLNQuoteSummary(props) {
     const { getSigner } = useContext(SwapsContext);
     const signer = getSigner(props.quote);
     const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
-    const { autoClaim, setAutoClaim } = useAutoClaim();
+    const [autoClaim, setAutoClaim] = useLocalStorage("crossLightning-autoClaim", false);
     const [payingWithLNURL, setPayingWithLNURL] = useState(false);
     const NFCScanning = useLNNFCScanner((result) => {
         //TODO: Maybe we need to stop the scanning here as well
@@ -63,7 +63,7 @@ export function FromBTCLNQuoteSummary(props) {
                 setAmountLockRef.current(false);
             throw err;
         });
-    }, [props.quote, pay]);
+    }, [props.quote]);
     useEffect(() => {
         if (props.quote != null && props.quote.isInitiated()) {
             onCommit();

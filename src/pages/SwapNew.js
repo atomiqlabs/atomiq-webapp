@@ -283,8 +283,15 @@ export function SwapNew(props) {
                                                             addressRef.current.setValue(res.paymentRequest);
                                                         }).catch(e => console.error(e));
                                                     }, children: "Fetch invoice from WebLN" }) })) : "" })) : "", _jsx(Alert, { variant: "success", className: "mt-3 mb-0 text-center", show: !locked && lnWallet == null && swapType === SwapType.TO_BTCLN && addressData == null && existingSwap == null, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] })] }), quoteError != null ? (_jsx(Button, { variant: "light", className: "mt-3", onClick: refreshQuote, children: "Retry" })) : "", quote != null || existingSwap != null ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "mt-3", children: _jsx(SimpleFeeSummaryScreen, { swap: existingSwap ?? quote, btcFeeRate: inputToken.chain === "BTC" ? maxSpendable?.feeRate : null }) }), !isSwapToRandomBtcAddress ? (_jsx("div", { className: "mt-3 d-flex flex-column text-white", children: _jsx(QuoteSummary, { type: "swap", quote: existingSwap ?? quote, balance: maxSpendable?.rawAmount ?? null, refreshQuote: () => {
-                                            if (existingSwap != null)
-                                                navigate("/");
+                                            if (existingSwap != null) {
+                                                if (existingSwap.exactIn) {
+                                                    inputRef.current.setValue(existingSwap.getInput().amount, false);
+                                                }
+                                                else {
+                                                    outputRef.current.setValue(existingSwap.getOutput().amount, false);
+                                                }
+                                                leaveExistingSwap();
+                                            }
                                             refreshQuote();
                                         }, setAmountLock: setAmountLock, abortSwap: () => {
                                             inputRef.current.setValue("");
