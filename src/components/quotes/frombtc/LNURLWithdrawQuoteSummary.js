@@ -1,91 +1,95 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useEffect, useRef, useState } from "react";
-import { Alert, Button, ProgressBar, Spinner } from "react-bootstrap";
-import { FromBTCLNSwapState } from "sollightning-sdk";
+import { useContext, useEffect } from "react";
+import { Alert, Button, Spinner } from "react-bootstrap";
+import { FromBTCLNSwapState } from "@atomiqlabs/sdk";
+import { SwapsContext } from "../../../context/SwapsContext";
+import { ButtonWithSigner } from "../../ButtonWithSigner";
+import { useSwapState } from "../../../utils/useSwapState";
+import { useAsync } from "../../../utils/useAsync";
+import { SwapExpiryProgressBar } from "../../SwapExpiryProgressBar";
+import { useAbortSignalRef } from "../../../utils/useAbortSignal";
+import { useStateRef } from "../../../utils/useStateRef";
+import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
+import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
+import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
+import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
+import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
+import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outline';
+import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
+import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
+import { StepByStep } from "../../StepByStep";
 export function LNURLWithdrawQuoteSummary(props) {
-    const [quoteTimeRemaining, setQuoteTimeRemaining] = useState();
-    const [initialQuoteTimeout, setInitialQuoteTimeout] = useState();
-    const [state, setState] = useState(null);
-    const expiryTime = useRef();
-    const [loading, setLoading] = useState();
-    const [success, setSuccess] = useState();
-    const [error, setError] = useState();
-    useEffect(() => {
-        if (props.quote == null)
-            return () => { };
-        setSuccess(null);
-        setError(null);
-        let interval;
-        interval = setInterval(() => {
-            let dt = expiryTime.current - Date.now();
-            if (dt <= 0) {
-                clearInterval(interval);
-                dt = 0;
-            }
-            setQuoteTimeRemaining(Math.floor(dt / 1000));
-        }, 500);
-        expiryTime.current = Date.now() + (30 * 1000);
-        const dt = Math.floor((expiryTime.current - Date.now()) / 1000);
-        setInitialQuoteTimeout(dt);
-        setQuoteTimeRemaining(dt);
-        if (props.quote.getState() === FromBTCLNSwapState.PR_CREATED) {
-            if (props.autoContinue)
-                onContinue(true);
-        }
-        let listener;
-        setState(props.quote.getState());
-        props.quote.events.on("swapState", listener = (quote) => {
-            setState(quote.getState());
+    const { getSigner } = useContext(SwapsContext);
+    const signer = getSigner(props.quote);
+    const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
+    const setAmountLockRef = useStateRef(props.setAmountLock);
+    const abortSignalRef = useAbortSignalRef([props.quote]);
+    const [onContinue, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
+        if (setAmountLockRef.current != null)
+            setAmountLockRef.current(true);
+        return props.quote.waitForPayment(abortSignalRef.current, 2).then(() => true).catch(err => {
+            if (setAmountLockRef.current != null)
+                setAmountLockRef.current(false);
+            throw err;
         });
-        return () => {
-            clearInterval(interval);
-            props.quote.events.removeListener("swapState", listener);
-        };
     }, [props.quote]);
-    const onContinue = async (skipChecks) => {
-        if (props.quote.getState() === FromBTCLNSwapState.CLAIM_COMMITED) {
-            setLoading(true);
-            try {
-                await props.quote.commitAndClaim(null, skipChecks);
-                setSuccess(true);
-            }
-            catch (e) {
-                setError(e.toString());
-            }
-            if (props.setAmountLock)
-                props.setAmountLock(false);
-            setLoading(false);
-            return;
+    const [onClaim, claiming, claimSuccess, claimError] = useAsync((skipChecks) => props.quote.commitAndClaim(signer, null, skipChecks), [props.quote, signer]);
+    useEffect(() => {
+        if (state === FromBTCLNSwapState.PR_CREATED) {
+            if (props.autoContinue)
+                onContinue();
         }
-        if (!props.quote.prPosted) {
-            setLoading(true);
-            try {
-                if (props.setAmountLock)
-                    props.setAmountLock(true);
-                await props.quote.waitForPayment(null, 1);
-            }
-            catch (e) {
-                console.error(e);
-                setSuccess(false);
-                setError(e.toString());
-                setLoading(false);
-                if (props.setAmountLock)
-                    props.setAmountLock(false);
-                return;
-            }
-            try {
-                await props.quote.commitAndClaim(null, skipChecks);
-                setSuccess(true);
-            }
-            catch (e) {
-                setError(e.toString());
-                if (props.quote.getState() !== FromBTCLNSwapState.CLAIM_COMMITED)
-                    setSuccess(false);
-            }
-            if (props.setAmountLock)
-                props.setAmountLock(false);
-            setLoading(false);
+        if (state === FromBTCLNSwapState.PR_PAID) {
+            onClaim();
         }
-    };
-    return (_jsxs(_Fragment, { children: [error != null ? (_jsxs(Alert, { variant: "danger", className: "mb-3", children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: error })] })) : "", _jsxs("div", { className: state !== FromBTCLNSwapState.CLAIM_COMMITED && success === null && !loading ? "d-flex flex-column mb-3 tab-accent" : "d-none", children: [quoteTimeRemaining === 0 ? (_jsx("label", { children: "Quote expired!" })) : (_jsxs("label", { children: ["Quote expires in ", quoteTimeRemaining, " seconds"] })), _jsx(ProgressBar, { animated: true, now: quoteTimeRemaining, max: initialQuoteTimeout, min: 0 })] }), success === null ? (state !== FromBTCLNSwapState.CLAIM_COMMITED && quoteTimeRemaining === 0 && !loading ? (_jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })) : (_jsxs(Button, { onClick: () => onContinue(), disabled: loading, size: "lg", children: [loading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Claim"] }))) : (success ? (_jsxs(Alert, { variant: "success", className: "mb-0", children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was concluded successfully" })] })) : (_jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })))] }));
+    }, [state, onClaim]);
+    const isQuoteExpired = state === FromBTCLNSwapState.QUOTE_EXPIRED ||
+        (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !claiming && !paymentWaiting);
+    const isQuoteExpiredClaim = isQuoteExpired && props.quote.signatureData != null;
+    const isFailed = state === FromBTCLNSwapState.FAILED ||
+        state === FromBTCLNSwapState.EXPIRED;
+    const isCreated = state === FromBTCLNSwapState.PR_CREATED ||
+        (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && paymentWaiting);
+    const isClaimable = state === FromBTCLNSwapState.PR_PAID ||
+        (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && claiming) ||
+        state === FromBTCLNSwapState.CLAIM_COMMITED;
+    const isSuccess = state === FromBTCLNSwapState.CLAIM_CLAIMED;
+    useEffect(() => {
+        if (isQuoteExpired || isFailed || isSuccess) {
+            if (setAmountLockRef.current != null)
+                setAmountLockRef.current(false);
+        }
+    }, [isQuoteExpired, isFailed, isSuccess]);
+    /*
+    Steps:
+    1. Requesting lightning payment -> Lightning payment received
+    2. Send claim transaction -> Sending claim transaction -> Claim success
+     */
+    const executionSteps = [
+        { icon: ic_check_circle_outline, text: "Lightning payment received", type: "success" },
+        { icon: ic_swap_horizontal_circle_outline, text: "Send claim transaction", type: "disabled" }
+    ];
+    if (isCreated && !paymentWaiting)
+        executionSteps[0] = { icon: ic_flash_on_outline, text: "Request lightning payment", type: "loading" };
+    if (isCreated && paymentWaiting)
+        executionSteps[0] = { icon: ic_hourglass_top_outline, text: "Requesting lightning payment", type: "loading" };
+    if (isQuoteExpired && !isQuoteExpiredClaim)
+        executionSteps[0] = { icon: ic_hourglass_disabled_outline, text: "Quote expired", type: "failed" };
+    if (isQuoteExpiredClaim) {
+        executionSteps[0] = { icon: ic_refresh, text: "Lightning payment reverted", type: "failed" };
+        executionSteps[1] = { icon: ic_watch_later_outline, text: "Claim transaction expired", type: "failed" };
+    }
+    if (isClaimable)
+        executionSteps[1] = { icon: ic_swap_horizontal_circle_outline, text: claiming ? "Sending claim transaction" : "Send claim transaction", type: "loading" };
+    if (isSuccess)
+        executionSteps[1] = { icon: ic_verified_outline, text: "Claim success", type: "success" };
+    if (isFailed) {
+        executionSteps[0] = { icon: ic_refresh, text: "Lightning payment reverted", type: "failed" };
+        executionSteps[1] = { icon: ic_watch_later_outline, text: "Swap expired", type: "failed" };
+    }
+    return (_jsxs(_Fragment, { children: [isInitiated ? _jsx(StepByStep, { steps: executionSteps }) : "", _jsx(SwapExpiryProgressBar, { expired: isQuoteExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: (isClaimable ||
+                    isQuoteExpiredClaim) && !claiming && signer !== undefined }), (isCreated ||
+                isClaimable) ? (signer === undefined ? (_jsx(ButtonWithSigner, { chainId: props.quote.chainIdentifier, signer: signer, size: "lg" })) : (_jsxs(_Fragment, { children: [_jsxs(Alert, { className: "text-center mb-3", show: claimError != null || paymentError != null, variant: "danger", closeVariant: "white", children: [_jsx("strong", { children: "Swap claim error" }), _jsx("label", { children: claimError?.message ?? paymentError?.message })] }), _jsxs(ButtonWithSigner, { signer: signer, chainId: props.quote.chainIdentifier, disabled: claiming || paymentWaiting, onClick: () => isClaimable ? onClaim() : onContinue(), size: "lg", children: [claiming || paymentWaiting ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Claim"] })] }))) : "", isSuccess ? (_jsxs(Alert, { variant: "success", className: "mb-0", children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was executed successfully" })] })) : "", isFailed ? (_jsxs(Alert, { variant: "danger", className: "mb-0", children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Swap HTLC expired, your lightning payment will be refunded shortly!" })] })) : "", (isQuoteExpired ||
+                isFailed ||
+                (isSuccess && props.type !== "payment")) ? (_jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })) : ""] }));
 }

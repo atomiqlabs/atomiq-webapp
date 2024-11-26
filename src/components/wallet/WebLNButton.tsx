@@ -1,10 +1,6 @@
-import {Button, CloseButton, Dropdown, ListGroup, Modal} from "react-bootstrap";
-import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
+import {Button, Dropdown} from "react-bootstrap";
 import * as React from "react";
-import {BitcoinNetworkType, getAddress, getCapabilities} from "sats-connect";
-import {useContext, useEffect, useState} from "react";
-import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
-import {BitcoinWalletType, getInstalledBitcoinWallets} from "../../bitcoin/onchain/BitcoinWalletUtils";
+import {useContext} from "react";
 import {ic_brightness_1} from 'react-icons-kit/md/ic_brightness_1';
 import Icon from "react-icons-kit";
 import {connectWebLN, isWebLNInstalled} from "../../bitcoin/lightning/WebLNUtils";
@@ -25,37 +21,15 @@ export function useWebLNWalletChooser() {
     return {isInstalled, lnWallet, connectWallet, setLnWallet};
 }
 
-export function WebLNButton(props: {}) {
-
-    const {isInstalled, lnWallet, connectWallet} = useWebLNWalletChooser();
-
-    if(!isInstalled && lnWallet==null) return <></>;
-
-    return (
-        <>
-            {lnWallet==null ? (
-                <Button variant="dark" className={"me-2 px-3"} onClick={() => connectWallet()}>
-                    Connect BTC-LN wallet
-                </Button>
-            ) : (
-                <Button variant="dark" className={"me-2 px-3"}>
-                    <img width={20} height={20} src="/wallets/WebLN.png" className="me-2"/>
-                    WebLN
-                </Button>
-            )}
-        </>
-    );
-}
-
-const WebLNConnectedWallet = React.forwardRef<any, any>(({ onClick }, ref) => (
+const WebLNConnectedWallet = React.forwardRef<any, any>(({ onClick, noText }, ref) => (
     <div className={"d-flex flex-row align-items-center cursor-pointer"} onClick={onClick}>
         <Icon className="text-success d-flex align-items-center me-1" icon={ic_brightness_1} size={12}/>
         <img width={16} height={16} src="/wallets/WebLN.png" className="me-1"/>
-        WebLN
+        {!noText ? "WebLN" : ""}
     </div>
 ));
 
-export function WebLNAnchor(props: {className?: string}) {
+export function WebLNAnchor(props: {className?: string, noText?: boolean}) {
 
     const {isInstalled, lnWallet, connectWallet, setLnWallet} = useWebLNWalletChooser();
 
@@ -69,7 +43,7 @@ export function WebLNAnchor(props: {className?: string}) {
                 </a>
             ) : (
                 <Dropdown align={{md: "start"}}>
-                    <Dropdown.Toggle as={WebLNConnectedWallet} id="dropdown-custom-components" className={props.className}>
+                    <Dropdown.Toggle as={WebLNConnectedWallet} id="dropdown-custom-components" className={props.className} noText={props.noText}>
                         Custom toggle
                     </Dropdown.Toggle>
 

@@ -1,19 +1,21 @@
 import * as BN from "bn.js";
-import {FromBTCLNSwap, FromBTCSwap, IFromBTCSwap, ISwap, IToBTCSwap} from "sollightning-sdk";
+import {ISwap} from "@atomiqlabs/sdk";
+import BigNumber from "bignumber.js";
 
 export function getDeltaTextHours(delta: number): string {
-    const deltaSeconds = Math.floor(delta/1000);
+    let deltaSeconds = Math.floor(delta/1000);
     if(deltaSeconds<60) {
         return deltaSeconds+" "+(deltaSeconds===1 ? "second" : "seconds");
     }
     let deltaMinutes = Math.floor(deltaSeconds/60);
     if(deltaSeconds<60*60) {
-        return deltaMinutes+" "+(deltaMinutes===1 ? "minute" : "minutes");
+        deltaSeconds -= deltaMinutes*60;
+        return deltaMinutes+" "+(deltaMinutes===1 ? "minute" : "minutes")+" & "+deltaSeconds+" "+(deltaSeconds===1 ? "second" : "seconds");
     }
     if(deltaSeconds<60*60*24) {
         const deltaHours = Math.floor(deltaMinutes/60);
         deltaMinutes -= deltaHours*60;
-        return deltaHours+" "+(deltaHours===1 ? "hour" : "hours") + " " + deltaMinutes + " " + (deltaMinutes===1 ? "minute" : "minutes");
+        return deltaHours+" "+(deltaHours===1 ? "hour" : "hours") + " & " + deltaMinutes + " " + (deltaMinutes===1 ? "minute" : "minutes");
     }
 }
 
@@ -106,4 +108,11 @@ export function getFeePct(swap: ISwap<any>, digits: number): BN {
     const feePPM = feeOriginal.add(new BN(9).mul(new BN(10).pow(new BN(3-digits))));
     // console.log("Fee PPM: ", feePPM.toString(10));
     return feePPM.div(new BN(10).pow(new BN(4-digits))).mul(new BN(10).pow(new BN(4-digits)));
+}
+
+export function bnEqual(a: BigNumber, b: BigNumber) {
+    if(a==null && b==null) return true;
+    if(a!=null && b==null) return false;
+    if(a==null && b!=null) return false;
+    return a.eq(b);
 }

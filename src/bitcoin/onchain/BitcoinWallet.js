@@ -2,7 +2,7 @@ import * as BN from "bn.js";
 import { FEConstants } from "../../FEConstants";
 import { coinSelect, maxSendable } from "./coinselect2";
 import * as bitcoin from "bitcoinjs-lib";
-import { MempoolApi } from "sollightning-sdk";
+import { MempoolApi } from "@atomiqlabs/sdk";
 import * as randomBytes from "randombytes";
 import { toXOnly, } from 'bitcoinjs-lib/src/psbt/bip371';
 const bitcoinNetwork = FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;

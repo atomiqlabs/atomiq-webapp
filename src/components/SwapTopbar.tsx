@@ -1,7 +1,8 @@
 import {Badge, Button, ButtonGroup} from "react-bootstrap";
 import {useNavigate} from "react-router-dom";
 import {SwapsContext} from "../context/SwapsContext";
-import {useContext} from "react";
+import {useContext, useEffect, useState} from "react";
+import {ISwap} from "@atomiqlabs/sdk";
 
 const tabs = [
     {
@@ -13,7 +14,7 @@ const tabs = [
         path: "/scan"
     },
     {
-        name: "Pending",
+        name: "History",
         path: "/history"
     },
     {
@@ -29,13 +30,47 @@ export function SwapTopbar(props: {
 
     const navigate = useNavigate();
 
-    const context = useContext(SwapsContext);
+    const {swapper} = useContext(SwapsContext);
+
+    const [actionableSwaps, setActionableSwaps] = useState<Set<string>>(new Set());
+    useEffect(() => {
+        if(swapper==null) return;
+        const listener = (swap: ISwap) => {
+            const claimableOrRefundable = swap.isActionable();
+            console.log("SwapTopbar: useEffect(swapper): Swap changed id: "+swap.getPaymentHashString()+" claimableOrRefundable: "+claimableOrRefundable);
+            setActionableSwaps((swaps) => {
+                const id = swap.getPaymentHashString();
+                if(!swaps.has(id)) {
+                    if(claimableOrRefundable) {
+                        const newSet = new Set(swaps);
+                        newSet.add(id);
+                        console.log("SwapTopbar: useEffect(swapper): Removing swap from actionable swaps");
+                        return newSet;
+                    }
+                } else {
+                    if(!claimableOrRefundable) {
+                        const newSet = new Set(swaps);
+                        newSet.delete(id);
+                        console.log("SwapTopbar: useEffect(swapper): Removing swap from actionable swaps");
+                        return newSet;
+                    }
+                }
+                return swaps;
+            });
+        };
+
+        swapper.getActionableSwaps().then(swaps => setActionableSwaps(new Set(swaps.map(swap => swap.getPaymentHashString()))));
+        swapper.on("swapState", listener);
+
+        return () => {
+            swapper.off("swapState", listener);
+        }
+    }, [swapper]);
 
     return (
         <div className="mt-3 pb-2 z-1">
             <ButtonGroup className="bg-dark bg-opacity-25">
                 {tabs.map((val, index) => {
-                    if(index===2 && context.actionableSwaps.length===0) return;
                     if(index===3 && props.selected!==index) return;
                     return (
                         <Button
@@ -47,8 +82,8 @@ export function SwapTopbar(props: {
                             disabled={!props.enabled}
                         >
                             {val.name}
-                            {index===2 ? (
-                                <Badge className="ms-2" bg="danger" pill>{context.actionableSwaps.length}</Badge>
+                            {index===2 && actionableSwaps.size>0 ? (
+                                <Badge className="ms-2" bg="danger" pill>{actionableSwaps.size}</Badge>
                             ) : ""}
                         </Button>
                     );

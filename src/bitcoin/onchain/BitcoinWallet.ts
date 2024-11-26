@@ -3,7 +3,7 @@ import {FEConstants} from "../../FEConstants";
 import {CoinselectAddressTypes} from "./coinselect2/utils";
 import {coinSelect, maxSendable} from "./coinselect2";
 import * as bitcoin from "bitcoinjs-lib";
-import {MempoolApi} from "sollightning-sdk";
+import {MempoolApi} from "@atomiqlabs/sdk";
 import * as randomBytes from "randombytes";
 import {
     toXOnly,

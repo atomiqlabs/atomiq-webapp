@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js";
-import {SolanaChains, SwapType} from "sollightning-sdk";
 import {PublicKey} from "@solana/web3.js";
 import {WalletAdapterNetwork} from "@solana/wallet-adapter-base";
+import * as BN from "bn.js";
 
 const solanaRpcUrl: string = process.env.REACT_APP_SOLANA_RPC_URL;
 const chain: "DEVNET" | "MAINNET" = process.env.REACT_APP_SOLANA_NETWORK as ("DEVNET" | "MAINNET"); //DEVNET or MAINNET
@@ -32,38 +32,46 @@ export const FEConstants = {
     // url: "http://localhost:4000",
     // customPorts: null,
     btcBlockExplorer,
-    solBlockExplorer,
+    blockExplorers: {
+        SOLANA: solBlockExplorer
+    },
+    scBalances: {
+        SOLANA: {
+            minimum: new BN(1000000),
+            optimal: new BN(6000000)
+        }
+    },
     statsUrl,
     solanaChain: chain==="MAINNET" ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet,
     rpcUrl: solanaRpcUrl,
     chain,
-    wbtcToken: new PublicKey(SolanaChains[chain].tokens.WBTC),
-    usdcToken: new PublicKey(SolanaChains[chain].tokens.USDC),
-    usdtToken: new PublicKey(SolanaChains[chain].tokens.USDT),
-    wsolToken: new PublicKey(SolanaChains[chain].tokens.WSOL),
-    bonkToken: new PublicKey(SolanaChains[chain].tokens.BONK),
-    tokenData: {
-        [SolanaChains[chain].tokens.WBTC]: {
-            decimals: 8,
-            symbol: "WBTC"
-        },
-        [SolanaChains[chain].tokens.USDC]: {
-            decimals: 6,
-            symbol: "USDC"
-        },
-        [SolanaChains[chain].tokens.USDT]: {
-            decimals: 6,
-            symbol: "USDT"
-        },
-        [SolanaChains[chain].tokens.WSOL]: {
-            decimals: 9,
-            symbol: "SOL"
-        },
-        [SolanaChains[chain].tokens.BONK]: {
-            decimals: 5,
-            symbol: "BONK"
-        }
-    },
+    // wbtcToken: new PublicKey(SolanaChains[chain].tokens.WBTC),
+    // usdcToken: new PublicKey(SolanaChains[chain].tokens.USDC),
+    // usdtToken: new PublicKey(SolanaChains[chain].tokens.USDT),
+    // wsolToken: new PublicKey(SolanaChains[chain].tokens.WSOL),
+    // bonkToken: new PublicKey(SolanaChains[chain].tokens.BONK),
+    // tokenData: {
+    //     [SolanaChains[chain].tokens.WBTC]: {
+    //         decimals: 8,
+    //         symbol: "WBTC"
+    //     },
+    //     [SolanaChains[chain].tokens.USDC]: {
+    //         decimals: 6,
+    //         symbol: "USDC"
+    //     },
+    //     [SolanaChains[chain].tokens.USDT]: {
+    //         decimals: 6,
+    //         symbol: "USDT"
+    //     },
+    //     [SolanaChains[chain].tokens.WSOL]: {
+    //         decimals: 9,
+    //         symbol: "SOL"
+    //     },
+    //     [SolanaChains[chain].tokens.BONK]: {
+    //         decimals: 5,
+    //         symbol: "BONK"
+    //     }
+    // },
     url: null,
     satsPerBitcoin: new BigNumber(100000000),
     USDollar: new Intl.NumberFormat('en-US', {

@@ -3,56 +3,34 @@ import {Button} from "react-bootstrap";
 import {useNavigate} from "react-router-dom";
 import {SwapTopbar} from "../../components/SwapTopbar";
 import * as React from "react";
-import {useEffect, useRef, useState} from "react";
-import {CurrencySpec, smartChainCurrencies} from "../../utils/Currencies";
+import {useState} from "react";
+import {smartChainTokenArray} from "../../utils/Currencies";
 import {CurrencyDropdown} from "../../components/CurrencyDropdown";
 import Icon from "react-icons-kit";
 import {ic_contactless} from 'react-icons-kit/md/ic_contactless';
-import {ic_disabled_by_default} from 'react-icons-kit/md/ic_disabled_by_default';
-import {LNNFCReader, LNNFCStartResult} from "../../lnnfc/LNNFCReader";
+import {LNNFCStartResult} from "../../lnnfc/LNNFCReader";
+import {SCToken} from "@atomiqlabs/sdk";
+import {useNFCScanner} from "../../lnnfc/useNFCScanner";
 
 export function QuickScan(props: {
     onScanned?: (data: string) => void
 }) {
     const navigate = useNavigate();
 
-    const [selectedCurrency, setSelectedCurrency] = useState<CurrencySpec>(null);
-    const [NFCScanning, setNFCScanning] = useState<LNNFCStartResult>(null);
+    const [selectedCurrency, setSelectedCurrency] = useState<SCToken>(null);
 
-    const nfcScannerRef = useRef<LNNFCReader>(null);
+    const onScanned = (res: string) => {
+        if(props.onScanned!=null) {
+            props.onScanned(res);
+        } else {
+            navigate("/scan/2?address="+encodeURIComponent(res)+(
+                selectedCurrency==null ? "" : "&token="+encodeURIComponent(selectedCurrency.ticker)
+                    +"&chainId="+encodeURIComponent(selectedCurrency.chainId)
+            ));
+        }
+    };
 
-    useEffect(() => {
-        console.log("Set selected currency to null");
-        setSelectedCurrency(null);
-
-        const nfcScanner = new LNNFCReader();
-        if(!nfcScanner.isSupported()) return;
-        nfcScanner.onScanned((lnurls: string[]) => {
-            console.log("LNURL read: ", lnurls);
-
-            if(lnurls[0]!=null) {
-                if(props.onScanned!=null) {
-                    props.onScanned(lnurls[0]);
-                } else {
-                    console.log("selected currency: ", selectedCurrency);
-                    navigate("/scan/2?address="+encodeURIComponent(lnurls[0])+(
-                        selectedCurrency==null ? "" : "&token="+encodeURIComponent(selectedCurrency.ticker)
-                    ));
-                }
-            }
-        });
-        nfcScannerRef.current = nfcScanner;
-
-        nfcScanner.start().then((res: LNNFCStartResult) => {
-            setNFCScanning(res);
-        });
-
-        return () => {
-            nfcScanner.stop();
-        };
-    }, []);
-
-    console.log("Currency select: ", selectedCurrency);
+    const NFCScanning = useNFCScanner(onScanned);
 
     return (
         <>
@@ -67,29 +45,10 @@ export function QuickScan(props: {
                     zIndex: 0
                 }}>
                     <QRScanner onResult={(result, err) => {
-                        if(result!=null) {
-                            if(props.onScanned!=null) {
-                                props.onScanned(result);
-                            } else {
-                                console.log("selected currency: ", selectedCurrency);
-                                navigate("/scan/2?address="+encodeURIComponent(result)+(
-                                    selectedCurrency==null ? "" : "&token="+encodeURIComponent(selectedCurrency.ticker)
-                                ));
-                            }
-                        }
+                        if(result==null) return;
+                        onScanned(result);
                     }} camera={"environment"}/>
                 </div>
-
-                {/*<div className="bg-dark bg-opacity-25 p-5 mt-auto d-flex justify-content-center align-items-center">*/}
-                    {/*<div className="text-white mb-5 p-3 position-relative">*/}
-                        {/*<label>Pay with</label>*/}
-                        {/*<CurrencyDropdown currencyList={smartChainCurrencies} onSelect={val => {*/}
-                            {/*setSelectedCurrency(val);*/}
-                        {/*}} value={selectedCurrency} className="bg-dark bg-opacity-25 text-white"/>*/}
-                    {/*</div>*/}
-
-                    {/*<Button>Paste from clipboard</Button>*/}
-                {/*</div>*/}
 
                 <div className="pb-5 px-3 mt-auto" style={{
                     position: "fixed",
@@ -101,8 +60,8 @@ export function QuickScan(props: {
                         <div className={"mx-auto "+(NFCScanning===LNNFCStartResult.OK ? "" : "mb-5")}>
                             <div className="text-white p-3 position-relative">
                                 <label>Pay with</label>
-                                <CurrencyDropdown currencyList={smartChainCurrencies} onSelect={val => {
-                                    setSelectedCurrency(val);
+                                <CurrencyDropdown currencyList={smartChainTokenArray} onSelect={val => {
+                                    setSelectedCurrency(val as SCToken);
                                 }} value={selectedCurrency} className="bg-dark bg-opacity-25 text-white"/>
                             </div>
                         </div>

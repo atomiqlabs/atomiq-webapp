@@ -1,125 +1,56 @@
-import {PublicKey} from "@solana/web3.js";
-import {FEConstants} from "../FEConstants";
 import * as BN from "bn.js";
 import BigNumber from "bignumber.js";
-import {Token} from "sollightning-sdk";
+import {fromDecimal, SCToken, toDecimal, Token, TokenResolver, Tokens} from "@atomiqlabs/sdk";
 
-export const btcCurrency: CurrencySpec = {
-    name: "Bitcoin (on-chain)",
-    ticker: "BTC",
-    decimals: 8,
-    icon: "/icons/crypto/BTC.svg"
+type TokensType = typeof Tokens;
+type TokenTickers = {
+    [Chain in keyof TokensType]: keyof TokensType[Chain];
+}[keyof TokensType];
+
+export const TokenIcons: {
+    [C in TokenTickers]: string
+} = {
+    WBTC: null,
+    USDC: "/icons/crypto/USDC.svg",
+    USDT: null,
+    SOL: "/icons/crypto/SOL.svg",
+    BONK: "/icons/crypto/BONK.png",
+    BTC: "/icons/crypto/BTC.svg",
+    BTCLN: "/icons/crypto/BTC.svg"
 };
 
-export const bitcoinCurrencies: CurrencySpec[] = [
-    btcCurrency,
-    {
-        name: "Bitcoin (lightning)",
-        ticker: "BTC-LN",
-        decimals: 8,
-        icon: "/icons/crypto/BTC.svg"
-    }
+export const bitcoinTokenArray = [
+    Tokens.BITCOIN.BTC,
+    Tokens.BITCOIN.BTCLN
 ];
 
-export const nativeCurrency: CurrencySpec = {
-    name: "Solana",
-    ticker: "SOL",
-    decimals: 9,
-    address: new PublicKey(FEConstants.wsolToken),
-    icon: "/icons/crypto/SOL.svg",
-    minBalance: new BN(2500000)
-};
-
-export const smartChainCurrencies: CurrencySpec[] = [
-    nativeCurrency,
-    {
-        name: "USD Circle",
-        ticker: "USDC",
-        decimals: 6,
-        address: new PublicKey(FEConstants.usdcToken),
-        icon: "/icons/crypto/USDC.svg"
-    },
-    {
-        name: "Bonk",
-        ticker: "BONK",
-        decimals: 5,
-        address: new PublicKey(FEConstants.bonkToken),
-        icon: "/icons/crypto/BONK.png"
-    }
+export const smartChainTokenArray: SCToken[] = [
+    Tokens.SOLANA.SOL,
+    Tokens.SOLANA.USDC,
+    Tokens.SOLANA.BONK
 ];
+// for(let chainId in Tokens) {
+//     if(chainId==="BITCOIN") continue;
+//     for(let ticker in Tokens[chainId]) {
+//         smartChainTokenArray.push(Tokens[chainId][ticker]);
+//     }
+// }
 
-const scCurrencyMap: {[key: string]: CurrencySpec} = {};
-
-smartChainCurrencies.forEach(curr => {
-    scCurrencyMap[curr.address.toString()] = curr;
-});
-
-export type CurrencySpec = {
-    name: string,
-    ticker: string,
-    decimals: number,
-    icon: string,
-    address?: any,
-    minBalance?: BN
+export function toHumanReadable(amount: BN, currencySpec: Token): BigNumber {
+    if(amount==null) return null;
+    return new BigNumber(toHumanReadableString(amount, currencySpec));
 }
 
-export function isCurrencySpec(val: any) {
-    return typeof(val.name)==="string" &&
-        typeof(val.ticker)==="string" &&
-        typeof(val.decimals)==="number" &&
-        typeof(val.icon)==="string";
+export function toHumanReadableString(amount: BN, currencySpec: Token): string {
+    if(amount==null) return null;
+    return toDecimal(amount, currencySpec.decimals);
 }
 
-export function getNativeCurrency(): CurrencySpec {
-    return smartChainCurrencies[0];
+export function fromHumanReadable(amount: BigNumber, currencySpec: Token): BN {
+    return new BN(amount.multipliedBy(new BigNumber(10).pow(new BigNumber(currencySpec.decimals))).toFixed(0));
 }
 
-export function getCurrencySpec(address: PublicKey | string | Token) {
-    if(typeof(address)==="string" || address instanceof PublicKey) return scCurrencyMap[address.toString()];
-    if(address.chain==="BTC") {
-        return bitcoinCurrencies[address.lightning ? 1 : 0];
-    } else {
-        return scCurrencyMap[address.address.toString()];
-    }
-}
-
-export function toHumanReadable(amount: BN, currencySpec: CurrencySpec | PublicKey | string): BigNumber {
-    let spec: CurrencySpec;
-    if(!isCurrencySpec(currencySpec)) {
-        spec = scCurrencyMap[currencySpec.toString()];
-    } else {
-        spec = currencySpec as CurrencySpec;
-    }
-    return new BigNumber(amount.toString(10)).dividedBy(new BigNumber(10).pow(new BigNumber(spec.decimals)));
-}
-
-export function toHumanReadableString(amount: BN, currencySpec: CurrencySpec | PublicKey | string): string {
-    let spec: CurrencySpec;
-    if(!isCurrencySpec(currencySpec)) {
-        spec = scCurrencyMap[currencySpec.toString()];
-    } else {
-        spec = currencySpec as CurrencySpec;
-    }
-    return new BigNumber(amount.toString(10)).dividedBy(new BigNumber(10).pow(new BigNumber(spec.decimals))).toFixed(spec.decimals);
-}
-
-export function fromHumanReadable(amount: BigNumber, currencySpec: CurrencySpec | PublicKey | string): BN {
-    let spec: CurrencySpec;
-    if(!isCurrencySpec(currencySpec)) {
-        spec = scCurrencyMap[currencySpec.toString()];
-    } else {
-        spec = currencySpec as CurrencySpec;
-    }
-    return new BN(amount.multipliedBy(new BigNumber(10).pow(new BigNumber(spec.decimals))).toFixed(0));
-}
-
-export function fromHumanReadableString(amount: string, currencySpec: CurrencySpec | PublicKey | string): BN {
+export function fromHumanReadableString(amount: string, currencySpec: Token): BN {
     if(amount==="") return null;
-    let spec: CurrencySpec;
-    if(!isCurrencySpec(currencySpec)) {
-        spec = scCurrencyMap[currencySpec.toString()];
-    } else {
-        spec = currencySpec as CurrencySpec;
-    }
-    return new BN(new BigNumber(amount).multipliedBy(new BigNumber(10).pow(new BigNumber(spec.decimals))).toFixed(0));
+    return fromDecimal(amount, currencySpec.decimals);
 }

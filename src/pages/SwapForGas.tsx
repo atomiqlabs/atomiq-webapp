@@ -3,12 +3,8 @@ import {useLocation, useNavigate} from "react-router-dom";
 import {SwapTopbar} from "../components/SwapTopbar";
 import * as React from "react";
 import {useEffect, useRef, useState} from "react";
-import {
-    btcCurrency, nativeCurrency,
-    toHumanReadableString
-} from "../utils/Currencies";
 import Icon from "react-icons-kit";
-import {LnForGasSwap, SolanaSwapData, SolanaSwapper} from "sollightning-sdk";
+import {LnForGasSwap, Tokens} from "@atomiqlabs/sdk";
 import * as BN from "bn.js";
 import ValidatedInput, {ValidatedInputRef} from "../components/ValidatedInput";
 import {QRCodeSVG} from "qrcode.react";
@@ -19,22 +15,24 @@ import {WebLNContext} from "../context/WebLNContext";
 import {WebLNAnchor} from "../components/wallet/WebLNButton";
 import {externalLink} from 'react-icons-kit/fa/externalLink';
 import {SwapsContext} from "../context/SwapsContext";
+import {TokenIcon} from "../components/TokenIcon";
 
-const swapAmount = 12500000;
-const swapAmountSol = swapAmount/1000000000;
+const defaultSwapAmount = "12500000";
 
 export function SwapForGas() {
-    const {swapper} = useContext(SwapsContext);
+    const {swapper, chains} = useContext(SwapsContext);
 
     const navigate = useNavigate();
 
-    const {search, state} = useLocation() as {search: string, state: {returnPath?: string}};
+    const {search, state} = useLocation() as {search: string, state: {returnPath?: string, chainId?: string, amount: string}};
+    const chainId = state?.chainId ?? "SOLANA";
+    const amount = new BN(state?.amount ?? defaultSwapAmount);
 
     const {lnWallet, setLnWallet} = useContext(WebLNContext);
     const [bitcoinError, setBitcoinError] = useState<string>(null);
     const [sendTransactionLoading, setSendTransactionLoading] = useState<boolean>(false);
 
-    const [swapData, setSwapData] = useState<LnForGasSwap<SolanaSwapData>>(null);
+    const [swapData, setSwapData] = useState<LnForGasSwap>(null);
     const [quoteTimeRemaining, setQuoteTimeRemaining] = useState<number>(0);
     const [initialQuoteTimeout, setInitialQuoteTimeout] = useState<number>(0);
     const expiryTime = useRef<number>();
@@ -79,10 +77,14 @@ export function SwapForGas() {
     };
 
     const createSwap = () => {
+        if(
+            chains[chainId]==null ||
+            chains[chainId].random
+        ) return;
         setLoading(true);
         setError(null);
         setSuccess(false);
-        swapper.createTrustedLNForGasSwap(new BN(swapAmount)).then(swap => {
+        swapper.createTrustedLNForGasSwap(chainId, chains[chainId].signer.getAddress(), amount).then(swap => {
             if(abortControllerRef.current.signal.aborted) return;
             setLoading(false);
             setSwapData(swap);
@@ -155,6 +157,8 @@ export function SwapForGas() {
         setShowCopyOverlay(num);
     };
 
+    const nativeCurrency = swapper==null ? null : swapper.getNativeToken(chainId);
+
     return (
         <>
             <SwapTopbar selected={3} enabled={true}/>
@@ -172,7 +176,7 @@ export function SwapForGas() {
                         {success ? (
                             <Alert variant={"success"} className="mb-3">
                                 <p><strong>Swap successful</strong></p>
-                                Successfully swapped {toHumanReadableString(swapData.getInAmount(), btcCurrency)} BTC to {swapAmountSol} SOL
+                                Successfully swapped {swapData.getInput().amount} BTC to {swapData.getOutput().amount} SOL
                             </Alert>
                         ) : ""}
 
@@ -196,13 +200,13 @@ export function SwapForGas() {
                                     type={"number"}
                                     textEnd={(
                                         <span className="text-white font-bigger d-flex align-items-center">
-                                            <img src={btcCurrency.icon} className="currency-icon"/>
+                                            <TokenIcon tokenOrTicker={Tokens.BITCOIN.BTCLN} className="currency-icon"/>
                                             BTC
                                         </span>
                                     )}
                                     disabled={true}
                                     size={"lg"}
-                                    value={toHumanReadableString(swapData.getInAmount(), btcCurrency)}
+                                    value={swapData.getInput().amount}
                                     onChange={() => {}}
                                     placeholder={"Input amount"}
                                 />
@@ -213,13 +217,13 @@ export function SwapForGas() {
                                     type={"number"}
                                     textEnd={(
                                         <span className="text-white font-bigger d-flex align-items-center">
-                                            <img src={nativeCurrency.icon} className="currency-icon"/>
+                                            <TokenIcon tokenOrTicker={nativeCurrency} className="currency-icon"/>
                                             {nativeCurrency.ticker}
                                         </span>
                                     )}
                                     disabled={true}
                                     size={"lg"}
-                                    value={toHumanReadableString(swapData.getOutAmount(), nativeCurrency)}
+                                    value={swapData.getOutput().amount}
                                     onChange={() => {}}
                                     placeholder={"Output amount"}
                                 />

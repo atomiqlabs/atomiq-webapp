@@ -3,13 +3,15 @@ import { Badge, Button, Card, Col, OverlayTrigger, Placeholder, Row, Tooltip } f
 import { FEConstants } from "../FEConstants";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SingleColumnBackendTable } from "../components/table/SingleColumnTable";
-import { bitcoinCurrencies, getCurrencySpec, toHumanReadableString } from "../utils/Currencies";
+import { toHumanReadableString } from "../utils/Currencies";
 import * as BN from "bn.js";
 import Icon from "react-icons-kit";
 import { ic_arrow_forward } from 'react-icons-kit/md/ic_arrow_forward';
 import { ic_arrow_downward } from 'react-icons-kit/md/ic_arrow_downward';
 import ValidatedInput from "../components/ValidatedInput";
+import { TokenResolver, Tokens } from "@atomiqlabs/sdk";
 import { getTimeDeltaText } from "../utils/Utils";
+import { TokenIcon } from "../components/TokenIcon";
 const timeframes = ["24h", "7d", "30d"];
 export function SwapExplorer(props) {
     const refreshTable = useRef(null);
@@ -51,6 +53,7 @@ export function SwapExplorer(props) {
                             }
                         }, children: "Search" })] }), _jsx("div", { children: _jsx(SingleColumnBackendTable, { column: {
                         renderer: (row) => {
+                            const chainId = row.chainId ?? "SOLANA";
                             let inputAmount;
                             let inputCurrency;
                             let outputAmount;
@@ -65,12 +68,12 @@ export function SwapExplorer(props) {
                             let outputInfo;
                             if (row.direction === "ToBTC") {
                                 inputAmount = new BN(row.rawAmount);
-                                inputCurrency = getCurrencySpec(row.token);
+                                inputCurrency = TokenResolver[chainId].getToken(row.token);
                                 outputAmount = row.btcRawAmount == null ? null : new BN(row.btcRawAmount);
-                                outputCurrency = row.type === "CHAIN" ? bitcoinCurrencies[0] : bitcoinCurrencies[1];
+                                outputCurrency = row.type === "CHAIN" ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
                                 txIdInput = row.txInit;
                                 txIdOutput = row.type === "CHAIN" ? row.btcTx : row.paymentHash;
-                                inputExplorer = FEConstants.solBlockExplorer;
+                                inputExplorer = FEConstants.blockExplorers[chainId];
                                 outputExplorer = row.type === "CHAIN" ? FEConstants.btcBlockExplorer : null;
                                 if (row.type === "LN") {
                                     outputInfo = "Lightning network amounts and addresses are private!";
@@ -87,12 +90,12 @@ export function SwapExplorer(props) {
                             }
                             else {
                                 outputAmount = new BN(row.rawAmount);
-                                outputCurrency = getCurrencySpec(row.token);
+                                outputCurrency = TokenResolver[chainId].getToken(row.token);
                                 inputAmount = row.btcRawAmount == null ? null : new BN(row.btcRawAmount);
-                                inputCurrency = row.type === "CHAIN" ? bitcoinCurrencies[0] : bitcoinCurrencies[1];
+                                inputCurrency = row.type === "CHAIN" ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
                                 txIdOutput = row.txInit;
                                 txIdInput = row.type === "CHAIN" ? row.btcTx : row.paymentHash;
-                                outputExplorer = FEConstants.solBlockExplorer;
+                                outputExplorer = FEConstants.blockExplorers[chainId];
                                 inputExplorer = row.type === "CHAIN" ? FEConstants.btcBlockExplorer : null;
                                 if (row.type === "LN") {
                                     inputInfo = "Lightning network amounts and addresses are private!";
@@ -108,7 +111,7 @@ export function SwapExplorer(props) {
                                     inputAddress = row.btcInAddresses[0];
                                 }
                             }
-                            return (_jsxs(Row, { className: "d-flex flex-row gx-1 gy-1", children: [_jsx(Col, { xl: 2, md: 12, className: "d-flex text-md-end text-start", children: _jsxs(Row, { className: "gx-1 gy-0 width-fill", children: [_jsx(Col, { xl: 6, md: 2, xs: 6, children: !row.finished ? (_jsx(Badge, { bg: "primary", className: "width-fill", children: "Pending" })) : row.success ? (_jsx(Badge, { bg: "success", className: "width-fill", children: "Success" })) : row.direction === "FromBTC" ? (_jsx(Badge, { bg: "warning", className: "width-fill bg-atomiq-orange", children: "Expired" })) : (_jsx(Badge, { bg: "danger", className: "width-fill", children: "Refunded" })) }), _jsx(Col, { xl: 6, md: 2, xs: 6, children: row.type === "CHAIN" ? (_jsx(Badge, { bg: "warning", className: "width-fill", children: "On-chain" })) : (_jsx(Badge, { bg: "dark", className: "width-fill", children: "Lightning" })) }), _jsx(Col, { xl: 0, lg: 2, md: 1, xs: 0 }), _jsx(Col, { xl: 12, lg: 2, md: 3, xs: 6, children: _jsx("small", { className: "", children: new Date(row.timestampInit * 1000).toLocaleString() }) }), _jsx(Col, { xl: 12, md: 2, xs: 3, children: _jsxs("small", { className: "", children: [getTimeDeltaText(row.timestampInit * 1000), " ago"] }) }), _jsx(Col, { xl: 12, md: 2, xs: 3, className: "text-end", children: _jsx("span", { className: "font-weight-500", children: FEConstants.USDollar.format(row._usdValue) }) })] }) }), _jsx(Col, { xl: 10, md: 12, className: "d-flex", children: _jsx("div", { className: "card border-0 bg-white bg-opacity-10 p-2 width-fill container-fluid", children: _jsxs(Row, { className: "", children: [_jsxs(Col, { md: 6, xs: 12, className: "d-flex flex-row align-items-center", children: [_jsxs("div", { className: "min-width-0 me-md-2", children: [_jsx("a", { className: "font-small single-line-ellipsis", target: "_blank", href: inputExplorer == null || txIdInput == null ? null : inputExplorer + txIdInput, children: txIdInput || "None" }), _jsxs("span", { className: "d-flex align-items-center font-weight-500 my-1", children: [_jsx("img", { src: inputCurrency?.icon, className: "currency-icon-medium" }), inputAmount == null || inputCurrency == null ? "???" : toHumanReadableString(inputAmount, inputCurrency), " ", inputCurrency?.ticker || "???", inputInfo != null ? (_jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "explorer-tooltip-in-" + row.id, children: inputInfo }), children: _jsx(Badge, { bg: "primary", className: "ms-2 pill-round px-2", pill: true, children: "?" }) })) : ""] }), _jsx("small", { className: "single-line-ellipsis", children: inputAddress })] }), _jsx(Icon, { size: 22, icon: ic_arrow_forward, className: "d-md-block d-none", style: { marginLeft: "auto", marginRight: "-22px", marginBottom: "6px" } })] }), _jsx(Col, { md: 0, xs: 12, className: "d-md-none d-flex justify-content-center", children: _jsx(Icon, { size: 22, icon: ic_arrow_downward, className: "", style: { marginBottom: "6px" } }) }), _jsxs(Col, { md: 6, xs: 12, className: "ps-md-4", children: [_jsx("a", { className: "font-small single-line-ellipsis", target: "_blank", href: outputExplorer == null || txIdOutput == null ? null : outputExplorer + txIdOutput, children: txIdOutput || "..." }), _jsxs("span", { className: "d-flex align-items-center font-weight-500 my-1", children: [_jsx("img", { src: outputCurrency?.icon, className: "currency-icon-medium" }), outputAmount == null || outputCurrency == null ? "???" : toHumanReadableString(outputAmount, outputCurrency), " ", outputCurrency?.ticker || "???", outputInfo != null ? (_jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "explorer-tooltip-out-" + row.id, children: outputInfo }), children: _jsx(Badge, { bg: "primary", className: "ms-2 pill-round px-2", pill: true, children: "?" }) })) : ""] }), _jsx("small", { className: "single-line-ellipsis", children: outputAddress })] })] }) }) })] }));
+                            return (_jsxs(Row, { className: "d-flex flex-row gx-1 gy-1", children: [_jsx(Col, { xl: 2, md: 12, className: "d-flex text-md-end text-start", children: _jsxs(Row, { className: "gx-1 gy-0 width-fill", children: [_jsx(Col, { xl: 6, md: 2, xs: 6, children: !row.finished ? (_jsx(Badge, { bg: "primary", className: "width-fill", children: "Pending" })) : row.success ? (_jsx(Badge, { bg: "success", className: "width-fill", children: "Success" })) : row.direction === "FromBTC" ? (_jsx(Badge, { bg: "warning", className: "width-fill bg-atomiq-orange", children: "Expired" })) : (_jsx(Badge, { bg: "danger", className: "width-fill", children: "Refunded" })) }), _jsx(Col, { xl: 6, md: 2, xs: 6, children: row.type === "CHAIN" ? (_jsx(Badge, { bg: "warning", className: "width-fill", children: "On-chain" })) : (_jsx(Badge, { bg: "dark", className: "width-fill", children: "Lightning" })) }), _jsx(Col, { xl: 0, lg: 2, md: 1, xs: 0 }), _jsx(Col, { xl: 12, lg: 2, md: 3, xs: 6, children: _jsx("small", { className: "", children: new Date(row.timestampInit * 1000).toLocaleString() }) }), _jsx(Col, { xl: 12, md: 2, xs: 3, children: _jsxs("small", { className: "", children: [getTimeDeltaText(row.timestampInit * 1000), " ago"] }) }), _jsx(Col, { xl: 12, md: 2, xs: 3, className: "text-end", children: _jsx("span", { className: "font-weight-500", children: FEConstants.USDollar.format(row._usdValue) }) })] }) }), _jsx(Col, { xl: 10, md: 12, className: "d-flex", children: _jsx("div", { className: "card border-0 bg-white bg-opacity-10 p-2 width-fill container-fluid", children: _jsxs(Row, { className: "", children: [_jsxs(Col, { md: 6, xs: 12, className: "d-flex flex-row align-items-center", children: [_jsxs("div", { className: "min-width-0 me-md-2", children: [_jsx("a", { className: "font-small single-line-ellipsis", target: "_blank", href: inputExplorer == null || txIdInput == null ? null : inputExplorer + txIdInput, children: txIdInput || "None" }), _jsxs("span", { className: "d-flex align-items-center font-weight-500 my-1", children: [_jsx(TokenIcon, { tokenOrTicker: inputCurrency, className: "currency-icon-medium" }), inputAmount == null || inputCurrency == null ? "???" : toHumanReadableString(inputAmount, inputCurrency), " ", inputCurrency?.ticker || "???", inputInfo != null ? (_jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "explorer-tooltip-in-" + row.id, children: inputInfo }), children: _jsx(Badge, { bg: "primary", className: "ms-2 pill-round px-2", pill: true, children: "?" }) })) : ""] }), _jsx("small", { className: "single-line-ellipsis", children: inputAddress })] }), _jsx(Icon, { size: 22, icon: ic_arrow_forward, className: "d-md-block d-none", style: { marginLeft: "auto", marginRight: "-22px", marginBottom: "6px" } })] }), _jsx(Col, { md: 0, xs: 12, className: "d-md-none d-flex justify-content-center", children: _jsx(Icon, { size: 22, icon: ic_arrow_downward, className: "", style: { marginBottom: "6px" } }) }), _jsxs(Col, { md: 6, xs: 12, className: "ps-md-4", children: [_jsx("a", { className: "font-small single-line-ellipsis", target: "_blank", href: outputExplorer == null || txIdOutput == null ? null : outputExplorer + txIdOutput, children: txIdOutput || "..." }), _jsxs("span", { className: "d-flex align-items-center font-weight-500 my-1", children: [_jsx(TokenIcon, { tokenOrTicker: outputCurrency, className: "currency-icon-medium" }), outputAmount == null || outputCurrency == null ? "???" : toHumanReadableString(outputAmount, outputCurrency), " ", outputCurrency?.ticker || "???", outputInfo != null ? (_jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "explorer-tooltip-out-" + row.id, children: outputInfo }), children: _jsx(Badge, { bg: "primary", className: "ms-2 pill-round px-2", pill: true, children: "?" }) })) : ""] }), _jsx("small", { className: "single-line-ellipsis", children: outputAddress })] })] }) }) })] }));
                         }
                     }, endpoint: FEConstants.statsUrl + "/GetSwapList", itemsPerPage: 10, refreshFunc: refreshTable, additionalData: additionalData }) })] }));
 }
