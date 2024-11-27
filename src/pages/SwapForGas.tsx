@@ -16,6 +16,7 @@ import {WebLNAnchor} from "../components/wallet/WebLNButton";
 import {externalLink} from 'react-icons-kit/fa/externalLink';
 import {SwapsContext} from "../context/SwapsContext";
 import {TokenIcon} from "../components/TokenIcon";
+import {useAnchorNavigate} from "../utils/useAnchorNavigate";
 
 const defaultSwapAmount = "12500000";
 
@@ -23,6 +24,7 @@ export function SwapForGas() {
     const {swapper, chains} = useContext(SwapsContext);
 
     const navigate = useNavigate();
+    const navigateHref = useAnchorNavigate();
 
     const {search, state} = useLocation() as {search: string, state: {returnPath?: string, chainId?: string, amount: string}};
     const chainId = state?.chainId ?? "SOLANA";
@@ -183,10 +185,7 @@ export function SwapForGas() {
                         <Alert className="text-center mb-3 d-flex align-items-center flex-column" show={swapData!=null && !success && !error} variant="success" closeVariant="white">
                             <label>
                                 Swap for gas is a trusted service allowing you to swap BTC-LN to SOL, so you can then cover the gas fees of a trustless atomiq swap.
-                                Note that this is a trusted service and is therefore only used for small amounts! You can read more about it in our <a href="/faq?tabOpen=11" onClick={(e) => {
-                                    e.preventDefault();
-                                    navigate("/faq?tabOpen=11");
-                                }}>FAQ</a>.
+                                Note that this is a trusted service and is therefore only used for small amounts! You can read more about it in our <a href="/faq?tabOpen=11" onClick={navigateHref}>FAQ</a>.
                             </label>
                         </Alert>
 

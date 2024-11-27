@@ -1,6 +1,6 @@
 import './App.css';
 import * as React from "react";
-import {useCallback, useEffect, useRef} from "react";
+import {useEffect, useRef} from "react";
 import SolanaWalletProvider from "./context/SolanaWalletProvider";
 import {QuickScan} from "./pages/quickscan/QuickScan";
 import {QuickScanExecute} from "./pages/quickscan/QuickScanExecute";
@@ -55,6 +55,7 @@ import {WebLNProvider} from "webln";
 import {WebLNContext} from './context/WebLNContext';
 import {heart} from 'react-icons-kit/fa/heart';
 import {SwapNew} from "./pages/SwapNew";
+import {useAnchorNavigate} from "./utils/useAnchorNavigate";
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -63,6 +64,8 @@ const jitoPubkey = "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL";
 const jitoEndpoint = "https://mainnet.block-engine.jito.wtf/api/v1/transactions";
 
 function WrappedApp() {
+
+    const navigateHref = useAnchorNavigate();
 
     const {connection} = useConnection();
 
@@ -94,12 +97,6 @@ function WrappedApp() {
 
     const affiliateLink = searchParams.get("affiliate") || window.localStorage.getItem("atomiq-affiliate");
 
-    const swapListener = useCallback((swap: ISwap) => {
-        if(swap.isFinished()) {
-            //TODO: Change this to support multiple signers
-            // setActionableSwaps((val: ISwap[]) => val.filter(e => e!==swap));
-        }
-    }, []);
     const abortController = useRef<AbortController>();
 
     const loadSwapper: () => Promise<MultichainSwapper> = async() => {
@@ -155,8 +152,6 @@ function WrappedApp() {
                 return cpy;
             });
 
-            swapper.on("swapState", swapListener);
-
             return swapper;
         } catch (e) {
             setSwapperLoadingError(e.toString());
@@ -165,16 +160,8 @@ function WrappedApp() {
     };
 
     React.useEffect(() => {
-        return () => {
-            if(swapper!=null) {
-                swapper.off("swapState", swapListener);
-            }
-        }
-    }, [swapper]);
-
-    React.useEffect(() => {
-        if(!noWalletPaths.has(pathName)) loadSwapper();
-    }, []);
+        if(!noWalletPaths.has(pathName) && swapper==null) loadSwapper();
+    }, [pathName]);
 
     const [nfcSupported, setNfcSupported] = React.useState<boolean>(false);
     const [nfcEnabled, setNfcEnabled] = React.useState<boolean>(true);
@@ -239,15 +226,15 @@ function WrappedApp() {
 
                         <Navbar.Collapse role="" id="basic-navbar-nav">
                             <Nav className={"d-flex d-lg-none me-auto text-start border-top border-dark-subtle my-2 "+(swapper==null ? "" : "border-bottom")}>
-                                <Nav.Link href="/" className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
+                                <Nav.Link href="/" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
                                 {/*<Nav.Link href="/map" className="d-flex flex-row align-items-center">*/}
                                 {/*    <Icon icon={map} className="d-flex me-1"/>*/}
                                 {/*    <span className="me-auto">Map</span>*/}
                                 {/*    <small>Find merchants accepting lightning!</small>*/}
                                 {/*</Nav.Link>*/}
-                                <Nav.Link href="/about" className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
-                                <Nav.Link href="/faq" className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
-                                <Nav.Link href="/referral" className="d-flex flex-row align-items-center">
+                                <Nav.Link href="/about" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
+                                <Nav.Link href="/faq" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
+                                <Nav.Link href="/referral" onClick={navigateHref} className="d-flex flex-row align-items-center">
                                     <Icon icon={gift} className="d-flex me-1"/>
                                     <span className="me-1">Referral</span>
                                     <Badge className="me-2">New!</Badge>
@@ -267,7 +254,7 @@ function WrappedApp() {
                                 {/*<Nav.Link href="https://github.com/adambor/SolLightning-sdk" target="_blank">Integrate</Nav.Link>*/}
                             </Nav>
                             <Nav className="d-none d-lg-flex me-auto text-start" navbarScroll style={{ maxHeight: '100px' }}>
-                                <Nav.Link href="/" className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
+                                <Nav.Link href="/" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
 
                                 {/*<OverlayTrigger placement="bottom" overlay={<Tooltip id="map-tooltip">*/}
                                 {/*    Find merchants near you accepting bitcoin lightning!*/}
@@ -278,10 +265,10 @@ function WrappedApp() {
                                 {/*    </Nav.Link>*/}
                                 {/*</OverlayTrigger>*/}
 
-                                <Nav.Link href="/about" className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
-                                <Nav.Link href="/faq" className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
+                                <Nav.Link href="/about" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
+                                <Nav.Link href="/faq" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
 
-                                <Nav.Link href="/referral" className="d-flex flex-column align-items-center">
+                                <Nav.Link href="/referral" onClick={navigateHref} className="d-flex flex-column align-items-center">
                                     <div className="d-flex flex-row align-items-center">
                                         <Icon icon={gift} className="d-flex me-1"/>
                                         <span className="me-1">Referral</span>
@@ -369,24 +356,22 @@ function WrappedApp() {
                                 </div>
                             </div>
                         ) : ""}
-                        <BrowserRouter>
-                            <Routes>
-                                <Route path="/">
-                                    <Route index element={<SwapNew supportedCurrencies={smartChainTokenArray}/>}></Route>
-                                    <Route path="scan">
-                                        <Route index element={<QuickScan/>}/>
-                                        <Route path="2" element={<QuickScanExecute/>}/>
-                                    </Route>
-                                    <Route path="history" element={<History/>}/>
-                                    <Route path="gas" element={<SwapForGas/>}/>
-                                    <Route path="faq" element={<FAQ/>}/>
-                                    <Route path="about" element={<About/>}/>
-                                    <Route path="map" element={<Map/>}/>
-                                    <Route path="46jh456f45f" element={<SwapExplorer/>}/>
-                                    <Route path="referral" element={<Affiliate/>}/>
+                        <Routes>
+                            <Route path="/">
+                                <Route index element={<SwapNew supportedCurrencies={smartChainTokenArray}/>}></Route>
+                                <Route path="scan">
+                                    <Route index element={<QuickScan/>}/>
+                                    <Route path="2" element={<QuickScanExecute/>}/>
                                 </Route>
-                            </Routes>
-                        </BrowserRouter>
+                                <Route path="history" element={<History/>}/>
+                                <Route path="gas" element={<SwapForGas/>}/>
+                                <Route path="faq" element={<FAQ/>}/>
+                                <Route path="about" element={<About/>}/>
+                                <Route path="map" element={<Map/>}/>
+                                <Route path="46jh456f45f" element={<SwapExplorer/>}/>
+                                <Route path="referral" element={<Affiliate/>}/>
+                            </Route>
+                        </Routes>
                     </div>
                     <Row className="mt-auto bg-dark bg-opacity-50 g-0 p-2" style={{zIndex: 1000}}>
 
@@ -424,7 +409,9 @@ function App() {
     return (
         <div className="App d-flex flex-column">
             <SolanaWalletProvider>
-                <WrappedApp/>
+                <BrowserRouter>
+                    <WrappedApp/>
+                </BrowserRouter>
             </SolanaWalletProvider>
         </div>
     );

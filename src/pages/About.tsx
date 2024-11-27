@@ -1,7 +1,10 @@
 import * as React from "react";
 import {Card, Col, Row} from "react-bootstrap";
+import {useAnchorNavigate} from "../utils/useAnchorNavigate";
 
 export function About(props: {}) {
+
+    const navigateHref = useAnchorNavigate();
 
     return (
         <div className="flex-fill text-white container mt-5 text-start">
@@ -32,7 +35,7 @@ export function About(props: {}) {
                         <h3>Secure</h3>
                         <p>
                             <strong>atomiq.exchange</strong> is secured by Bitcoin light client (leveraging bitcoin's proof-of-work) & atomic swaps.
-                            Our smart contracts are <a href="/faq?tabOpen=6">fully audited by Ackee Blockchain</a> and are immutably deployed on Solana (with no upgrade authority).
+                            Our smart contracts are <a onClick={navigateHref} href="/faq?tabOpen=6">fully audited by Ackee Blockchain</a> and are immutably deployed on Solana (with no upgrade authority).
                         </p>
                     </Card>
                 </Col>

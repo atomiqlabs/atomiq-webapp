@@ -2,6 +2,7 @@ import * as React from "react";
 import {Accordion, Card} from "react-bootstrap";
 import {useLocation} from "react-router-dom";
 import {useEffect} from "react";
+import {useAnchorNavigate} from "../utils/useAnchorNavigate";
 
 
 export function FAQ(props: {}) {
@@ -9,6 +10,7 @@ export function FAQ(props: {}) {
     const {search} = useLocation() as {search: string};
     const params = new URLSearchParams(search);
     const tabOpen = params.get("tabOpen");
+    const anchorNavigate = useAnchorNavigate();
 
     useEffect(() => {
         if(tabOpen!=null) {
@@ -67,7 +69,7 @@ export function FAQ(props: {}) {
                             <p>
                                 If you are presented with a Bitcoin/Lightning network QR code and want to initiate a Solana -&gt; Bitcoin swap:
                                 <ol>
-                                    <li>Select the <a href="/scan">"Scan" function</a> & allow the use of camera by the browser</li>
+                                    <li>Select the <a href="/scan" onClick={anchorNavigate}>"Scan" function</a> & allow the use of camera by the browser</li>
                                     <li>Scan the QR code</li>
                                     <li>Select the Solana asset you want use for the payment payment (SOL or USDC)</li>
                                     <li>You are presented with the quote, summarizing swap amount & fees, click "Pay" to approve</li>
@@ -80,7 +82,7 @@ export function FAQ(props: {}) {
                             <p>
                                 You can seamlessly swap Solana assets (like SOL and USDC) to Bitcoin (on-chain and lightning):
                                 <ol>
-                                    <li>Select the <a href="/">"Swap" function</a></li>
+                                    <li>Select the <a href="/" onClick={anchorNavigate}>"Swap" function</a></li>
                                     <li>Select the desired input asset (USDC or SOL) - you can click on the arrow to reverse asset selection</li>
                                     <li>Fill in the amount you want to send/receive</li>
                                     <li>Copy in the bitcoin/lightning network address where you want to receive your BTC to the address field</li>
@@ -94,7 +96,7 @@ export function FAQ(props: {}) {
                             <p>
                                 Seamlessly swapping Bitcoin (on-chain and lightning) to Solana assets (like SOL and USDC):
                                 <ol>
-                                    <li>Select the <a href="/">"Swap" function</a></li>
+                                    <li>Select the <a href="/" onClick={anchorNavigate}>"Swap" function</a></li>
                                     <li>Select the desired input asset (bitcoin on-chain or lightning) and output asset (SOL or USDC) - you can click on the arrow to reverse asset selection</li>
                                     <li>Fill in the amount you want to send/receive</li>
                                     <li>(new solana wallets only) In case you have 0 SOL balance, you will be prompted to use the swap for gas feature first (this for now only accepts bitcoin lightning), so you can then cover the transaction fee for a trustless swap</li>
@@ -168,10 +170,7 @@ export function FAQ(props: {}) {
                         <Accordion.Header><span className="faq-number">6</span>Where can I learn more?</Accordion.Header>
                         <Accordion.Body>
                             <p>
-                                We have an extensive documentation about how our whole system works, if you'd like to dive deeper you can check out our <a target="_blank" href="https://github.com/adambor/SolLightning-readme">github</a>.
-                            </p>
-                            <p>
-                                You can also specifically read about how we handle <a target="_blank" href="https://github.com/adambor/SolLightning-readme/blob/main/sol-submarine-swaps.md">lightning network swaps (submarine swaps)</a> & <a target="_blank" href="https://github.com/adambor/SolLightning-readme/blob/main/sol-onchain-swaps.md">bitcoin on-chain swaps (proof-time locked contracts)</a>
+                                We have an extensive documentation about how our whole system works, if you'd like to dive deeper you can check out our <a target="_blank" href="https://docs.atomiq.exchange/">GitBook</a>.
                             </p>
                         </Accordion.Body>
                     </Accordion.Item>
