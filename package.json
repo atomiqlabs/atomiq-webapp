@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@atomiqlabs/sdk": "1.0.0-beta43",
+    "@atomiqlabs/sdk": "1.1.0",
     "@coral-xyz/anchor": "^0.29.0",
     "@solana/wallet-adapter-base": "^0.9.22",
     "@solana/wallet-adapter-react": "^0.15.30",
