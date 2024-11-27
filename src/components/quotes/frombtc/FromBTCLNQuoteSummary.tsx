@@ -194,7 +194,10 @@ export function FromBTCLNQuoteSummary(props: {
                                         WebLN
                                     </Button>
                                     <small className="mt-2">
-                                        <a href="javascript:void(0);" onClick={disconnect}>
+                                        <a href="#" onClick={(e) => {
+                                            e.preventDefault();
+                                            disconnect();
+                                        }}>
                                             Or use a QR code/LN invoice
                                         </a>
                                     </small>
@@ -226,7 +229,8 @@ export function FromBTCLNQuoteSummary(props: {
                                             type={"text"}
                                             value={props.quote.getLightningInvoice()}
                                             textEnd={(
-                                                <a href="javascript:void(0);" onClick={(event) => {
+                                                <a href="#" onClick={(event) => {
+                                                    event.preventDefault();
                                                     show(event.target as HTMLElement, props.quote.getLightningInvoice(), textFieldRef.current?.input?.current);
                                                 }}>
                                                     <Icon icon={clipboard}/>

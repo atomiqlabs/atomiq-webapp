@@ -30,8 +30,8 @@ function HistoryEntry(props: {
     const input = props.swap.getInput();
     const output = props.swap.getOutput();
 
-    const inputExplorer = isSCToken(input.token) ? FEConstants.blockExplorers[input.token.chainId] : FEConstants.btcBlockExplorer;
-    const outputExplorer = isSCToken(output.token) ? FEConstants.blockExplorers[output.token.chainId] : FEConstants.btcBlockExplorer;
+    const inputExplorer = isSCToken(input.token) ? FEConstants.blockExplorers[input.token.chainId] : !input.token.lightning ? FEConstants.btcBlockExplorer : null;
+    const outputExplorer = isSCToken(output.token) ? FEConstants.blockExplorers[output.token.chainId] : !output.token.lightning ? FEConstants.btcBlockExplorer : null;
 
     const txIdInput = props.swap.getType()===SwapType.TO_BTCLN || props.swap.getType()===SwapType.TO_BTC ? props.swap.commitTxId :
         props.swap.getType()===SwapType.FROM_BTC ? (props.swap as FromBTCSwap).txId : props.swap.getPaymentHashString();

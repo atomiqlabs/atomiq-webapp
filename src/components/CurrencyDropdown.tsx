@@ -24,7 +24,7 @@ export function CurrencyDropdown(props: {
                             props.onSelect(curr);
                         }}>
                             <TokenIcon tokenOrTicker={curr} className="currency-icon"/>
-                            {curr.ticker}
+                            {curr.name}
                         </Dropdown.Item>
                     )
                 })}

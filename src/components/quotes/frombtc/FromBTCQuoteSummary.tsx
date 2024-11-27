@@ -168,10 +168,10 @@ export function FromBTCQuoteSummary(props: {
     const isSuccess = state===FromBTCSwapState.CLAIM_CLAIMED;
 
     useEffect(() => {
-        if(isSuccess || isFailed || isExpired) {
+        if(isSuccess || isFailed || isExpired || isQuoteExpired) {
             if (setAmountLockRef.current != null) setAmountLockRef.current(false);
         }
-    }, [isSuccess, isFailed, isExpired]);
+    }, [isSuccess, isFailed, isExpired, isQuoteExpired]);
 
     /*
     Steps:
@@ -222,7 +222,8 @@ export function FromBTCQuoteSummary(props: {
                 type={"text"}
                 value={props.quote.getBitcoinAddress()}
                 textEnd={(
-                    <a href="javascript:void(0);" onClick={(event) => {
+                    <a href="#" onClick={(event) => {
+                        event.preventDefault();
                         show(event.target as HTMLElement, props.quote.getBitcoinAddress(), textFieldRef.current?.input?.current);
                     }}>
                         <Icon icon={clipboard}/>
@@ -301,7 +302,7 @@ export function FromBTCQuoteSummary(props: {
 
                                 <div className="d-flex flex-column align-items-center justify-content-center">
                                     {payTxId != null ? (
-                                        <div className="d-flex flex-column align-items-center tab-accent">
+                                        <div className="d-flex flex-column align-items-center p-2">
                                             <Spinner/>
                                             <label>Sending Bitcoin transaction...</label>
                                         </div>
@@ -318,7 +319,10 @@ export function FromBTCQuoteSummary(props: {
                                             </Button>
 
                                             <small className="mt-2">
-                                                <a href="javascript:void(0);" onClick={disconnect}>
+                                                <a href="#" onClick={(e) => {
+                                                    e.preventDefault();
+                                                    disconnect();
+                                                }}>
                                                     Or use a QR code/wallet address
                                                 </a>
                                             </small>

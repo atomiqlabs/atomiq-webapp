@@ -38,7 +38,10 @@ export function WebLNAnchor(props: {className?: string, noText?: boolean}) {
     return (
         <>
             {lnWallet==null ? (
-                <a className={props.className} href="javascript:void(0);" onClick={() => connectWallet()}>
+                <a className={props.className} href="#" onClick={(e) => {
+                    e.preventDefault();
+                    connectWallet()
+                }}>
                     Connect BTC-LN wallet
                 </a>
             ) : (

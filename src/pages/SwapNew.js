@@ -276,7 +276,8 @@ export function SwapNew(props) {
                                                         e.preventDefault();
                                                         setQrScanning(true);
                                                     }, children: _jsx(Icon, { size: 24, icon: ic_qr_code_scanner }) }) })), successFeedback: btcWalletForOutput ? "Address fetched from your " + bitcoinWallet.getName() + " wallet!" :
-                                                webLnForOutput ? "Lightning invoice fetched from your WebLN lightning wallet!" : null }), webLnForOutput ? (_jsx(_Fragment, { children: validatedAddress == null || validatedAddress === "" ? (_jsx("div", { className: "mt-2", children: _jsx("a", { href: "javascript:void(0);", onClick: () => {
+                                                webLnForOutput ? "Lightning invoice fetched from your WebLN lightning wallet!" : null }), webLnForOutput ? (_jsx(_Fragment, { children: validatedAddress == null || validatedAddress === "" ? (_jsx("div", { className: "mt-2", children: _jsx("a", { href: "#", onClick: (e) => {
+                                                        e.preventDefault();
                                                         if (validatedAmount == null)
                                                             return;
                                                         lnWallet.makeInvoice(fromHumanReadable(validatedAmount, Tokens.BITCOIN.BTCLN).toNumber()).then(res => {

@@ -124,7 +124,10 @@ export function BitcoinWalletAnchor(props: {className?: string, noText?: boolean
             />
 
             {bitcoinWallet==null ? (
-                <a className={props.className} href="javascript:void(0);" onClick={() => connectWallet()}>
+                <a className={props.className} href="#" onClick={(e) => {
+                    e.preventDefault();
+                    connectWallet()
+                }}>
                     Connect BTC wallet
                 </a>
             ) : (

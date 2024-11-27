@@ -171,9 +171,7 @@ export function ToBTCQuoteSummary(props: {
     const isRefunded = state===ToBTCSwapState.REFUNDED;
 
     useEffect(() => {
-        console.log("ToBTCQuoteSummary: useEffect(state): Swap finished!");
         if(isExpired || isSuccess || isRefunded) {
-            console.log("ToBTCQuoteSummary: useEffect(state): Call unlock");
             if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
         }
     }, [isExpired, isSuccess, isRefunded]);

@@ -183,7 +183,10 @@ export function SwapForGas() {
                         <Alert className="text-center mb-3 d-flex align-items-center flex-column" show={swapData!=null && !success && !error} variant="success" closeVariant="white">
                             <label>
                                 Swap for gas is a trusted service allowing you to swap BTC-LN to SOL, so you can then cover the gas fees of a trustless atomiq swap.
-                                Note that this is a trusted service and is therefore only used for small amounts! You can read more about it in our <a href="javascript:void(0);" onClick={() => navigate("/faq?tabOpen=11")}>FAQ</a>.
+                                Note that this is a trusted service and is therefore only used for small amounts! You can read more about it in our <a href="/faq?tabOpen=11" onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate("/faq?tabOpen=11");
+                                }}>FAQ</a>.
                             </label>
                         </Alert>
 
@@ -247,7 +250,10 @@ export function SwapForGas() {
                                                 <img width={20} height={20} src="/wallets/WebLN.png" className="ms-2 me-1"/>
                                                 WebLN
                                             </Button>
-                                            <small className="mt-2"><a href="javascript:void(0);" onClick={() => setLnWallet(null)}>Or use a QR code/LN invoice</a></small>
+                                            <small className="mt-2"><a href="#" onClick={(e) => {
+                                                e.preventDefault();
+                                                setLnWallet(null)
+                                            }}>Or use a QR code/LN invoice</a></small>
                                         </div>
                                     </>
                                 ) : (
@@ -275,7 +281,8 @@ export function SwapForGas() {
                                             type={"text"}
                                             value={swapData.getLightningInvoice()}
                                             textEnd={(
-                                                <a href="javascript:void(0);" ref={copyBtnRef} onClick={() => {
+                                                <a href="#" ref={copyBtnRef} onClick={(e) => {
+                                                    e.preventDefault();
                                                     copy(1);
                                                 }}>
                                                     <Icon icon={clipboard}/>

@@ -98,13 +98,13 @@ function SingleColumnTable<T>(props : {
     for(let i=0;i<itemsPerPage;i++) {
         const obj = state.pageData[i];
         if(obj!=null) tbody.push((
-            <ListGroup.Item className="bg-dark bg-opacity-25 border-light border-opacity-25 text-white">{props.column.renderer(obj)}</ListGroup.Item>
+            <ListGroup.Item className="bg-dark bg-opacity-25 border-light border-opacity-25 text-white" key={i.toString()}>{props.column.renderer(obj)}</ListGroup.Item>
         ));
     }
 
     if(tbody.length===0) {
         tbody.push((
-            <ListGroup.Item className="bg-dark bg-opacity-25 border-light border-opacity-25 text-white">
+            <ListGroup.Item key={"0"} className="bg-dark bg-opacity-25 border-light border-opacity-25 text-white">
                 <div className="d-flex align-items-center justify-content-center text-light text-opacity-75">
                     <Icon size={24} className="pb-1 me-2" icon={ic_not_interested}/>
                     <h4 className="my-3">No data</h4>

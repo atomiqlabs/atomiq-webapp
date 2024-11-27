@@ -74,7 +74,10 @@ export function BitcoinWalletAnchor(props) {
     const { loading, modalOpened, setModalOpened, usableWallets, bitcoinWallet, connectWallet, setBitcoinWallet, error } = useBitcoinWalletChooser();
     if (usableWallets.length === 0 && bitcoinWallet == null)
         return _jsx(_Fragment, {});
-    return (_jsxs(_Fragment, { children: [_jsx(BitcoinWalletModal, { modalOpened: modalOpened, setModalOpened: setModalOpened, usableWallets: usableWallets, connectWallet: connectWallet }), bitcoinWallet == null ? (_jsx("a", { className: props.className, href: "javascript:void(0);", onClick: () => connectWallet(), children: "Connect BTC wallet" })) : (_jsxs(Dropdown, { align: { md: "start" }, children: [_jsx(Dropdown.Toggle, { as: BitcoinConnectedWallet, id: "dropdown-custom-components", className: props.className, bitcoinWallet: bitcoinWallet, noText: props.noText, children: "Custom toggle" }), _jsxs(Dropdown.Menu, { children: [_jsx(Dropdown.Item, { eventKey: "1", onClick: () => {
+    return (_jsxs(_Fragment, { children: [_jsx(BitcoinWalletModal, { modalOpened: modalOpened, setModalOpened: setModalOpened, usableWallets: usableWallets, connectWallet: connectWallet }), bitcoinWallet == null ? (_jsx("a", { className: props.className, href: "#", onClick: (e) => {
+                    e.preventDefault();
+                    connectWallet();
+                }, children: "Connect BTC wallet" })) : (_jsxs(Dropdown, { align: { md: "start" }, children: [_jsx(Dropdown.Toggle, { as: BitcoinConnectedWallet, id: "dropdown-custom-components", className: props.className, bitcoinWallet: bitcoinWallet, noText: props.noText, children: "Custom toggle" }), _jsxs(Dropdown.Menu, { children: [_jsx(Dropdown.Item, { eventKey: "1", onClick: () => {
                                     setBitcoinWallet(null);
                                 }, children: "Disconnect" }), usableWallets != null && usableWallets.length > 1 ? (_jsx(Dropdown.Item, { eventKey: "2", onClick: () => {
                                     connectWallet();

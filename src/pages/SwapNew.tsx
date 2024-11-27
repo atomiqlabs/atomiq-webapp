@@ -457,7 +457,8 @@ export function SwapNew(props: {
                                 <>
                                     {validatedAddress == null || validatedAddress === "" ? (
                                         <div className="mt-2">
-                                            <a href="javascript:void(0);" onClick={() => {
+                                            <a href="#" onClick={(e) => {
+                                                e.preventDefault();
                                                 if (validatedAmount == null) return;
                                                 lnWallet.makeInvoice(fromHumanReadable(validatedAmount, Tokens.BITCOIN.BTCLN).toNumber()).then(res => {
                                                     addressRef.current.setValue(res.paymentRequest);

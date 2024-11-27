@@ -21,7 +21,10 @@ export function WebLNAnchor(props) {
     const { isInstalled, lnWallet, connectWallet, setLnWallet } = useWebLNWalletChooser();
     if (!isInstalled && lnWallet == null)
         return _jsx(_Fragment, {});
-    return (_jsx(_Fragment, { children: lnWallet == null ? (_jsx("a", { className: props.className, href: "javascript:void(0);", onClick: () => connectWallet(), children: "Connect BTC-LN wallet" })) : (_jsxs(Dropdown, { align: { md: "start" }, children: [_jsx(Dropdown.Toggle, { as: WebLNConnectedWallet, id: "dropdown-custom-components", className: props.className, noText: props.noText, children: "Custom toggle" }), _jsx(Dropdown.Menu, { children: _jsx(Dropdown.Item, { eventKey: "1", onClick: () => {
+    return (_jsx(_Fragment, { children: lnWallet == null ? (_jsx("a", { className: props.className, href: "#", onClick: (e) => {
+                e.preventDefault();
+                connectWallet();
+            }, children: "Connect BTC-LN wallet" })) : (_jsxs(Dropdown, { align: { md: "start" }, children: [_jsx(Dropdown.Toggle, { as: WebLNConnectedWallet, id: "dropdown-custom-components", className: props.className, noText: props.noText, children: "Custom toggle" }), _jsx(Dropdown.Menu, { children: _jsx(Dropdown.Item, { eventKey: "1", onClick: () => {
                             setLnWallet(null);
                         }, children: "Disconnect" }) })] })) }));
 }
