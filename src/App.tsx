@@ -239,14 +239,12 @@ function WrappedApp() {
 
                         <Navbar.Collapse role="" id="basic-navbar-nav">
                             <Nav className={"d-flex d-lg-none me-auto text-start border-top border-dark-subtle my-2 "+(swapper==null ? "" : "border-bottom")}>
-                                {noWalletPaths.has(pathName) || pathName==="/affiliate" ? (
-                                    <Nav.Link href="/" className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
-                                ) : ""}
-                                <Nav.Link href="/map" className="d-flex flex-row align-items-center">
-                                    <Icon icon={map} className="d-flex me-1"/>
-                                    <span className="me-auto">Map</span>
-                                    <small>Find merchants accepting lightning!</small>
-                                </Nav.Link>
+                                <Nav.Link href="/" className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
+                                {/*<Nav.Link href="/map" className="d-flex flex-row align-items-center">*/}
+                                {/*    <Icon icon={map} className="d-flex me-1"/>*/}
+                                {/*    <span className="me-auto">Map</span>*/}
+                                {/*    <small>Find merchants accepting lightning!</small>*/}
+                                {/*</Nav.Link>*/}
                                 <Nav.Link href="/about" className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
                                 <Nav.Link href="/faq" className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
                                 <Nav.Link href="/referral" className="d-flex flex-row align-items-center">
@@ -269,18 +267,16 @@ function WrappedApp() {
                                 {/*<Nav.Link href="https://github.com/adambor/SolLightning-sdk" target="_blank">Integrate</Nav.Link>*/}
                             </Nav>
                             <Nav className="d-none d-lg-flex me-auto text-start" navbarScroll style={{ maxHeight: '100px' }}>
-                                {noWalletPaths.has(pathName) || pathName==="/affiliate" ? (
-                                    <Nav.Link href="/" className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
-                                ) : ""}
+                                <Nav.Link href="/" className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
 
-                                <OverlayTrigger placement="bottom" overlay={<Tooltip id="map-tooltip">
-                                    Find merchants near you accepting bitcoin lightning!
-                                </Tooltip>}>
-                                    <Nav.Link href="/map" className="d-flex flex-row align-items-center">
-                                        <Icon icon={map} className="d-flex me-1"/>
-                                        <span>Map</span>
-                                    </Nav.Link>
-                                </OverlayTrigger>
+                                {/*<OverlayTrigger placement="bottom" overlay={<Tooltip id="map-tooltip">*/}
+                                {/*    Find merchants near you accepting bitcoin lightning!*/}
+                                {/*</Tooltip>}>*/}
+                                {/*    <Nav.Link href="/map" className="d-flex flex-row align-items-center">*/}
+                                {/*        <Icon icon={map} className="d-flex me-1"/>*/}
+                                {/*        <span>Map</span>*/}
+                                {/*    </Nav.Link>*/}
+                                {/*</OverlayTrigger>*/}
 
                                 <Nav.Link href="/about" className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
                                 <Nav.Link href="/faq" className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
