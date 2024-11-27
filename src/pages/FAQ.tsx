@@ -80,7 +80,7 @@ export function FAQ(props: {}) {
                             <p>
                                 You can seamlessly swap Solana assets (like SOL and USDC) to Bitcoin (on-chain and lightning):
                                 <ol>
-                                    <li>Select the <a href="/scan">"Swap" function</a></li>
+                                    <li>Select the <a href="/">"Swap" function</a></li>
                                     <li>Select the desired input asset (USDC or SOL) - you can click on the arrow to reverse asset selection</li>
                                     <li>Fill in the amount you want to send/receive</li>
                                     <li>Copy in the bitcoin/lightning network address where you want to receive your BTC to the address field</li>
@@ -94,7 +94,7 @@ export function FAQ(props: {}) {
                             <p>
                                 Seamlessly swapping Bitcoin (on-chain and lightning) to Solana assets (like SOL and USDC):
                                 <ol>
-                                    <li>Select the <a href="/scan">"Swap" function</a></li>
+                                    <li>Select the <a href="/">"Swap" function</a></li>
                                     <li>Select the desired input asset (bitcoin on-chain or lightning) and output asset (SOL or USDC) - you can click on the arrow to reverse asset selection</li>
                                     <li>Fill in the amount you want to send/receive</li>
                                     <li>(new solana wallets only) In case you have 0 SOL balance, you will be prompted to use the swap for gas feature first (this for now only accepts bitcoin lightning), so you can then cover the transaction fee for a trustless swap</li>
