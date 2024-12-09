@@ -38,12 +38,14 @@ export function WebLNAnchor(props: {className?: string, noText?: boolean}) {
     return (
         <>
             {lnWallet==null ? (
-                <a className={props.className} href="#" onClick={(e) => {
-                    e.preventDefault();
-                    connectWallet()
-                }}>
-                    Connect BTC-LN wallet
-                </a>
+                <Button
+                    variant="outline-light"
+                    style={{marginBottom: "2px"}}
+                    className="py-0 px-1"
+                    onClick={() => connectWallet()}
+                >
+                    <small className="font-smallest" style={{marginBottom: "-2px"}}>Connect BTC-LN wallet</small>
+                </Button>
             ) : (
                 <Dropdown align={{md: "start"}}>
                     <Dropdown.Toggle as={WebLNConnectedWallet} id="dropdown-custom-components" className={props.className} noText={props.noText}>

@@ -1,4 +1,4 @@
-import {CloseButton, Dropdown, ListGroup, Modal} from "react-bootstrap";
+import {Button, CloseButton, Dropdown, ListGroup, Modal} from "react-bootstrap";
 import * as React from "react";
 import {useContext, useEffect, useState} from "react";
 import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
@@ -124,12 +124,14 @@ export function BitcoinWalletAnchor(props: {className?: string, noText?: boolean
             />
 
             {bitcoinWallet==null ? (
-                <a className={props.className} href="#" onClick={(e) => {
-                    e.preventDefault();
-                    connectWallet()
-                }}>
-                    Connect BTC wallet
-                </a>
+                <Button
+                    variant="outline-light"
+                    style={{marginBottom: "2px"}}
+                    className="py-0 px-1"
+                    onClick={() => connectWallet()}
+                >
+                    <small className="font-smallest" style={{marginBottom: "-2px"}}>Connect BTC wallet</small>
+                </Button>
             ) : (
                 <Dropdown align={{md: "start"}}>
                     <Dropdown.Toggle as={BitcoinConnectedWallet} id="dropdown-custom-components" className={props.className} bitcoinWallet={bitcoinWallet} noText={props.noText}>

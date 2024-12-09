@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { CloseButton, Dropdown, ListGroup, Modal } from "react-bootstrap";
+import { Button, CloseButton, Dropdown, ListGroup, Modal } from "react-bootstrap";
 import * as React from "react";
 import { useContext, useEffect, useState } from "react";
 import { BitcoinWalletContext } from "../../context/BitcoinWalletContext";
@@ -74,10 +74,7 @@ export function BitcoinWalletAnchor(props) {
     const { loading, modalOpened, setModalOpened, usableWallets, bitcoinWallet, connectWallet, setBitcoinWallet, error } = useBitcoinWalletChooser();
     if (usableWallets.length === 0 && bitcoinWallet == null)
         return _jsx(_Fragment, {});
-    return (_jsxs(_Fragment, { children: [_jsx(BitcoinWalletModal, { modalOpened: modalOpened, setModalOpened: setModalOpened, usableWallets: usableWallets, connectWallet: connectWallet }), bitcoinWallet == null ? (_jsx("a", { className: props.className, href: "#", onClick: (e) => {
-                    e.preventDefault();
-                    connectWallet();
-                }, children: "Connect BTC wallet" })) : (_jsxs(Dropdown, { align: { md: "start" }, children: [_jsx(Dropdown.Toggle, { as: BitcoinConnectedWallet, id: "dropdown-custom-components", className: props.className, bitcoinWallet: bitcoinWallet, noText: props.noText, children: "Custom toggle" }), _jsxs(Dropdown.Menu, { children: [_jsx(Dropdown.Item, { eventKey: "1", onClick: () => {
+    return (_jsxs(_Fragment, { children: [_jsx(BitcoinWalletModal, { modalOpened: modalOpened, setModalOpened: setModalOpened, usableWallets: usableWallets, connectWallet: connectWallet }), bitcoinWallet == null ? (_jsx(Button, { variant: "outline-light", style: { marginBottom: "2px" }, className: "py-0 px-1", onClick: () => connectWallet(), children: _jsx("small", { className: "font-smallest", style: { marginBottom: "-2px" }, children: "Connect BTC wallet" }) })) : (_jsxs(Dropdown, { align: { md: "start" }, children: [_jsx(Dropdown.Toggle, { as: BitcoinConnectedWallet, id: "dropdown-custom-components", className: props.className, bitcoinWallet: bitcoinWallet, noText: props.noText, children: "Custom toggle" }), _jsxs(Dropdown.Menu, { children: [_jsx(Dropdown.Item, { eventKey: "1", onClick: () => {
                                     setBitcoinWallet(null);
                                 }, children: "Disconnect" }), usableWallets != null && usableWallets.length > 1 ? (_jsx(Dropdown.Item, { eventKey: "2", onClick: () => {
                                     connectWallet();

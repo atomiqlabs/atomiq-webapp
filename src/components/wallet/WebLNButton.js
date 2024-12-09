@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { Dropdown } from "react-bootstrap";
+import { Button, Dropdown } from "react-bootstrap";
 import * as React from "react";
 import { useContext } from "react";
 import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
@@ -21,10 +21,7 @@ export function WebLNAnchor(props) {
     const { isInstalled, lnWallet, connectWallet, setLnWallet } = useWebLNWalletChooser();
     if (!isInstalled && lnWallet == null)
         return _jsx(_Fragment, {});
-    return (_jsx(_Fragment, { children: lnWallet == null ? (_jsx("a", { className: props.className, href: "#", onClick: (e) => {
-                e.preventDefault();
-                connectWallet();
-            }, children: "Connect BTC-LN wallet" })) : (_jsxs(Dropdown, { align: { md: "start" }, children: [_jsx(Dropdown.Toggle, { as: WebLNConnectedWallet, id: "dropdown-custom-components", className: props.className, noText: props.noText, children: "Custom toggle" }), _jsx(Dropdown.Menu, { children: _jsx(Dropdown.Item, { eventKey: "1", onClick: () => {
+    return (_jsx(_Fragment, { children: lnWallet == null ? (_jsx(Button, { variant: "outline-light", style: { marginBottom: "2px" }, className: "py-0 px-1", onClick: () => connectWallet(), children: _jsx("small", { className: "font-smallest", style: { marginBottom: "-2px" }, children: "Connect BTC-LN wallet" }) })) : (_jsxs(Dropdown, { align: { md: "start" }, children: [_jsx(Dropdown.Toggle, { as: WebLNConnectedWallet, id: "dropdown-custom-components", className: props.className, noText: props.noText, children: "Custom toggle" }), _jsx(Dropdown.Menu, { children: _jsx(Dropdown.Item, { eventKey: "1", onClick: () => {
                             setLnWallet(null);
                         }, children: "Disconnect" }) })] })) }));
 }
