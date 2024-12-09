@@ -13,11 +13,13 @@ export function useAsync<Args extends any[], Result>(
 
     const fn = useCallback((...args: Args) => {
         if(executingRef.current) return false;
+        const maybePromise = executor(...args);
+        if(maybePromise==null) return true;
         executingRef.current = true;
         setLoading(true);
         setSuccess(null);
         setError(null);
-        executor(...args).then(res => {
+        maybePromise.then(res => {
             executingRef.current = false;
             setLoading(false);
             setSuccess(res);

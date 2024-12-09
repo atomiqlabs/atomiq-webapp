@@ -29,11 +29,11 @@ export function SwapForGas() {
 
     const [createSwap, loading, swapData, error] = useAsync(
         () => {
-            if(swapper==null) return Promise.resolve(null);
+            if(swapper==null) return null;
             if(
                 chains[chainId]==null ||
                 chains[chainId].random
-            ) return Promise.resolve(null);
+            ) return null;
             return swapper.createTrustedLNForGasSwap(chainId, chains[chainId].signer.getAddress(), amount);
         },
         [swapper, chains, chainId]
