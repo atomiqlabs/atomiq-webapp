@@ -65,7 +65,7 @@ export function ToBTCQuoteSummary(props) {
     const [onContinue, continueLoading, continueSuccess, continueError] = useAsync((skipChecks) => {
         if (setAmountLockRef.current)
             setAmountLockRef.current(true);
-        return props.quote.commit(signer, null, null, skipChecks).catch(err => {
+        return props.quote.commit(signer, null, skipChecks).catch(err => {
             if (setAmountLockRef.current)
                 setAmountLockRef.current(false);
             throw err;

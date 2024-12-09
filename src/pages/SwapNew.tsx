@@ -33,6 +33,7 @@ import {ic_qr_code_scanner} from 'react-icons-kit/md/ic_qr_code_scanner';
 import {lock} from 'react-icons-kit/fa/lock';
 import {ic_account_balance_wallet} from 'react-icons-kit/md/ic_account_balance_wallet';
 import {useExistingSwap} from "../utils/useExistingSwap";
+import * as BN from "bn.js";
 
 const RANDOM_BTC_ADDRESS = bitcoin.payments.p2wsh({
     hash: randomBytes(32),
@@ -129,6 +130,28 @@ export function SwapNew(props: {
         supportedTokensSet,
         handleQuoteError
     } = useAmountConstraints(exactIn, inputToken, outputToken);
+
+    //Url defined amount & swap type
+    useEffect(() => {
+        const swapType = params.get("swapType");
+        if(swapType!=null) setSwapType(parseInt(swapType));
+        const chainId = params.get("chainId");
+        const token = params.get("token");
+        if(chainId!=null && token!=null) {
+            const scToken = Tokens[chainId]?.[token];
+            if(scToken!=null) setScCurrency(scToken);
+        }
+        const exactIn = params.get("exactIn");
+        const amount = params.get("amount");
+        if(exactIn!=null && amount!=null) {
+            setExactIn(exactIn==="true");
+            if(exactIn==="true") {
+                inputRef.current.setValue(amount, false);
+            } else {
+                outputRef.current.setValue(amount, false);
+            }
+        }
+    }, [search]);
 
     //Allowed tokens
     const allowedScTokens = useMemo(() => {

@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { LNNFCReader } from "./LNNFCReader";
 import { SwapsContext } from "../context/SwapsContext";
-export function useLNNFCScanner(_callback) {
+export function useLNNFCScanner(_callback, disable) {
     const { swapper } = useContext(SwapsContext);
     const callback = useRef(null);
     useEffect(() => {
@@ -10,7 +10,7 @@ export function useLNNFCScanner(_callback) {
     const [NFCScanning, setNFCScanning] = useState(null);
     const nfcScannerRef = useRef(null);
     useEffect(() => {
-        if (swapper == null)
+        if (disable || swapper == null)
             return;
         const nfcScanner = new LNNFCReader();
         if (!nfcScanner.isSupported())
@@ -33,6 +33,6 @@ export function useLNNFCScanner(_callback) {
         return () => {
             nfcScanner.stop();
         };
-    }, [swapper]);
+    }, [swapper, disable]);
     return NFCScanning;
 }

@@ -111,6 +111,30 @@ export function SwapNew(props) {
     const [_exactIn, setExactIn] = useState(true);
     const exactIn = addressData?.swapType === SwapType.TO_BTCLN && !addressData?.isLnurl ? false : _exactIn;
     const { inConstraints, outConstraints, supportedTokensSet, handleQuoteError } = useAmountConstraints(exactIn, inputToken, outputToken);
+    //Url defined amount & swap type
+    useEffect(() => {
+        const swapType = params.get("swapType");
+        if (swapType != null)
+            setSwapType(parseInt(swapType));
+        const chainId = params.get("chainId");
+        const token = params.get("token");
+        if (chainId != null && token != null) {
+            const scToken = Tokens[chainId]?.[token];
+            if (scToken != null)
+                setScCurrency(scToken);
+        }
+        const exactIn = params.get("exactIn");
+        const amount = params.get("amount");
+        if (exactIn != null && amount != null) {
+            setExactIn(exactIn === "true");
+            if (exactIn === "true") {
+                inputRef.current.setValue(amount, false);
+            }
+            else {
+                outputRef.current.setValue(amount, false);
+            }
+        }
+    }, [search]);
     //Allowed tokens
     const allowedScTokens = useMemo(() => {
         if (supportedTokensSet == null)

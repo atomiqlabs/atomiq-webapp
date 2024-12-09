@@ -33,7 +33,6 @@ import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
 import {SingleStep, StepByStep} from "../../StepByStep";
 import {useStateRef} from "../../../utils/useStateRef";
 import {useAbortSignalRef} from "../../../utils/useAbortSignal";
-import {LightningHyperlinkModal} from "./LightningHyperlinkModal";
 import {OnchainAddressCopyModal} from "./OnchainAddressCopyModal";
 import {useLocalStorage} from "../../../utils/useLocalStorage";
 
@@ -202,7 +201,7 @@ export function FromBTCQuoteSummary(props: {
     const addressContent = useCallback((show) => (
         <>
             <Alert variant="warning" className="mb-3">
-                <label>Please make sure that you send an <b><u>EXACT</u></b> amount in BTC, different amount wouldn't be accepted and you might loose funds!</label>
+                <label>Please make sure that you send an <b><u>EXACT</u></b> amount in BTC, different amount wouldn't be accepted and you might lose funds!</label>
             </Alert>
 
             <div className="mb-2">

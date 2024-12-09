@@ -5,7 +5,7 @@ import {SwapsContext} from "../context/SwapsContext";
 
 type LNNFCCallback = (result: LNURLPay | LNURLWithdraw) => void;
 
-export function useLNNFCScanner(_callback: LNNFCCallback): LNNFCStartResult | null {
+export function useLNNFCScanner(_callback: LNNFCCallback, disable?: boolean): LNNFCStartResult | null {
     const {swapper} = useContext(SwapsContext);
 
     const callback = useRef<LNNFCCallback>(null);
@@ -18,7 +18,7 @@ export function useLNNFCScanner(_callback: LNNFCCallback): LNNFCStartResult | nu
     const nfcScannerRef = useRef<LNNFCReader>(null);
 
     useEffect(() => {
-        if(swapper==null) return;
+        if(disable || swapper==null) return;
 
         const nfcScanner = new LNNFCReader();
         if(!nfcScanner.isSupported()) return;
@@ -41,7 +41,7 @@ export function useLNNFCScanner(_callback: LNNFCCallback): LNNFCStartResult | nu
         return () => {
             nfcScanner.stop();
         };
-    }, [swapper]);
+    }, [swapper, disable]);
 
     return NFCScanning;
 }
