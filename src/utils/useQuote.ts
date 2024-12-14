@@ -45,7 +45,7 @@ export function useQuote(
         const process = () => {
             if(quoteUpdates.current!==updateNum) return;
             setLoading(true);
-            swapper.create(signer.getAddress(), inToken, outToken, fromHumanReadable(amount, exactIn ? inToken : outToken), exactIn, address).then(swap => {
+            currentQuotation.current = swapper.create(signer.getAddress(), inToken, outToken, fromHumanReadable(amount, exactIn ? inToken : outToken), exactIn, address).then(swap => {
                 if(quoteUpdates.current!==updateNum) return;
                 setLoading(false);
                 setQuote(swap);

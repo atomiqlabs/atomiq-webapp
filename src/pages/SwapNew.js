@@ -185,6 +185,8 @@ export function SwapNew(props) {
         }
     };
     const changeDirection = () => {
+        if (locked)
+            return;
         leaveExistingSwap(true, true);
         setExactIn(!exactIn);
         console.log("SwapNew: changeDirection(): Current swap type: " + SwapType[swapType]);
