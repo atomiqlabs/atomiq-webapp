@@ -280,7 +280,7 @@ export function SwapNew(props: {
             <div className="d-flex flex-column align-items-center text-white">
                 <Card className="p-3 swap-panel tab-bg mx-3 mb-3 border-0">
 
-                    <ErrorAlert error={quoteError}/>
+                    <ErrorAlert title="Quote error" error={quoteError}/>
 
                     <Card className="d-flex flex-column tab-accent-p3 pt-2">
                         <div className="d-flex flex-row">

@@ -1,17 +1,20 @@
-import {Alert, OverlayTrigger, Tooltip} from "react-bootstrap";
+import {Alert, Button, OverlayTrigger, Tooltip} from "react-bootstrap";
 import Icon from "react-icons-kit";
 import {ic_content_copy} from "react-icons-kit/md/ic_content_copy";
 import * as React from "react";
 
 
 export function ErrorAlert(props: {
+    title: string,
     error: any,
-    clearError?: () => void
+    clearError?: () => void,
+    className?: string,
+    onRetry?: () => void
 }) {
     return (
-        <Alert className="text-center" show={props.error!=null} variant="danger" onClose={props.clearError}>
+        <Alert className={"text-center "+(props.className ?? "")} show={props.error!=null} variant="danger" onClose={props.clearError} closeVariant="white">
             <div className="d-flex align-items-center justify-content-center">
-                <strong>Quoting error</strong>
+                <strong>{props.title}</strong>
                 <OverlayTrigger
                     placement="top"
                     overlay={<Tooltip id="scan-qr-tooltip">Copy full error stack</Tooltip>}
@@ -31,6 +34,11 @@ export function ErrorAlert(props: {
             <label>
                 {props.error?.message || props.error?.toString()}
             </label>
+            {props.onRetry!=null ? (
+                <Button variant="light" onClick={() => {
+                    props.onRetry()
+                }}>Retry</Button>
+            ) : ""}
         </Alert>
     )
 }

@@ -25,6 +25,7 @@ import {bitcoin} from 'react-icons-kit/fa/bitcoin';
 import {ic_hourglass_top_outline} from 'react-icons-kit/md/ic_hourglass_top_outline';
 import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
 import {SingleStep, StepByStep} from "../../StepByStep";
+import {ErrorAlert} from "../../ErrorAlert";
 
 
 const SNOWFLAKE_LIST: Set<string> = new Set([
@@ -223,10 +224,7 @@ export function ToBTCQuoteSummary(props: {
                 show={(isExpired || isCreated) && !continueLoading && !props.notEnoughForGas && signer!==undefined && !notEnoughBalanceError}
             />
 
-            <Alert className="text-center mb-3" show={continueError!=null} variant="danger" closeVariant="white">
-                <strong>Swap initialization error</strong>
-                <label>{continueError?.message}</label>
-            </Alert>
+            <ErrorAlert className="mb-3" title="Swap initialization error" error={continueError}/>
 
             {(
                 (isCreated && !notEnoughBalanceError) ||
@@ -257,10 +255,7 @@ export function ToBTCQuoteSummary(props: {
 
             {isPayError ? (
                 <>
-                    <Alert className="text-center mb-3" variant="danger" closeVariant="white">
-                        <strong>Swap error</strong>
-                        <label>{paymentError}</label>
-                    </Alert>
+                    <ErrorAlert className="mb-3" title="Swap error" error={paymentError}/>
 
                     <Button onClick={() => retryWaitForPayment()} variant="secondary">Retry</Button>
                 </>
@@ -286,10 +281,7 @@ export function ToBTCQuoteSummary(props: {
                         <label>Swap failed, you can refund your prior deposit</label>
                     </Alert>
 
-                    <Alert variant="danger" show={!!refundError} className="mb-3">
-                        <strong>Refund error</strong>
-                        <label>{refundError?.message}</label>
-                    </Alert>
+                    <ErrorAlert className="mb-3" title="Refund error" error={refundError}/>
 
                     <ButtonWithSigner signer={signer} chainId={props.quote.chainIdentifier} onClick={onRefund} disabled={refundLoading} variant="secondary">
                         {refundLoading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
@@ -300,7 +292,7 @@ export function ToBTCQuoteSummary(props: {
 
             <Alert variant="danger" className="mb-3" show={isRefunded}>
                 <strong>Swap failed</strong>
-                <label>Deposit refunded successfully!</label>
+                <label>Funds refunded successfully!</label>
             </Alert>
 
             {(

@@ -14,6 +14,7 @@ import {useAnchorNavigate} from "../utils/useAnchorNavigate";
 import {useAsync} from "../utils/useAsync";
 import {TrustedFromBTCLNQuoteSummary} from "../components/quotes/frombtc/TrustedFromBTCLNQuoteSummary";
 import {useSwapState} from "../utils/useSwapState";
+import {ErrorAlert} from "../components/ErrorAlert";
 
 const defaultSwapAmount = "12500000";
 
@@ -53,10 +54,7 @@ export function SwapForGas() {
             <div className="d-flex flex-column flex-fill justify-content-center align-items-center text-white">
                 <div className="quickscan-summary-panel d-flex flex-column flex-fill">
                     <div className="p-3 d-flex flex-column tab-bg border-0 card mb-3">
-                        <Alert variant={"danger"} className="mb-3" show={!!error}>
-                            <p><strong>Loading error</strong></p>
-                            {error?.message}
-                        </Alert>
+                        <ErrorAlert className="mb-3" title="Loading error" error={error}/>
 
                         <Alert className="text-center mb-3 d-flex align-items-center flex-column" show={!error} variant="success" closeVariant="white">
                             <label>

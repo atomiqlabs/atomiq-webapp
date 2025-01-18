@@ -20,6 +20,7 @@ import {ic_check_circle_outline} from 'react-icons-kit/md/ic_check_circle_outlin
 import {ic_swap_horizontal_circle_outline} from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
 import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
 import {SingleStep, StepByStep} from "../../StepByStep";
+import {ErrorAlert} from "../../ErrorAlert";
 
 export function LNURLWithdrawQuoteSummary(props: {
     quote: FromBTCLNSwap<any>,
@@ -127,10 +128,7 @@ export function LNURLWithdrawQuoteSummary(props: {
                     <ButtonWithSigner chainId={props.quote.chainIdentifier} signer={signer} size="lg"/>
                 ) : (
                     <>
-                        <Alert className="text-center mb-3" show={claimError!=null || paymentError!=null} variant="danger" closeVariant="white">
-                            <strong>Swap claim error</strong>
-                            <label>{claimError?.message ?? paymentError?.message}</label>
-                        </Alert>
+                        <ErrorAlert className="mb-3" title="Swap claim error" error={claimError ?? paymentError}/>
 
                         <ButtonWithSigner
                             signer={signer} chainId={props.quote.chainIdentifier} disabled={claiming || paymentWaiting}

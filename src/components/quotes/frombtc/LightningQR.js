@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { Alert, Badge, Button, Form, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
+import { Badge, Button, Form, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
 import { CopyOverlay } from "../../CopyOverlay";
 import { QRCodeSVG } from "qrcode.react";
 import { LNNFCStartResult } from "../../../lnnfc/LNNFCReader";
@@ -11,6 +11,7 @@ import { useLightningWallet } from "../../../bitcoin/lightning/useLightningWalle
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLNNFCScanner } from "../../../lnnfc/useLNNFCScanner";
 import { FromBTCLNSwap } from "@atomiqlabs/sdk";
+import { ErrorAlert } from "../../ErrorAlert";
 export function LightningQR(props) {
     const { walletConnected, disconnect, pay, payLoading, payError } = useLightningWallet();
     const [payingWithLNURL, setPayingWithLNURL] = useState(false);
@@ -44,7 +45,7 @@ export function LightningQR(props) {
                             window.location.href = props.quote.getQrData();
                         }), className: "d-flex flex-row align-items-center justify-content-center", children: [_jsx(Icon, { icon: externalLink, className: "d-flex align-items-center me-2" }), " Open in Lightning wallet app"] }) })] });
     }, [props.quote, props.onHyperlink]);
-    return (_jsxs("div", { className: "tab-accent mb-3", children: [payingWithLNURL ? (_jsxs("div", { className: "d-flex flex-column align-items-center justify-content-center", children: [_jsx(Spinner, { animation: "border" }), "Paying via NFC card..."] })) : walletConnected ? (_jsxs(_Fragment, { children: [_jsxs(Alert, { variant: "danger", className: "mb-2", show: !!payError, children: [_jsx("strong", { children: "Sending BTC failed" }), _jsx("label", { children: payError })] }), _jsxs("div", { className: "d-flex flex-column align-items-center justify-content-center", children: [_jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center", disabled: payLoading, onClick: () => {
+    return (_jsxs("div", { className: "tab-accent mb-3", children: [payingWithLNURL ? (_jsxs("div", { className: "d-flex flex-column align-items-center justify-content-center", children: [_jsx(Spinner, { animation: "border" }), "Paying via NFC card..."] })) : walletConnected ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-2", title: "Sending BTC failed", error: payError }), _jsxs("div", { className: "d-flex flex-column align-items-center justify-content-center", children: [_jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center", disabled: payLoading, onClick: () => {
                                     pay(props.quote.getLightningInvoice());
                                 }, children: [payLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Pay with", _jsx("img", { width: 20, height: 20, src: "/wallets/WebLN.png", className: "ms-2 me-1" }), "WebLN"] }), _jsx("small", { className: "mt-2", children: _jsx("a", { href: "#", onClick: (e) => {
                                         e.preventDefault();

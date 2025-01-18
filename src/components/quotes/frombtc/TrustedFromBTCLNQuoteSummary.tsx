@@ -18,6 +18,7 @@ import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
 import {SingleStep, StepByStep} from "../../StepByStep";
 import {useStateRef} from "../../../utils/useStateRef";
 import {LightningQR} from "./LightningQR";
+import {ErrorAlert} from "../../ErrorAlert";
 
 /*
 Steps:
@@ -85,10 +86,7 @@ export function TrustedFromBTCLNQuoteSummary(props: {
 
             {isCreated && !paymentWaiting ? (
                 <>
-                    <Alert className="text-center mb-3" show={paymentError!=null} variant="danger" closeVariant="white">
-                        <strong>Swap initialization error</strong>
-                        <label>{paymentError?.message}</label>
-                    </Alert>
+                    <ErrorAlert className="mb-3" title="Swap initialization error" error={paymentError}/>
 
                     <Button variant="secondary" onClick={() => {
                         onCommit();

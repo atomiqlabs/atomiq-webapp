@@ -35,6 +35,7 @@ import {useStateRef} from "../../../utils/useStateRef";
 import {useAbortSignalRef} from "../../../utils/useAbortSignal";
 import {OnchainAddressCopyModal} from "./OnchainAddressCopyModal";
 import {useLocalStorage} from "../../../utils/useLocalStorage";
+import {ErrorAlert} from "../../ErrorAlert";
 
 /*
 Steps:
@@ -59,7 +60,7 @@ export function FromBTCQuoteSummary(props: {
     const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote);
 
     const {walletConnected, disconnect, pay, payLoading, paySuccess, payTxId, payError} = useOnchainWallet();
-    const sendBitcoinTransactionRef = useRef(null);
+    const sendBitcoinTransactionRef = useRef<() => void>(null);
     sendBitcoinTransactionRef.current = () => {
         if(!!walletConnected) pay(
             props.quote.getBitcoinAddress(), props.quote.getInput().rawAmount,
@@ -262,10 +263,7 @@ export function FromBTCQuoteSummary(props: {
                 show={(isCreated || isQuoteExpired) && !commitLoading && !props.notEnoughForGas && signer!==undefined && hasEnoughBalance}
             />
 
-            <Alert className="text-center mb-3" show={commitError!=null} variant="danger" closeVariant="white">
-                <strong>Swap initialization error</strong>
-                <label>{commitError?.message}</label>
-            </Alert>
+            <ErrorAlert className="mb-3" title="Swap initialization error" error={commitError}/>
 
             {isCreated && hasEnoughBalance ? (
                 signer===undefined ? (
@@ -294,10 +292,7 @@ export function FromBTCQuoteSummary(props: {
                     <div className="mb-3 tab-accent">
                         {walletConnected != null ? (
                             <>
-                                <Alert variant="danger" className="mb-2" show={!!payError}>
-                                    <strong>Sending BTC failed</strong>
-                                    <label>{payError}</label>
-                                </Alert>
+                                <ErrorAlert className="mb-2" title="Sending BTC failed" error={payError}/>
 
                                 <div className="d-flex flex-column align-items-center justify-content-center">
                                     {payTxId != null ? (
@@ -347,10 +342,7 @@ export function FromBTCQuoteSummary(props: {
                         </Button>
                     ) : (
                         <>
-                            <Alert className="text-center mb-3" show={true} variant="danger">
-                                <strong>Wait payment error</strong>
-                                <label>{waitPaymentError?.message}</label>
-                            </Alert>
+                            <ErrorAlert className="mb-3" title="Wait payment error" error={waitPaymentError}/>
                             <Button onClick={onWaitForPayment} variant="secondary">
                                 Retry
                             </Button>
@@ -393,10 +385,7 @@ export function FromBTCQuoteSummary(props: {
                         <label>Transaction received & confirmed, you can claim your funds manually now!</label>
                     </div>
 
-                    <Alert variant="danger" className="mb-3" show={!!claimError}>
-                        <strong>Claim error</strong>
-                        <label>{claimError?.message}</label>
-                    </Alert>
+                    <ErrorAlert className="mb-3" title="Claim error" error={claimError}/>
 
                     <ButtonWithSigner
                         signer={signer} chainId={props.quote.chainIdentifier}

@@ -25,6 +25,7 @@ import {useStateRef} from "../../../utils/useStateRef";
 import * as BN from "bn.js";
 import {useLocalStorage} from "../../../utils/useLocalStorage";
 import {LightningQR} from "./LightningQR";
+import {ErrorAlert} from "../../ErrorAlert";
 
 /*
 Steps:
@@ -134,10 +135,7 @@ export function FromBTCLNQuoteSummary(props: {
                     <ButtonWithSigner chainId={props.quote.chainIdentifier} signer={signer} size="lg"/>
                 ) : (
                     <>
-                        <Alert className="text-center mb-3" show={paymentError!=null} variant="danger" closeVariant="white">
-                            <strong>Swap initialization error</strong>
-                            <label>{paymentError?.message}</label>
-                        </Alert>
+                        <ErrorAlert className="mb-3" title="Swap initialization error" error={paymentError}/>
 
                         <SwapForGasAlert notEnoughForGas={props.notEnoughForGas} quote={props.quote}/>
 
@@ -185,10 +183,7 @@ export function FromBTCLNQuoteSummary(props: {
                         <label>Claim it below to finish the swap!</label>
                     </div>
 
-                    <Alert className="text-center mb-3" show={claimError!=null} variant="danger" closeVariant="white">
-                        <strong>Swap claim error</strong>
-                        <label>{claimError?.message}</label>
-                    </Alert>
+                    <ErrorAlert className="mb-3" title="Swap claim error" error={claimError}/>
 
                     <SwapExpiryProgressBar
                         timeRemaining={quoteTimeRemaining} totalTime={totalQuoteTime}

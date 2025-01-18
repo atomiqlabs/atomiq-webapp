@@ -11,6 +11,7 @@ import {useLightningWallet} from "../../../bitcoin/lightning/useLightningWallet"
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useLNNFCScanner} from "../../../lnnfc/useLNNFCScanner";
 import {FromBTCLNSwap, LnForGasSwap, LNURLWithdraw} from "@atomiqlabs/sdk";
+import {ErrorAlert} from "../../ErrorAlert";
 
 
 export function LightningQR(props: {
@@ -94,10 +95,7 @@ export function LightningQR(props: {
                 </div>
             ) : walletConnected ? (
                 <>
-                    <Alert variant="danger" className="mb-2" show={!!payError}>
-                        <strong>Sending BTC failed</strong>
-                        <label>{payError}</label>
-                    </Alert>
+                    <ErrorAlert className="mb-2" title="Sending BTC failed" error={payError}/>
 
                     <div className="d-flex flex-column align-items-center justify-content-center">
                         <Button

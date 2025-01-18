@@ -4,7 +4,7 @@ import {WebLNContext} from "../../context/WebLNContext";
 export function useLightningWallet() {
 
     const {lnWallet, setLnWallet} = useContext(WebLNContext);
-    const [payError, setPayError] = useState<string>(null);
+    const [payError, setPayError] = useState<any>(null);
     const [payLoading, setPayLoading] = useState<boolean>(false);
     const [paySuccess, setPaySuccess] = useState<boolean>(false);
     const sendingRef = useRef<boolean>(false);
@@ -26,7 +26,7 @@ export function useLightningWallet() {
         }).catch(e => {
             setPayLoading(false);
             setPaySuccess(false);
-            setPayError(e.message);
+            setPayError(e);
             sendingRef.current = false;
             console.error(e);
         });

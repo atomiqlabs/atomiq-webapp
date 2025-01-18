@@ -7,7 +7,7 @@ import * as BN from "bn.js";
 export function useOnchainWallet() {
 
     const {bitcoinWallet, setBitcoinWallet} = useContext(BitcoinWalletContext);
-    const [payError, setPayError] = useState<string>(null);
+    const [payError, setPayError] = useState<any>(null);
     const [payLoading, setPayLoading] = useState<boolean>(false);
     const [paySuccess, setPaySuccess] = useState<boolean>(false);
     const [payTxId, setPayTxId] = useState<string>(null);
@@ -31,7 +31,7 @@ export function useOnchainWallet() {
         }).catch(e => {
             setPayLoading(false);
             setPaySuccess(false);
-            setPayError(e.message);
+            setPayError(e);
             sendingRef.current = false;
             console.error(e);
         });

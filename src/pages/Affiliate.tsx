@@ -22,6 +22,7 @@ import {SwapsContext} from "../context/SwapsContext";
 import {TokenIcon} from "../components/TokenIcon";
 import {TokenResolver, Tokens} from "@atomiqlabs/sdk";
 import {ButtonWithSigner} from "../components/ButtonWithSigner";
+import {ErrorAlert} from "../components/ErrorAlert";
 
 type AffiliatePayout = {
     timestamp: number,
@@ -55,7 +56,7 @@ export function Affiliate() {
         nextPayoutTimestamp: number
     }>();
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string>();
+    const [error, setError] = useState<any>();
 
     useEffect(() => {
         if(swapper==null || chains==null || chains[chain]==null || chains[chain].random) {
@@ -73,14 +74,15 @@ export function Affiliate() {
             }).then(obj => {
                 setLoading(false);
                 if(obj.code!==10000) {
-                    setError(obj.msg);
+                    obj.message = obj.msg;
+                    setError(obj);
                     return;
                 }
                 obj.data.stats.payouts.sort((a, b) => b.timestamp - a.timestamp);
                 setData(obj.data);
             }).catch(e => {
                 setLoading(false);
-                setError(e.message);
+                setError(e);
             });
         }
     }, [swapper, chains]);
@@ -241,14 +243,7 @@ export function Affiliate() {
                     />
                 </div>
 
-                {error==null ? "" : (
-                    <Alert variant={"danger"} className="mb-2">
-                        <div>
-                            <b>Loading failed</b>
-                        </div>
-                        {error}
-                    </Alert>
-                )}
+                <ErrorAlert className="mb-2" title="Loading failed" error={error}/>
 
             </div>
         </>

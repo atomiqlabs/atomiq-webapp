@@ -1,4 +1,4 @@
-import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect } from "react";
 import { Alert, Button } from "react-bootstrap";
 import { LnForGasSwapState } from "@atomiqlabs/sdk";
@@ -17,6 +17,7 @@ import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { StepByStep } from "../../StepByStep";
 import { useStateRef } from "../../../utils/useStateRef";
 import { LightningQR } from "./LightningQR";
+import { ErrorAlert } from "../../ErrorAlert";
 /*
 Steps:
 1. Awaiting lightning payment -> Lightning payment received
@@ -66,7 +67,7 @@ export function TrustedFromBTCLNQuoteSummary(props) {
     }
     if (isSuccess)
         executionSteps[1] = { icon: ic_verified_outline, text: "Payout success", type: "success" };
-    return (_jsxs(_Fragment, { children: [_jsx(StepByStep, { steps: executionSteps }), isCreated && !paymentWaiting ? (_jsxs(_Fragment, { children: [_jsxs(Alert, { className: "text-center mb-3", show: paymentError != null, variant: "danger", closeVariant: "white", children: [_jsx("strong", { children: "Swap initialization error" }), _jsx("label", { children: paymentError?.message })] }), _jsx(Button, { variant: "secondary", onClick: () => {
+    return (_jsxs(_Fragment, { children: [_jsx(StepByStep, { steps: executionSteps }), isCreated && !paymentWaiting ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: "Swap initialization error", error: paymentError }), _jsx(Button, { variant: "secondary", onClick: () => {
                             onCommit();
                         }, children: "Retry" })] })) : "", isCreated && paymentWaiting ? (_jsxs(_Fragment, { children: [_jsx(LightningQR, { quote: props.quote, payInstantly: state === LnForGasSwapState.PR_CREATED }), _jsx(SwapExpiryProgressBar, { timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: true }), _jsx(Button, { onClick: props.abortSwap, variant: "danger", children: "Abort swap" })] })) : "", isSuccess ? (_jsxs(Alert, { variant: "success", className: "mb-3", children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was executed successfully" })] })) : "", (isQuoteExpired ||
                 isFailed) ? (_jsxs(_Fragment, { children: [_jsxs(Alert, { variant: "danger", className: "mb-3", show: isFailed, children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Swap failed, your lightning payment will be refunded shortly!" })] }), _jsx(SwapExpiryProgressBar, { show: isQuoteExpired, expired: true, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, expiryText: "Swap expired!", quoteAlias: "Swap" }), _jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })] })) : "", _jsx(ScrollAnchor, { trigger: isInitiated })] }));

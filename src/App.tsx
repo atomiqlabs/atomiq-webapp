@@ -56,6 +56,7 @@ import {WebLNContext} from './context/WebLNContext';
 import {heart} from 'react-icons-kit/fa/heart';
 import {SwapNew} from "./pages/SwapNew";
 import {useAnchorNavigate} from "./utils/useAnchorNavigate";
+import {ErrorAlert} from "./components/ErrorAlert";
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -70,7 +71,7 @@ function WrappedApp() {
     const {connection} = useConnection();
 
     const [swapper, setSwapper] = React.useState<MultichainSwapper>();
-    const [swapperLoadingError, setSwapperLoadingError] = React.useState<string>();
+    const [swapperLoadingError, setSwapperLoadingError] = React.useState<any>();
     const [swapperLoading, setSwapperLoading] = React.useState<boolean>(false);
 
     const [signers, setSigners] = React.useState<{
@@ -110,11 +111,10 @@ function WrappedApp() {
 
             // const connection = new Connection(FEConstants.rpcUrl);
 
-            const solanaFees = new SolanaFees(connection as any, 250000, 2, 100, "auto", () => new BN(25000)/*, {
+            const solanaFees = new SolanaFees(connection as any, 250000, 2, 100, "auto", () => new BN(50000), {
                 address: jitoPubkey,
-                endpoint: jitoEndpoint,
-                getStaticFee:() => new BN(250000)
-            }*/);
+                endpoint: jitoEndpoint
+            });
 
             const swapper = new MultichainSwapper({
                 chains: {
@@ -154,8 +154,8 @@ function WrappedApp() {
 
             return swapper;
         } catch (e) {
-            setSwapperLoadingError(e.toString());
-            console.error(e)
+            setSwapperLoadingError(e);
+            console.error(e);
         }
     };
 
@@ -341,13 +341,11 @@ function WrappedApp() {
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <Alert className="text-center d-flex flex-column align-items-center justify-content-center" show={true} variant="danger" closeVariant="white">
-                                                            <strong>atomiq network connection error</strong>
-                                                            <p>{swapperLoadingError}</p>
-                                                            <Button variant="light" onClick={() => {
-                                                                loadSwapper()
-                                                            }}>Retry</Button>
-                                                        </Alert>
+                                                        <ErrorAlert
+                                                            className="d-flex flex-column align-items-center justify-content-center"
+                                                            title="atomiq network connection error"
+                                                            error={swapperLoadingError}
+                                                        />
                                                     </>
                                                 )}
                                             </>

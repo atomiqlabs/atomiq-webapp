@@ -25,7 +25,7 @@ export function useOnchainWallet() {
         }).catch(e => {
             setPayLoading(false);
             setPaySuccess(false);
-            setPayError(e.message);
+            setPayError(e);
             sendingRef.current = false;
             console.error(e);
         });

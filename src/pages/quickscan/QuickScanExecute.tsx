@@ -25,6 +25,7 @@ import {useBigNumberState} from "../../utils/useBigNumberState";
 import {useWalletBalance} from "../../utils/useWalletBalance";
 import {ScrollAnchor} from "../../components/ScrollAnchor";
 import {useLocalStorage} from "../../utils/useLocalStorage";
+import {ErrorAlert} from "../../components/ErrorAlert";
 
 export function QuickScanExecute() {
     const {swapper, getSigner} = useContext(SwapsContext);
@@ -97,10 +98,7 @@ export function QuickScanExecute() {
                             value={addressResult?.address ?? propAddress}
                         />
 
-                        <Alert variant={"danger"} className="mt-3" show={!!addressResult?.error}>
-                            <p><strong>Destination parsing error</strong></p>
-                            {addressResult?.error}
-                        </Alert>
+                        <ErrorAlert className="mt-3" title="Destination parsing error" error={addressResult}/>
 
                         {addressLoading ? (
                             <div className="d-flex flex-column align-items-center justify-content-center tab-accent mt-3">
@@ -171,10 +169,7 @@ export function QuickScanExecute() {
 
                         {quoteError ? (
                             <>
-                                <Alert variant={"danger"} className="mt-3 mb-0">
-                                    <p><strong>Quoting error</strong></p>
-                                    {quoteError?.message || quoteError?.toString()}
-                                </Alert>
+                                <ErrorAlert className="mt-3 mb-0" title="Quoting error" error={quoteError}/>
                                 <Button onClick={refresh} variant="secondary">Retry</Button>
                             </>
                         ) : ""}
