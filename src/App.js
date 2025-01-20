@@ -72,10 +72,10 @@ function WrappedApp() {
             const useLp = searchParams.get("UNSAFE_LP_URL");
             console.log("init start");
             // const connection = new Connection(FEConstants.rpcUrl);
-            const solanaFees = new SolanaFees(connection, 250000, 2, 100, "auto", () => new BN(50000), {
+            const solanaFees = new SolanaFees(connection, 1000000, 2, 100, "auto", "high", () => new BN(50000) /*, {
                 address: jitoPubkey,
                 endpoint: jitoEndpoint
-            });
+            }*/);
             const swapper = new MultichainSwapper({
                 chains: {
                     SOLANA: {

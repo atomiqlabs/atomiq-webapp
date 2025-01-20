@@ -116,3 +116,8 @@ export function bnEqual(a: BigNumber, b: BigNumber) {
     if(a==null && b!=null) return false;
     return a.eq(b);
 }
+
+export function capitalizeFirstLetter(txt: string) {
+    if(txt==null) return null;
+    return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
+}

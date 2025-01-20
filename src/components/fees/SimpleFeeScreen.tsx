@@ -13,7 +13,7 @@ import * as BN from "bn.js";
 import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
 import {useContext, useEffect, useState} from "react";
 import {Accordion, Badge, OverlayTrigger, Placeholder, Spinner, Tooltip} from "react-bootstrap";
-import {getFeePct} from "../../utils/Utils";
+import {capitalizeFirstLetter, getFeePct} from "../../utils/Utils";
 import * as React from "react";
 import Icon from "react-icons-kit";
 import {ic_receipt_outline} from 'react-icons-kit/md/ic_receipt_outline';
@@ -186,7 +186,7 @@ export function SimpleFeeSummaryScreen(props: {
                 };
                 if(cancelled) return;
                 setBtcTxFee({
-                    text: "Network fee",
+                    text: "Bitcoin network fee",
                     description: "Bitcoin transaction fee paid to bitcoin miners (this is a fee on top of your specified input amount)",
                     fee: btcNetworkFee,
                     usdValue: await btcNetworkFee.usdValue(null, usdPrice)
@@ -202,6 +202,45 @@ export function SimpleFeeSummaryScreen(props: {
             cancelled = true;
         }
     }, [bitcoinWallet, props.btcFeeRate, props.swap, swapper]);
+
+    const [scTxFee, setScTxFee] = useState<SingleFee>();
+    const [_scTxFeeLoading, setScTxFeeLoading] = useState<boolean>(false);
+    const scTxFeeLoading = props.swap.getSmartChainNetworkFee!=null && _scTxFeeLoading;
+    useEffect(() => {
+        if(swapper==null) return;
+        setScTxFee(null);
+        if(props.swap.getSmartChainNetworkFee==null) return;
+        setScTxFeeLoading(true);
+        let cancelled = false;
+        (async() => {
+            try {
+                const [usdPrice, tokenAmount] = await Promise.all([
+                    swapper.prices.preFetchUsdPrice(),
+                    props.swap.getSmartChainNetworkFee()
+                ]);
+                const scNetworkFee: Fee = {
+                    amountInSrcToken: tokenAmount,
+                    amountInDstToken: null,
+                    usdValue: tokenAmount.usdValue
+                };
+                if(cancelled) return;
+                setScTxFee({
+                    text: capitalizeFirstLetter(tokenAmount.token.chainId)+" network fee",
+                    description: capitalizeFirstLetter(tokenAmount.token.chainId)+" transaction fee (this is a fee on top of your specified input amount)",
+                    fee: scNetworkFee,
+                    usdValue: await scNetworkFee.usdValue(null, usdPrice)
+                });
+                setScTxFeeLoading(false);
+            } catch (e) {
+                if(cancelled) return;
+                console.error(e);
+                setScTxFeeLoading(false);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        }
+    }, [props.swap, swapper]);
 
     const [scSideFees, setScSideFees] = useState<SingleFee[]>();
     useEffect(() => {
@@ -232,7 +271,7 @@ export function SimpleFeeSummaryScreen(props: {
 
             fees.push(usdPricePromise.then(usdPrice => networkFee.usdValue(abortController.signal, usdPrice)).then(networkFeeUsd => {
                 return {
-                    text: "Network fee",
+                    text: "Lightning network fee",
                     description: props.swap instanceof ToBTCSwap ?
                         "Bitcoin transaction fee paid to bitcoin miners" :
                         "Lightning network fee paid for routing the payment through the network",
@@ -271,13 +310,17 @@ export function SimpleFeeSummaryScreen(props: {
         return () => abortController.abort();
     }, [props.swap, swapper]);
 
-    const allFees = (btcTxFee!=null ? [btcTxFee] : []).concat(scSideFees || []);
+    const additionalFees: SingleFee[] = [];
+    if(btcTxFee!=null) additionalFees.push(btcTxFee);
+    if(scTxFee!=null) additionalFees.push(scTxFee);
+
+    const allFees = additionalFees.concat(scSideFees || []);
 
     return (<FeeSummary
         srcCurrency={props.swap.getInput().token}
         dstCurrency={props.swap.getOutput().token}
         swapPrice={props.swap.getSwapPrice()}
         feeBreakdown={allFees}
-        loading={scSideFees==null || btcTxFeeLoading}
+        loading={scSideFees==null || btcTxFeeLoading || scTxFeeLoading}
     />);
 }

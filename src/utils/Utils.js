@@ -107,3 +107,8 @@ export function bnEqual(a, b) {
         return false;
     return a.eq(b);
 }
+export function capitalizeFirstLetter(txt) {
+    if (txt == null)
+        return null;
+    return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
+}
