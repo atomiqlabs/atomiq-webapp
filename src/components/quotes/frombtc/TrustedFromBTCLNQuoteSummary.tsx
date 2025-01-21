@@ -1,6 +1,6 @@
 import * as React from "react";
 import {useEffect} from "react";
-import {Alert, Button} from "react-bootstrap";
+import {Alert, Button, Spinner} from "react-bootstrap";
 import {LnForGasSwap, LnForGasSwapState} from "@atomiqlabs/sdk";
 import {useSwapState} from "../../../utils/useSwapState";
 import {ScrollAnchor} from "../../ScrollAnchor";
@@ -15,6 +15,7 @@ import {ic_watch_later_outline} from 'react-icons-kit/md/ic_watch_later_outline'
 import {ic_check_circle_outline} from 'react-icons-kit/md/ic_check_circle_outline';
 import {ic_swap_horizontal_circle_outline} from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
 import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
+import {ic_hourglass_top_outline} from "react-icons-kit/md/ic_hourglass_top_outline";
 import {SingleStep, StepByStep} from "../../StepByStep";
 import {useStateRef} from "../../../utils/useStateRef";
 import {LightningQR} from "./LightningQR";
@@ -57,8 +58,9 @@ export function TrustedFromBTCLNQuoteSummary(props: {
 
     const isFailed = state===LnForGasSwapState.FAILED;
 
-    const isCreated = state===LnForGasSwapState.PR_CREATED ||
-        (state===LnForGasSwapState.EXPIRED && paymentWaiting);
+    const isCreated = state===LnForGasSwapState.PR_CREATED;
+
+    const isPaid = state===LnForGasSwapState.PR_PAID;
 
     const isSuccess = state===LnForGasSwapState.FINISHED;
 
@@ -72,6 +74,7 @@ export function TrustedFromBTCLNQuoteSummary(props: {
         {icon: ic_check_circle_outline, text: "Lightning payment received", type: "success"},
         {icon: ic_swap_horizontal_circle_outline, text: "Receive funds", type: "disabled"}
     ];
+    if(isPaid) executionSteps[1] = {icon: ic_hourglass_top_outline, text: "Receiving funds", type: "loading"};
     if(isCreated) executionSteps[0] = {icon: ic_flash_on_outline, text: "Awaiting lightning payment", type: "loading"};
     if(isQuoteExpired) executionSteps[0] = {icon: ic_hourglass_disabled_outline, text: "Quote expired", type: "failed"};
     if(isFailed) {
@@ -112,6 +115,17 @@ export function TrustedFromBTCLNQuoteSummary(props: {
                     <Button onClick={props.abortSwap} variant="danger">
                         Abort swap
                     </Button>
+                </>
+            ) : ""}
+
+            {isPaid ? (
+                <>
+                    <div className="tab-accent">
+                        <div className="d-flex flex-column align-items-center p-2">
+                            <Spinner/>
+                            <label>Receiving funds...</label>
+                        </div>
+                    </div>
                 </>
             ) : ""}
 
