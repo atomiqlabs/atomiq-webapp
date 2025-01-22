@@ -25,20 +25,23 @@ export function QuoteSummary(props: {
     const [notEnoughForGas, setNotEnoughForGas] = useState<BN>(null);
     useEffect(() => {
         setNotEnoughForGas(null);
+        let cancelled = false;
 
         if(signer==null || swapper==null || props.quote==null) return;
 
         //Check if the user has enough lamports to cover solana transaction fees
-        swapper.getNativeBalance(props.quote.chainIdentifier, signer.getAddress()).then(balance => {
-            let deposit = new BN(0);
-            if(props.quote.getType()===SwapType.FROM_BTCLN || props.quote.getType()===SwapType.FROM_BTC) {
-                deposit = (props.quote as IFromBTCSwap).getTotalDeposit().rawAmount;
-            }
-            console.log("NATIVE balance: ", balance.toString(10));
-            if(balance.lt(FEConstants.scBalances[props.quote.chainIdentifier].minimum.add(deposit))) {
-                setNotEnoughForGas(FEConstants.scBalances[props.quote.chainIdentifier].optimal.add(deposit).sub(balance));
+        props.quote.hasEnoughForTxFees().then((result) => {
+            console.log("Quote hasEnoughForTxFees(): Balance: "+result.balance.amount+" Required: "+result.required.amount+" Enough: "+result.enoughBalance);
+            if(cancelled) return;
+
+            if(!result.enoughBalance) {
+                setNotEnoughForGas(FEConstants.scBalances[props.quote.chainIdentifier].optimal.add(result.required.rawAmount).sub(result.balance.rawAmount));
             }
         });
+
+        return () => {
+            cancelled = true;
+        };
     }, [swapper, props.quote, signer]);
 
     let swapElement: JSX.Element;
@@ -51,7 +54,6 @@ export function QuoteSummary(props: {
                 setAmountLock={props.setAmountLock}
                 quote={props.quote as IToBTCSwap}
                 refreshQuote={props.refreshQuote}
-                balance={props.balance}
                 autoContinue={props.autoContinue}
                 notEnoughForGas={notEnoughForGas}
             />;

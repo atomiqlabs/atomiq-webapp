@@ -2,7 +2,6 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Alert, Button, Spinner } from "react-bootstrap";
 import { SwapType, ToBTCSwapState } from "@atomiqlabs/sdk";
-import { toHumanReadableString } from "../../../utils/Currencies";
 import * as bolt11 from "bolt11";
 import { FEConstants } from "../../../FEConstants";
 import { SwapsContext } from "../../../context/SwapsContext";
@@ -101,34 +100,21 @@ export function ToBTCQuoteSummary(props) {
     useEffect(() => {
         setNotEnoughBalanceError(null);
         let cancelled = false;
-        if (state === ToBTCSwapState.CREATED && signer != null) {
-            //Check that we have enough funds!
-            const swapInput = props.quote.getInput();
-            if (props.balance === null)
+        if (props.quote == null || state !== ToBTCSwapState.CREATED || signer == null)
+            return;
+        props.quote.hasEnoughBalance().then(result => {
+            if (cancelled)
                 return;
-            let balancePromise;
-            if (props.balance === undefined) {
-                balancePromise = swapper.getBalance(signer.getAddress(), swapInput.token);
+            console.log("Quote hasEnoughBalance(): Balance: " + result.balance.amount + " Required: " + result.required.amount + " Enough: " + result.enoughBalance);
+            if (!result.enoughBalance) {
+                setNotEnoughBalanceError("You don't have enough funds to initiate the swap, balance: " + result.balance.amount + " " + result.balance.token.ticker);
+                return;
             }
-            else {
-                balancePromise = Promise.resolve(props.balance);
-            }
-            balancePromise.then(balance => {
-                if (cancelled)
-                    return;
-                const hasEnoughBalance = balance.gte(swapInput.rawAmount);
-                if (!hasEnoughBalance) {
-                    setNotEnoughBalanceError("You don't have enough funds to initiate the swap, balance: " + toHumanReadableString(balance, swapInput.token) + " " + swapInput.token.ticker);
-                    return;
-                }
-                if (props.autoContinue)
-                    onContinue(true);
-            });
-        }
+        });
         return () => {
             cancelled = true;
         };
-    }, [state, signer, props.balance]);
+    }, [state, signer]);
     const isCreated = state === ToBTCSwapState.CREATED ||
         (state === ToBTCSwapState.QUOTE_SOFT_EXPIRED && continueLoading);
     const isExpired = state === ToBTCSwapState.QUOTE_EXPIRED ||

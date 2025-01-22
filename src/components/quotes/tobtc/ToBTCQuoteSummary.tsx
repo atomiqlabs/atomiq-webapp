@@ -49,7 +49,6 @@ export function ToBTCQuoteSummary(props: {
     refreshQuote: () => void,
     setAmountLock: (isLocked: boolean) => void,
     type?: "payment" | "swap",
-    balance?: BN,
     autoContinue?: boolean,
     notEnoughForGas: BN
 }) {
@@ -129,36 +128,22 @@ export function ToBTCQuoteSummary(props: {
         setNotEnoughBalanceError(null);
         let cancelled = false;
 
-        if(state===ToBTCSwapState.CREATED && signer!=null) {
-            //Check that we have enough funds!
-            const swapInput = props.quote.getInput();
+        if(props.quote==null || state!==ToBTCSwapState.CREATED || signer==null) return;
 
-            if(props.balance===null) return;
+        props.quote.hasEnoughBalance().then(result => {
+            if(cancelled) return;
 
-            let balancePromise: Promise<BN>;
-            if(props.balance===undefined) {
-                balancePromise = swapper.getBalance(signer.getAddress(), swapInput.token);
-            } else {
-                balancePromise = Promise.resolve(props.balance);
+            console.log("Quote hasEnoughBalance(): Balance: "+result.balance.amount+" Required: "+result.required.amount+" Enough: "+result.enoughBalance);
+            if(!result.enoughBalance) {
+                setNotEnoughBalanceError("You don't have enough funds to initiate the swap, balance: "+result.balance.amount+" "+result.balance.token.ticker);
+                return;
             }
-
-            balancePromise.then(balance => {
-                if(cancelled) return;
-                const hasEnoughBalance = balance.gte(swapInput.rawAmount);
-
-                if(!hasEnoughBalance) {
-                    setNotEnoughBalanceError("You don't have enough funds to initiate the swap, balance: "+toHumanReadableString(balance, swapInput.token)+" "+swapInput.token.ticker);
-                    return;
-                }
-
-                if(props.autoContinue) onContinue(true);
-            });
-        }
+        });
 
         return () => {
             cancelled = true;
         }
-    }, [state, signer, props.balance]);
+    }, [state, signer]);
 
     const isCreated = state===ToBTCSwapState.CREATED ||
         (state===ToBTCSwapState.QUOTE_SOFT_EXPIRED && continueLoading);

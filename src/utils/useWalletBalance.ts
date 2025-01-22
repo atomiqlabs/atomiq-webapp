@@ -84,7 +84,7 @@ export function useWalletBalance(
 
         let canceled = false;
 
-        const fetchBalance = () => swapper.getBalance(signer.getAddress(), currency).then(resp => {
+        const fetchBalance = () => swapper.getSpendableBalance(signer.getAddress(), currency, 1.25).then(resp => {
             if(canceled) return;
             if(pauseRef.current) return;
             const amountString = toHumanReadableString(resp, currency);

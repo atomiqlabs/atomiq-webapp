@@ -37,8 +37,7 @@ export const FEConstants = {
     },
     scBalances: {
         SOLANA: {
-            minimum: new BN(1000000),
-            optimal: new BN(6000000)
+            optimal: new BN(1000000)
         }
     },
     statsUrl,
