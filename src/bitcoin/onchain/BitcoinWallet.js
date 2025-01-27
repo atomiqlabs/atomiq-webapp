@@ -11,6 +11,9 @@ const ChainUtils = new MempoolApi(FEConstants.chain === "DEVNET" ?
     "https://mempool.space/api/");
 const feeMultiplier = 1.25;
 export class BitcoinWallet {
+    constructor(wasAutomaticallyInitiated) {
+        this.wasAutomaticallyInitiated = wasAutomaticallyInitiated;
+    }
     _sendTransaction(rawHex) {
         return ChainUtils.sendTransaction(rawHex);
     }

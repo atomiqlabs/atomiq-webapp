@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { BitcoinWalletContext } from "../../context/BitcoinWalletContext";
 export function useOnchainWallet() {
-    const { bitcoinWallet, setBitcoinWallet } = useContext(BitcoinWalletContext);
+    const { bitcoinWallet, disconnect } = useContext(BitcoinWalletContext);
     const [payError, setPayError] = useState(null);
     const [payLoading, setPayLoading] = useState(false);
     const [paySuccess, setPaySuccess] = useState(false);
@@ -30,9 +30,6 @@ export function useOnchainWallet() {
             console.error(e);
         });
     }, [bitcoinWallet]);
-    const disconnect = useCallback(() => {
-        setBitcoinWallet(null);
-    }, []);
     return {
         walletConnected: bitcoinWallet,
         disconnect,

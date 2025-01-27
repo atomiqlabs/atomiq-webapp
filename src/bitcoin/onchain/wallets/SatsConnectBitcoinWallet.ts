@@ -98,8 +98,8 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
     readonly walletName: string;
     readonly iconUrl: string;
 
-    constructor(account: Address, walletName: string, iconUrl: string) {
-        super();
+    constructor(account: Address, walletName: string, iconUrl: string, wasAutomaticallyConnected?: boolean) {
+        super(wasAutomaticallyConnected);
         this.account = account;
         this.walletName = walletName;
         this.iconUrl = iconUrl;
@@ -134,13 +134,13 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         return success;
     }
 
-    static async init(walletName: string, iconUrl: string, constructor: new (account: Address, walletName: string, iconUrl: string) => SatsConnectBitcoinWallet, _data?: any): Promise<SatsConnectBitcoinWallet> {
-        if(_data!=null) {
+    static async init(walletName: string, iconUrl: string, constructor: new (account: Address, walletName: string, iconUrl: string, wasAutomaticallyConnected?: boolean) => SatsConnectBitcoinWallet, _data?: any): Promise<SatsConnectBitcoinWallet> {
+        if(_data?.account!=null) {
             const data: {
                 account: Address
             } = _data;
 
-            return new constructor(data.account, walletName, iconUrl);
+            return new constructor(data.account, walletName, iconUrl, _data?.multichainConnected);
         }
 
         let result: GetAddressResponse = null;
@@ -168,7 +168,8 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         if(paymentAccounts.length===0) throw new Error("No valid payment account found");
 
         BitcoinWallet.saveState(walletName, {
-            account: paymentAccounts[0]
+            account: paymentAccounts[0],
+            multichainConnected: _data?.multichainConnected
         });
 
         return new constructor(paymentAccounts[0], walletName, iconUrl);

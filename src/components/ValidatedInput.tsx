@@ -76,6 +76,8 @@ function ValidatedInput(props : {
     elementStart?: string | JSX.Element,
     textStart?: string | JSX.Element,
 
+    feedbackEndElement?: string | JSX.Element,
+
     disabled?: boolean,
     validated?: string,
     readOnly?: boolean,
@@ -291,6 +293,7 @@ function ValidatedInput(props : {
                         <div className="d-flex align-items-center">
                             {props.successFeedback==null ? (<Icon className="mb-1 me-1" icon={exclamationTriangle}/>) : ""}
                             <span>{props.successFeedback || (props.validated===undefined ? state.validated : props.validated)}</span>
+                            {props.feedbackEndElement ?? ""}
                         </div>
                     </Form.Control.Feedback>
                 </InputGroup>

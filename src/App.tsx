@@ -4,7 +4,7 @@ import {useEffect, useRef} from "react";
 import SolanaWalletProvider from "./context/SolanaWalletProvider";
 import {QuickScan} from "./pages/quickscan/QuickScan";
 import {QuickScanExecute} from "./pages/quickscan/QuickScanExecute";
-import {useAnchorWallet, useConnection} from '@solana/wallet-adapter-react';
+import {useAnchorWallet, useConnection, useWallet} from '@solana/wallet-adapter-react';
 import {FEConstants} from "./FEConstants";
 import {smartChainTokenArray} from "./utils/Currencies";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
@@ -57,6 +57,8 @@ import {heart} from 'react-icons-kit/fa/heart';
 import {SwapNew} from "./pages/SwapNew";
 import {useAnchorNavigate} from "./utils/useAnchorNavigate";
 import {ErrorAlert} from "./components/ErrorAlert";
+import {getBitcoinWalletAsPartOfMultichainWallet} from "./bitcoin/onchain/BitcoinWalletUtils";
+import {useBitcoinWalletContext} from "./utils/useBitcoinWalletContext";
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -194,17 +196,10 @@ function WrappedApp() {
 
     console.log("nfcDisabled: ", nfcEnabled);
 
-    const [bitcoinWallet, setBitcoinWallet] = React.useState<BitcoinWallet>();
     const [webLNWallet, setWebLNWallet] = React.useState<WebLNProvider>();
 
     return (
-        <BitcoinWalletContext.Provider value={{
-            bitcoinWallet: bitcoinWallet,
-            setBitcoinWallet: (wallet: BitcoinWallet) => {
-                if(wallet==null) BitcoinWallet.clearState();
-                setBitcoinWallet(wallet);
-            }
-        }}>
+        <BitcoinWalletContext.Provider value={useBitcoinWalletContext()}>
             <WebLNContext.Provider value={{
                 lnWallet: webLNWallet,
                 setLnWallet: setWebLNWallet

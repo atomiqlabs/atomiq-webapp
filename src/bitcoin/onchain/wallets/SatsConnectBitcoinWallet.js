@@ -93,8 +93,8 @@ function _identifyAddressType(pubkey, address) {
     return null;
 }
 export class SatsConnectBitcoinWallet extends BitcoinWallet {
-    constructor(account, walletName, iconUrl) {
-        super();
+    constructor(account, walletName, iconUrl, wasAutomaticallyConnected) {
+        super(wasAutomaticallyConnected);
         this.account = account;
         this.walletName = walletName;
         this.iconUrl = iconUrl;
@@ -129,9 +129,9 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         return success;
     }
     static async init(walletName, iconUrl, constructor, _data) {
-        if (_data != null) {
+        if (_data?.account != null) {
             const data = _data;
-            return new constructor(data.account, walletName, iconUrl);
+            return new constructor(data.account, walletName, iconUrl, _data?.multichainConnected);
         }
         let result = null;
         let cancelled = false;
@@ -158,7 +158,8 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         if (paymentAccounts.length === 0)
             throw new Error("No valid payment account found");
         BitcoinWallet.saveState(walletName, {
-            account: paymentAccounts[0]
+            account: paymentAccounts[0],
+            multichainConnected: _data?.multichainConnected
         });
         return new constructor(paymentAccounts[0], walletName, iconUrl);
     }

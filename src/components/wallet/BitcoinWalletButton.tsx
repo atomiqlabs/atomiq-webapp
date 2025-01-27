@@ -1,53 +1,24 @@
 import {Button, CloseButton, Dropdown, ListGroup, Modal} from "react-bootstrap";
 import * as React from "react";
-import {useContext, useEffect, useState} from "react";
+import {useContext, useState} from "react";
 import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
-import {BitcoinWalletType, getInstalledBitcoinWallets} from "../../bitcoin/onchain/BitcoinWalletUtils";
+import {BitcoinWalletType} from "../../bitcoin/onchain/BitcoinWalletUtils";
 import {ic_brightness_1} from 'react-icons-kit/md/ic_brightness_1';
 import Icon from "react-icons-kit";
-import {BitcoinWallet} from "../../bitcoin/onchain/BitcoinWallet";
 
 export function useBitcoinWalletChooser() {
 
-    const {bitcoinWallet, setBitcoinWallet} = useContext(BitcoinWalletContext);
+    const {bitcoinWallet, connect, disconnect, usableWallets} = useContext(BitcoinWalletContext);
 
     const [loading, setLoading] = useState<boolean>(false);
     const [modalOpened, setModalOpened] = useState<boolean>(false);
-    const [usableWallets, setUsableWallets] = useState<BitcoinWalletType[]>([]);
 
     const [error, setError] = useState<string>();
 
-    useEffect(() => {
-        setLoading(true);
-        getInstalledBitcoinWallets().then(resp => {
-            setUsableWallets(resp.installed);
-            if(resp.active!=null && bitcoinWallet==null) {
-                resp.active().then(wallet => setBitcoinWallet(wallet)).catch(e => {
-                    console.error(e);
-                    setError(e.message);
-                });
-            }
-            setLoading(false);
-        }).catch(e => console.error(e));
-    },[bitcoinWallet==null]);
-
-    useEffect(() => {
-        if(bitcoinWallet==null) return;
-        let listener: (newWallet: BitcoinWallet) => void;
-        bitcoinWallet.onWalletChanged(listener = (newWallet: BitcoinWallet) => {
-            if(bitcoinWallet.getReceiveAddress()===newWallet.getReceiveAddress()) return;
-            console.log("New bitcoin wallet set: ", newWallet);
-            setBitcoinWallet(newWallet);
-        });
-        return () => {
-           bitcoinWallet.offWalletChanged(listener);
-        }
-    },[bitcoinWallet]);
 
     const connectWallet = (wallet?: BitcoinWalletType) => {
         if(wallet!=null) {
-            wallet.use().then(result => {
-                setBitcoinWallet(result);
+            connect(wallet).then(result => {
                 setModalOpened(false);
             }).catch(e => {
                 console.error(e);
@@ -56,9 +27,7 @@ export function useBitcoinWalletChooser() {
             return;
         }
         if(usableWallets.length===1) {
-            usableWallets[0].use().then(result => {
-                setBitcoinWallet(result);
-            }).catch(e => {
+            connect(usableWallets[0]).catch(e => {
                 console.error(e);
                 setError(e.message);
             });
@@ -67,7 +36,7 @@ export function useBitcoinWalletChooser() {
         }
     };
 
-    return {loading, modalOpened, setModalOpened, usableWallets, bitcoinWallet, connectWallet, setBitcoinWallet, error};
+    return {loading, modalOpened, setModalOpened, usableWallets, bitcoinWallet, connectWallet, disconnect, error};
 }
 
 export function BitcoinWalletModal(props: {
@@ -110,7 +79,7 @@ const BitcoinConnectedWallet = React.forwardRef<any, any>(({ bitcoinWallet, onCl
 
 export function BitcoinWalletAnchor(props: {className?: string, noText?: boolean}) {
 
-    const {loading, modalOpened, setModalOpened, usableWallets, bitcoinWallet, connectWallet, setBitcoinWallet, error} = useBitcoinWalletChooser();
+    const {loading, modalOpened, setModalOpened, usableWallets, bitcoinWallet, connectWallet, disconnect, error} = useBitcoinWalletChooser();
 
     if(usableWallets.length===0 && bitcoinWallet==null) return <></>;
 
@@ -139,9 +108,7 @@ export function BitcoinWalletAnchor(props: {className?: string, noText?: boolean
                     </Dropdown.Toggle>
 
                     <Dropdown.Menu>
-                        <Dropdown.Item eventKey="1" onClick={() => {
-                            setBitcoinWallet(null)
-                        }}>Disconnect</Dropdown.Item>
+                        <Dropdown.Item eventKey="1" onClick={disconnect}>Disconnect</Dropdown.Item>
                         {usableWallets!=null && usableWallets.length>1 ? (
                             <Dropdown.Item eventKey="2" onClick={() => {
                                 connectWallet();

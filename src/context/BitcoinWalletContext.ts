@@ -1,10 +1,15 @@
 import { createContext } from 'react';
 import {BitcoinWallet} from "../bitcoin/onchain/BitcoinWallet";
+import {BitcoinWalletType} from "../bitcoin/onchain/BitcoinWalletUtils";
 
 export const BitcoinWalletContext: React.Context<{
     bitcoinWallet: BitcoinWallet,
-    setBitcoinWallet: (wallet: BitcoinWallet) => void
+    connect: (walletType: BitcoinWalletType) => Promise<void>,
+    disconnect: () => void,
+    usableWallets: BitcoinWalletType[]
 }> = createContext({
     bitcoinWallet: null,
-    setBitcoinWallet: null
+    connect: (walletType: BitcoinWalletType) => Promise.resolve(),
+    disconnect: () => {},
+    usableWallets: []
 });

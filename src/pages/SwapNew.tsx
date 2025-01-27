@@ -46,7 +46,7 @@ export function SwapNew(props: {
     const navigate = useNavigate();
 
     const {swapper, chains} = useContext(SwapsContext);
-    const {bitcoinWallet} = useContext(BitcoinWalletContext);
+    const {bitcoinWallet, disconnect} = useContext(BitcoinWalletContext);
     const {lnWallet} = useContext(WebLNContext);
 
     //Existing swap quote
@@ -267,6 +267,16 @@ export function SwapNew(props: {
         }
     }, [quote, existingSwap]);
 
+    const [_inputAmountValue, setInputAmountValue] = useState<string>();
+    const inputAmountValue = inputAmount ?? _inputAmountValue;
+    let shouldShowUseExternalWallet = false;
+    if(inConstraints?.max!=null && maxSpendable?.amount!=null && inputAmountValue!=null && !isSend) {
+        const parsedAmount = new BigNumber(inputAmountValue);
+        console.log("Parsed amount: ", parsedAmount);
+        if(!parsedAmount.isNaN())
+            shouldShowUseExternalWallet = parsedAmount.gt(maxSpendable?.amount) && parsedAmount.lte(inConstraints.max);
+    }
+
     return (
         <>
             <SwapTopbar selected={0} enabled={!locked}/>
@@ -337,6 +347,7 @@ export function SwapNew(props: {
                             ) : null}
                             onChange={(value) => {
                                 console.log("SwapNew: ValidatedInput(inputAmount): onChange: ", value);
+                                setInputAmountValue(value);
                                 leaveExistingSwap();
                                 setExactIn(true);
                             }}
@@ -350,6 +361,12 @@ export function SwapNew(props: {
                             step={inputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-inputToken.decimals))}
                             min={inConstraints?.min}
                             max={inputMax}
+                            feedbackEndElement={shouldShowUseExternalWallet ? (
+                                <a className="ms-auto" href="#" onClick={(event) => {
+                                    event.preventDefault();
+                                    disconnect();
+                                }}>Use external wallet</a>
+                            ) : null}
                             validated={(!exactIn && quote!=null) || existingSwap!=null ? null : undefined}
                             elementEnd={(
                                 <CurrencyDropdown

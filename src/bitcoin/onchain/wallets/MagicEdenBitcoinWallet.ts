@@ -17,7 +17,7 @@ export class MagicEdenBitcoinWallet extends SatsConnectBitcoinWallet {
     }
 
     static checkCorrectWallet(): boolean {
-        return !!(window.BitcoinProvider as any).isMagicEden;
+        return !!(window as any).magicEden;
     }
 
 }

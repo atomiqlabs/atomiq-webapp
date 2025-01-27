@@ -21,6 +21,12 @@ const feeMultiplier = 1.25;
 
 export abstract class BitcoinWallet {
 
+    readonly wasAutomaticallyInitiated: boolean;
+
+    constructor(wasAutomaticallyInitiated?: boolean) {
+        this.wasAutomaticallyInitiated = wasAutomaticallyInitiated;
+    }
+
     protected _sendTransaction(rawHex: string): Promise<string> {
         return ChainUtils.sendTransaction(rawHex);
     }

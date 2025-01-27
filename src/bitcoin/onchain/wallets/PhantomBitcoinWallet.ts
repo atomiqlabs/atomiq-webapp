@@ -47,26 +47,33 @@ let currentAccount: PhantomBtcAccount = null;
 let ignoreAccountChange: boolean;
 
 if(provider!=null) provider.on("accountsChanged", (accounts: PhantomBtcAccount[]) => {
+    console.log("PhantomBitcoinWallet: accountsChanged, ignore: "+ignoreAccountChange+" accounts: ", accounts);
     if(ignoreAccountChange) return;
-    if(accounts!=null) {
+    let btcWalletState = BitcoinWallet.loadState();
+    if(btcWalletState==null || btcWalletState.name!==PhantomBitcoinWallet.walletName) return;
+    if(accounts!=null && accounts.length>0) {
         const paymentAccount: PhantomBtcAccount = getPaymentAccount(accounts);
         if(currentAccount!=null && paymentAccount.address==currentAccount.address) return;
 
         currentAccount = paymentAccount;
 
-        ignoreAccountChange = true;
-        provider.requestAccounts().then(accounts => {
-            ignoreAccountChange = false;
-            const paymentAccount: PhantomBtcAccount = getPaymentAccount(accounts);
-            currentAccount = paymentAccount;
-            BitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
-                account: paymentAccount
-            });
-            events.emit("newWallet", new PhantomBitcoinWallet(paymentAccount));
-        }).catch(e => {
-            ignoreAccountChange = false;
-            console.error(e);
-        })
+        BitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
+            account: paymentAccount
+        });
+        events.emit("newWallet", new PhantomBitcoinWallet(paymentAccount, btcWalletState.data.multichainConnected));
+        // ignoreAccountChange = true;
+        // provider.requestAccounts().then(accounts => {
+        //     ignoreAccountChange = false;
+        //     const paymentAccount: PhantomBtcAccount = getPaymentAccount(accounts);
+        //     currentAccount = paymentAccount;
+        //     BitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
+        //         account: paymentAccount
+        //     });
+        //     events.emit("newWallet", new PhantomBitcoinWallet(paymentAccount));
+        // }).catch(e => {
+        //     ignoreAccountChange = false;
+        //     console.error(e);
+        // })
     } else {
         events.emit("newWallet", null);
     }
@@ -79,8 +86,8 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
 
     readonly account: PhantomBtcAccount;
 
-    constructor(account: PhantomBtcAccount) {
-        super();
+    constructor(account: PhantomBtcAccount, wasAutomaticallyConnected: boolean) {
+        super(wasAutomaticallyConnected);
         this.account = account;
     }
 
@@ -90,7 +97,7 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
     }
 
     static async init(_data?: any): Promise<PhantomBitcoinWallet> {
-        if(_data!=null) {
+        if(_data?.account!=null) {
             const data: {
                 account: PhantomBtcAccount
             } = _data;
@@ -112,9 +119,10 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         const paymentAccount: PhantomBtcAccount = getPaymentAccount(accounts);
         currentAccount = paymentAccount;
         BitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
-            account: paymentAccount
+            account: paymentAccount,
+            multichainConnected: _data?.multichainConnected
         });
-        return new PhantomBitcoinWallet(paymentAccount);
+        return new PhantomBitcoinWallet(paymentAccount, _data?.multichainConnected);
     }
 
     getBalance(): Promise<{ confirmedBalance: BN; unconfirmedBalance: BN }> {

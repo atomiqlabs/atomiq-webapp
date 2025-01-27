@@ -1,48 +1,18 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { Button, CloseButton, Dropdown, ListGroup, Modal } from "react-bootstrap";
 import * as React from "react";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { BitcoinWalletContext } from "../../context/BitcoinWalletContext";
-import { getInstalledBitcoinWallets } from "../../bitcoin/onchain/BitcoinWalletUtils";
 import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
 import Icon from "react-icons-kit";
 export function useBitcoinWalletChooser() {
-    const { bitcoinWallet, setBitcoinWallet } = useContext(BitcoinWalletContext);
+    const { bitcoinWallet, connect, disconnect, usableWallets } = useContext(BitcoinWalletContext);
     const [loading, setLoading] = useState(false);
     const [modalOpened, setModalOpened] = useState(false);
-    const [usableWallets, setUsableWallets] = useState([]);
     const [error, setError] = useState();
-    useEffect(() => {
-        setLoading(true);
-        getInstalledBitcoinWallets().then(resp => {
-            setUsableWallets(resp.installed);
-            if (resp.active != null && bitcoinWallet == null) {
-                resp.active().then(wallet => setBitcoinWallet(wallet)).catch(e => {
-                    console.error(e);
-                    setError(e.message);
-                });
-            }
-            setLoading(false);
-        }).catch(e => console.error(e));
-    }, [bitcoinWallet == null]);
-    useEffect(() => {
-        if (bitcoinWallet == null)
-            return;
-        let listener;
-        bitcoinWallet.onWalletChanged(listener = (newWallet) => {
-            if (bitcoinWallet.getReceiveAddress() === newWallet.getReceiveAddress())
-                return;
-            console.log("New bitcoin wallet set: ", newWallet);
-            setBitcoinWallet(newWallet);
-        });
-        return () => {
-            bitcoinWallet.offWalletChanged(listener);
-        };
-    }, [bitcoinWallet]);
     const connectWallet = (wallet) => {
         if (wallet != null) {
-            wallet.use().then(result => {
-                setBitcoinWallet(result);
+            connect(wallet).then(result => {
                 setModalOpened(false);
             }).catch(e => {
                 console.error(e);
@@ -51,9 +21,7 @@ export function useBitcoinWalletChooser() {
             return;
         }
         if (usableWallets.length === 1) {
-            usableWallets[0].use().then(result => {
-                setBitcoinWallet(result);
-            }).catch(e => {
+            connect(usableWallets[0]).catch(e => {
                 console.error(e);
                 setError(e.message);
             });
@@ -62,7 +30,7 @@ export function useBitcoinWalletChooser() {
             setModalOpened(true);
         }
     };
-    return { loading, modalOpened, setModalOpened, usableWallets, bitcoinWallet, connectWallet, setBitcoinWallet, error };
+    return { loading, modalOpened, setModalOpened, usableWallets, bitcoinWallet, connectWallet, disconnect, error };
 }
 export function BitcoinWalletModal(props) {
     return (_jsxs(Modal, { contentClassName: "text-white bg-dark", size: "sm", centered: true, show: props.modalOpened, onHide: () => props.setModalOpened(false), dialogClassName: "min-width-400px", children: [_jsx(Modal.Header, { className: "border-0", children: _jsxs(Modal.Title, { id: "contained-modal-title-vcenter", className: "d-flex flex-grow-1", children: ["Select a Bitcoin wallet", _jsx(CloseButton, { className: "ms-auto", variant: "white", onClick: () => props.setModalOpened(false) })] }) }), _jsx(Modal.Body, { children: _jsx(ListGroup, { variant: "flush", children: props.usableWallets.map((e, index) => {
@@ -71,12 +39,10 @@ export function BitcoinWalletModal(props) {
 }
 const BitcoinConnectedWallet = React.forwardRef(({ bitcoinWallet, onClick, noText }, ref) => (_jsxs("div", { className: "d-flex flex-row align-items-center cursor-pointer", onClick: onClick, children: [_jsx(Icon, { className: "text-success d-flex align-items-center me-1", icon: ic_brightness_1, size: 12 }), _jsx("img", { width: 16, height: 16, src: bitcoinWallet.getIcon(), className: "me-1" }), !noText ? bitcoinWallet.getName() : ""] })));
 export function BitcoinWalletAnchor(props) {
-    const { loading, modalOpened, setModalOpened, usableWallets, bitcoinWallet, connectWallet, setBitcoinWallet, error } = useBitcoinWalletChooser();
+    const { loading, modalOpened, setModalOpened, usableWallets, bitcoinWallet, connectWallet, disconnect, error } = useBitcoinWalletChooser();
     if (usableWallets.length === 0 && bitcoinWallet == null)
         return _jsx(_Fragment, {});
-    return (_jsxs(_Fragment, { children: [_jsx(BitcoinWalletModal, { modalOpened: modalOpened, setModalOpened: setModalOpened, usableWallets: usableWallets, connectWallet: connectWallet }), bitcoinWallet == null ? (_jsx(Button, { variant: "outline-light", style: { marginBottom: "2px" }, className: "py-0 px-1", onClick: () => connectWallet(), children: _jsx("small", { className: "font-smallest", style: { marginBottom: "-2px" }, children: "Connect BTC wallet" }) })) : (_jsxs(Dropdown, { align: { md: "start" }, children: [_jsx(Dropdown.Toggle, { as: BitcoinConnectedWallet, id: "dropdown-custom-components", className: props.className, bitcoinWallet: bitcoinWallet, noText: props.noText, children: "Custom toggle" }), _jsxs(Dropdown.Menu, { children: [_jsx(Dropdown.Item, { eventKey: "1", onClick: () => {
-                                    setBitcoinWallet(null);
-                                }, children: "Disconnect" }), usableWallets != null && usableWallets.length > 1 ? (_jsx(Dropdown.Item, { eventKey: "2", onClick: () => {
+    return (_jsxs(_Fragment, { children: [_jsx(BitcoinWalletModal, { modalOpened: modalOpened, setModalOpened: setModalOpened, usableWallets: usableWallets, connectWallet: connectWallet }), bitcoinWallet == null ? (_jsx(Button, { variant: "outline-light", style: { marginBottom: "2px" }, className: "py-0 px-1", onClick: () => connectWallet(), children: _jsx("small", { className: "font-smallest", style: { marginBottom: "-2px" }, children: "Connect BTC wallet" }) })) : (_jsxs(Dropdown, { align: { md: "start" }, children: [_jsx(Dropdown.Toggle, { as: BitcoinConnectedWallet, id: "dropdown-custom-components", className: props.className, bitcoinWallet: bitcoinWallet, noText: props.noText, children: "Custom toggle" }), _jsxs(Dropdown.Menu, { children: [_jsx(Dropdown.Item, { eventKey: "1", onClick: disconnect, children: "Disconnect" }), usableWallets != null && usableWallets.length > 1 ? (_jsx(Dropdown.Item, { eventKey: "2", onClick: () => {
                                     connectWallet();
                                 }, children: "Change wallet" })) : ""] })] }))] }));
 }

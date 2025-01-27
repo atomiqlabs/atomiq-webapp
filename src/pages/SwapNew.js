@@ -39,7 +39,7 @@ const RANDOM_BTC_ADDRESS = bitcoin.payments.p2wsh({
 export function SwapNew(props) {
     const navigate = useNavigate();
     const { swapper, chains } = useContext(SwapsContext);
-    const { bitcoinWallet } = useContext(BitcoinWalletContext);
+    const { bitcoinWallet, disconnect } = useContext(BitcoinWalletContext);
     const { lnWallet } = useContext(WebLNContext);
     //Existing swap quote
     const { search } = useLocation();
@@ -242,6 +242,15 @@ export function SwapNew(props) {
             }
         }
     }, [quote, existingSwap]);
+    const [_inputAmountValue, setInputAmountValue] = useState();
+    const inputAmountValue = inputAmount ?? _inputAmountValue;
+    let shouldShowUseExternalWallet = false;
+    if (inConstraints?.max != null && maxSpendable?.amount != null && inputAmountValue != null && !isSend) {
+        const parsedAmount = new BigNumber(inputAmountValue);
+        console.log("Parsed amount: ", parsedAmount);
+        if (!parsedAmount.isNaN())
+            shouldShowUseExternalWallet = parsedAmount.gt(maxSpendable?.amount) && parsedAmount.lte(inConstraints.max);
+    }
     return (_jsxs(_Fragment, { children: [_jsx(SwapTopbar, { selected: 0, enabled: !locked }), _jsx(QRScannerModal, { onScanned: (data) => {
                     console.log("QR scanned: ", data);
                     addressRef.current.setValue(data);
@@ -251,12 +260,16 @@ export function SwapNew(props) {
                                                         inputRef.current.setValue(maxSpendable.amountString);
                                                     }, children: _jsx("small", { className: "font-smallest", style: { marginBottom: "-2px" }, children: "MAX" }) })] })) : (swapType === SwapType.FROM_BTCLN ? (_jsx("small", { children: _jsx(WebLNAnchor, {}) })) : swapType === SwapType.FROM_BTC ? (_jsx("small", { className: "", children: _jsx(BitcoinWalletAnchor, {}) })) : "")] }), _jsx(ValidatedInput, { disabled: locked || amountsLocked || webLnForOutput, inputRef: inputRef, className: "flex-fill", type: "number", value: inputAmount, size: "lg", textStart: !exactIn && quoteLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, onChange: (value) => {
                                         console.log("SwapNew: ValidatedInput(inputAmount): onChange: ", value);
+                                        setInputAmountValue(value);
                                         leaveExistingSwap();
                                         setExactIn(true);
                                     }, onValidatedInput: val => {
                                         if (exactIn)
                                             setValidatedAmount(val);
-                                    }, inputId: "amount-input", inputClassName: "font-weight-500", floatingLabel: inputValue == null ? null : FEConstants.USDollar.format(inputValue), expectingFloatingLabel: true, step: inputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-inputToken.decimals)), min: inConstraints?.min, max: inputMax, validated: (!exactIn && quote != null) || existingSwap != null ? null : undefined, elementEnd: (_jsx(CurrencyDropdown, { currencyList: !isSend ? bitcoinTokenArray : allowedScTokens, onSelect: val => {
+                                    }, inputId: "amount-input", inputClassName: "font-weight-500", floatingLabel: inputValue == null ? null : FEConstants.USDollar.format(inputValue), expectingFloatingLabel: true, step: inputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-inputToken.decimals)), min: inConstraints?.min, max: inputMax, feedbackEndElement: shouldShowUseExternalWallet ? (_jsx("a", { className: "ms-auto", href: "#", onClick: (event) => {
+                                            event.preventDefault();
+                                            disconnect();
+                                        }, children: "Use external wallet" })) : null, validated: (!exactIn && quote != null) || existingSwap != null ? null : undefined, elementEnd: (_jsx(CurrencyDropdown, { currencyList: !isSend ? bitcoinTokenArray : allowedScTokens, onSelect: val => {
                                             if (locked)
                                                 return;
                                             leaveExistingSwap(true);

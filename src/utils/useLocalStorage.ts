@@ -8,7 +8,7 @@ export function useLocalStorage<T>(name: string, defaultValue: T): [T, (val: T) 
 
     useEffect(() => {
         const config = window.localStorage.getItem(name);
-        const value = config==null ? defaultValue : JSON.parse(config);
+        const value = config===undefined ? defaultValue : JSON.parse(config);
         setValue(value);
         valueRef.current = value;
     }, []);

@@ -11,7 +11,7 @@ export class MagicEdenBitcoinWallet extends SatsConnectBitcoinWallet {
         return SatsConnectBitcoinWallet.init(MagicEdenBitcoinWallet.walletName, MagicEdenBitcoinWallet.iconUrl, MagicEdenBitcoinWallet, _data);
     }
     static checkCorrectWallet() {
-        return !!window.BitcoinProvider.isMagicEden;
+        return !!window.magicEden;
     }
 }
 MagicEdenBitcoinWallet.iconUrl = "wallets/btc/MagicEden.png";

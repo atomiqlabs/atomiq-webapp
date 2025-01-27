@@ -6,7 +6,7 @@ import * as BN from "bn.js";
 
 export function useOnchainWallet() {
 
-    const {bitcoinWallet, setBitcoinWallet} = useContext(BitcoinWalletContext);
+    const {bitcoinWallet, disconnect} = useContext(BitcoinWalletContext);
     const [payError, setPayError] = useState<any>(null);
     const [payLoading, setPayLoading] = useState<boolean>(false);
     const [paySuccess, setPaySuccess] = useState<boolean>(false);
@@ -36,10 +36,6 @@ export function useOnchainWallet() {
             console.error(e);
         });
     }, [bitcoinWallet]);
-
-    const disconnect = useCallback(() => {
-        setBitcoinWallet(null);
-    }, []);
 
     return {
         walletConnected: bitcoinWallet,

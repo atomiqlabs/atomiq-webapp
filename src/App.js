@@ -28,13 +28,13 @@ import { SwapForGas } from "./pages/SwapForGas";
 import { SwapExplorer } from "./pages/SwapExplorer";
 import { Affiliate } from "./pages/Affiliate";
 import { gift } from 'react-icons-kit/fa/gift';
-import { BitcoinWallet } from './bitcoin/onchain/BitcoinWallet';
 import { BitcoinWalletContext } from './context/BitcoinWalletContext';
 import { WebLNContext } from './context/WebLNContext';
 import { heart } from 'react-icons-kit/fa/heart';
 import { SwapNew } from "./pages/SwapNew";
 import { useAnchorNavigate } from "./utils/useAnchorNavigate";
 import { ErrorAlert } from "./components/ErrorAlert";
+import { useBitcoinWalletContext } from "./utils/useBitcoinWalletContext";
 require('@solana/wallet-adapter-react-ui/styles.css');
 const noWalletPaths = new Set(["/about", "/faq", "/map", "/46jh456f45f"]);
 const jitoPubkey = "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL";
@@ -148,16 +148,8 @@ function WrappedApp() {
         }
     };
     console.log("nfcDisabled: ", nfcEnabled);
-    const [bitcoinWallet, setBitcoinWallet] = React.useState();
     const [webLNWallet, setWebLNWallet] = React.useState();
-    return (_jsx(BitcoinWalletContext.Provider, { value: {
-            bitcoinWallet: bitcoinWallet,
-            setBitcoinWallet: (wallet) => {
-                if (wallet == null)
-                    BitcoinWallet.clearState();
-                setBitcoinWallet(wallet);
-            }
-        }, children: _jsxs(WebLNContext.Provider, { value: {
+    return (_jsx(BitcoinWalletContext.Provider, { value: useBitcoinWalletContext(), children: _jsxs(WebLNContext.Provider, { value: {
                 lnWallet: webLNWallet,
                 setLnWallet: setWebLNWallet
             }, children: [_jsx(Navbar, { collapseOnSelect: true, expand: "lg ", bg: "dark", variant: "dark", className: "bg-dark bg-opacity-50", style: { zIndex: 1000, minHeight: "64px" }, children: _jsxs(Container, { className: "max-width-100", children: [_jsx(Navbar.Brand, { href: "/", className: "d-flex flex-column", children: _jsxs("div", { className: "d-flex flex-row", style: { fontSize: "1.5rem" }, children: [_jsx("img", { src: "/icons/atomiq-flask.png", className: "logo-img" }), _jsx("b", { children: "atomiq" }), _jsx("span", { style: { fontWeight: 300 }, children: ".exchange" }), FEConstants.chain === "DEVNET" ? _jsx(Badge, { className: "ms-2 d-flex align-items-center", bg: "danger", children: "DEVNET" }) : ""] }) }), _jsxs("div", { className: "d-flex flex-column", children: [_jsx(Badge, { className: "newBadgeCollapse d-lg-none", children: "New!" }), _jsx(Navbar.Toggle, { "aria-controls": "basic-navbar-nav", className: "ms-3" })] }), _jsxs(Navbar.Collapse, { role: "", id: "basic-navbar-nav", children: [_jsxs(Nav, { className: "d-flex d-lg-none me-auto text-start border-top border-dark-subtle my-2 " + (swapper == null ? "" : "border-bottom"), children: [_jsxs(Nav.Link, { href: "/", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: exchange, className: "d-flex me-1" }), _jsx("span", { children: "Swap" })] }), _jsxs(Nav.Link, { href: "/about", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: info, className: "d-flex me-1" }), _jsx("span", { children: "About" })] }), _jsxs(Nav.Link, { href: "/faq", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: question, className: "d-flex me-1" }), _jsx("span", { children: "FAQ" })] }), _jsxs(Nav.Link, { href: "/referral", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: gift, className: "d-flex me-1" }), _jsx("span", { className: "me-1", children: "Referral" }), _jsx(Badge, { className: "me-2", children: "New!" })] }), nfcSupported ? (_jsxs("div", { className: "nav-link d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: ic_contactless, className: "d-flex me-1" }), _jsx("label", { title: "", htmlFor: "nfc", className: "form-check-label me-2", children: "NFC enable" }), _jsx(Form.Check // prettier-ignore
