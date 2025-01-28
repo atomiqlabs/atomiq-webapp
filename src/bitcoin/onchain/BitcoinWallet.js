@@ -66,11 +66,18 @@ export class BitcoinWallet {
         if (coinselectResult.inputs == null || coinselectResult.outputs == null) {
             return {
                 psbt: null,
-                fee: coinselectResult.fee
+                fee: coinselectResult.fee,
+                inputAddressIndexes: null
             };
         }
         const psbt = new bitcoin.Psbt({
             network: bitcoinNetwork
+        });
+        const inputAddressIndexes = {};
+        coinselectResult.inputs.forEach((input, index) => {
+            var _a;
+            inputAddressIndexes[_a = input.address] ?? (inputAddressIndexes[_a] = []);
+            inputAddressIndexes[input.address].push(index);
         });
         console.log("Inputs: ", coinselectResult.inputs);
         psbt.addInputs(await Promise.all(coinselectResult.inputs.map(async (input) => {
@@ -127,7 +134,8 @@ export class BitcoinWallet {
         }
         return {
             psbt,
-            fee: coinselectResult.fee
+            fee: coinselectResult.fee,
+            inputAddressIndexes
         };
     }
     async _getSpendableBalance(sendingAccounts) {

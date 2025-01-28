@@ -1,9 +1,9 @@
 import * as BN from "bn.js";
-import {BitcoinWallet, BitcoinWalletUtxo, ChainUtils} from "../BitcoinWallet";
+import {BitcoinWallet, BitcoinWalletUtxo} from "../BitcoinWallet";
 import {CoinselectAddressTypes} from "../coinselect2/utils";
 import * as bitcoin from "bitcoinjs-lib";
 import * as EventEmitter from "events";
-import {MempoolApi} from "@atomiqlabs/sdk";
+import {filterInscriptionUtxosOnlyConfirmed} from "../InscriptionUtils";
 
 const addressTypePriorities = {
     "p2tr": 0,
@@ -33,81 +33,17 @@ type PhantomBtcProvider = {
     isPhantom?: boolean
 } & EventEmitter;
 
-async function traverseToConfirmedOrdinalInputs(utxo: {txId: string, vout: number, value: number}, satsOffset = 0, satsRange = utxo.value): Promise<{txId: string, vout: number, value: number}[]> {
-    if(utxo.value < satsOffset + satsRange) throw new Error("Invalid UTXO traversal range! Offset: "+satsOffset+" range: "+satsRange+" utxo value: "+utxo.value+" utxo: "+utxo.txId+":"+utxo.vout);
-    const tx = await ChainUtils.getTransaction(utxo.txId);
-
-    if(tx.status.confirmed) return [utxo];
-
-    const outputSatOffsetStart = tx.vout.slice(0, utxo.vout).reduce((prev, curr) => prev + curr.value, 0) + satsOffset;
-    const outputSatOffsetEnd = outputSatOffsetStart + satsRange;
-
-    const confirmedInputs: {txId: string, vout: number, value: number}[] = [];
-
-    let inputSatCounter = 0;
-    for(let input of tx.vin) {
-        let inputSatOffsetStart = inputSatCounter;
-        inputSatCounter += input.prevout.value;
-        let inputSatOffsetEnd = inputSatCounter;
-        if(outputSatOffsetStart > inputSatOffsetEnd) continue;
-        if(inputSatOffsetStart > outputSatOffsetEnd) continue;
-
-        const intersectionStart = Math.max(inputSatOffsetStart, outputSatOffsetStart);
-        const intersectionEnd = Math.min(inputSatOffsetEnd, outputSatOffsetEnd);
-
-        const inputSatOffset = intersectionStart - inputSatOffsetStart;
-        const inputSatRange = intersectionEnd - intersectionStart;
-
-        if(inputSatRange===0) continue;
-
-        console.log("Start: "+intersectionStart+" End: "+intersectionEnd);
-
-        confirmedInputs.push(...await traverseToConfirmedOrdinalInputs({txId: input.txid, vout: input.vout, value: input.prevout.value}, inputSatOffset, inputSatRange));
-    }
-
-    return confirmedInputs;
-}
-
-async function filterInscriptionUtxos(utxos: BitcoinWalletUtxo[]): Promise<BitcoinWalletUtxo[]> {
-    if(utxos.length===0) return utxos;
-
-    const ancestorMap = new Map<string, string>();
-    for(let utxo of utxos) {
-        if(!utxo.confirmed) {
-            //TODO: Remove utxo from the list if the call to traverseToConfirmedOrdinalInputs fails
-            const ancestorUtxos = await traverseToConfirmedOrdinalInputs(utxo);
-            console.log("PhantomBitcoinWallet: filterInscriptionUtxos(): Fetched ancestors of unconfirmed utxo "+utxo.txId+":"+utxo.vout+", array: ", ancestorUtxos);
-            ancestorUtxos.forEach(val => ancestorMap.set(val.txId+":"+val.vout, utxo.txId+":"+utxo.vout));
-        } else {
-            ancestorMap.set(utxo.txId+":"+utxo.vout, utxo.txId+":"+utxo.vout);
-        }
-    }
-
-    const resp = await fetch("https://api.atomiq.exchange/api/CheckBitcoinUtxos", {
-        method: "POST",
-        body: JSON.stringify(Array.from(ancestorMap.keys())),
-        headers: {"Content-Type": "application/json"}
-    });
-
-    if(!resp.ok) throw new Error("Failed to filter out inscription utxos");
-
-    const res: string[] = await resp.json();
-    const utxosWithAssetSet = new Set();
-    res.forEach(utxoWithAsset => utxosWithAssetSet.add(ancestorMap.get(utxoWithAsset)));
-
-    console.log("PhantomBitcoinWallet: filterInscriptionUtxos(): Removing utxos from pool: ", Array.from(utxosWithAssetSet));
-
-    return utxos.filter(utxo => !utxosWithAssetSet.has(utxo.txId+":"+utxo.vout));
-}
-
 function deduplicateAccounts(accounts: PhantomBtcAccount[]): PhantomBtcAccount[] {
     const accountMap: {[address: string]: PhantomBtcAccount} = {};
-    accounts.forEach(acc => accountMap[acc.address] = acc);
+    accounts.forEach(acc => {
+        //Prefer payment accounts
+        if(accountMap[acc.address]!=null && accountMap[acc.address].purpose==="payment") return;
+        accountMap[acc.address] = acc
+    });
     return Object.keys(accountMap).map(address => accountMap[address]);
 }
 
 function getPaymentAccount(accounts: PhantomBtcAccount[]): PhantomBtcAccount {
-    console.log("Loaded wallet accounts: ", accounts);
     const paymentAccounts = accounts.filter(e => e.purpose==="payment");
     if(paymentAccounts.length===0) throw new Error("No valid payment account found");
     paymentAccounts.sort((a, b) => addressTypePriorities[a.addressType] - addressTypePriorities[b.addressType]);
@@ -194,8 +130,10 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
     ): Promise<BitcoinWalletUtxo[]> {
         let utxos = await super._getUtxoPool(sendingAddress, sendingAddressType);
         const accountType = this.accounts.find(acc => acc.address===sendingAddress);
-        //TODO: Don't use the ordinals account if filterInscriptionUtxos fails
-        if(accountType.purpose==="ordinals") utxos = await filterInscriptionUtxos(utxos);
+        if(accountType.purpose==="ordinals") utxos = await filterInscriptionUtxosOnlyConfirmed(utxos).catch(err => {
+            console.error(err);
+            return [];
+        });
         return utxos;
     }
 
@@ -234,7 +172,7 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
     }
 
     async sendTransaction(address: string, amount: BN, feeRate?: number): Promise<string> {
-        const {psbt} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, amount.toNumber(), feeRate);
+        const {psbt, inputAddressIndexes} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, amount.toNumber(), feeRate);
 
         if(psbt==null) {
             throw new Error("Not enough balance!");
@@ -243,11 +181,9 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         const psbtHex = psbt.toBuffer();
 
         const resultSignedPsbtHex = await provider.signPSBT(psbtHex, {
-            inputsToSign: [{
-                sigHash: 0x01,
-                address: this.account.address,
-                signingIndexes: psbt.txInputs.map((e, index) => index)
-            }]
+            inputsToSign: Object.keys(inputAddressIndexes).map(address => {
+                return {sigHash: 0x01, address, signingIndexes: inputAddressIndexes[address]}
+            })
         });
 
         const signedPsbt = bitcoin.Psbt.fromHex(resultSignedPsbtHex);

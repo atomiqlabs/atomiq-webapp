@@ -97,7 +97,7 @@ export abstract class BitcoinWallet {
         address: string,
         amount: number,
         feeRate?: number
-    ): Promise<{psbt: bitcoin.Psbt, fee: number}> {
+    ): Promise<{psbt: bitcoin.Psbt, fee: number, inputAddressIndexes: {[address: string]: number[]}}> {
         if(feeRate==null) feeRate = Math.floor((await ChainUtils.getFees()).fastestFee*feeMultiplier);
 
         const utxoPool: BitcoinWalletUtxo[] = (await Promise.all(sendingAccounts.map(acc => this._getUtxoPool(acc.address, acc.addressType)))).flat();
@@ -118,12 +118,19 @@ export abstract class BitcoinWallet {
         if(coinselectResult.inputs==null || coinselectResult.outputs==null) {
             return {
                 psbt: null,
-                fee: coinselectResult.fee
+                fee: coinselectResult.fee,
+                inputAddressIndexes: null
             };
         }
 
         const psbt = new bitcoin.Psbt({
             network: bitcoinNetwork
+        });
+
+        const inputAddressIndexes: {[address: string]: number[]} = {};
+        coinselectResult.inputs.forEach((input, index) => {
+            inputAddressIndexes[input.address] ??= [];
+            inputAddressIndexes[input.address].push(index);
         });
 
         console.log("Inputs: ", coinselectResult.inputs);
@@ -185,7 +192,8 @@ export abstract class BitcoinWallet {
 
         return {
             psbt,
-            fee: coinselectResult.fee
+            fee: coinselectResult.fee,
+            inputAddressIndexes
         };
     }
 
