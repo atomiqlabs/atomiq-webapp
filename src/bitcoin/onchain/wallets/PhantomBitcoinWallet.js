@@ -69,7 +69,7 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         return Promise.resolve(isPhantomInstalled);
     }
     static async init(_data) {
-        if (_data?.accounts != null) {
+        if (_data?.accounts != null || _data?.account != null) {
             const data = _data;
             await new Promise(resolve => setTimeout(resolve, 750));
         }

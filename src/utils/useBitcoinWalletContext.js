@@ -74,7 +74,7 @@ export function useBitcoinWalletContext() {
         return setBitcoinWallet(wallet);
     }, []);
     const disconnect = useCallback((skipToggleAutoConnect) => {
-        if (!skipToggleAutoConnect && bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
+        if (skipToggleAutoConnect !== true && bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
             setAutoConnect(false);
         BitcoinWallet.clearState();
         setBitcoinWallet(null);

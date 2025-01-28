@@ -32,8 +32,8 @@ import {arrows_vertical} from 'react-icons-kit/ikons/arrows_vertical';
 import {ic_qr_code_scanner} from 'react-icons-kit/md/ic_qr_code_scanner';
 import {lock} from 'react-icons-kit/fa/lock';
 import {ic_account_balance_wallet} from 'react-icons-kit/md/ic_account_balance_wallet';
+import {ic_power_off_outline} from 'react-icons-kit/md/ic_power_off_outline';
 import {useExistingSwap} from "../utils/useExistingSwap";
-import * as BN from "bn.js";
 
 const RANDOM_BTC_ADDRESS = bitcoin.payments.p2wsh({
     hash: randomBytes(32),
@@ -476,7 +476,19 @@ export function SwapNew(props: {
                                 textStart={addressLoading ? (
                                     <Spinner size="sm" className="text-white"/>
                                 ) : null}
-                                textEnd={locked || webLnForOutput || btcWalletForOutput ? null : (
+                                textEnd={locked || webLnForOutput ? null : (btcWalletForOutput ? (
+                                    <OverlayTrigger
+                                        placement="top"
+                                        overlay={<Tooltip id="scan-qr-tooltip">Disconnect bitcoin wallet & use external wallet</Tooltip>}
+                                    >
+                                        <a href="#" style={{
+                                            marginTop: "-3px"
+                                        }} onClick={(e) => {
+                                            e.preventDefault();
+                                            disconnect();
+                                        }}><Icon size={24} icon={ic_power_off_outline}/></a>
+                                    </OverlayTrigger>
+                                ) : (
                                     <OverlayTrigger
                                         placement="top"
                                         overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
@@ -488,7 +500,7 @@ export function SwapNew(props: {
                                             setQrScanning(true);
                                         }}><Icon size={24} icon={ic_qr_code_scanner}/></a>
                                     </OverlayTrigger>
-                                )}
+                                ))}
                                 successFeedback={
                                     btcWalletForOutput ? "Address fetched from your " + bitcoinWallet.getName() + " wallet!" :
                                     webLnForOutput ? "Lightning invoice fetched from your WebLN lightning wallet!" : null

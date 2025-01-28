@@ -96,7 +96,7 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
     }
 
     static async init(_data?: any): Promise<PhantomBitcoinWallet> {
-        if(_data?.accounts!=null) {
+        if(_data?.accounts!=null || _data?.account!=null) {
             const data: {
                 account: PhantomBtcAccount
             } = _data;

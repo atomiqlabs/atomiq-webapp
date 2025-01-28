@@ -81,7 +81,7 @@ function ValidatedInput(props : {
     disabled?: boolean,
     validated?: string,
     readOnly?: boolean,
-    successFeedback?: string,
+    successFeedback?: string | JSX.Element,
     onCopy?: () => void
 }) {
 
