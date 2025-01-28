@@ -11,13 +11,27 @@ import {
 
 const bitcoinNetwork = FEConstants.chain==="DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 
-const ChainUtils = new MempoolApi(
+export const ChainUtils = new MempoolApi(
     FEConstants.chain==="DEVNET" ?
         "https://mempool.space/testnet/api/" :
         "https://mempool.space/api/"
 );
 
 const feeMultiplier = 1.25;
+
+export type BitcoinWalletUtxo = {
+    vout: number,
+    txId: string,
+    value: number,
+    type: CoinselectAddressTypes,
+    outputScript: Buffer,
+    address: string,
+    cpfp?: {
+        txVsize: number,
+        txEffectiveFeeRate: number
+    },
+    confirmed: boolean
+};
 
 export abstract class BitcoinWallet {
 
@@ -38,18 +52,7 @@ export abstract class BitcoinWallet {
     protected async _getUtxoPool(
         sendingAddress: string,
         sendingAddressType: CoinselectAddressTypes
-    ): Promise<{
-        vout: number,
-        txId: string,
-        value: number,
-        type: CoinselectAddressTypes,
-        outputScript: Buffer,
-        address: string,
-        cpfp?: {
-            txVsize: number,
-            txEffectiveFeeRate: number
-        }
-    }[]> {
+    ): Promise<BitcoinWalletUtxo[]> {
 
         const utxos = await ChainUtils.getAddressUTXOs(sendingAddress);
 
@@ -57,18 +60,7 @@ export abstract class BitcoinWallet {
 
         const outputScript = bitcoin.address.toOutputScript(sendingAddress, bitcoinNetwork);
 
-        const utxoPool: {
-            vout: number,
-            txId: string,
-            value: number,
-            type: CoinselectAddressTypes,
-            outputScript: Buffer,
-            address: string,
-            cpfp?: {
-                txVsize: number,
-                txEffectiveFeeRate: number
-            }
-        }[] = [];
+        const utxoPool: BitcoinWalletUtxo[] = [];
 
         for(let utxo of utxos) {
             const value = utxo.value.toNumber();
@@ -86,7 +78,8 @@ export abstract class BitcoinWallet {
                         txVsize: result.adjustedVsize,
                         txEffectiveFeeRate: result.effectiveFeePerVsize
                     }
-                }) : null
+                }) : null,
+                confirmed: utxo.status.confirmed
             })
         }
 
@@ -96,27 +89,21 @@ export abstract class BitcoinWallet {
     }
 
     protected async _getPsbt(
-        sendingPubkey: string,
-        sendingAddress: string,
-        sendingAddressType: CoinselectAddressTypes,
+        sendingAccounts: {
+            pubkey: string,
+            address: string,
+            addressType: CoinselectAddressTypes,
+        }[],
         address: string,
         amount: number,
         feeRate?: number
     ): Promise<{psbt: bitcoin.Psbt, fee: number}> {
         if(feeRate==null) feeRate = Math.floor((await ChainUtils.getFees()).fastestFee*feeMultiplier);
 
-        const utxoPool: {
-            vout: number,
-            txId: string,
-            value: number,
-            type: CoinselectAddressTypes,
-            outputScript: Buffer,
-            address: string,
-            cpfp?: {
-                txVsize: number,
-                txEffectiveFeeRate: number
-            }
-        }[] = await this._getUtxoPool(sendingAddress, sendingAddressType);
+        const utxoPool: BitcoinWalletUtxo[] = (await Promise.all(sendingAccounts.map(acc => this._getUtxoPool(acc.address, acc.addressType)))).flat();
+
+        const accountPubkeys = {};
+        sendingAccounts.forEach(acc => accountPubkeys[acc.address] = acc.pubkey);
 
         const targets = [
             {
@@ -126,7 +113,7 @@ export abstract class BitcoinWallet {
             }
         ];
 
-        let coinselectResult = coinSelect(utxoPool, targets, feeRate, sendingAddressType);
+        let coinselectResult = coinSelect(utxoPool, targets, feeRate, sendingAccounts[0].addressType);
 
         if(coinselectResult.inputs==null || coinselectResult.outputs==null) {
             return {
@@ -151,7 +138,7 @@ export abstract class BitcoinWallet {
                             script: input.outputScript,
                             value: input.value
                         },
-                        tapInternalKey: toXOnly(Buffer.from(sendingPubkey, "hex"))
+                        tapInternalKey: toXOnly(Buffer.from(accountPubkeys[input.address], "hex"))
                     };
                 case "p2wpkh":
                     return {
@@ -171,7 +158,7 @@ export abstract class BitcoinWallet {
                             script: input.outputScript,
                             value: input.value
                         },
-                        redeemScript: bitcoin.payments.p2wpkh({pubkey: Buffer.from(sendingPubkey, "hex"), network: bitcoinNetwork}).output,
+                        redeemScript: bitcoin.payments.p2wpkh({pubkey: Buffer.from(accountPubkeys[input.address], "hex"), network: bitcoinNetwork}).output,
                         sighashType: 0x01
                     };
                 case "p2pkh":
@@ -191,7 +178,7 @@ export abstract class BitcoinWallet {
 
         if(coinselectResult.outputs.length>1) {
             psbt.addOutput({
-                script: bitcoin.address.toOutputScript(sendingAddress, bitcoinNetwork),
+                script: bitcoin.address.toOutputScript(sendingAccounts[0].address, bitcoinNetwork),
                 value: coinselectResult.outputs[1].value
             });
         }
@@ -203,8 +190,10 @@ export abstract class BitcoinWallet {
     }
 
     protected async _getSpendableBalance(
-        sendingAddress: string,
-        sendingAddressType: CoinselectAddressTypes
+        sendingAccounts: {
+            address: string,
+            addressType: CoinselectAddressTypes,
+        }[],
     ): Promise<{
         balance: BN,
         feeRate: number,
@@ -212,19 +201,7 @@ export abstract class BitcoinWallet {
     }> {
         const feeRate = await ChainUtils.getFees();
 
-        const utxoPool: {
-            vout: number,
-            txId: string,
-            value: number,
-            type: CoinselectAddressTypes,
-            outputScript: Buffer,
-            address: string,
-            cpfp?: {
-                txVsize: number,
-                txEffectiveFeeRate: number
-            }
-        }[] = await this._getUtxoPool(sendingAddress, sendingAddressType);
-
+        const utxoPool: BitcoinWalletUtxo[] = (await Promise.all(sendingAccounts.map(acc => this._getUtxoPool(acc.address, acc.addressType)))).flat();
 
         console.log("Utxo pool: ", utxoPool);
 

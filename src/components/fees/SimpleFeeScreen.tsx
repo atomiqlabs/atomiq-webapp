@@ -271,8 +271,8 @@ export function SimpleFeeSummaryScreen(props: {
 
             fees.push(usdPricePromise.then(usdPrice => networkFee.usdValue(abortController.signal, usdPrice)).then(networkFeeUsd => {
                 return {
-                    text: "Lightning network fee",
-                    description: props.swap instanceof ToBTCSwap ?
+                    text: props.swap.getType()===SwapType.TO_BTC ? "Bitcoin network fee" : "Lightning network fee",
+                    description: props.swap.getType()===SwapType.TO_BTC ?
                         "Bitcoin transaction fee paid to bitcoin miners" :
                         "Lightning network fee paid for routing the payment through the network",
                     fee: networkFee,

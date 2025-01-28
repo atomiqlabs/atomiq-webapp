@@ -188,7 +188,7 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         feeRate: number,
         totalFee: number
     }> {
-        return this._getSpendableBalance(this.account.address, this.addressType);
+        return this._getSpendableBalance(this.toBitcoinWalletAccounts());
     }
 
     //Workaround for undefined BigInt() convertor in es2020
@@ -203,14 +203,20 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         return sum;
     }
 
+    private toBitcoinWalletAccounts(): {pubkey: string, address: string, addressType: CoinselectAddressTypes}[] {
+        return [{
+            pubkey: this.account.publicKey, address: this.account.address, addressType: this.addressType
+        }];
+    }
+
     async getTransactionFee(address: string, amount: BN, feeRate?: number): Promise<number> {
-        const {psbt, fee} = await super._getPsbt(this.account.publicKey, this.account.address, this.addressType, address, amount.toNumber(), feeRate);
+        const {psbt, fee} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, amount.toNumber(), feeRate);
         if(psbt==null) return null;
         return fee;
     }
 
     async sendTransaction(address: string, amount: BN, feeRate?: number): Promise<string> {
-        const {psbt} = await super._getPsbt(this.account.publicKey, this.account.address, this.addressType, address, amount.toNumber(), feeRate);
+        const {psbt} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, amount.toNumber(), feeRate);
 
         if(psbt==null) {
             throw new Error("Not enough balance!");

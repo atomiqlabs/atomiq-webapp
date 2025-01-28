@@ -27,7 +27,7 @@ export function useBitcoinWalletContext(): {
         console.log("useBitcoinWalletContext(): Solana wallet changed: ", wallet.wallet?.adapter?.name);
         if(prevConnectedWalletRef.current!=null && wallet.wallet==null) {
             setAutoConnect(true);
-            if(bitcoinWalletRef.current!=null && bitcoinWalletRef.current.wasAutomaticallyInitiated) disconnect();
+            if(bitcoinWalletRef.current!=null && bitcoinWalletRef.current.wasAutomaticallyInitiated) disconnect(true);
         }
         prevConnectedWalletRef.current = wallet.wallet?.adapter?.name;
         if(wallet.wallet==null) return;
@@ -79,8 +79,8 @@ export function useBitcoinWalletContext(): {
         return setBitcoinWallet(wallet);
     }, []);
 
-    const disconnect: () => void = useCallback(() => {
-        if(bitcoinWalletRef.current!=null && bitcoinWalletRef.current.wasAutomaticallyInitiated) setAutoConnect(false);
+    const disconnect: (skipToggleAutoConnect?: boolean) => void = useCallback((skipToggleAutoConnect?: boolean) => {
+        if(!skipToggleAutoConnect && bitcoinWalletRef.current!=null && bitcoinWalletRef.current.wasAutomaticallyInitiated) setAutoConnect(false);
         BitcoinWallet.clearState();
         setBitcoinWallet(null);
     }, []);

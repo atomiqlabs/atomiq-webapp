@@ -6,7 +6,7 @@ import { MempoolApi } from "@atomiqlabs/sdk";
 import * as randomBytes from "randombytes";
 import { toXOnly, } from 'bitcoinjs-lib/src/psbt/bip371';
 const bitcoinNetwork = FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
-const ChainUtils = new MempoolApi(FEConstants.chain === "DEVNET" ?
+export const ChainUtils = new MempoolApi(FEConstants.chain === "DEVNET" ?
     "https://mempool.space/testnet/api/" :
     "https://mempool.space/api/");
 const feeMultiplier = 1.25;
@@ -42,16 +42,19 @@ export class BitcoinWallet {
                         txVsize: result.adjustedVsize,
                         txEffectiveFeeRate: result.effectiveFeePerVsize
                     };
-                }) : null
+                }) : null,
+                confirmed: utxo.status.confirmed
             });
         }
         console.log("Total spendable value: " + totalSpendable + " num utxos: " + utxoPool.length);
         return utxoPool;
     }
-    async _getPsbt(sendingPubkey, sendingAddress, sendingAddressType, address, amount, feeRate) {
+    async _getPsbt(sendingAccounts, address, amount, feeRate) {
         if (feeRate == null)
             feeRate = Math.floor((await ChainUtils.getFees()).fastestFee * feeMultiplier);
-        const utxoPool = await this._getUtxoPool(sendingAddress, sendingAddressType);
+        const utxoPool = (await Promise.all(sendingAccounts.map(acc => this._getUtxoPool(acc.address, acc.addressType)))).flat();
+        const accountPubkeys = {};
+        sendingAccounts.forEach(acc => accountPubkeys[acc.address] = acc.pubkey);
         const targets = [
             {
                 address: address,
@@ -59,7 +62,7 @@ export class BitcoinWallet {
                 script: bitcoin.address.toOutputScript(address, bitcoinNetwork)
             }
         ];
-        let coinselectResult = coinSelect(utxoPool, targets, feeRate, sendingAddressType);
+        let coinselectResult = coinSelect(utxoPool, targets, feeRate, sendingAccounts[0].addressType);
         if (coinselectResult.inputs == null || coinselectResult.outputs == null) {
             return {
                 psbt: null,
@@ -80,7 +83,7 @@ export class BitcoinWallet {
                             script: input.outputScript,
                             value: input.value
                         },
-                        tapInternalKey: toXOnly(Buffer.from(sendingPubkey, "hex"))
+                        tapInternalKey: toXOnly(Buffer.from(accountPubkeys[input.address], "hex"))
                     };
                 case "p2wpkh":
                     return {
@@ -100,7 +103,7 @@ export class BitcoinWallet {
                             script: input.outputScript,
                             value: input.value
                         },
-                        redeemScript: bitcoin.payments.p2wpkh({ pubkey: Buffer.from(sendingPubkey, "hex"), network: bitcoinNetwork }).output,
+                        redeemScript: bitcoin.payments.p2wpkh({ pubkey: Buffer.from(accountPubkeys[input.address], "hex"), network: bitcoinNetwork }).output,
                         sighashType: 0x01
                     };
                 case "p2pkh":
@@ -118,7 +121,7 @@ export class BitcoinWallet {
         });
         if (coinselectResult.outputs.length > 1) {
             psbt.addOutput({
-                script: bitcoin.address.toOutputScript(sendingAddress, bitcoinNetwork),
+                script: bitcoin.address.toOutputScript(sendingAccounts[0].address, bitcoinNetwork),
                 value: coinselectResult.outputs[1].value
             });
         }
@@ -127,9 +130,9 @@ export class BitcoinWallet {
             fee: coinselectResult.fee
         };
     }
-    async _getSpendableBalance(sendingAddress, sendingAddressType) {
+    async _getSpendableBalance(sendingAccounts) {
         const feeRate = await ChainUtils.getFees();
-        const utxoPool = await this._getUtxoPool(sendingAddress, sendingAddressType);
+        const utxoPool = (await Promise.all(sendingAccounts.map(acc => this._getUtxoPool(acc.address, acc.addressType)))).flat();
         console.log("Utxo pool: ", utxoPool);
         const target = bitcoin.payments.p2wsh({
             hash: randomBytes(32),

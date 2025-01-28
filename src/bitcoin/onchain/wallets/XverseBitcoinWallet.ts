@@ -1,5 +1,4 @@
 import {SatsConnectBitcoinWallet} from "./SatsConnectBitcoinWallet";
-import {CtrlBitcoinWallet} from "./CtrlBitcoinWallet";
 import {MagicEdenBitcoinWallet} from "./MagicEdenBitcoinWallet";
 
 export class XverseBitcoinWallet extends SatsConnectBitcoinWallet {
@@ -11,7 +10,6 @@ export class XverseBitcoinWallet extends SatsConnectBitcoinWallet {
         if(await SatsConnectBitcoinWallet.isInstalled()) {
             if(
                 Object.keys(window.BitcoinProvider as any).find(key => key.startsWith("is")) == null &&
-                !CtrlBitcoinWallet.checkCorrectWallet() &&
                 !MagicEdenBitcoinWallet.checkCorrectWallet()
             ) return true;
         }

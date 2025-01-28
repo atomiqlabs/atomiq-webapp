@@ -1,5 +1,5 @@
 import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
-import { SwapType, ToBTCSwap, Tokens, toTokenAmount } from "@atomiqlabs/sdk";
+import { SwapType, Tokens, toTokenAmount } from "@atomiqlabs/sdk";
 import { toHumanReadableString } from "../../utils/Currencies";
 import * as BN from "bn.js";
 import { BitcoinWalletContext } from "../../context/BitcoinWalletContext";
@@ -142,8 +142,8 @@ export function SimpleFeeSummaryScreen(props) {
             const networkFee = props.swap.getNetworkFee();
             fees.push(usdPricePromise.then(usdPrice => networkFee.usdValue(abortController.signal, usdPrice)).then(networkFeeUsd => {
                 return {
-                    text: "Lightning network fee",
-                    description: props.swap instanceof ToBTCSwap ?
+                    text: props.swap.getType() === SwapType.TO_BTC ? "Bitcoin network fee" : "Lightning network fee",
+                    description: props.swap.getType() === SwapType.TO_BTC ?
                         "Bitcoin transaction fee paid to bitcoin miners" :
                         "Lightning network fee paid for routing the payment through the network",
                     fee: networkFee,

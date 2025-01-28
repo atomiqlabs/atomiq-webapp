@@ -19,7 +19,7 @@ export function useBitcoinWalletContext() {
         if (prevConnectedWalletRef.current != null && wallet.wallet == null) {
             setAutoConnect(true);
             if (bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
-                disconnect();
+                disconnect(true);
         }
         prevConnectedWalletRef.current = wallet.wallet?.adapter?.name;
         if (wallet.wallet == null)
@@ -73,8 +73,8 @@ export function useBitcoinWalletContext() {
         const wallet = await bitcoinWalletType.use();
         return setBitcoinWallet(wallet);
     }, []);
-    const disconnect = useCallback(() => {
-        if (bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
+    const disconnect = useCallback((skipToggleAutoConnect) => {
+        if (!skipToggleAutoConnect && bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
             setAutoConnect(false);
         BitcoinWallet.clearState();
         setBitcoinWallet(null);
