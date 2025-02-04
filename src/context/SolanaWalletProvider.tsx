@@ -32,10 +32,11 @@ const fetchWithTimeout = async (input: RequestInfo | URL, init: RequestInit) => 
     try {
         return await fetch(input, init)
     } catch(e) {
+        console.error("SolanaWalletProvider: fetchWithTimeout("+typeof(e)+"): ", e);
         if(e.name==="AbortError" && (originalSignal==null || !originalSignal.aborted) && timedOut) {
             throw new Error("Network request timed out")
         } else {
-            throw e;
+            throw e instanceof Error ? e : new Error(e);
         }
     }
 };
