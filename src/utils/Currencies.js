@@ -2,7 +2,7 @@ import * as BN from "bn.js";
 import BigNumber from "bignumber.js";
 import { fromDecimal, toDecimal, Tokens } from "@atomiqlabs/sdk";
 export const TokenIcons = {
-    WBTC: null,
+    WBTC: "/icons/crypto/WBTC.png",
     USDC: "/icons/crypto/USDC.svg",
     USDT: null,
     SOL: "/icons/crypto/SOL.svg",
@@ -17,6 +17,7 @@ export const bitcoinTokenArray = [
 export const smartChainTokenArray = [
     Tokens.SOLANA.SOL,
     Tokens.SOLANA.USDC,
+    Tokens.SOLANA.WBTC,
     Tokens.SOLANA.BONK
 ];
 // for(let chainId in Tokens) {

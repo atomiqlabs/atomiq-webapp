@@ -10,7 +10,7 @@ type TokenTickers = {
 export const TokenIcons: {
     [C in TokenTickers]: string
 } = {
-    WBTC: null,
+    WBTC: "/icons/crypto/WBTC.png",
     USDC: "/icons/crypto/USDC.svg",
     USDT: null,
     SOL: "/icons/crypto/SOL.svg",
@@ -27,6 +27,7 @@ export const bitcoinTokenArray = [
 export const smartChainTokenArray: SCToken[] = [
     Tokens.SOLANA.SOL,
     Tokens.SOLANA.USDC,
+    Tokens.SOLANA.WBTC,
     Tokens.SOLANA.BONK
 ];
 // for(let chainId in Tokens) {
