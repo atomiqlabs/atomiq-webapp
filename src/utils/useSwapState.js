@@ -57,7 +57,7 @@ export function useSwapState(quote) {
             checkExpiry(state);
             setState(state);
             setInitiated(quote.isInitiated());
-            console.log("useSwapState(" + quote.getPaymentHashString() + "): State changed to: " + getStateToString(quote.getType(), state), quote);
+            console.log("useSwapState(" + quote.getIdentifierHashString() + "): State changed to: " + getStateToString(quote.getType(), state), quote);
             if (quote.isFinished()) {
                 setInitialQuoteTimeout(null);
                 setQuoteTimeRemaining(null);

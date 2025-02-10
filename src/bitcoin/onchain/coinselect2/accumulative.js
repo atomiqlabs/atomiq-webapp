@@ -10,6 +10,7 @@ export function accumulative(utxos, outputs, feeRate, type) {
     let inAccum = 0;
     const inputs = [];
     const outAccum = utils.sumOrNaN(outputs);
+    console.log("CoinSelect: accumulative(): total output: ", outAccum);
     for (let i = 0; i < utxos.length; ++i) {
         const utxo = utxos[i];
         const utxoBytes = utils.inputBytes(utxo);
@@ -20,6 +21,7 @@ export function accumulative(utxos, outputs, feeRate, type) {
             cpfpFee = utxo.cpfp.txVsize * (feeRate - utxo.cpfp.txEffectiveFeeRate);
         // skip detrimental input
         if (utxoFee + cpfpFee > utxo.value) {
+            console.log("CoinSelect: accumulative(" + i + "): Skipping detrimental output, cpfpFee: " + cpfpFee + " utxoFee: " + utxoFee + " value: " + utxo.value);
             if (i === utxos.length - 1)
                 return { fee: (feeRate * (bytesAccum + utxoBytes)) + cpfpAddFee + cpfpFee };
             continue;
@@ -29,6 +31,9 @@ export function accumulative(utxos, outputs, feeRate, type) {
         cpfpAddFee += cpfpFee;
         inputs.push(utxo);
         fee = (feeRate * bytesAccum) + cpfpAddFee;
+        console.log("CoinSelect: accumulative(" + i + "): total fee: ", fee);
+        console.log("CoinSelect: accumulative(" + i + "): input value: ", inAccum);
+        console.log("CoinSelect: accumulative(" + i + "): cpfpAddFee: ", cpfpAddFee);
         // go again?
         if (inAccum < outAccum + fee)
             continue;

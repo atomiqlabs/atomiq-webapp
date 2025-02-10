@@ -53,6 +53,7 @@ export class BitcoinWallet {
         if (feeRate == null)
             feeRate = Math.floor((await ChainUtils.getFees()).fastestFee * feeMultiplier);
         const utxoPool = (await Promise.all(sendingAccounts.map(acc => this._getUtxoPool(acc.address, acc.addressType)))).flat();
+        console.log("Utxo pool: ", utxoPool);
         const accountPubkeys = {};
         sendingAccounts.forEach(acc => accountPubkeys[acc.address] = acc.pubkey);
         const targets = [
@@ -62,7 +63,9 @@ export class BitcoinWallet {
                 script: bitcoin.address.toOutputScript(address, bitcoinNetwork)
             }
         ];
+        console.log("Coinselect targets: ", targets);
         let coinselectResult = coinSelect(utxoPool, targets, feeRate, sendingAccounts[0].addressType);
+        console.log("Coinselect result: ", coinselectResult);
         if (coinselectResult.inputs == null || coinselectResult.outputs == null) {
             return {
                 psbt: null,

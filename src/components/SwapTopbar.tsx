@@ -37,9 +37,9 @@ export function SwapTopbar(props: {
         if(swapper==null) return;
         const listener = (swap: ISwap) => {
             const claimableOrRefundable = swap.isActionable();
-            console.log("SwapTopbar: useEffect(swapper): Swap changed id: "+swap.getPaymentHashString()+" claimableOrRefundable: "+claimableOrRefundable);
+            console.log("SwapTopbar: useEffect(swapper): Swap changed id: "+swap.getIdentifierHashString()+" claimableOrRefundable: "+claimableOrRefundable);
             setActionableSwaps((swaps) => {
-                const id = swap.getPaymentHashString();
+                const id = swap.getIdentifierHashString();
                 if(!swaps.has(id)) {
                     if(claimableOrRefundable) {
                         const newSet = new Set(swaps);
@@ -59,7 +59,7 @@ export function SwapTopbar(props: {
             });
         };
 
-        swapper.getActionableSwaps().then(swaps => setActionableSwaps(new Set(swaps.map(swap => swap.getPaymentHashString()))));
+        swapper.getActionableSwaps().then(swaps => setActionableSwaps(new Set(swaps.map(swap => swap.getIdentifierHashString()))));
         swapper.on("swapState", listener);
 
         return () => {

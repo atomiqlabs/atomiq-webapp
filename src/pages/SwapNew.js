@@ -228,7 +228,7 @@ export function SwapNew(props) {
         if (existingSwap == null) {
             if (val) {
                 setUnlocked(false);
-                navigate("/?swapId=" + quote.getPaymentHash().toString("hex"));
+                navigate("/?swapId=" + quote.getIdentifierHashString());
             }
             else {
                 navigate("/");

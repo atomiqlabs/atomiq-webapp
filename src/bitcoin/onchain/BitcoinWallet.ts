@@ -102,6 +102,8 @@ export abstract class BitcoinWallet {
 
         const utxoPool: BitcoinWalletUtxo[] = (await Promise.all(sendingAccounts.map(acc => this._getUtxoPool(acc.address, acc.addressType)))).flat();
 
+        console.log("Utxo pool: ", utxoPool);
+
         const accountPubkeys = {};
         sendingAccounts.forEach(acc => accountPubkeys[acc.address] = acc.pubkey);
 
@@ -112,8 +114,10 @@ export abstract class BitcoinWallet {
                 script: bitcoin.address.toOutputScript(address, bitcoinNetwork)
             }
         ];
+        console.log("Coinselect targets: ", targets);
 
         let coinselectResult = coinSelect(utxoPool, targets, feeRate, sendingAccounts[0].addressType);
+        console.log("Coinselect result: ", coinselectResult);
 
         if(coinselectResult.inputs==null || coinselectResult.outputs==null) {
             return {
