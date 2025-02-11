@@ -41,7 +41,7 @@ export function useWalletBalance(
         if(currency==null) {
             setMaxSpendable(null);
         }
-    }, [currency]);
+    }, [currency?.chain, currency?.ticker, (currency as any)?.chainId]);
 
     useEffect(() => {
         if(currency==null || !isBtcToken(currency)) return;
@@ -73,7 +73,7 @@ export function useWalletBalance(
             clearInterval(interval);
             canceled = true;
         }
-    }, [currency, bitcoinWallet]);
+    }, [bitcoinWallet, currency?.chain, currency?.ticker, (currency as any)?.chainId]);
 
     useEffect(() => {
         if(currency==null || !isSCToken(currency)) return;
@@ -104,7 +104,7 @@ export function useWalletBalance(
             clearInterval(interval);
             canceled = true;
         }
-    }, [swapper, currency, signer]);
+    }, [swapper, signer, currency?.chain, currency?.ticker, (currency as any)?.chainId]);
 
     return maxSpendable;
 }
