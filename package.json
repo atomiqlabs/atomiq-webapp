@@ -8,6 +8,7 @@
     "@solana/wallet-adapter-react": "^0.15.30",
     "@solana/wallet-adapter-react-ui": "^0.9.29",
     "@solana/wallet-adapter-wallets": "^0.19.16",
+    "@starknet-io/get-starknet": "4.0.5",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",

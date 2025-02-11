@@ -1,24 +1,28 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
 import { Alert, Button } from "react-bootstrap";
-import { useMemo } from "react";
+import { useContext, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { SwapDirection, Tokens } from "@atomiqlabs/sdk";
+import { SwapDirection } from "@atomiqlabs/sdk";
 import * as BN from "bn.js";
 import { toHumanReadableString } from "../utils/Currencies";
+import { SwapsContext } from "../context/SwapsContext";
 const swapMinimum = new BN(1000000);
 export function SwapForGasAlert(props) {
     const location = useLocation();
     const navigate = useNavigate();
+    const { swapper } = useContext(SwapsContext);
     const feeNeeded = useMemo(() => {
-        if (props.notEnoughForGas == null)
+        if (props.notEnoughForGas == null || props.quote == null || swapper == null)
             return null;
+        const nativeToken = swapper.getNativeToken(props.quote.chainIdentifier);
         const amount = BN.max(props.notEnoughForGas, swapMinimum);
         return {
             rawAmount: amount,
-            amount: toHumanReadableString(amount, Tokens.SOLANA.SOL)
+            amount: toHumanReadableString(amount, nativeToken),
+            nativeToken
         };
-    }, [props.notEnoughForGas]);
-    return (_jsxs(Alert, { className: "text-center mb-3 d-flex align-items-center flex-column", show: !!props.notEnoughForGas, variant: "danger", closeVariant: "white", children: [_jsx("strong", { children: "Not enough SOL for fees" }), _jsxs("label", { children: ["You need at least ", feeNeeded?.amount, " more SOL to pay for fees and refundable deposit! You can use ", _jsx("b", { children: "Bitcoin Lightning" }), " to swap for gas first & then continue swapping here!"] }), _jsx(Button, { className: "mt-2", variant: "secondary", onClick: () => {
+    }, [props.notEnoughForGas, props.quote, swapper]);
+    return (_jsxs(Alert, { className: "text-center mb-3 d-flex align-items-center flex-column", show: !!props.notEnoughForGas, variant: "danger", closeVariant: "white", children: [_jsxs("strong", { children: ["Not enough ", feeNeeded?.nativeToken?.ticker, " for fees"] }), _jsxs("label", { children: ["You need at least ", feeNeeded?.amount, " more ", feeNeeded?.nativeToken?.ticker, " to pay for fees and refundable deposit! You can use ", _jsx("b", { children: "Bitcoin Lightning" }), " to swap for gas first & then continue swapping here!"] }), _jsx(Button, { className: "mt-2", variant: "secondary", onClick: () => {
                     const params = new URLSearchParams();
                     params.set("swapType", props.quote.getType().toString());
                     const direction = props.quote.getDirection();

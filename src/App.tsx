@@ -1,6 +1,6 @@
 import './App.css';
 import * as React from "react";
-import {useEffect, useRef} from "react";
+import {useContext, useEffect, useRef} from "react";
 import SolanaWalletProvider from "./context/SolanaWalletProvider";
 import {QuickScan} from "./pages/quickscan/QuickScan";
 import {QuickScanExecute} from "./pages/quickscan/QuickScanExecute";
@@ -16,7 +16,7 @@ import {
     MultichainSwapper,
     SCToken,
     SolanaFees,
-    SolanaSigner
+    SolanaSigner, StarknetSigner
 } from "@atomiqlabs/sdk";
 import {History} from "./pages/History";
 import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
@@ -37,7 +37,6 @@ import {
 import {FAQ} from "./pages/FAQ";
 import {About} from "./pages/About";
 import {Map} from "./pages/Map";
-import {map} from 'react-icons-kit/fa/map';
 import {info} from 'react-icons-kit/fa/info';
 import {question} from 'react-icons-kit/fa/question';
 import {exchange} from 'react-icons-kit/fa/exchange';
@@ -49,7 +48,6 @@ import {SwapForGas} from "./pages/SwapForGas";
 import {SwapExplorer} from "./pages/SwapExplorer";
 import {Affiliate} from "./pages/Affiliate";
 import {gift} from 'react-icons-kit/fa/gift';
-import {BitcoinWallet} from './bitcoin/onchain/BitcoinWallet';
 import {BitcoinWalletContext} from './context/BitcoinWalletContext';
 import {WebLNProvider} from "webln";
 import {WebLNContext} from './context/WebLNContext';
@@ -57,8 +55,9 @@ import {heart} from 'react-icons-kit/fa/heart';
 import {SwapNew} from "./pages/SwapNew";
 import {useAnchorNavigate} from "./utils/useAnchorNavigate";
 import {ErrorAlert} from "./components/ErrorAlert";
-import {getBitcoinWalletAsPartOfMultichainWallet} from "./bitcoin/onchain/BitcoinWalletUtils";
 import {useBitcoinWalletContext} from "./utils/useBitcoinWalletContext";
+import {StarknetWalletContext} from "./context/StarknetWalletContext";
+import {useStarknetWalletContext} from "./utils/useStarknetWalletContext";
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -82,6 +81,7 @@ function WrappedApp() {
             random: boolean
         }
     }>({});
+
     const solanaWallet = useAnchorWallet();
     useEffect(() => {
         if(swapper==null) return;
@@ -89,6 +89,14 @@ function WrappedApp() {
             return {...prevValue,SOLANA: {signer: solanaWallet==null ? swapper.randomSigner("SOLANA") : new SolanaSigner(solanaWallet), random: solanaWallet==null}};
         });
     }, [solanaWallet, swapper]);
+
+    const {starknetWallet} = useContext(StarknetWalletContext);
+    useEffect(() => {
+        if(swapper==null) return;
+        setSigners((prevValue) => {
+            return {...prevValue,STARKNET: {signer: starknetWallet==null ? swapper.randomSigner("STARKNET") : new StarknetSigner(starknetWallet), random: starknetWallet==null}};
+        });
+    }, [starknetWallet, swapper]);
 
     // @ts-ignore
     const pathName = window.location.pathname.split("?")[0];
@@ -111,8 +119,6 @@ function WrappedApp() {
             const useLp = searchParams.get("UNSAFE_LP_URL");
             console.log("init start");
 
-            // const connection = new Connection(FEConstants.rpcUrl);
-
             const solanaFees = new SolanaFees(connection as any, 1000000, 2, 100, "auto", "high", () => new BN(50000)/*, {
                 address: jitoPubkey,
                 endpoint: jitoEndpoint
@@ -126,12 +132,16 @@ function WrappedApp() {
                             transactionResendInterval: 3000
                         },
                         fees: solanaFees
+                    },
+                    STARKNET: {
+                        rpcUrl: FEConstants.starknetRpc,
+                        chainId: FEConstants.starknetChainId
                     }
                 },
                 intermediaryUrl: useLp,
                 getRequestTimeout: 15000,
                 postRequestTimeout: 30000,
-                bitcoinNetwork: FEConstants.chain==="DEVNET" ? BitcoinNetwork.TESTNET : BitcoinNetwork.MAINNET,
+                bitcoinNetwork: FEConstants.bitcoinNetwork,
                 pricingFeeDifferencePPM: new BN(50000),
                 defaultAdditionalParameters: {
                     affiliate: affiliateLink
@@ -210,7 +220,7 @@ function WrappedApp() {
                             <div className="d-flex flex-row" style={{fontSize: "1.5rem"}}>
                                 <img src="/icons/atomiq-flask.png" className="logo-img"/>
                                 <b>atomiq</b><span style={{fontWeight: 300}}>.exchange</span>
-                                {(FEConstants.chain as string)==="DEVNET" ? <Badge className="ms-2 d-flex align-items-center" bg="danger">DEVNET</Badge> : ""}
+                                {FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? <Badge className="ms-2 d-flex align-items-center" bg="danger">DEVNET</Badge> : ""}
                             </div>
                         </Navbar.Brand>
 
@@ -399,13 +409,16 @@ function WrappedApp() {
 }
 
 function App() {
+    const context = useStarknetWalletContext();
     return (
         <div className="App d-flex flex-column">
-            <SolanaWalletProvider>
-                <BrowserRouter>
-                    <WrappedApp/>
-                </BrowserRouter>
-            </SolanaWalletProvider>
+            <StarknetWalletContext.Provider value={context}>
+                <SolanaWalletProvider>
+                    <BrowserRouter>
+                        <WrappedApp/>
+                    </BrowserRouter>
+                </SolanaWalletProvider>
+            </StarknetWalletContext.Provider>
         </div>
     );
 }

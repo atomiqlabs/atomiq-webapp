@@ -2,8 +2,9 @@ import { AddressPurpose, BitcoinNetworkType, getCapabilities, getAddress, signTr
 import { BitcoinWallet } from "../BitcoinWallet";
 import { FEConstants } from "../../../FEConstants";
 import * as bitcoin from "bitcoinjs-lib";
-const network = FEConstants.chain === "DEVNET" ? BitcoinNetworkType.Testnet : BitcoinNetworkType.Mainnet;
-const bitcoinNetwork = FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
+import { BitcoinNetwork } from "@atomiqlabs/sdk";
+const network = FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? BitcoinNetworkType.Testnet : BitcoinNetworkType.Mainnet;
+const bitcoinNetwork = FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 function identifyAddressType(address) {
     const outputScript = bitcoin.address.toOutputScript(address, bitcoinNetwork);
     try {

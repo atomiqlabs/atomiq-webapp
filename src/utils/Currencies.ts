@@ -16,7 +16,9 @@ export const TokenIcons: {
     SOL: "/icons/crypto/SOL.svg",
     BONK: "/icons/crypto/BONK.png",
     BTC: "/icons/crypto/BTC.svg",
-    BTCLN: "/icons/crypto/BTC.svg"
+    BTCLN: "/icons/crypto/BTC.svg",
+    ETH: "",
+    STRK: ""
 };
 
 export const bitcoinTokenArray = [
@@ -28,7 +30,9 @@ export const smartChainTokenArray: SCToken[] = [
     Tokens.SOLANA.SOL,
     Tokens.SOLANA.USDC,
     Tokens.SOLANA.WBTC,
-    Tokens.SOLANA.BONK
+    Tokens.SOLANA.BONK,
+    Tokens.STARKNET.ETH,
+    Tokens.STARKNET.STRK
 ];
 // for(let chainId in Tokens) {
 //     if(chainId==="BITCOIN") continue;

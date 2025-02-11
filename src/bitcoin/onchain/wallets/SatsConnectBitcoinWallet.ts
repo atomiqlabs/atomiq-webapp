@@ -12,9 +12,10 @@ import {BitcoinWallet} from "../BitcoinWallet";
 import {FEConstants} from "../../../FEConstants";
 import {CoinselectAddressTypes} from "../coinselect2/utils";
 import * as bitcoin from "bitcoinjs-lib";
+import {BitcoinNetwork} from "@atomiqlabs/sdk";
 
-const network = FEConstants.chain==="DEVNET" ? BitcoinNetworkType.Testnet : BitcoinNetworkType.Mainnet;
-const bitcoinNetwork = FEConstants.chain==="DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
+const network = FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? BitcoinNetworkType.Testnet : BitcoinNetworkType.Mainnet;
+const bitcoinNetwork = FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 
 function identifyAddressType(address: string): CoinselectAddressTypes {
     const outputScript = bitcoin.address.toOutputScript(address, bitcoinNetwork);

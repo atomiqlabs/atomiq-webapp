@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { isBtcToken, isSCToken, SwapType, Tokens } from "@atomiqlabs/sdk";
+import { BitcoinNetwork, isBtcToken, isSCToken, SwapType, Tokens } from "@atomiqlabs/sdk";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SwapsContext } from "../context/SwapsContext";
 import { useAddressData } from "../utils/useAddressData";
@@ -35,7 +35,7 @@ import { ic_power_off_outline } from 'react-icons-kit/md/ic_power_off_outline';
 import { useExistingSwap } from "../utils/useExistingSwap";
 const RANDOM_BTC_ADDRESS = bitcoin.payments.p2wsh({
     hash: randomBytes(32),
-    network: FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
+    network: FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
 }).address;
 export function SwapNew(props) {
     const navigate = useNavigate();

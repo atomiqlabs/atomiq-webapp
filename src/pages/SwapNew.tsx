@@ -1,4 +1,14 @@
-import {isBtcToken, isSCToken, SCToken, SwapType, ToBTCLNSwap, ToBTCSwap, Token, Tokens} from "@atomiqlabs/sdk";
+import {
+    BitcoinNetwork,
+    isBtcToken,
+    isSCToken,
+    SCToken,
+    SwapType,
+    ToBTCLNSwap,
+    ToBTCSwap,
+    Token,
+    Tokens
+} from "@atomiqlabs/sdk";
 import * as React from "react";
 import {useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {SwapsContext} from "../context/SwapsContext";
@@ -37,7 +47,7 @@ import {useExistingSwap} from "../utils/useExistingSwap";
 
 const RANDOM_BTC_ADDRESS = bitcoin.payments.p2wsh({
     hash: randomBytes(32),
-    network: FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
+    network: FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
 }).address;
 
 export function SwapNew(props: {

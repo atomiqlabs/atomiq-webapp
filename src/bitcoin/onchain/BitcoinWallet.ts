@@ -3,16 +3,16 @@ import {FEConstants} from "../../FEConstants";
 import {CoinselectAddressTypes} from "./coinselect2/utils";
 import {coinSelect, maxSendable} from "./coinselect2";
 import * as bitcoin from "bitcoinjs-lib";
-import {MempoolApi} from "@atomiqlabs/sdk";
+import {BitcoinNetwork, MempoolApi} from "@atomiqlabs/sdk";
 import * as randomBytes from "randombytes";
 import {
     toXOnly,
 } from 'bitcoinjs-lib/src/psbt/bip371';
 
-const bitcoinNetwork = FEConstants.chain==="DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
+const bitcoinNetwork = FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 
 export const ChainUtils = new MempoolApi(
-    FEConstants.chain==="DEVNET" ?
+    FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ?
         "https://mempool.space/testnet/api/" :
         "https://mempool.space/api/"
 );
@@ -219,7 +219,7 @@ export abstract class BitcoinWallet {
 
         const target = bitcoin.payments.p2wsh({
             hash: randomBytes(32),
-            network: FEConstants.chain==="DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
+            network: FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
         });
 
         const useFeeRate = Math.floor(feeRate.fastestFee*feeMultiplier);

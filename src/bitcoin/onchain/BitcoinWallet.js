@@ -2,11 +2,11 @@ import * as BN from "bn.js";
 import { FEConstants } from "../../FEConstants";
 import { coinSelect, maxSendable } from "./coinselect2";
 import * as bitcoin from "bitcoinjs-lib";
-import { MempoolApi } from "@atomiqlabs/sdk";
+import { BitcoinNetwork, MempoolApi } from "@atomiqlabs/sdk";
 import * as randomBytes from "randombytes";
 import { toXOnly, } from 'bitcoinjs-lib/src/psbt/bip371';
-const bitcoinNetwork = FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
-export const ChainUtils = new MempoolApi(FEConstants.chain === "DEVNET" ?
+const bitcoinNetwork = FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
+export const ChainUtils = new MempoolApi(FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ?
     "https://mempool.space/testnet/api/" :
     "https://mempool.space/api/");
 const feeMultiplier = 1.25;
@@ -147,7 +147,7 @@ export class BitcoinWallet {
         console.log("Utxo pool: ", utxoPool);
         const target = bitcoin.payments.p2wsh({
             hash: randomBytes(32),
-            network: FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
+            network: FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
         });
         const useFeeRate = Math.floor(feeRate.fastestFee * feeMultiplier);
         let coinselectResult = maxSendable(utxoPool, target.output, "p2wsh", useFeeRate);
