@@ -31,6 +31,6 @@ export function usePricing(_amount, currency) {
             setValue(value);
         });
         pricing.current.promise.then(process, process);
-    }, [swapper, _amount, currency]);
+    }, [swapper, _amount, currency?.chain, currency?.ticker, currency?.chainId]);
     return value;
 }

@@ -43,7 +43,7 @@ export function usePricing(_amount: BigNumber, currency: Token<any>): number {
         });
 
         pricing.current.promise.then(process, process);
-    }, [swapper, _amount, currency]);
+    }, [swapper, _amount, currency?.chain, currency?.ticker, (currency as any)?.chainId]);
 
     return value;
 }
