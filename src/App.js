@@ -10,9 +10,8 @@ import { FEConstants } from "./FEConstants";
 import { smartChainTokenArray } from "./utils/Currencies";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { SwapsContext } from "./context/SwapsContext";
-import { BitcoinNetwork, isSCToken, MultichainSwapper, SolanaFees, SolanaSigner, StarknetSigner } from "@atomiqlabs/sdk";
+import { BitcoinNetwork, isSCToken, MultichainSwapper, SolanaFees, SolanaSigner, StarknetFees } from "@atomiqlabs/sdk";
 import { History } from "./pages/History";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Badge, Col, Container, Form, Nav, Navbar, OverlayTrigger, Row, Spinner, Tooltip } from "react-bootstrap";
 import { FAQ } from "./pages/FAQ";
 import { About } from "./pages/About";
@@ -28,15 +27,16 @@ import { SwapForGas } from "./pages/SwapForGas";
 import { SwapExplorer } from "./pages/SwapExplorer";
 import { Affiliate } from "./pages/Affiliate";
 import { gift } from 'react-icons-kit/fa/gift';
-import { BitcoinWalletContext } from './context/BitcoinWalletContext';
+import { BitcoinWalletProvider } from './context/BitcoinWalletProvider';
 import { WebLNContext } from './context/WebLNContext';
 import { heart } from 'react-icons-kit/fa/heart';
 import { SwapNew } from "./pages/SwapNew";
 import { useAnchorNavigate } from "./utils/useAnchorNavigate";
 import { ErrorAlert } from "./components/ErrorAlert";
-import { useBitcoinWalletContext } from "./utils/useBitcoinWalletContext";
 import { StarknetWalletContext } from "./context/StarknetWalletContext";
 import { useStarknetWalletContext } from "./utils/useStarknetWalletContext";
+import { WalletConnectionsSummary } from "./components/WalletConnectionsSummary";
+import { useWebLNWalletContext } from "./utils/useWebLNWalletContext";
 require('@solana/wallet-adapter-react-ui/styles.css');
 const noWalletPaths = new Set(["/about", "/faq", "/map", "/46jh456f45f"]);
 const jitoPubkey = "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL";
@@ -50,20 +50,20 @@ function WrappedApp() {
     const [signers, setSigners] = React.useState({});
     const solanaWallet = useAnchorWallet();
     useEffect(() => {
-        if (swapper == null)
+        if (swapper == null || !FEConstants.allowedChains.has("SOLANA"))
             return;
         setSigners((prevValue) => {
             return { ...prevValue, SOLANA: { signer: solanaWallet == null ? swapper.randomSigner("SOLANA") : new SolanaSigner(solanaWallet), random: solanaWallet == null } };
         });
     }, [solanaWallet, swapper]);
-    const { starknetWallet } = useContext(StarknetWalletContext);
+    const { starknetSigner } = useContext(StarknetWalletContext);
     useEffect(() => {
-        if (swapper == null)
+        if (swapper == null || !FEConstants.allowedChains.has("STARKNET"))
             return;
         setSigners((prevValue) => {
-            return { ...prevValue, STARKNET: { signer: starknetWallet == null ? swapper.randomSigner("STARKNET") : new StarknetSigner(starknetWallet), random: starknetWallet == null } };
+            return { ...prevValue, STARKNET: { signer: starknetSigner == null ? swapper.randomSigner("STARKNET") : starknetSigner, random: starknetSigner == null } };
         });
-    }, [starknetWallet, swapper]);
+    }, [starknetSigner, swapper]);
     // @ts-ignore
     const pathName = window.location.pathname.split("?")[0];
     const searchParams = new URLSearchParams(window.location.search);
@@ -79,26 +79,32 @@ function WrappedApp() {
             abortController.current.abort();
         abortController.current = new AbortController();
         try {
-            const useLp = searchParams.get("UNSAFE_LP_URL");
+            const useLp = searchParams.get("UNSAFE_LP_URL") ?? FEConstants.defaultLp;
             console.log("init start");
-            const solanaFees = new SolanaFees(connection, 1000000, 2, 100, "auto", "high", () => new BN(50000) /*, {
-                address: jitoPubkey,
-                endpoint: jitoEndpoint
-            }*/);
-            const swapper = new MultichainSwapper({
-                chains: {
-                    SOLANA: {
-                        rpcUrl: connection,
-                        retryPolicy: {
-                            transactionResendInterval: 3000
-                        },
-                        fees: solanaFees
+            const swapperChains = {};
+            if (FEConstants.solanaRpcUrl != null) {
+                const solanaFees = new SolanaFees(connection, 1000000, 2, 100, "auto", "high", () => new BN(50000) /*, {
+                    address: jitoPubkey,
+                    endpoint: jitoEndpoint
+                }*/);
+                swapperChains["SOLANA"] = {
+                    rpcUrl: connection,
+                    retryPolicy: {
+                        transactionResendInterval: 3000
                     },
-                    STARKNET: {
-                        rpcUrl: FEConstants.starknetRpc,
-                        chainId: FEConstants.starknetChainId
-                    }
-                },
+                    fees: solanaFees
+                };
+            }
+            if (FEConstants.starknetRpc != null) {
+                const starknetFees = new StarknetFees(FEConstants.starknetRpc, "STRK");
+                swapperChains["STARKNET"] = {
+                    rpcUrl: FEConstants.starknetRpc,
+                    chainId: FEConstants.starknetChainId,
+                    fees: starknetFees
+                };
+            }
+            const swapper = new MultichainSwapper({
+                chains: swapperChains,
                 intermediaryUrl: useLp,
                 getRequestTimeout: 15000,
                 postRequestTimeout: 30000,
@@ -106,8 +112,10 @@ function WrappedApp() {
                 pricingFeeDifferencePPM: new BN(50000),
                 defaultAdditionalParameters: {
                     affiliate: affiliateLink
-                }
+                },
+                defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp
             });
+            swapper.chains.STARKNET.tobtcln.options.paymentTimeoutSeconds = 10 * 24 * 3600;
             await swapper.init();
             if (abortController.current.signal.aborted)
                 return;
@@ -161,13 +169,9 @@ function WrappedApp() {
         }
     };
     console.log("nfcDisabled: ", nfcEnabled);
-    const [webLNWallet, setWebLNWallet] = React.useState();
-    return (_jsx(BitcoinWalletContext.Provider, { value: useBitcoinWalletContext(), children: _jsxs(WebLNContext.Provider, { value: {
-                lnWallet: webLNWallet,
-                setLnWallet: setWebLNWallet
-            }, children: [_jsx(Navbar, { collapseOnSelect: true, expand: "lg ", bg: "dark", variant: "dark", className: "bg-dark bg-opacity-50", style: { zIndex: 1000, minHeight: "64px" }, children: _jsxs(Container, { className: "max-width-100", children: [_jsx(Navbar.Brand, { href: "/", className: "d-flex flex-column", children: _jsxs("div", { className: "d-flex flex-row", style: { fontSize: "1.5rem" }, children: [_jsx("img", { src: "/icons/atomiq-flask.png", className: "logo-img" }), _jsx("b", { children: "atomiq" }), _jsx("span", { style: { fontWeight: 300 }, children: ".exchange" }), FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? _jsx(Badge, { className: "ms-2 d-flex align-items-center", bg: "danger", children: "DEVNET" }) : ""] }) }), _jsxs("div", { className: "d-flex flex-column", children: [_jsx(Badge, { className: "newBadgeCollapse d-lg-none", children: "New!" }), _jsx(Navbar.Toggle, { "aria-controls": "basic-navbar-nav", className: "ms-3" })] }), _jsxs(Navbar.Collapse, { role: "", id: "basic-navbar-nav", children: [_jsxs(Nav, { className: "d-flex d-lg-none me-auto text-start border-top border-dark-subtle my-2 " + (swapper == null ? "" : "border-bottom"), children: [_jsxs(Nav.Link, { href: "/", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: exchange, className: "d-flex me-1" }), _jsx("span", { children: "Swap" })] }), _jsxs(Nav.Link, { href: "/about", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: info, className: "d-flex me-1" }), _jsx("span", { children: "About" })] }), _jsxs(Nav.Link, { href: "/faq", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: question, className: "d-flex me-1" }), _jsx("span", { children: "FAQ" })] }), _jsxs(Nav.Link, { href: "/referral", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: gift, className: "d-flex me-1" }), _jsx("span", { className: "me-1", children: "Referral" }), _jsx(Badge, { className: "me-2", children: "New!" })] }), nfcSupported ? (_jsxs("div", { className: "nav-link d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: ic_contactless, className: "d-flex me-1" }), _jsx("label", { title: "", htmlFor: "nfc", className: "form-check-label me-2", children: "NFC enable" }), _jsx(Form.Check // prettier-ignore
-                                                    , { id: "nfc", type: "switch", onChange: (val) => nfcSet(val.target.checked, val.target), checked: nfcEnabled })] })) : ""] }), _jsxs(Nav, { className: "d-none d-lg-flex me-auto text-start", navbarScroll: true, style: { maxHeight: '100px' }, children: [_jsxs(Nav.Link, { href: "/", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: exchange, className: "d-flex me-1" }), _jsx("span", { children: "Swap" })] }), _jsxs(Nav.Link, { href: "/about", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: info, className: "d-flex me-1" }), _jsx("span", { children: "About" })] }), _jsxs(Nav.Link, { href: "/faq", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: question, className: "d-flex me-1" }), _jsx("span", { children: "FAQ" })] }), _jsxs(Nav.Link, { href: "/referral", onClick: navigateHref, className: "d-flex flex-column align-items-center", children: [_jsxs("div", { className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: gift, className: "d-flex me-1" }), _jsx("span", { className: "me-1", children: "Referral" })] }), _jsx(Badge, { className: "newBadge", children: "New!" })] }), nfcSupported ? (_jsxs("div", { className: "nav-link d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: ic_contactless, className: "d-flex me-1" }), _jsx("label", { title: "", htmlFor: "nfc", className: "form-check-label me-2", children: "NFC enable" }), _jsx(Form.Check // prettier-ignore
-                                                    , { id: "nfc", type: "switch", onChange: (val) => nfcSet(val.target.checked, val.target), checked: nfcEnabled })] })) : ""] }), _jsx(Nav, { className: "ms-auto", children: _jsx("div", { className: "d-flex flex-row align-items-center", style: { height: "3rem" }, children: _jsx("div", { className: "d-flex ms-auto", children: _jsx(WalletMultiButton, { className: "bg-primary" }) }) }) })] })] }) }), _jsxs(SwapsContext.Provider, { value: {
+    return (_jsx(BitcoinWalletProvider, { children: _jsxs(WebLNContext.Provider, { value: useWebLNWalletContext(), children: [_jsx(Navbar, { collapseOnSelect: true, expand: "lg ", bg: "dark", variant: "dark", className: "bg-dark bg-opacity-50", style: { zIndex: 1000, minHeight: "64px" }, children: _jsxs(Container, { className: "max-width-100", children: [_jsx(Navbar.Brand, { href: "/", className: "d-flex flex-column", children: _jsxs("div", { className: "d-flex flex-row", style: { fontSize: "1.5rem" }, children: [_jsx("img", { src: "/icons/atomiq-flask.png", className: "logo-img" }), _jsx("b", { children: "atomiq" }), _jsx("span", { style: { fontWeight: 300 }, children: ".exchange" }), FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? _jsx(Badge, { className: "ms-2 d-flex align-items-center", bg: "danger", children: "DEVNET" }) : ""] }) }), _jsxs("div", { className: "d-flex flex-column", children: [_jsx(Badge, { className: "newBadgeCollapse d-lg-none", children: "New!" }), _jsx(Navbar.Toggle, { "aria-controls": "basic-navbar-nav", className: "ms-3" })] }), _jsxs(Navbar.Collapse, { role: "", id: "basic-navbar-nav", children: [_jsxs(Nav, { className: "d-flex d-lg-none me-auto text-start border-top border-dark-subtle my-2 " + (swapper == null ? "" : "border-bottom"), children: [_jsxs(Nav.Link, { href: "/", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: exchange, className: "d-flex me-1" }), _jsx("span", { children: "Swap" })] }), _jsxs(Nav.Link, { href: "/about", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: info, className: "d-flex me-1" }), _jsx("span", { children: "About" })] }), _jsxs(Nav.Link, { href: "/faq", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: question, className: "d-flex me-1" }), _jsx("span", { children: "FAQ" })] }), _jsxs(Nav.Link, { href: "/referral", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: gift, className: "d-flex me-1" }), _jsx("span", { className: "me-1", children: "Referral" }), _jsx(Badge, { className: "me-2", children: "New!" })] }), nfcSupported ? (_jsxs("div", { className: "nav-link d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: ic_contactless, className: "d-flex me-1" }), _jsx("label", { title: "", htmlFor: "nfc", className: "form-check-label me-2", children: "NFC enable" }), _jsx(Form.Check // prettier-ignore
+                                                    , { id: "nfc", type: "switch", onChange: (val) => nfcSet(val.target.checked, val.target), checked: nfcEnabled })] })) : ""] }), _jsxs(Nav, { className: "d-none d-lg-flex me-auto text-start", navbarScroll: true, style: { maxHeight: '100px' }, children: [_jsxs(Nav.Link, { href: "/", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: exchange, className: "d-flex me-1" }), _jsx("span", { children: "Swap" })] }), _jsxs(Nav.Link, { href: "/about", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: info, className: "d-flex me-1" }), _jsx("span", { children: "About" })] }), _jsxs(Nav.Link, { href: "/faq", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: question, className: "d-flex me-1" }), _jsx("span", { children: "FAQ" })] }), FEConstants.affiliateUrl != null ? (_jsxs(Nav.Link, { href: "/referral", onClick: navigateHref, className: "d-flex flex-column align-items-center", children: [_jsxs("div", { className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: gift, className: "d-flex me-1" }), _jsx("span", { className: "me-1", children: "Referral" })] }), _jsx(Badge, { className: "newBadge", children: "New!" })] })) : "", nfcSupported ? (_jsxs("div", { className: "nav-link d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: ic_contactless, className: "d-flex me-1" }), _jsx("label", { title: "", htmlFor: "nfc", className: "form-check-label me-2", children: "NFC enable" }), _jsx(Form.Check // prettier-ignore
+                                                    , { id: "nfc", type: "switch", onChange: (val) => nfcSet(val.target.checked, val.target), checked: nfcEnabled })] })) : ""] }), _jsx(Nav, { className: "ms-auto", children: _jsx("div", { className: "pt-2 ms-auto", style: { height: "3rem" }, children: _jsx(WalletConnectionsSummary, {}) }) })] })] }) }), _jsxs(SwapsContext.Provider, { value: {
                         actionableSwaps: [],
                         removeSwap: (swap) => {
                             // setActionableSwaps((val) => {

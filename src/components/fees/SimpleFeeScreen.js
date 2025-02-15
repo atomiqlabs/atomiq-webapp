@@ -2,7 +2,7 @@ import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
 import { SwapType, Tokens, toTokenAmount } from "@atomiqlabs/sdk";
 import { toHumanReadableString } from "../../utils/Currencies";
 import * as BN from "bn.js";
-import { BitcoinWalletContext } from "../../context/BitcoinWalletContext";
+import { BitcoinWalletContext } from "../../context/BitcoinWalletProvider";
 import { useContext, useEffect, useState } from "react";
 import { Accordion, Badge, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
 import { capitalizeFirstLetter, getFeePct } from "../../utils/Utils";
@@ -15,7 +15,7 @@ function FeePart(props) {
 }
 function FeeSummary(props) {
     const totalUsdFee = props.feeBreakdown == null ? 0 : props.feeBreakdown.reduce((value, e) => e.usdValue == null ? value : value + parseFloat(e.usdValue.toFixed(2)), 0);
-    return (_jsx(Accordion, { children: _jsxs(Accordion.Item, { eventKey: "0", className: "tab-accent-nop", children: [_jsxs(Accordion.Header, { className: "font-bigger d-flex flex-row", bsPrefix: "fee-accordion-header", children: [_jsxs("small", { className: "me-auto", children: ["1 ", props.dstCurrency.ticker, " = ", props.swapPrice.toFixed(props.srcCurrency.decimals), " ", props.srcCurrency.ticker] }), _jsx(Icon, { className: "d-flex me-1", size: 16, icon: ic_receipt_outline }), _jsx("span", { className: "me-2", children: props.loading ? (_jsx(Spinner, { animation: "border", size: "sm" })) : "$" + totalUsdFee.toFixed(2) })] }), _jsx(Accordion.Body, { className: "p-2", children: props.feeBreakdown.map((e, index) => {
+    return (_jsx(Accordion, { children: _jsxs(Accordion.Item, { eventKey: "0", className: "tab-accent-nop", children: [_jsxs(Accordion.Header, { className: "font-bigger d-flex flex-row", bsPrefix: "fee-accordion-header", children: [_jsxs("small", { className: "me-auto", children: ["1 ", props.dstCurrency.ticker, " = ", props.swapPrice.toFixed(props.srcCurrency.displayDecimals ?? props.srcCurrency.decimals), " ", props.srcCurrency.ticker] }), _jsx(Icon, { className: "d-flex me-1", size: 16, icon: ic_receipt_outline }), _jsx("span", { className: "me-2", children: props.loading ? (_jsx(Spinner, { animation: "border", size: "sm" })) : "$" + totalUsdFee.toFixed(2) })] }), _jsx(Accordion.Body, { className: "p-2", children: props.feeBreakdown.map((e, index) => {
                         return (_jsx(FeePart, { className: e.className, usdValue: e.usdValue, text: e.text, description: e.description, fee: e.fee, feePPM: e.feePPM, feeBase: e.feeBase, feeCurrency: e.feeCurrency }, index));
                     }) })] }) }));
 }

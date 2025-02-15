@@ -10,8 +10,6 @@ import { useBigNumberState } from "../utils/useBigNumberState";
 import { SwapTopbar } from "../components/SwapTopbar";
 import { QRScannerModal } from "../components/qr/QRScannerModal";
 import { Alert, Button, Card, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
-import { BitcoinWalletAnchor } from "../components/wallet/BitcoinWalletButton";
-import { WebLNAnchor } from "../components/wallet/WebLNButton";
 import { bitcoinTokenArray, fromHumanReadable, smartChainTokenArray } from "../utils/Currencies";
 import { FEConstants } from "../FEConstants";
 import BigNumber from "bignumber.js";
@@ -21,7 +19,7 @@ import { QuoteSummary } from "../components/quotes/QuoteSummary";
 import { ErrorAlert } from "../components/ErrorAlert";
 import { useQuote } from "../utils/useQuote";
 import { usePricing } from "../utils/usePricing";
-import { BitcoinWalletContext } from "../context/BitcoinWalletContext";
+import { BitcoinWalletContext } from "../context/BitcoinWalletProvider";
 import { WebLNContext } from "../context/WebLNContext";
 import * as bitcoin from "bitcoinjs-lib";
 import * as randomBytes from "randombytes";
@@ -30,9 +28,9 @@ import Icon from "react-icons-kit";
 import { arrows_vertical } from 'react-icons-kit/ikons/arrows_vertical';
 import { ic_qr_code_scanner } from 'react-icons-kit/md/ic_qr_code_scanner';
 import { lock } from 'react-icons-kit/fa/lock';
-import { ic_account_balance_wallet } from 'react-icons-kit/md/ic_account_balance_wallet';
 import { ic_power_off_outline } from 'react-icons-kit/md/ic_power_off_outline';
 import { useExistingSwap } from "../utils/useExistingSwap";
+import { ConnectedWalletAnchor } from "../components/wallet/ConnectedWalletAnchor";
 const RANDOM_BTC_ADDRESS = bitcoin.payments.p2wsh({
     hash: randomBytes(32),
     network: FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
@@ -102,7 +100,6 @@ export function SwapNew(props) {
                     max: addressData.lnurlResult.max.toString(10),
                 }
             });
-            navigate("");
         }
     }, [addressData?.lnurlResult]);
     //Amounts
@@ -256,10 +253,10 @@ export function SwapNew(props) {
                     console.log("QR scanned: ", data);
                     addressRef.current.setValue(data);
                     setQrScanning(false);
-                }, show: qrScanning, onHide: () => setQrScanning(false) }), _jsx("div", { className: "d-flex flex-column align-items-center text-white", children: _jsxs(Card, { className: "p-3 swap-panel tab-bg mx-3 mb-3 border-0", children: [_jsx(ErrorAlert, { title: "Quote error", error: quoteError }), _jsxs(Card, { className: "d-flex flex-column tab-accent-p3 pt-2", children: [_jsxs("div", { className: "d-flex flex-row", children: [_jsx("small", { className: "text-light text-opacity-75 me-auto", children: "You pay" }), maxSpendable != null ? (_jsxs(_Fragment, { children: [swapType === SwapType.FROM_BTC ? (_jsx("small", { className: "", children: _jsx(BitcoinWalletAnchor, { noText: true }) })) : (_jsx(Icon, { size: 16, icon: ic_account_balance_wallet, style: { marginTop: "-0.3125rem" }, className: "" })), _jsxs("small", { className: "me-2", children: [maxSpendable.amountString, " ", inputToken.ticker] }), _jsx(Button, { variant: "outline-light", style: { marginBottom: "2px" }, className: "py-0 px-1", disabled: locked || amountsLocked, onClick: () => {
+                }, show: qrScanning, onHide: () => setQrScanning(false) }), _jsx("div", { className: "d-flex flex-column align-items-center text-white", children: _jsxs(Card, { className: "p-3 swap-panel tab-bg mx-3 mb-3 border-0", children: [_jsx(ErrorAlert, { title: "Quote error", error: quoteError }), _jsxs(Card, { className: "d-flex flex-column tab-accent-p3 pt-2", children: [_jsxs("div", { className: "d-flex flex-row", children: [_jsx("small", { className: "text-light text-opacity-75 me-auto", children: "You pay" }), maxSpendable != null ? (_jsxs(_Fragment, { children: [_jsx("small", { className: "", children: _jsx(ConnectedWalletAnchor, { noText: true, currency: inputToken }) }), _jsxs("small", { className: "me-2", children: [maxSpendable.amountString, " ", inputToken.ticker] }), _jsx(Button, { variant: "outline-light", style: { marginBottom: "2px" }, className: "py-0 px-1", disabled: locked || amountsLocked, onClick: () => {
                                                         setExactIn(true);
                                                         inputRef.current.setValue(maxSpendable.amountString);
-                                                    }, children: _jsx("small", { className: "font-smallest", style: { marginBottom: "-2px" }, children: "MAX" }) })] })) : (swapType === SwapType.FROM_BTCLN ? (_jsx("small", { children: _jsx(WebLNAnchor, {}) })) : swapType === SwapType.FROM_BTC ? (_jsx("small", { className: "", children: _jsx(BitcoinWalletAnchor, {}) })) : "")] }), _jsx(ValidatedInput, { disabled: locked || amountsLocked || webLnForOutput, inputRef: inputRef, className: "flex-fill", type: "number", value: inputAmount, size: "lg", textStart: !exactIn && quoteLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, onChange: (value) => {
+                                                    }, children: _jsx("small", { className: "font-smallest", style: { marginBottom: "-2px" }, children: "MAX" }) })] })) : (_jsx("small", { children: _jsx(ConnectedWalletAnchor, { noText: false, currency: inputToken }) }))] }), _jsx(ValidatedInput, { disabled: locked || amountsLocked || webLnForOutput, inputRef: inputRef, className: "flex-fill", type: "number", value: inputAmount, size: "lg", textStart: !exactIn && quoteLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, onChange: (value) => {
                                         console.log("SwapNew: ValidatedInput(inputAmount): onChange: ", value);
                                         setInputAmountValue(value);
                                         leaveExistingSwap();
@@ -267,7 +264,7 @@ export function SwapNew(props) {
                                     }, onValidatedInput: val => {
                                         if (exactIn)
                                             setValidatedAmount(val);
-                                    }, inputId: "amount-input", inputClassName: "font-weight-500", floatingLabel: inputValue == null ? null : FEConstants.USDollar.format(inputValue), expectingFloatingLabel: true, step: inputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-inputToken.decimals)), min: inConstraints?.min, max: inputMax, feedbackEndElement: shouldShowUseExternalWallet ? (_jsx("a", { className: "ms-auto", href: "#", onClick: (event) => {
+                                    }, inputId: "amount-input", inputClassName: "font-weight-500", floatingLabel: inputValue == null ? null : FEConstants.USDollar.format(inputValue), expectingFloatingLabel: true, step: inputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals))), min: inConstraints?.min, max: inputMax, feedbackEndElement: shouldShowUseExternalWallet ? (_jsx("a", { className: "ms-auto", href: "#", onClick: (event) => {
                                             event.preventDefault();
                                             disconnect();
                                         }, children: "Use external wallet" })) : null, validated: (!exactIn && quote != null) || existingSwap != null ? null : undefined, elementEnd: (_jsx(CurrencyDropdown, { currencyList: !isSend ? bitcoinTokenArray : allowedScTokens, onSelect: val => {
@@ -285,7 +282,7 @@ export function SwapNew(props) {
                                                 if (isSCToken(val))
                                                     setScCurrency(val);
                                             }
-                                        }, value: inputToken, className: "round-right text-white bg-black bg-opacity-10" })) })] }), _jsx("div", { className: "d-flex justify-content-center swap-direction-wrapper", children: _jsx(Button, { onClick: changeDirection, size: "lg", className: "px-0 swap-direction-btn", children: _jsx(Icon, { size: 22, icon: arrows_vertical, style: { marginTop: "-8px" } }) }) }), _jsxs(Card, { className: "tab-accent-p3 pt-2", children: [_jsxs("div", { className: "d-flex flex-row", children: [_jsx("small", { className: "text-light text-opacity-75 me-auto", children: "You receive" }), swapType === SwapType.TO_BTC ? (_jsx("small", { children: _jsx(BitcoinWalletAnchor, {}) })) : "", swapType === SwapType.TO_BTCLN ? (_jsx("small", { children: _jsx(WebLNAnchor, {}) })) : ""] }), _jsx("div", { className: "d-flex flex-row", children: _jsx(ValidatedInput, { disabled: locked || amountsLocked, inputRef: outputRef, className: "flex-fill strip-group-text", type: "number", value: outputAmount, size: "lg", textStart: exactIn && quoteLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, onChange: val => {
+                                        }, value: inputToken, className: "round-right text-white bg-black bg-opacity-10" })) })] }), _jsx("div", { className: "d-flex justify-content-center swap-direction-wrapper", children: _jsx(Button, { onClick: changeDirection, size: "lg", className: "px-0 swap-direction-btn", children: _jsx(Icon, { size: 22, icon: arrows_vertical, style: { marginTop: "-8px" } }) }) }), _jsxs(Card, { className: "tab-accent-p3 pt-2", children: [_jsxs("div", { className: "d-flex flex-row", children: [_jsx("small", { className: "text-light text-opacity-75 me-auto", children: "You receive" }), _jsx("small", { children: _jsx(ConnectedWalletAnchor, { noText: false, currency: outputToken }) })] }), _jsx("div", { className: "d-flex flex-row", children: _jsx(ValidatedInput, { disabled: locked || amountsLocked, inputRef: outputRef, className: "flex-fill strip-group-text", type: "number", value: outputAmount, size: "lg", textStart: exactIn && quoteLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, onChange: val => {
                                             console.log("SwapNew: ValidatedInput(outputAmount): onChange: ", val);
                                             leaveExistingSwap();
                                             setExactIn(false);
@@ -294,7 +291,7 @@ export function SwapNew(props) {
                                         }, onValidatedInput: val => {
                                             if (!exactIn)
                                                 setValidatedAmount(val);
-                                        }, inputId: "amount-output", inputClassName: "font-weight-500", floatingLabel: outputValue == null ? null : FEConstants.USDollar.format(outputValue), expectingFloatingLabel: true, step: outputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-outputToken.decimals)), min: outConstraints?.min, max: outConstraints?.max, validated: (exactIn && quote != null) || existingSwap != null ? null : undefined, elementEnd: (_jsx(CurrencyDropdown, { currencyList: isSend ? bitcoinTokenArray : allowedScTokens, onSelect: (val) => {
+                                        }, inputId: "amount-output", inputClassName: "font-weight-500", floatingLabel: outputValue == null ? null : FEConstants.USDollar.format(outputValue), expectingFloatingLabel: true, step: outputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals))), min: outConstraints?.min, max: outConstraints?.max, validated: (exactIn && quote != null) || existingSwap != null ? null : undefined, elementEnd: (_jsx(CurrencyDropdown, { currencyList: isSend ? bitcoinTokenArray : allowedScTokens, onSelect: (val) => {
                                                 if (locked)
                                                     return;
                                                 leaveExistingSwap(true, true);

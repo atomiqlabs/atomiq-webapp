@@ -6,25 +6,25 @@ export function useAsync(executor, deps) {
     const executingRef = useRef(null);
     const fn = useCallback((...args) => {
         if (executingRef.current)
-            return false;
+            return Promise.resolve(null);
         const maybePromise = executor(...args);
         if (maybePromise == null)
-            return true;
+            return Promise.resolve(null);
         executingRef.current = true;
         setLoading(true);
         setSuccess(null);
         setError(null);
-        maybePromise.then(res => {
+        return maybePromise.then(res => {
             executingRef.current = false;
             setLoading(false);
             setSuccess(res);
+            return res;
         }).catch(err => {
             console.error("useAsync(): ", err);
             executingRef.current = false;
             setLoading(false);
             setError(err);
         });
-        return true;
     }, deps);
     return [fn, loading, success, error];
 }

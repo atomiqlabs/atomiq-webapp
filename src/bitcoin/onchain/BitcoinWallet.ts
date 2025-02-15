@@ -41,6 +41,13 @@ export abstract class BitcoinWallet {
         this.wasAutomaticallyInitiated = wasAutomaticallyInitiated;
     }
 
+    protected async _getFeeRate(): Promise<number> {
+        if(process.env.REACT_APP_OVERRIDE_BITCOIN_FEE!=null) {
+            return parseInt(process.env.REACT_APP_OVERRIDE_BITCOIN_FEE);
+        }
+        return Math.floor((await ChainUtils.getFees()).fastestFee*feeMultiplier);
+    }
+
     protected _sendTransaction(rawHex: string): Promise<string> {
         return ChainUtils.sendTransaction(rawHex);
     }
@@ -98,7 +105,7 @@ export abstract class BitcoinWallet {
         amount: number,
         feeRate?: number
     ): Promise<{psbt: bitcoin.Psbt, fee: number, inputAddressIndexes: {[address: string]: number[]}}> {
-        if(feeRate==null) feeRate = Math.floor((await ChainUtils.getFees()).fastestFee*feeMultiplier);
+        if(feeRate==null) feeRate = await this._getFeeRate();
 
         const utxoPool: BitcoinWalletUtxo[] = (await Promise.all(sendingAccounts.map(acc => this._getUtxoPool(acc.address, acc.addressType)))).flat();
 
@@ -211,7 +218,7 @@ export abstract class BitcoinWallet {
         feeRate: number,
         totalFee: number
     }> {
-        const feeRate = await ChainUtils.getFees();
+        const useFeeRate = await this._getFeeRate();
 
         const utxoPool: BitcoinWalletUtxo[] = (await Promise.all(sendingAccounts.map(acc => this._getUtxoPool(acc.address, acc.addressType)))).flat();
 
@@ -222,7 +229,6 @@ export abstract class BitcoinWallet {
             network: FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
         });
 
-        const useFeeRate = Math.floor(feeRate.fastestFee*feeMultiplier);
         let coinselectResult = maxSendable(utxoPool, target.output, "p2wsh", useFeeRate);
 
         console.log("Max spendable result: ", coinselectResult);

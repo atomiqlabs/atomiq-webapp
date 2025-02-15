@@ -20,8 +20,6 @@ import {useBigNumberState} from "../utils/useBigNumberState";
 import {SwapTopbar} from "../components/SwapTopbar";
 import {QRScannerModal} from "../components/qr/QRScannerModal";
 import {Alert, Button, Card, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
-import {BitcoinWalletAnchor} from "../components/wallet/BitcoinWalletButton";
-import {WebLNAnchor} from "../components/wallet/WebLNButton";
 import {bitcoinTokenArray, fromHumanReadable, smartChainTokenArray} from "../utils/Currencies";
 import {FEConstants} from "../FEConstants";
 import BigNumber from "bignumber.js";
@@ -31,7 +29,7 @@ import {QuoteSummary} from "../components/quotes/QuoteSummary";
 import {ErrorAlert} from "../components/ErrorAlert";
 import {useQuote} from "../utils/useQuote";
 import {usePricing} from "../utils/usePricing";
-import {BitcoinWalletContext} from "../context/BitcoinWalletContext";
+import {BitcoinWalletContext} from "../context/BitcoinWalletProvider";
 import {WebLNContext} from "../context/WebLNContext";
 import * as bitcoin from "bitcoinjs-lib";
 import * as randomBytes from "randombytes";
@@ -41,9 +39,9 @@ import Icon from "react-icons-kit";
 import {arrows_vertical} from 'react-icons-kit/ikons/arrows_vertical';
 import {ic_qr_code_scanner} from 'react-icons-kit/md/ic_qr_code_scanner';
 import {lock} from 'react-icons-kit/fa/lock';
-import {ic_account_balance_wallet} from 'react-icons-kit/md/ic_account_balance_wallet';
 import {ic_power_off_outline} from 'react-icons-kit/md/ic_power_off_outline';
 import {useExistingSwap} from "../utils/useExistingSwap";
+import {ConnectedWalletAnchor} from "../components/wallet/ConnectedWalletAnchor";
 
 const RANDOM_BTC_ADDRESS = bitcoin.payments.p2wsh({
     hash: randomBytes(32),
@@ -124,7 +122,6 @@ export function SwapNew(props: {
                     max: addressData.lnurlResult.max.toString(10),
                 }
             });
-            navigate("");
         }
     }, [addressData?.lnurlResult]);
 
@@ -308,14 +305,9 @@ export function SwapNew(props: {
 
                             {maxSpendable != null ? (
                                 <>
-                                    {swapType === SwapType.FROM_BTC ? (
-                                        <small className="">
-                                            <BitcoinWalletAnchor noText={true}/>
-                                        </small>
-                                    ) : (
-                                        <Icon size={16} icon={ic_account_balance_wallet}
-                                              style={{marginTop: "-0.3125rem"}} className=""/>
-                                    )}
+                                    <small className="">
+                                        <ConnectedWalletAnchor noText={true} currency={inputToken}/>
+                                    </small>
                                     <small className="me-2">
                                         {maxSpendable.amountString} {inputToken.ticker}
                                     </small>
@@ -333,15 +325,9 @@ export function SwapNew(props: {
                                     </Button>
                                 </>
                             ) : (
-                                swapType === SwapType.FROM_BTCLN ? (
-                                    <small>
-                                        <WebLNAnchor/>
-                                    </small>
-                                ) : swapType === SwapType.FROM_BTC ? (
-                                    <small className="">
-                                        <BitcoinWalletAnchor/>
-                                    </small>
-                                ) : ""
+                                <small>
+                                    <ConnectedWalletAnchor noText={false} currency={inputToken}/>
+                                </small>
                             )}
                         </div>
 
@@ -368,7 +354,7 @@ export function SwapNew(props: {
                             inputClassName="font-weight-500"
                             floatingLabel={inputValue == null ? null : FEConstants.USDollar.format(inputValue)}
                             expectingFloatingLabel={true}
-                            step={inputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-inputToken.decimals))}
+                            step={inputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals)))}
                             min={inConstraints?.min}
                             max={inputMax}
                             feedbackEndElement={shouldShowUseExternalWallet ? (
@@ -409,16 +395,9 @@ export function SwapNew(props: {
                         <div className="d-flex flex-row">
                             <small className="text-light text-opacity-75 me-auto">You receive</small>
 
-                            {swapType === SwapType.TO_BTC ? (
-                                <small>
-                                    <BitcoinWalletAnchor/>
-                                </small>
-                            ) : ""}
-                            {swapType === SwapType.TO_BTCLN ? (
-                                <small>
-                                    <WebLNAnchor/>
-                                </small>
-                            ) : ""}
+                            <small>
+                                <ConnectedWalletAnchor noText={false} currency={outputToken}/>
+                            </small>
                         </div>
                         <div className="d-flex flex-row">
                             <ValidatedInput
@@ -444,7 +423,7 @@ export function SwapNew(props: {
                                 inputClassName="font-weight-500"
                                 floatingLabel={outputValue == null ? null : FEConstants.USDollar.format(outputValue)}
                                 expectingFloatingLabel={true}
-                                step={outputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-outputToken.decimals))}
+                                step={outputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals)))}
                                 min={outConstraints?.min}
                                 max={outConstraints?.max}
                                 validated={(exactIn && quote!=null) || existingSwap!=null ? null : undefined}

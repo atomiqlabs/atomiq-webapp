@@ -45,7 +45,7 @@ function SolanaWalletProvider(props: {
     children: any
 }) {
     return (
-        <ConnectionProvider endpoint={FEConstants.solanaRpcUrl} config={{fetch: fetchWithTimeout, commitment: "confirmed"}}>
+        <ConnectionProvider endpoint={FEConstants.solanaRpcUrl ?? "http://example.com/"} config={{fetch: fetchWithTimeout, commitment: "confirmed"}}>
             <WalletProvider wallets={wallets} autoConnect>
                 <WalletModalProvider>
                     {props.children}

@@ -3,16 +3,15 @@ import {
     FromBTCSwap,
     ISwap,
     IToBTCSwap, SwapType,
-    ToBTCSwap, Token, Tokens, toTokenAmount
+    Token, Tokens, toTokenAmount
 } from "@atomiqlabs/sdk";
 import {
-    bitcoinTokenArray,
     toHumanReadableString
 } from "../../utils/Currencies";
 import * as BN from "bn.js";
-import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
+import {BitcoinWalletContext} from "../../context/BitcoinWalletProvider";
 import {useContext, useEffect, useState} from "react";
-import {Accordion, Badge, OverlayTrigger, Placeholder, Spinner, Tooltip} from "react-bootstrap";
+import {Accordion, Badge, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
 import {capitalizeFirstLetter, getFeePct} from "../../utils/Utils";
 import * as React from "react";
 import Icon from "react-icons-kit";
@@ -118,7 +117,7 @@ function FeeSummary(props: {
         <Accordion>
             <Accordion.Item eventKey="0" className="tab-accent-nop">
                 <Accordion.Header className="font-bigger d-flex flex-row" bsPrefix="fee-accordion-header">
-                    <small className="me-auto">1 {props.dstCurrency.ticker} = {props.swapPrice.toFixed(props.srcCurrency.decimals)} {props.srcCurrency.ticker}</small>
+                    <small className="me-auto">1 {props.dstCurrency.ticker} = {props.swapPrice.toFixed(props.srcCurrency.displayDecimals ?? props.srcCurrency.decimals)} {props.srcCurrency.ticker}</small>
                     <Icon className="d-flex me-1" size={16} icon={ic_receipt_outline}/>
                     <span className="me-2">{props.loading ? (
                         <Spinner animation="border" size="sm" />

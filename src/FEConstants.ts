@@ -18,13 +18,6 @@ const starknetBlockExplorer: string = process.env.REACT_APP_STARKNET_BLOCK_EXPLO
 
 const bitcoinNetwork: "TESTNET" | "MAINNET" = process.env.REACT_APP_BITCOIN_NETWORK as ("TESTNET" | "MAINNET"); //SEPOLIA or MAIN
 
-// const solanaRpcUrl: string = "https://api.devnet.solana.com";
-// const chain: "DEVNET" | "MAINNET" = "DEVNET"; //DEVNET or MAINNET
-// const btcBlockExplorer: string = "https://mempool.space/testnet/tx/";
-
-console.log("SOLana chain: ", solanaChain);
-console.log("SOLana RPC: ", solanaRpcUrl);
-
 export const FEConstants = {
     btcBlockExplorer,
     blockExplorers: {
@@ -33,17 +26,26 @@ export const FEConstants = {
     },
     scBalances: {
         SOLANA: {
-            optimal: new BN(4000000)
+            optimal: {
+                "So11111111111111111111111111111111111111112": new BN(4000000)
+            }
         },
         STARKNET: {
-            optimal: new BN(300000000000000)
+            optimal: {
+                "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7": new BN("150000000000000"),
+                "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d": new BN("1000000000000000000")
+            }
         }
     },
+    allowedChains: new Set<string>([
+        solanaRpcUrl!=null ? "SOLANA" : undefined,
+        starknetRpcUrl!=null ? "STARKNET" : undefined
+    ]),
     statsUrl,
     solanaChain: solanaChain==="MAINNET" ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet,
     solanaRpcUrl,
     starknetChainId: starknetChain==null ? null : (starknetChain==="MAIN" ? constants.StarknetChainId.SN_MAIN : constants.StarknetChainId.SN_SEPOLIA),
-    starknetRpc: new RpcProvider({nodeUrl: starknetRpcUrl}),
+    starknetRpc: starknetRpcUrl==null ? null : new RpcProvider({nodeUrl: starknetRpcUrl}),
     bitcoinNetwork: bitcoinNetwork==="TESTNET" ? BitcoinNetwork.TESTNET : BitcoinNetwork.MAINNET,
     url: null,
     satsPerBitcoin: new BigNumber(100000000),
@@ -52,5 +54,7 @@ export const FEConstants = {
         currency: 'USD',
     }),
     dappUrl,
-    affiliateUrl
+    affiliateUrl,
+    trustedGasSwapLp: process.env.REACT_APP_TRUSTED_GAS_SWAP,
+    defaultLp: process.env.REACT_APP_DEFAULT_LP
 };

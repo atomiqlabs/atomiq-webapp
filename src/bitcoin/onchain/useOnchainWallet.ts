@@ -1,7 +1,6 @@
 
 import {useCallback, useContext, useEffect, useRef, useState} from "react";
-import {WebLNContext} from "../../context/WebLNContext";
-import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
+import {BitcoinWalletContext} from "../../context/BitcoinWalletProvider";
 import * as BN from "bn.js";
 
 export function useOnchainWallet() {

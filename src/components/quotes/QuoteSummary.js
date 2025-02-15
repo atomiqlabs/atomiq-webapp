@@ -21,8 +21,9 @@ export function QuoteSummary(props) {
             console.log("Quote hasEnoughForTxFees(): Balance: " + result.balance.amount + " Required: " + result.required.amount + " Enough: " + result.enoughBalance);
             if (cancelled)
                 return;
+            const nativeToken = result.balance.token;
             if (!result.enoughBalance) {
-                setNotEnoughForGas(FEConstants.scBalances[props.quote.chainIdentifier].optimal.add(result.required.rawAmount).sub(result.balance.rawAmount));
+                setNotEnoughForGas(FEConstants.scBalances[props.quote.chainIdentifier].optimal[nativeToken.address].add(result.required.rawAmount).sub(result.balance.rawAmount));
             }
         });
         return () => {

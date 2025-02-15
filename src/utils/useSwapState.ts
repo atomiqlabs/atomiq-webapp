@@ -54,6 +54,9 @@ export function useSwapState<S extends number>(quote: ISwap<any, S>) {
                 if(state===FromBTCLNSwapState.PR_CREATED) {
                     expiryTime.current = (quote as ISwap as FromBTCLNSwap<any>).getTimeoutTime();
                 }
+                if(state===FromBTCLNSwapState.CLAIM_COMMITED) {
+                    expiryTime.current = (quote as ISwap as FromBTCLNSwap<any>).getHtlcTimeoutTime();
+                }
             }
             if(quote.getType()===SwapType.FROM_BTC) {
                 if(state >= FromBTCSwapState.CLAIM_COMMITED) {

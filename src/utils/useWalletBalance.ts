@@ -1,7 +1,7 @@
 import {AbstractSigner, isBtcToken, isSCToken, Token, Tokens} from "@atomiqlabs/sdk";
 import {useContext, useEffect, useState} from "react";
 import * as BN from "bn.js";
-import {BitcoinWalletContext} from "../context/BitcoinWalletContext";
+import {BitcoinWalletContext} from "../context/BitcoinWalletProvider";
 import {SwapsContext} from "../context/SwapsContext";
 import BigNumber from "bignumber.js";
 import {toHumanReadableString} from "./Currencies";
