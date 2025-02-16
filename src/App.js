@@ -93,7 +93,8 @@ function WrappedApp() {
                 pricingFeeDifferencePPM: new BN(50000),
                 defaultAdditionalParameters: {
                     affiliate: affiliateLink
-                }
+                },
+                mempoolApi: FEConstants.mempoolApi
             });
             await swapper.init();
             if (abortController.current.signal.aborted)

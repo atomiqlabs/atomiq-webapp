@@ -2,6 +2,7 @@ import BigNumber from "bignumber.js";
 import {PublicKey} from "@solana/web3.js";
 import {WalletAdapterNetwork} from "@solana/wallet-adapter-base";
 import * as BN from "bn.js";
+import {MempoolApi} from "@atomiqlabs/sdk";
 
 const solanaRpcUrl: string = process.env.REACT_APP_SOLANA_RPC_URL;
 const chain: "DEVNET" | "MAINNET" = process.env.REACT_APP_SOLANA_NETWORK as ("DEVNET" | "MAINNET"); //DEVNET or MAINNET
@@ -17,20 +18,23 @@ const affiliateUrl: string = process.env.REACT_APP_AFFILIATE_URL;
 console.log("SOLana chain: ", chain);
 console.log("SOLana RPC: ", solanaRpcUrl);
 
+const mempoolApi = new MempoolApi(
+    chain==="MAINNET" ?
+        [
+            "https://mempool.space/api/",
+            "https://mempool.fra.mempool.space/api/",
+            "https://mempool.va1.mempool.space/api/",
+            "https://mempool.tk7.mempool.space/api/"
+        ] :
+        [
+            "https://mempool.space/testnet/api/",
+            "https://mempool.fra.mempool.space/testnet/api/",
+            "https://mempool.va1.mempool.space/testnet/api/",
+            "https://mempool.tk7.mempool.space/testnet/api/"
+        ]
+);
+
 export const FEConstants = {
-    // expirySecondsBTCLNtoSol: 1*86400, //1 days
-    // expirySecondsSoltoBTCLN: 3*86400, //3 days
-    // confirmationsSoltoBTC: 3,
-    // confirmationTargetSoltoBTC: 3,
-    // url: "https://node3.gethopa.com",
-    // customPorts: {
-    //     [SwapType.BTCLN_TO_SOL]: 34000,
-    //     [SwapType.SOL_TO_BTCLN]: 34001,
-    //     [SwapType.BTC_TO_SOL]: 34002,
-    //     [SwapType.SOL_TO_BTC]: 34003,
-    // },
-    // url: "http://localhost:4000",
-    // customPorts: null,
     btcBlockExplorer,
     blockExplorers: {
         SOLANA: solBlockExplorer
@@ -40,37 +44,11 @@ export const FEConstants = {
             optimal: new BN(4000000)
         }
     },
+    mempoolApi,
     statsUrl,
     solanaChain: chain==="MAINNET" ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet,
     rpcUrl: solanaRpcUrl,
     chain,
-    // wbtcToken: new PublicKey(SolanaChains[chain].tokens.WBTC),
-    // usdcToken: new PublicKey(SolanaChains[chain].tokens.USDC),
-    // usdtToken: new PublicKey(SolanaChains[chain].tokens.USDT),
-    // wsolToken: new PublicKey(SolanaChains[chain].tokens.WSOL),
-    // bonkToken: new PublicKey(SolanaChains[chain].tokens.BONK),
-    // tokenData: {
-    //     [SolanaChains[chain].tokens.WBTC]: {
-    //         decimals: 8,
-    //         symbol: "WBTC"
-    //     },
-    //     [SolanaChains[chain].tokens.USDC]: {
-    //         decimals: 6,
-    //         symbol: "USDC"
-    //     },
-    //     [SolanaChains[chain].tokens.USDT]: {
-    //         decimals: 6,
-    //         symbol: "USDT"
-    //     },
-    //     [SolanaChains[chain].tokens.WSOL]: {
-    //         decimals: 9,
-    //         symbol: "SOL"
-    //     },
-    //     [SolanaChains[chain].tokens.BONK]: {
-    //         decimals: 5,
-    //         symbol: "BONK"
-    //     }
-    // },
     url: null,
     satsPerBitcoin: new BigNumber(100000000),
     USDollar: new Intl.NumberFormat('en-US', {

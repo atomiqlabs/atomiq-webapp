@@ -3,7 +3,6 @@ import {FEConstants} from "../../FEConstants";
 import {CoinselectAddressTypes} from "./coinselect2/utils";
 import {coinSelect, maxSendable} from "./coinselect2";
 import * as bitcoin from "bitcoinjs-lib";
-import {MempoolApi} from "@atomiqlabs/sdk";
 import * as randomBytes from "randombytes";
 import {
     toXOnly,
@@ -11,11 +10,7 @@ import {
 
 const bitcoinNetwork = FEConstants.chain==="DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 
-export const ChainUtils = new MempoolApi(
-    FEConstants.chain==="DEVNET" ?
-        "https://mempool.space/testnet/api/" :
-        "https://mempool.space/api/"
-);
+export const ChainUtils = FEConstants.mempoolApi;
 
 const feeMultiplier = 1.25;
 
