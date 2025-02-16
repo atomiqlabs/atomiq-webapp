@@ -2,7 +2,7 @@ import {Alert, Button, Spinner} from "react-bootstrap";
 import {useLocation, useNavigate} from "react-router-dom";
 import {SwapTopbar} from "../components/SwapTopbar";
 import * as React from "react";
-import {useContext, useEffect} from "react";
+import {useCallback, useContext, useEffect} from "react";
 import Icon from "react-icons-kit";
 import {LnForGasSwapState, Tokens} from "@atomiqlabs/sdk";
 import * as BN from "bn.js";
@@ -15,6 +15,8 @@ import {useAsync} from "../utils/useAsync";
 import {TrustedFromBTCLNQuoteSummary} from "../components/quotes/frombtc/TrustedFromBTCLNQuoteSummary";
 import {useSwapState} from "../utils/useSwapState";
 import {ErrorAlert} from "../components/ErrorAlert";
+import {StarknetWalletContext} from "../context/StarknetWalletContext";
+import {useStateRef} from "../utils/useStateRef";
 
 const defaultSwapAmount = "12500000";
 
@@ -44,6 +46,10 @@ export function SwapForGas() {
     useEffect(() => {
         createSwap();
     }, [createSwap]);
+
+    const onContinue = useCallback(() => {
+        navigate(state.returnPath);
+    }, [swapData]);
 
     const nativeCurrency = swapper==null ? null : swapper.getNativeToken(chainId);
 
@@ -113,9 +119,7 @@ export function SwapForGas() {
                         ) : ""}
 
                         {swapState===LnForGasSwapState.FINISHED && state?.returnPath!=null ? (
-                            <Button onClick={() => {
-                                navigate(state.returnPath);
-                            }} variant="primary" className="mt-3">
+                            <Button onClick={onContinue} variant="primary" className="mt-3">
                                 Continue
                             </Button>
                         ) : ""}

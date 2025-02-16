@@ -2,14 +2,23 @@ import * as BN from "bn.js";
 import { FEConstants } from "../../FEConstants";
 import { coinSelect, maxSendable } from "./coinselect2";
 import * as bitcoin from "bitcoinjs-lib";
+
+import { BitcoinNetwork, MempoolApi } from "@atomiqlabs/sdk";
 import * as randomBytes from "randombytes";
 import { toXOnly, } from 'bitcoinjs-lib/src/psbt/bip371';
-const bitcoinNetwork = FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
+const bitcoinNetwork = FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 export const ChainUtils = FEConstants.mempoolApi;
+
 const feeMultiplier = 1.25;
 export class BitcoinWallet {
     constructor(wasAutomaticallyInitiated) {
         this.wasAutomaticallyInitiated = wasAutomaticallyInitiated;
+    }
+    async _getFeeRate() {
+        if (process.env.REACT_APP_OVERRIDE_BITCOIN_FEE != null) {
+            return parseInt(process.env.REACT_APP_OVERRIDE_BITCOIN_FEE);
+        }
+        return Math.floor((await ChainUtils.getFees()).fastestFee * feeMultiplier);
     }
     _sendTransaction(rawHex) {
         return ChainUtils.sendTransaction(rawHex);
@@ -48,8 +57,9 @@ export class BitcoinWallet {
     }
     async _getPsbt(sendingAccounts, address, amount, feeRate) {
         if (feeRate == null)
-            feeRate = Math.floor((await ChainUtils.getFees()).fastestFee * feeMultiplier);
+            feeRate = await this._getFeeRate();
         const utxoPool = (await Promise.all(sendingAccounts.map(acc => this._getUtxoPool(acc.address, acc.addressType)))).flat();
+        console.log("Utxo pool: ", utxoPool);
         const accountPubkeys = {};
         sendingAccounts.forEach(acc => accountPubkeys[acc.address] = acc.pubkey);
         const targets = [
@@ -59,7 +69,9 @@ export class BitcoinWallet {
                 script: bitcoin.address.toOutputScript(address, bitcoinNetwork)
             }
         ];
+        console.log("Coinselect targets: ", targets);
         let coinselectResult = coinSelect(utxoPool, targets, feeRate, sendingAccounts[0].addressType);
+        console.log("Coinselect result: ", coinselectResult);
         if (coinselectResult.inputs == null || coinselectResult.outputs == null) {
             return {
                 psbt: null,
@@ -136,14 +148,13 @@ export class BitcoinWallet {
         };
     }
     async _getSpendableBalance(sendingAccounts) {
-        const feeRate = await ChainUtils.getFees();
+        const useFeeRate = await this._getFeeRate();
         const utxoPool = (await Promise.all(sendingAccounts.map(acc => this._getUtxoPool(acc.address, acc.addressType)))).flat();
         console.log("Utxo pool: ", utxoPool);
         const target = bitcoin.payments.p2wsh({
             hash: randomBytes(32),
-            network: FEConstants.chain === "DEVNET" ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
+            network: FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
         });
-        const useFeeRate = Math.floor(feeRate.fastestFee * feeMultiplier);
         let coinselectResult = maxSendable(utxoPool, target.output, "p2wsh", useFeeRate);
         console.log("Max spendable result: ", coinselectResult);
         return {

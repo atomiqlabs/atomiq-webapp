@@ -145,6 +145,17 @@ export function ToBTCQuoteSummary(props: {
         }
     }, [state, signer]);
 
+    const feeNeeded = useMemo(() => {
+        if(props.notEnoughForGas==null || props.quote==null || swapper==null) return null;
+        const nativeToken = swapper.getNativeToken(props.quote.chainIdentifier);
+        const amount = props.notEnoughForGas;
+        return {
+            rawAmount: amount,
+            amount: toHumanReadableString(amount, nativeToken),
+            nativeToken
+        }
+    }, [props.notEnoughForGas, props.quote, swapper]);
+
     const isCreated = state===ToBTCSwapState.CREATED ||
         (state===ToBTCSwapState.QUOTE_SOFT_EXPIRED && continueLoading);
     const isExpired = state===ToBTCSwapState.QUOTE_EXPIRED ||
@@ -220,8 +231,8 @@ export function ToBTCQuoteSummary(props: {
                 ) : (
                     <>
                         <Alert className="text-center mb-3" show={!!props.notEnoughForGas} variant="danger" closeVariant="white">
-                            <strong>Not enough SOL for fees</strong>
-                            <label>You need at least 0.005 SOL to pay for fees and deposits!</label>
+                            <strong>Not enough {feeNeeded?.nativeToken?.ticker} for fees</strong>
+                            <label>You need at least {feeNeeded?.amount} {feeNeeded?.nativeToken?.ticker} to pay for fees and deposits!</label>
                         </Alert>
 
                         <ButtonWithSigner

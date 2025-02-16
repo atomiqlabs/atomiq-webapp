@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { WebLNContext } from "../../context/WebLNContext";
 export function useLightningWallet() {
-    const { lnWallet, setLnWallet } = useContext(WebLNContext);
+    const { lnWallet, disconnect } = useContext(WebLNContext);
     const [payError, setPayError] = useState(null);
     const [payLoading, setPayLoading] = useState(false);
     const [paySuccess, setPaySuccess] = useState(false);
@@ -28,9 +28,6 @@ export function useLightningWallet() {
             console.error(e);
         });
     }, [lnWallet]);
-    const disconnect = useCallback(() => {
-        setLnWallet(null);
-    }, []);
     return {
         walletConnected: lnWallet != null,
         disconnect,

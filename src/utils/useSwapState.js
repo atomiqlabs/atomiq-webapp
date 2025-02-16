@@ -38,6 +38,9 @@ export function useSwapState(quote) {
                 if (state === FromBTCLNSwapState.PR_CREATED) {
                     expiryTime.current = quote.getTimeoutTime();
                 }
+                if (state === FromBTCLNSwapState.CLAIM_COMMITED) {
+                    expiryTime.current = quote.getHtlcTimeoutTime();
+                }
             }
             if (quote.getType() === SwapType.FROM_BTC) {
                 if (state >= FromBTCSwapState.CLAIM_COMMITED) {
@@ -57,7 +60,7 @@ export function useSwapState(quote) {
             checkExpiry(state);
             setState(state);
             setInitiated(quote.isInitiated());
-            console.log("useSwapState(" + quote.getPaymentHashString() + "): State changed to: " + getStateToString(quote.getType(), state), quote);
+            console.log("useSwapState(" + quote.getIdentifierHashString() + "): State changed to: " + getStateToString(quote.getType(), state), quote);
             if (quote.isFinished()) {
                 setInitialQuoteTimeout(null);
                 setQuoteTimeRemaining(null);

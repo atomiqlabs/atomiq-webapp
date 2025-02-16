@@ -98,7 +98,7 @@ export function QuickScanExecute() {
                             value={addressResult?.address ?? propAddress}
                         />
 
-                        <ErrorAlert className="mt-3" title="Destination parsing error" error={addressResult}/>
+                        <ErrorAlert className="mt-3" title="Destination parsing error" error={addressResult?.error}/>
 
                         {addressLoading ? (
                             <div className="d-flex flex-column align-items-center justify-content-center tab-accent mt-3">

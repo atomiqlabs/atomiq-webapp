@@ -3,23 +3,7 @@ import * as React from "react";
 import {useContext} from "react";
 import {ic_brightness_1} from 'react-icons-kit/md/ic_brightness_1';
 import Icon from "react-icons-kit";
-import {connectWebLN, isWebLNInstalled} from "../../bitcoin/lightning/WebLNUtils";
 import {WebLNContext} from "../../context/WebLNContext";
-
-export function useWebLNWalletChooser() {
-
-    const {lnWallet, setLnWallet} = useContext(WebLNContext);
-
-    const isInstalled = isWebLNInstalled();
-
-    const connectWallet = () => {
-        connectWebLN().then(res => {
-            setLnWallet(res);
-        }).catch(e => console.error(e));
-    };
-
-    return {isInstalled, lnWallet, connectWallet, setLnWallet};
-}
 
 const WebLNConnectedWallet = React.forwardRef<any, any>(({ onClick, noText }, ref) => (
     <div className={"d-flex flex-row align-items-center cursor-pointer"} onClick={onClick}>
@@ -31,9 +15,9 @@ const WebLNConnectedWallet = React.forwardRef<any, any>(({ onClick, noText }, re
 
 export function WebLNAnchor(props: {className?: string, noText?: boolean}) {
 
-    const {isInstalled, lnWallet, connectWallet, setLnWallet} = useWebLNWalletChooser();
+    const {lnWallet, connect, disconnect} = useContext(WebLNContext);
 
-    if(!isInstalled && lnWallet==null) return <></>;
+    if(connect==null && lnWallet==null) return <></>;
 
     return (
         <>
@@ -42,7 +26,7 @@ export function WebLNAnchor(props: {className?: string, noText?: boolean}) {
                     variant="outline-light"
                     style={{marginBottom: "2px"}}
                     className="py-0 px-1"
-                    onClick={() => connectWallet()}
+                    onClick={() => connect()}
                 >
                     <small className="font-smallest" style={{marginBottom: "-2px"}}>Connect BTC-LN wallet</small>
                 </Button>
@@ -53,9 +37,7 @@ export function WebLNAnchor(props: {className?: string, noText?: boolean}) {
                     </Dropdown.Toggle>
 
                     <Dropdown.Menu>
-                        <Dropdown.Item eventKey="1" onClick={() => {
-                            setLnWallet(null)
-                        }}>Disconnect</Dropdown.Item>
+                        <Dropdown.Item eventKey="1" onClick={() => disconnect()}>Disconnect</Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
             )}

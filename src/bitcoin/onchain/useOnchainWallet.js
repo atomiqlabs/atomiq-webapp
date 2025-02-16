@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { BitcoinWalletContext } from "../../context/BitcoinWalletContext";
+import { BitcoinWalletContext } from "../../context/BitcoinWalletProvider";
 export function useOnchainWallet() {
     const { bitcoinWallet, disconnect } = useContext(BitcoinWalletContext);
     const [payError, setPayError] = useState(null);

@@ -20,7 +20,7 @@ export function useExistingSwap(swapId: string): [ISwap, boolean] {
         setLoading(true);
         swapper.getAllSwaps().then(swaps => {
             if(canceled) return;
-            const foundSwap = swaps.find(swap => swap.getPaymentHashString()===swapId);
+            const foundSwap = swaps.find(swap => swap.getIdentifierHashString()===swapId);
             setSwap(foundSwap);
             setLoading(false);
         });

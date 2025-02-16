@@ -1,7 +1,28 @@
 import {Dropdown} from "react-bootstrap";
 import * as React from "react";
-import {Token} from "@atomiqlabs/sdk";
+import {isSCToken, Token} from "@atomiqlabs/sdk";
 import {TokenIcon} from "./TokenIcon";
+import {useMemo} from "react";
+
+function CurrenciesEntry(props: {
+    currencies: Token[],
+    onSelect: (currency: Token) => void
+}) {
+    return (
+        <>
+            {props.currencies.map(curr => {
+                return (
+                    <Dropdown.Item key={curr.ticker} onClick={() => {
+                        props.onSelect(curr);
+                    }}>
+                        <TokenIcon tokenOrTicker={curr} className="currency-icon"/>
+                        {curr.name}
+                    </Dropdown.Item>
+                )
+            })}
+        </>
+    );
+}
 
 export function CurrencyDropdown(props: {
     currencyList: Token[],
@@ -9,6 +30,18 @@ export function CurrencyDropdown(props: {
     value: Token,
     className?: string
 }) {
+
+    //Group by chainId
+    const {currenciesByChainId, chains} = useMemo(() => {
+        const currenciesByChainId = {};
+        if(props.currencyList!=null) props.currencyList.forEach(currency => {
+            const chainId = isSCToken(currency) ? currency.chainId : "BITCOIN";
+            currenciesByChainId[chainId] ??= [];
+            currenciesByChainId[chainId].push(currency);
+        });
+        const chains = Object.keys(currenciesByChainId);
+        return {currenciesByChainId, chains};
+    }, [props.currencyList]);
 
     return (
         <Dropdown>
@@ -18,16 +51,14 @@ export function CurrencyDropdown(props: {
             </Dropdown.Toggle>
 
             <Dropdown.Menu>
-                {props.currencyList.map(curr => {
+                {chains.length>1 ? chains.map(chainId => {
                     return (
-                        <Dropdown.Item key={curr.ticker} onClick={() => {
-                            props.onSelect(curr);
-                        }}>
-                            <TokenIcon tokenOrTicker={curr} className="currency-icon"/>
-                            {curr.name}
-                        </Dropdown.Item>
+                        <>
+                            <Dropdown.Header>{chainId}</Dropdown.Header>
+                            <CurrenciesEntry currencies={currenciesByChainId[chainId]} onSelect={props.onSelect}/>
+                        </>
                     )
-                })}
+                }) : (<CurrenciesEntry currencies={props.currencyList} onSelect={props.onSelect}/>)}
             </Dropdown.Menu>
         </Dropdown>
     )
