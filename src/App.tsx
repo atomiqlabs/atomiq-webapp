@@ -156,6 +156,7 @@ function WrappedApp() {
                 defaultAdditionalParameters: {
                     affiliate: affiliateLink
                 },
+                mempoolApi: FEConstants.mempoolApi,
                 defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp
             });
 

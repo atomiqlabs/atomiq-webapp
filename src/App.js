@@ -113,6 +113,7 @@ function WrappedApp() {
                 defaultAdditionalParameters: {
                     affiliate: affiliateLink
                 },
+                mempoolApi: FEConstants.mempoolApi,
                 defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp
             });
             swapper.chains.STARKNET.tobtcln.options.paymentTimeoutSeconds = 10 * 24 * 3600;

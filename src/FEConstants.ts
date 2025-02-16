@@ -2,7 +2,7 @@ import BigNumber from "bignumber.js";
 import {WalletAdapterNetwork} from "@solana/wallet-adapter-base";
 import * as BN from "bn.js";
 import {constants, RpcProvider} from "starknet";
-import {BitcoinNetwork} from "@atomiqlabs/sdk";
+import {BitcoinNetwork, MempoolApi} from "@atomiqlabs/sdk";
 
 const solanaRpcUrl: string = process.env.REACT_APP_SOLANA_RPC_URL;
 const solanaChain: "DEVNET" | "MAINNET" = process.env.REACT_APP_SOLANA_NETWORK as ("DEVNET" | "MAINNET"); //DEVNET or MAINNET
@@ -17,6 +17,22 @@ const starknetChain: "SEPOLIA" | "MAIN" = process.env.REACT_APP_STARKNET_NETWORK
 const starknetBlockExplorer: string = process.env.REACT_APP_STARKNET_BLOCK_EXPLORER;
 
 const bitcoinNetwork: "TESTNET" | "MAINNET" = process.env.REACT_APP_BITCOIN_NETWORK as ("TESTNET" | "MAINNET"); //SEPOLIA or MAIN
+
+const mempoolApi = new MempoolApi(
+    chain==="MAINNET" ?
+        [
+            "https://mempool.space/api/",
+            "https://mempool.fra.mempool.space/api/",
+            "https://mempool.va1.mempool.space/api/",
+            "https://mempool.tk7.mempool.space/api/"
+        ] :
+        [
+            "https://mempool.space/testnet/api/",
+            "https://mempool.fra.mempool.space/testnet/api/",
+            "https://mempool.va1.mempool.space/testnet/api/",
+            "https://mempool.tk7.mempool.space/testnet/api/"
+        ]
+);
 
 export const FEConstants = {
     btcBlockExplorer,
@@ -37,6 +53,7 @@ export const FEConstants = {
             }
         }
     },
+    mempoolApi,
     allowedChains: new Set<string>([
         solanaRpcUrl!=null ? "SOLANA" : undefined,
         starknetRpcUrl!=null ? "STARKNET" : undefined

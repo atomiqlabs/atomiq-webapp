@@ -11,11 +11,7 @@ import {
 
 const bitcoinNetwork = FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 
-export const ChainUtils = new MempoolApi(
-    FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ?
-        "https://mempool.space/testnet/api/" :
-        "https://mempool.space/api/"
-);
+export const ChainUtils = FEConstants.mempoolApi;
 
 const feeMultiplier = 1.25;
 
