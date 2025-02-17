@@ -2,13 +2,11 @@ import * as BN from "bn.js";
 import { FEConstants } from "../../FEConstants";
 import { coinSelect, maxSendable } from "./coinselect2";
 import * as bitcoin from "bitcoinjs-lib";
-
-import { BitcoinNetwork, MempoolApi } from "@atomiqlabs/sdk";
+import { BitcoinNetwork } from "@atomiqlabs/sdk";
 import * as randomBytes from "randombytes";
 import { toXOnly, } from 'bitcoinjs-lib/src/psbt/bip371';
 const bitcoinNetwork = FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
 export const ChainUtils = FEConstants.mempoolApi;
-
 const feeMultiplier = 1.25;
 export class BitcoinWallet {
     constructor(wasAutomaticallyInitiated) {

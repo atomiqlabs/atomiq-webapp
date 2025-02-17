@@ -10,8 +10,11 @@ const solBlockExplorer = process.env.REACT_APP_SOL_BLOCK_EXPLORER;
 const statsUrl = process.env.REACT_APP_STATS_URL;
 const dappUrl = process.env.REACT_APP_DAPP_URL;
 const affiliateUrl = process.env.REACT_APP_AFFILIATE_URL;
-
-const mempoolApi = new MempoolApi(chain === "MAINNET" ?
+const starknetRpcUrl = process.env.REACT_APP_STARKNET_RPC_URL;
+const starknetChain = process.env.REACT_APP_STARKNET_NETWORK; //SEPOLIA or MAIN
+const starknetBlockExplorer = process.env.REACT_APP_STARKNET_BLOCK_EXPLORER;
+const bitcoinNetwork = process.env.REACT_APP_BITCOIN_NETWORK; //SEPOLIA or MAIN
+const mempoolApi = new MempoolApi(bitcoinNetwork === "MAINNET" ?
     [
         "https://mempool.space/api/",
         "https://mempool.fra.mempool.space/api/",
@@ -24,12 +27,6 @@ const mempoolApi = new MempoolApi(chain === "MAINNET" ?
         "https://mempool.va1.mempool.space/testnet/api/",
         "https://mempool.tk7.mempool.space/testnet/api/"
     ]);
-
-const starknetRpcUrl = process.env.REACT_APP_STARKNET_RPC_URL;
-const starknetChain = process.env.REACT_APP_STARKNET_NETWORK; //SEPOLIA or MAIN
-const starknetBlockExplorer = process.env.REACT_APP_STARKNET_BLOCK_EXPLORER;
-const bitcoinNetwork = process.env.REACT_APP_BITCOIN_NETWORK; //SEPOLIA or MAIN
-
 export const FEConstants = {
     btcBlockExplorer,
     blockExplorers: {

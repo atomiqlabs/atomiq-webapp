@@ -19,7 +19,7 @@ const starknetBlockExplorer: string = process.env.REACT_APP_STARKNET_BLOCK_EXPLO
 const bitcoinNetwork: "TESTNET" | "MAINNET" = process.env.REACT_APP_BITCOIN_NETWORK as ("TESTNET" | "MAINNET"); //SEPOLIA or MAIN
 
 const mempoolApi = new MempoolApi(
-    chain==="MAINNET" ?
+    bitcoinNetwork==="MAINNET" ?
         [
             "https://mempool.space/api/",
             "https://mempool.fra.mempool.space/api/",
