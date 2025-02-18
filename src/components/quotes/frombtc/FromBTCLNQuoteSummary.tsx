@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useCallback, useContext, useEffect, useRef, useState} from "react";
 import {Alert, Button, Spinner} from "react-bootstrap";
-import {FromBTCLNSwap, FromBTCLNSwapState, timeoutPromise} from "@atomiqlabs/sdk";
+import {FromBTCLNSwap, FromBTCLNSwapState} from "@atomiqlabs/sdk";
 import {SwapsContext} from "../../../context/SwapsContext";
 import {ButtonWithSigner} from "../../ButtonWithSigner";
 import {useSwapState} from "../../../utils/useSwapState";
@@ -17,8 +17,6 @@ import {useLocalStorage} from "../../../utils/useLocalStorage";
 import {LightningQR} from "./LightningQR";
 import {ErrorAlert} from "../../ErrorAlert";
 import {useFromBtcLnQuote} from "../../../utils/useFromBtcLnQuote";
-import {StarknetWalletContext} from "../../../context/StarknetWalletContext";
-import {useStateRef} from "../../../utils/useStateRef";
 
 /*
 Steps:

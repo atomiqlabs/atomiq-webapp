@@ -4,7 +4,7 @@ import {SwapTopbar} from "../components/SwapTopbar";
 import * as React from "react";
 import {useCallback, useContext, useEffect} from "react";
 import Icon from "react-icons-kit";
-import {LnForGasSwapState, Tokens} from "@atomiqlabs/sdk";
+import {LnForGasSwapState} from "@atomiqlabs/sdk";
 import * as BN from "bn.js";
 import ValidatedInput from "../components/ValidatedInput";
 import {ic_south} from 'react-icons-kit/md/ic_south'
@@ -15,8 +15,7 @@ import {useAsync} from "../utils/useAsync";
 import {TrustedFromBTCLNQuoteSummary} from "../components/quotes/frombtc/TrustedFromBTCLNQuoteSummary";
 import {useSwapState} from "../utils/useSwapState";
 import {ErrorAlert} from "../components/ErrorAlert";
-import {StarknetWalletContext} from "../context/StarknetWalletContext";
-import {useStateRef} from "../utils/useStateRef";
+import {Tokens} from "../FEConstants";
 
 const defaultSwapAmount = "12500000";
 

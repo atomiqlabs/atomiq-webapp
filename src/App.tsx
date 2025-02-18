@@ -5,25 +5,20 @@ import SolanaWalletProvider from "./context/SolanaWalletProvider";
 import {QuickScan} from "./pages/quickscan/QuickScan";
 import {QuickScanExecute} from "./pages/quickscan/QuickScanExecute";
 import {useAnchorWallet, useConnection} from '@solana/wallet-adapter-react';
-import {FEConstants} from "./FEConstants";
+import {Factory, FEConstants} from "./FEConstants";
 import {smartChainTokenArray} from "./utils/Currencies";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {SwapsContext} from "./context/SwapsContext";
 import {
     AbstractSigner,
-    BitcoinNetwork, isSCToken,
+    BitcoinNetwork,
+    isSCToken,
     ISwap,
-    MultichainSwapper,
-    SCToken,
-    SolanaFees,
-    SolanaSigner, StarknetFees, StarknetSigner
+    SCToken, Swapper,
 } from "@atomiqlabs/sdk";
 import {History} from "./pages/History";
-import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
 import {
-    Alert,
     Badge,
-    Button,
     Col,
     Container,
     Form,
@@ -49,17 +44,17 @@ import {SwapExplorer} from "./pages/SwapExplorer";
 import {Affiliate} from "./pages/Affiliate";
 import {gift} from 'react-icons-kit/fa/gift';
 import {BitcoinWalletProvider} from './context/BitcoinWalletProvider';
-import {WebLNProvider} from "webln";
 import {WebLNContext} from './context/WebLNContext';
 import {heart} from 'react-icons-kit/fa/heart';
 import {SwapNew} from "./pages/SwapNew";
 import {useAnchorNavigate} from "./utils/useAnchorNavigate";
 import {ErrorAlert} from "./components/ErrorAlert";
-import {useBitcoinWalletContext} from "./utils/useBitcoinWalletContext";
 import {StarknetWalletContext} from "./context/StarknetWalletContext";
 import {useStarknetWalletContext} from "./utils/useStarknetWalletContext";
 import {WalletConnectionsSummary} from "./components/WalletConnectionsSummary";
 import {useWebLNWalletContext} from "./utils/useWebLNWalletContext";
+import {SolanaFees, SolanaSigner} from "@atomiqlabs/chain-solana";
+import {StarknetFees} from "@atomiqlabs/chain-starknet";
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -73,7 +68,7 @@ function WrappedApp() {
 
     const {connection} = useConnection();
 
-    const [swapper, setSwapper] = React.useState<MultichainSwapper>();
+    const [swapper, setSwapper] = React.useState<Swapper<any>>();
     const [swapperLoadingError, setSwapperLoadingError] = React.useState<any>();
     const [swapperLoading, setSwapperLoading] = React.useState<boolean>(false);
 
@@ -112,7 +107,7 @@ function WrappedApp() {
 
     const abortController = useRef<AbortController>();
 
-    const loadSwapper: () => Promise<MultichainSwapper> = async() => {
+    const loadSwapper: () => Promise<Swapper<any>> = async() => {
         setSwapperLoadingError(null);
         setSwapperLoading(true);
         if(abortController.current!=null) abortController.current.abort();
@@ -121,7 +116,7 @@ function WrappedApp() {
             const useLp = searchParams.get("UNSAFE_LP_URL") ?? FEConstants.defaultLp;
             console.log("init start");
 
-            const swapperChains = {};
+            const swapperChains: any = {};
 
             if(FEConstants.solanaRpcUrl!=null) {
                 const solanaFees = new SolanaFees(connection as any, 1000000, 2, 100, "auto", "high", () => new BN(50000)/*, {
@@ -146,7 +141,7 @@ function WrappedApp() {
                 };
             }
 
-            const swapper = new MultichainSwapper({
+            const swapper = Factory.newSwapper({
                 chains: swapperChains,
                 intermediaryUrl: useLp,
                 getRequestTimeout: 15000,
@@ -159,6 +154,8 @@ function WrappedApp() {
                 mempoolApi: FEConstants.mempoolApi,
                 defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp
             });
+
+            console.log("Swapper: ", swapper);
 
             swapper.chains.STARKNET.tobtcln.options.paymentTimeoutSeconds = 10*24*3600;
 

@@ -2,9 +2,8 @@ import {Alert, Button} from "react-bootstrap";
 import * as React from "react";
 import {useContext, useMemo} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
-import {ISwap, SCToken, SwapDirection, TokenResolver, Tokens} from "@atomiqlabs/sdk";
+import {ISwap, SCToken, SwapDirection, toHumanReadableString} from "@atomiqlabs/sdk";
 import * as BN from "bn.js";
-import {toHumanReadableString} from "../utils/Currencies";
 import {SwapsContext} from "../context/SwapsContext";
 
 const swapMinimum = new BN(1000000);

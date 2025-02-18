@@ -1,7 +1,7 @@
 import * as BN from "bn.js";
 import BigNumber from "bignumber.js";
-import { fromDecimal, toDecimal, Tokens } from "@atomiqlabs/sdk";
-import { FEConstants } from "../FEConstants";
+import { toHumanReadableString } from "@atomiqlabs/sdk";
+import { FEConstants, Tokens } from "../FEConstants";
 export const TokenIcons = {
     WBTC: "/icons/crypto/WBTC.png",
     USDC: "/icons/crypto/USDC.svg",
@@ -39,16 +39,6 @@ export function toHumanReadable(amount, currencySpec) {
         return null;
     return new BigNumber(toHumanReadableString(amount, currencySpec));
 }
-export function toHumanReadableString(amount, currencySpec) {
-    if (amount == null)
-        return null;
-    return toDecimal(amount, currencySpec.decimals, undefined, currencySpec.displayDecimals);
-}
 export function fromHumanReadable(amount, currencySpec) {
     return new BN(amount.multipliedBy(new BigNumber(10).pow(new BigNumber(currencySpec.decimals))).toFixed(0));
-}
-export function fromHumanReadableString(amount, currencySpec) {
-    if (amount === "")
-        return null;
-    return fromDecimal(amount, currencySpec.decimals);
 }

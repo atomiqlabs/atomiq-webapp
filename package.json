@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@atomiqlabs/chain-solana": "github:atomiqlabs/atomiq-chain-solana#add-starknet",
+    "@atomiqlabs/chain-starknet": "github:atomiqlabs/atomiq-chain-starknet",
     "@atomiqlabs/sdk": "github:atomiqlabs/atomiq-sdk#add-starknet",
     "@solana/wallet-adapter-base": "^0.9.22",
     "@solana/wallet-adapter-react": "^0.15.30",

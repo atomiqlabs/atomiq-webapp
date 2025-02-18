@@ -1,9 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import { SwapsContext } from "../context/SwapsContext";
 import * as BN from "bn.js";
-import { fromHumanReadableString, toHumanReadable } from "./Currencies";
-import { SwapType, Tokens } from "@atomiqlabs/sdk";
+import { toHumanReadable } from "./Currencies";
+import { fromHumanReadableString, SwapType } from "@atomiqlabs/sdk";
 import { useLocation } from "react-router-dom";
+import { Tokens } from "../FEConstants";
 export function useAddressData(addressString) {
     const { swapper } = useContext(SwapsContext);
     const { state } = useLocation();

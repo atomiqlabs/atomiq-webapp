@@ -6,11 +6,11 @@ import SolanaWalletProvider from "./context/SolanaWalletProvider";
 import { QuickScan } from "./pages/quickscan/QuickScan";
 import { QuickScanExecute } from "./pages/quickscan/QuickScanExecute";
 import { useAnchorWallet, useConnection } from '@solana/wallet-adapter-react';
-import { FEConstants } from "./FEConstants";
+import { Factory, FEConstants } from "./FEConstants";
 import { smartChainTokenArray } from "./utils/Currencies";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { SwapsContext } from "./context/SwapsContext";
-import { BitcoinNetwork, isSCToken, MultichainSwapper, SolanaFees, SolanaSigner, StarknetFees } from "@atomiqlabs/sdk";
+import { BitcoinNetwork, isSCToken, } from "@atomiqlabs/sdk";
 import { History } from "./pages/History";
 import { Badge, Col, Container, Form, Nav, Navbar, OverlayTrigger, Row, Spinner, Tooltip } from "react-bootstrap";
 import { FAQ } from "./pages/FAQ";
@@ -37,6 +37,8 @@ import { StarknetWalletContext } from "./context/StarknetWalletContext";
 import { useStarknetWalletContext } from "./utils/useStarknetWalletContext";
 import { WalletConnectionsSummary } from "./components/WalletConnectionsSummary";
 import { useWebLNWalletContext } from "./utils/useWebLNWalletContext";
+import { SolanaFees, SolanaSigner } from "@atomiqlabs/chain-solana";
+import { StarknetFees } from "@atomiqlabs/chain-starknet";
 require('@solana/wallet-adapter-react-ui/styles.css');
 const noWalletPaths = new Set(["/about", "/faq", "/map", "/46jh456f45f"]);
 const jitoPubkey = "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL";
@@ -103,7 +105,7 @@ function WrappedApp() {
                     fees: starknetFees
                 };
             }
-            const swapper = new MultichainSwapper({
+            const swapper = Factory.newSwapper({
                 chains: swapperChains,
                 intermediaryUrl: useLp,
                 getRequestTimeout: 15000,
@@ -116,6 +118,7 @@ function WrappedApp() {
                 mempoolApi: FEConstants.mempoolApi,
                 defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp
             });
+            console.log("Swapper: ", swapper);
             swapper.chains.STARKNET.tobtcln.options.paymentTimeoutSeconds = 10 * 24 * 3600;
             await swapper.init();
             if (abortController.current.signal.aborted)

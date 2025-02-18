@@ -1,15 +1,14 @@
 import * as React from "react";
 import {Badge, Button, Card, Col, OverlayTrigger, Placeholder, Row, Tooltip} from "react-bootstrap";
-import {FEConstants} from "../FEConstants";
+import {FEConstants, TokenResolver, Tokens} from "../FEConstants";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {SingleColumnBackendTable} from "../components/table/SingleColumnTable";
-import {toHumanReadableString} from "../utils/Currencies";
 import * as BN from "bn.js";
 import Icon from "react-icons-kit";
 import {ic_arrow_forward} from 'react-icons-kit/md/ic_arrow_forward';
 import {ic_arrow_downward} from 'react-icons-kit/md/ic_arrow_downward';
 import ValidatedInput, {ValidatedInputRef} from "../components/ValidatedInput";
-import {ChainSwapType, Token, TokenResolver, Tokens} from "@atomiqlabs/sdk";
+import {ChainSwapType, toHumanReadableString, Token} from "@atomiqlabs/sdk";
 import {getTimeDeltaText} from "../utils/Utils";
 import {TokenIcon} from "../components/TokenIcon";
 

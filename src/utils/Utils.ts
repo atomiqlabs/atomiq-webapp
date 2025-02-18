@@ -121,3 +121,7 @@ export function capitalizeFirstLetter(txt: string) {
     if(txt==null) return null;
     return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
 }
+
+export function timeoutPromise(timeout: number): Promise<void> {
+    return new Promise<void>(resolve => setTimeout(resolve, timeout));
+}

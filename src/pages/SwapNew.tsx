@@ -6,8 +6,7 @@ import {
     SwapType,
     ToBTCLNSwap,
     ToBTCSwap,
-    Token,
-    Tokens
+    Token
 } from "@atomiqlabs/sdk";
 import * as React from "react";
 import {useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
@@ -21,7 +20,7 @@ import {SwapTopbar} from "../components/SwapTopbar";
 import {QRScannerModal} from "../components/qr/QRScannerModal";
 import {Alert, Button, Card, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
 import {bitcoinTokenArray, fromHumanReadable, smartChainTokenArray} from "../utils/Currencies";
-import {FEConstants} from "../FEConstants";
+import {FEConstants, Tokens} from "../FEConstants";
 import BigNumber from "bignumber.js";
 import {CurrencyDropdown} from "../components/CurrencyDropdown";
 import {SimpleFeeSummaryScreen} from "../components/fees/SimpleFeeScreen";

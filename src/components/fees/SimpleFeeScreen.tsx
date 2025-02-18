@@ -2,12 +2,9 @@ import {
     Fee,
     FromBTCSwap,
     ISwap,
-    IToBTCSwap, SwapType,
-    Token, Tokens, toTokenAmount
+    IToBTCSwap, SwapType, toHumanReadableString,
+    Token, toTokenAmount
 } from "@atomiqlabs/sdk";
-import {
-    toHumanReadableString
-} from "../../utils/Currencies";
 import * as BN from "bn.js";
 import {BitcoinWalletContext} from "../../context/BitcoinWalletProvider";
 import {useContext, useEffect, useState} from "react";
@@ -18,6 +15,7 @@ import Icon from "react-icons-kit";
 import {ic_receipt_outline} from 'react-icons-kit/md/ic_receipt_outline';
 import {SwapsContext} from "../../context/SwapsContext";
 import {TokenIcon} from "../TokenIcon";
+import {Tokens} from "../../FEConstants";
 
 function FeePart(props: {
     bold?: boolean,

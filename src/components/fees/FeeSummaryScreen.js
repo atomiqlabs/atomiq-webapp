@@ -1,6 +1,5 @@
 import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
-import { SwapType } from "@atomiqlabs/sdk";
-import { toHumanReadableString } from "../../utils/Currencies";
+import { SwapType, toHumanReadableString } from "@atomiqlabs/sdk";
 import { Badge, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { getFeePct } from "../../utils/Utils";
 import { TokenIcon } from "../TokenIcon";

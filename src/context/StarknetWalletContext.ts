@@ -1,6 +1,6 @@
 import { createContext } from 'react';
-import {StarknetSigner} from "@atomiqlabs/sdk";
 import {StarknetWindowObject} from "@starknet-io/get-starknet";
+import {StarknetSigner} from "@atomiqlabs/chain-starknet";
 
 export const StarknetWalletContext: React.Context<{
     starknetSigner?: StarknetSigner,

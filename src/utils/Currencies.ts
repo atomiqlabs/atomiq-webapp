@@ -1,7 +1,7 @@
 import * as BN from "bn.js";
 import BigNumber from "bignumber.js";
-import {fromDecimal, SCToken, toDecimal, Token, TokenResolver, Tokens} from "@atomiqlabs/sdk";
-import {FEConstants} from "../FEConstants";
+import {SCToken, toHumanReadableString, Token} from "@atomiqlabs/sdk";
+import {FEConstants, Tokens} from "../FEConstants";
 
 type TokensType = typeof Tokens;
 type TokenTickers = {
@@ -53,16 +53,6 @@ export function toHumanReadable(amount: BN, currencySpec: Token): BigNumber {
     return new BigNumber(toHumanReadableString(amount, currencySpec));
 }
 
-export function toHumanReadableString(amount: BN, currencySpec: Token): string {
-    if(amount==null) return null;
-    return toDecimal(amount, currencySpec.decimals, undefined, currencySpec.displayDecimals);
-}
-
 export function fromHumanReadable(amount: BigNumber, currencySpec: Token): BN {
     return new BN(amount.multipliedBy(new BigNumber(10).pow(new BigNumber(currencySpec.decimals))).toFixed(0));
-}
-
-export function fromHumanReadableString(amount: string, currencySpec: Token): BN {
-    if(amount==="") return null;
-    return fromDecimal(amount, currencySpec.decimals);
 }

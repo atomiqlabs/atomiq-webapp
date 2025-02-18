@@ -2,8 +2,9 @@ import {useCallback, useEffect, useRef, useState} from "react";
 import {WalletAccount} from "starknet";
 import {connect, disconnect, StarknetWindowObject} from "@starknet-io/get-starknet";
 import {FEConstants} from "../FEConstants";
-import {StarknetSigner, timeoutPromise} from "@atomiqlabs/sdk";
 import {useLocalStorage} from "./useLocalStorage";
+import { StarknetSigner } from "@atomiqlabs/chain-starknet";
+import {timeoutPromise} from "./Utils";
 
 function waitTillAddressPopulated(acc: WalletAccount) {
     return new Promise<void>((resolve) => {

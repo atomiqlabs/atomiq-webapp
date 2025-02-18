@@ -112,3 +112,6 @@ export function capitalizeFirstLetter(txt) {
         return null;
     return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
 }
+export function timeoutPromise(timeout) {
+    return new Promise(resolve => setTimeout(resolve, timeout));
+}

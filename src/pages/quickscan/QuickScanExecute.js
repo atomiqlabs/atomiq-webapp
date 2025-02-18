@@ -4,7 +4,7 @@ import { CurrencyDropdown } from "../../components/CurrencyDropdown";
 import { useContext, useEffect, useState } from "react";
 import { FeeSummaryScreen } from "../../components/fees/FeeSummaryScreen";
 import { Badge, Button, Form, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
-import { SwapType, Tokens } from "@atomiqlabs/sdk";
+import { SwapType } from "@atomiqlabs/sdk";
 import BigNumber from "bignumber.js";
 import { smartChainTokenArray, } from "../../utils/Currencies";
 import { QuoteSummary } from "../../components/quotes/QuoteSummary";
@@ -20,6 +20,7 @@ import { useWalletBalance } from "../../utils/useWalletBalance";
 import { ScrollAnchor } from "../../components/ScrollAnchor";
 import { useLocalStorage } from "../../utils/useLocalStorage";
 import { ErrorAlert } from "../../components/ErrorAlert";
+import { Tokens } from "../../FEConstants";
 export function QuickScanExecute() {
     const { swapper, getSigner } = useContext(SwapsContext);
     const navigate = useNavigate();

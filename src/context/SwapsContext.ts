@@ -1,11 +1,10 @@
-
 import { createContext } from 'react';
-import {AbstractSigner, ISwap, MultichainSwapper, SCToken} from "@atomiqlabs/sdk";
+import {AbstractSigner, ISwap, SCToken, Swapper} from "@atomiqlabs/sdk";
 
 export const SwapsContext: React.Context<{
     actionableSwaps: ISwap[],
     removeSwap: (swap: ISwap) => void,
-    swapper: MultichainSwapper,
+    swapper: Swapper<any>,
     chains: {
         [chainId: string]: {
             signer: AbstractSigner,

@@ -3,12 +3,12 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "r
 import { Alert, Badge, Button, Spinner } from "react-bootstrap";
 import { QRCodeSVG } from "qrcode.react";
 import ValidatedInput from "../../ValidatedInput";
-import { FromBTCSwapState, Tokens } from "@atomiqlabs/sdk";
+import { FromBTCSwapState } from "@atomiqlabs/sdk";
 import Icon from "react-icons-kit";
 import { clipboard } from "react-icons-kit/fa/clipboard";
 import { externalLink } from 'react-icons-kit/fa/externalLink';
 import { getDeltaText } from "../../../utils/Utils";
-import { FEConstants } from "../../../FEConstants";
+import { FEConstants, Tokens } from "../../../FEConstants";
 import { SwapsContext } from "../../../context/SwapsContext";
 import { ButtonWithSigner } from "../../ButtonWithSigner";
 import { ScrollAnchor } from "../../ScrollAnchor";

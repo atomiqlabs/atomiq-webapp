@@ -1,7 +1,13 @@
-import {FromBTCSwap, IFromBTCSwap, ISwap, IToBTCSwap, SwapType, Token, TokenAmount} from "@atomiqlabs/sdk";
 import {
-    toHumanReadableString
-} from "../../utils/Currencies";
+    FromBTCSwap,
+    IFromBTCSwap,
+    ISwap,
+    IToBTCSwap,
+    SwapType,
+    toHumanReadableString,
+    Token,
+    TokenAmount
+} from "@atomiqlabs/sdk";
 import * as BN from "bn.js";
 import {Badge, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as React from "react";

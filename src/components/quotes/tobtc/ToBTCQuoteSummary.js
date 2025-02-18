@@ -1,8 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Alert, Button, Spinner } from "react-bootstrap";
-import { SwapType, ToBTCSwapState } from "@atomiqlabs/sdk";
-import { toHumanReadableString } from "../../../utils/Currencies";
+import { SwapType, ToBTCSwapState, toHumanReadableString } from "@atomiqlabs/sdk";
 import * as bolt11 from "bolt11";
 import { FEConstants } from "../../../FEConstants";
 import { SwapsContext } from "../../../context/SwapsContext";

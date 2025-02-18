@@ -1,8 +1,9 @@
-import { isSCToken, SwapType, Tokens } from "@atomiqlabs/sdk";
+import { isSCToken, SwapType, } from "@atomiqlabs/sdk";
 import * as BN from "bn.js";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { toHumanReadable } from "./Currencies";
 import { SwapsContext } from "../context/SwapsContext";
+import { Tokens } from "../FEConstants";
 const defaultConstraints = {
     min: new BN(1),
     max: null

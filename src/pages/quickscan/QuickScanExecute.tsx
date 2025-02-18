@@ -3,11 +3,10 @@ import {CurrencyDropdown} from "../../components/CurrencyDropdown";
 import * as React from "react";
 import {useContext, useEffect, useState} from "react";
 import {FeeSummaryScreen} from "../../components/fees/FeeSummaryScreen";
-import {Alert, Badge, Button, Form, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
+import {Badge, Button, Form, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
 import {
     SCToken,
-    SwapType,
-    Tokens
+    SwapType
 } from "@atomiqlabs/sdk";
 import BigNumber from "bignumber.js";
 import {
@@ -26,6 +25,7 @@ import {useWalletBalance} from "../../utils/useWalletBalance";
 import {ScrollAnchor} from "../../components/ScrollAnchor";
 import {useLocalStorage} from "../../utils/useLocalStorage";
 import {ErrorAlert} from "../../components/ErrorAlert";
+import {Tokens} from "../../FEConstants";
 
 export function QuickScanExecute() {
     const {swapper, getSigner} = useContext(SwapsContext);

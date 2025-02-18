@@ -1,4 +1,4 @@
-import { FromBTCLNSwapState, timeoutPromise } from "@atomiqlabs/sdk";
+import { FromBTCLNSwapState } from "@atomiqlabs/sdk";
 import { useContext, useEffect } from "react";
 import { SwapsContext } from "../context/SwapsContext";
 import { useSwapState } from "./useSwapState";
@@ -15,6 +15,7 @@ import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_ho
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { ic_download_outline } from 'react-icons-kit/md/ic_download_outline';
 import { StarknetWalletContext } from "../context/StarknetWalletContext";
+import { timeoutPromise } from "./Utils";
 export function useFromBtcLnQuote(quote, setAmountLock) {
     const { getSigner } = useContext(SwapsContext);
     const signer = getSigner(quote);

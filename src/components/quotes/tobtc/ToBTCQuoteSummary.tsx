@@ -1,8 +1,7 @@
 import * as React from "react";
 import {useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {Alert, Button, Spinner} from "react-bootstrap";
-import {IToBTCSwap, SwapType, ToBTCLNSwap, ToBTCSwap, ToBTCSwapState} from "@atomiqlabs/sdk";
-import {toHumanReadableString} from "../../../utils/Currencies";
+import {IToBTCSwap, SwapType, ToBTCLNSwap, ToBTCSwap, ToBTCSwapState, toHumanReadableString} from "@atomiqlabs/sdk";
 import * as bolt11 from "bolt11";
 import * as BN from "bn.js";
 import {FEConstants} from "../../../FEConstants";

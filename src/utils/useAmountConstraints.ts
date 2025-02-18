@@ -1,19 +1,16 @@
 import {
     isSCToken,
     MultichainSwapBounds,
-    MultichainTokenBounds, OutOfBoundsError,
     SCToken,
-    Swapper,
     SwapType,
     Token,
-    TokenBounds,
-    Tokens
 } from "@atomiqlabs/sdk";
 import BigNumber from "bignumber.js";
 import * as BN from "bn.js";
 import {useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {toHumanReadable} from "./Currencies";
 import {SwapsContext} from "../context/SwapsContext";
+import {Tokens} from "../FEConstants";
 
 type SwapTypeBounds = {
     [swapType in SwapType]?: {min: BN, max: BN}

@@ -7,22 +7,19 @@ import {
     Placeholder,
     Row,
 } from "react-bootstrap";
-import {
-    bitcoinTokenArray,
-    toHumanReadableString
-} from "../utils/Currencies";
+import {bitcoinTokenArray} from "../utils/Currencies";
 import {useContext, useEffect, useState} from "react";
 import * as React from "react";
 import ValidatedInput from "../components/ValidatedInput";
-import {FEConstants} from "../FEConstants";
+import {FEConstants, TokenResolver, Tokens} from "../FEConstants";
 import * as BN from "bn.js";
 import {SingleColumnStaticTable} from "../components/table/SingleColumnTable";
 import {getTimeDeltaText} from "../utils/Utils";
 import {SwapsContext} from "../context/SwapsContext";
 import {TokenIcon} from "../components/TokenIcon";
-import {TokenResolver, Tokens} from "@atomiqlabs/sdk";
 import {ButtonWithSigner} from "../components/ButtonWithSigner";
 import {ErrorAlert} from "../components/ErrorAlert";
+import {toHumanReadableString} from "@atomiqlabs/sdk";
 
 type AffiliatePayout = {
     timestamp: number,
@@ -141,7 +138,7 @@ export function Affiliate() {
                                 ) : (
                                     <>
                                         <TokenIcon tokenOrTicker={Tokens.BITCOIN.BTC} className="currency-icon-medium pb-2"/>
-                                        {toHumanReadableString(new BN(data?.stats?.totalVolumeSats), bitcoinTokenArray[0])+" BTC"}
+                                        {toHumanReadableString(new BN(data?.stats?.totalVolumeSats), Tokens.BITCOIN.BTC)+" BTC"}
                                     </>
                                 )}</h4>
                                 <small className="mb-2" style={{marginTop: "-6px"}}>{loading || currencySpec==null ? (

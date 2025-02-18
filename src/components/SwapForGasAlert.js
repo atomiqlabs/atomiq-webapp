@@ -2,9 +2,8 @@ import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
 import { Alert, Button } from "react-bootstrap";
 import { useContext, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { SwapDirection } from "@atomiqlabs/sdk";
+import { SwapDirection, toHumanReadableString } from "@atomiqlabs/sdk";
 import * as BN from "bn.js";
-import { toHumanReadableString } from "../utils/Currencies";
 import { SwapsContext } from "../context/SwapsContext";
 const swapMinimum = new BN(1000000);
 export function SwapForGasAlert(props) {

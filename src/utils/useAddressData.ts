@@ -1,10 +1,11 @@
 import {useContext, useEffect, useState} from "react";
 import {SwapsContext} from "../context/SwapsContext";
 import * as BN from "bn.js";
-import {fromHumanReadableString, toHumanReadable} from "./Currencies";
-import {LNURLPay, LNURLWithdraw, SwapType, Tokens} from "@atomiqlabs/sdk";
+import {toHumanReadable} from "./Currencies";
+import {fromHumanReadableString, LNURLPay, LNURLWithdraw, SwapType} from "@atomiqlabs/sdk";
 import {useLocation} from "react-router-dom";
 import BigNumber from "bignumber.js";
+import {Tokens} from "../FEConstants";
 
 type AddressDataResult = {
     address: string,

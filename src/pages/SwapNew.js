@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { BitcoinNetwork, isBtcToken, isSCToken, SwapType, Tokens } from "@atomiqlabs/sdk";
+import { BitcoinNetwork, isBtcToken, isSCToken, SwapType } from "@atomiqlabs/sdk";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SwapsContext } from "../context/SwapsContext";
 import { useAddressData } from "../utils/useAddressData";
@@ -11,7 +11,7 @@ import { SwapTopbar } from "../components/SwapTopbar";
 import { QRScannerModal } from "../components/qr/QRScannerModal";
 import { Alert, Button, Card, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
 import { bitcoinTokenArray, fromHumanReadable, smartChainTokenArray } from "../utils/Currencies";
-import { FEConstants } from "../FEConstants";
+import { FEConstants, Tokens } from "../FEConstants";
 import BigNumber from "bignumber.js";
 import { CurrencyDropdown } from "../components/CurrencyDropdown";
 import { SimpleFeeSummaryScreen } from "../components/fees/SimpleFeeScreen";
