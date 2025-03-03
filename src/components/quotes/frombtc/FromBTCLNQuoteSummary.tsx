@@ -12,7 +12,6 @@ import {SwapExpiryProgressBar} from "../../SwapExpiryProgressBar";
 import {SwapForGasAlert} from "../../SwapForGasAlert";
 
 import {StepByStep} from "../../StepByStep";
-import * as BN from "bn.js";
 import {useLocalStorage} from "../../../utils/useLocalStorage";
 import {LightningQR} from "./LightningQR";
 import {ErrorAlert} from "../../ErrorAlert";
@@ -31,7 +30,7 @@ export function FromBTCLNQuoteSummary(props: {
     setAmountLock: (isLocked: boolean) => void,
     type?: "payment" | "swap",
     abortSwap?: () => void,
-    notEnoughForGas: BN
+    notEnoughForGas: bigint
 }) {
     const {getSigner} = useContext(SwapsContext);
     const signer = getSigner(props.quote);

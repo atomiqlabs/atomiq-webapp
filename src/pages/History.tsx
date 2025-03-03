@@ -1,16 +1,11 @@
 import {SwapTopbar} from "../components/SwapTopbar";
 import {Badge, Button, Col, Row} from "react-bootstrap";
 import {
-    FromBTCLNSwap,
-    FromBTCSwap,
     IFromBTCSwap,
     isSCToken,
     ISwap,
     IToBTCSwap,
-    SwapDirection,
-    SwapType,
-    ToBTCLNSwap,
-    ToBTCSwap
+    SwapDirection
 } from "@atomiqlabs/sdk";
 import * as React from "react";
 import {useContext, useEffect, useState} from "react";
@@ -179,38 +174,3 @@ export function History() {
         </>
     )
 }
-
-/*
-<ListGroup.Item as="li" className="text-start d-flex flex-row">
-    <Col>
-        <div>
-            <b>Swap</b>
-            <Badge bg="danger" className="ms-2">Failed (refundable)</Badge>
-        </div>
-        <img src="/icons/crypto/BTC.svg" className="currency-icon-history me-1"/>
-        0.001 -{">"} <img src="/icons/crypto/SOL.svg" className="currency-icon-history me-1"/>
-        0.021232
-    </Col>
-    <Col xs={3} className="d-flex">
-        <Button className="px-1 flex-fill">
-            Refund
-        </Button>
-    </Col>
-</ListGroup.Item>
-<ListGroup.Item as="li" className="text-start d-flex flex-row">
-    <Col>
-        <div>
-            <b>Swap</b>
-            <Badge bg="success" className="ms-2">Claimable</Badge>
-        </div>
-        <img src="/icons/crypto/BTC.svg" className="currency-icon-history me-1"/>
-        0.00191293 -{">"} <img src="/icons/crypto/SOL.svg" className="currency-icon-history me-1"/>
-        0.021232941
-    </Col>
-    <Col xs={3} className="d-flex">
-        <Button variant="outline-primary" className="px-1 flex-fill">
-            Continue
-        </Button>
-    </Col>
-</ListGroup.Item>
- */

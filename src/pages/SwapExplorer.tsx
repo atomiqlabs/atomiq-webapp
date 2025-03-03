@@ -3,7 +3,6 @@ import {Badge, Button, Card, Col, OverlayTrigger, Placeholder, Row, Tooltip} fro
 import {FEConstants, TokenResolver, Tokens} from "../FEConstants";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {SingleColumnBackendTable} from "../components/table/SingleColumnTable";
-import * as BN from "bn.js";
 import Icon from "react-icons-kit";
 import {ic_arrow_forward} from 'react-icons-kit/md/ic_arrow_forward';
 import {ic_arrow_downward} from 'react-icons-kit/md/ic_arrow_downward';
@@ -184,9 +183,9 @@ export function SwapExplorer(props: {}) {
                         renderer: (row) => {
                             const chainId: string = row.chainId ?? "SOLANA";
 
-                            let inputAmount: BN;
+                            let inputAmount: bigint;
                             let inputCurrency: Token;
-                            let outputAmount: BN;
+                            let outputAmount: bigint;
                             let outputCurrency: Token;
 
                             let inputExplorer;
@@ -201,9 +200,9 @@ export function SwapExplorer(props: {}) {
                             let outputInfo: string;
 
                             if(row.direction==="ToBTC") {
-                                inputAmount = new BN(row.rawAmount);
+                                inputAmount = BigInt(row.rawAmount);
                                 inputCurrency = TokenResolver[chainId].getToken(row.token);
-                                outputAmount = row.btcRawAmount==null ? null : new BN(row.btcRawAmount);
+                                outputAmount = row.btcRawAmount==null ? null : BigInt(row.btcRawAmount);
                                 outputCurrency = row.type==="CHAIN" ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
                                 txIdInput = row.txInit;
                                 txIdOutput = row.type==="CHAIN" ? row.btcTx : row.paymentHash;
@@ -219,9 +218,9 @@ export function SwapExplorer(props: {}) {
                                 inputAddress = row.clientWallet;
                                 if(row.type==="CHAIN") outputAddress = row.btcAddress || "Unknown";
                             } else {
-                                outputAmount = new BN(row.rawAmount);
+                                outputAmount = BigInt(row.rawAmount);
                                 outputCurrency = TokenResolver[chainId].getToken(row.token);
-                                inputAmount = row.btcRawAmount==null ? null : new BN(row.btcRawAmount);
+                                inputAmount = row.btcRawAmount==null ? null : BigInt(row.btcRawAmount);
                                 inputCurrency = row.type==="CHAIN" ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
                                 txIdOutput = row.txInit;
                                 txIdInput = row.type==="CHAIN" ? row.btcTx : row.paymentHash;

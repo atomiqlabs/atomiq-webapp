@@ -5,7 +5,6 @@ import {
     IToBTCSwap, SwapType, toHumanReadableString,
     Token, toTokenAmount
 } from "@atomiqlabs/sdk";
-import * as BN from "bn.js";
 import {BitcoinWalletContext} from "../../context/BitcoinWalletProvider";
 import {useContext, useEffect, useState} from "react";
 import {Accordion, Badge, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
@@ -24,8 +23,8 @@ function FeePart(props: {
     usdValue?: number,
     className?: string,
 
-    feePPM?: BN,
-    feeBase?: BN,
+    feePPM?: bigint,
+    feeBase?: bigint,
     feeCurrency?: Token,
     description?: string
 }) {
@@ -36,13 +35,13 @@ function FeePart(props: {
                 {props.text}
                 {props.feePPM == null ? "" : props.feeBase == null ? (
                     <Badge bg="primary" className="ms-1 pill-round px-2"
-                           pill>{props.feePPM.toNumber() / 10000} %</Badge>
+                           pill>{Number(props.feePPM) / 10000} %</Badge>
                 ) : (
                     <OverlayTrigger overlay={<Tooltip id={"fee-tooltip-" + props.text}>
-                        <span>{props.feePPM.toNumber() / 10000}% + {toHumanReadableString(props.feeBase, props.feeCurrency)} {props.feeCurrency.ticker}</span>
+                        <span>{Number(props.feePPM) / 10000}% + {toHumanReadableString(props.feeBase, props.feeCurrency)} {props.feeCurrency.ticker}</span>
                     </Tooltip>}>
                         <Badge bg="primary" className="ms-1 pill-round px-2" pill>
-                            <span className="dottedUnderline">{props.feePPM.toNumber() / 10000}%</span>
+                            <span className="dottedUnderline">{Number(props.feePPM) / 10000}%</span>
                         </Badge>
                     </OverlayTrigger>
                 )}
@@ -96,8 +95,8 @@ type SingleFee = {
     usdValue?: number,
     className?: string,
 
-    feePPM?: BN,
-    feeBase?: BN,
+    feePPM?: bigint,
+    feeBase?: bigint,
     feeCurrency?: Token,
     description?: string
 }
@@ -174,7 +173,7 @@ export function SimpleFeeSummaryScreen(props: {
                     setBtcTxFeeLoading(false);
                     return;
                 }
-                const feeInBtc = toTokenAmount(new BN(btcTxFee), Tokens.BITCOIN.BTC, swapper.prices);
+                const feeInBtc = toTokenAmount(BigInt(btcTxFee), Tokens.BITCOIN.BTC, swapper.prices);
 
                 const btcNetworkFee: Fee = {
                     amountInSrcToken: feeInBtc,

@@ -6,9 +6,8 @@ import {SwapsContext} from "../../../context/SwapsContext";
 import {ButtonWithSigner} from "../../ButtonWithSigner";
 import {useSwapState} from "../../../utils/useSwapState";
 import {SwapExpiryProgressBar} from "../../SwapExpiryProgressBar";
-import * as BN from "bn.js";
 
-import {SingleStep, StepByStep} from "../../StepByStep";
+import {StepByStep} from "../../StepByStep";
 import {ErrorAlert} from "../../ErrorAlert";
 import {useFromBtcLnQuote} from "../../../utils/useFromBtcLnQuote";
 
@@ -18,7 +17,7 @@ export function LNURLWithdrawQuoteSummary(props: {
     setAmountLock: (isLocked: boolean) => void,
     type?: "payment" | "swap",
     autoContinue?: boolean,
-    notEnoughForGas: BN
+    notEnoughForGas: bigint
 }) {
     const {getSigner} = useContext(SwapsContext);
     const signer = getSigner(props.quote);

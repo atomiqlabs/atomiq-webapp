@@ -1,6 +1,5 @@
 import {AbstractSigner, isBtcToken, isSCToken, toHumanReadableString, Token} from "@atomiqlabs/sdk";
 import {useContext, useEffect, useState} from "react";
-import * as BN from "bn.js";
 import {BitcoinWalletContext} from "../context/BitcoinWalletProvider";
 import {SwapsContext} from "../context/SwapsContext";
 import BigNumber from "bignumber.js";
@@ -15,7 +14,7 @@ export function useWalletBalance(
 ): {
     amountString: string,
     amount: BigNumber,
-    rawAmount: BN,
+    rawAmount: bigint,
     feeRate: number,
     totalFee?: number
 } {
@@ -27,7 +26,7 @@ export function useWalletBalance(
     const [_maxSpendable, setMaxSpendable] = useState<{
         amountString: string,
         amount: BigNumber,
-        rawAmount: BN,
+        rawAmount: bigint,
         feeRate: number,
         totalFee?: number
     }>(null);

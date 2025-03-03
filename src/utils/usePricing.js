@@ -23,7 +23,7 @@ export function usePricing(_amount, currency) {
         const updateNum = pricing.current.updates;
         const amount = _amount == null ? null : fromHumanReadable(_amount, currency);
         setValue(null);
-        if (amount == null || amount.isZero())
+        if (amount == null || amount === 0n)
             return;
         const process = () => pricing.current.promise = swapper.prices.getUsdValue(amount, currency).then(value => {
             if (pricing.current.updates !== updateNum)

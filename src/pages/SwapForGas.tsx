@@ -5,7 +5,6 @@ import * as React from "react";
 import {useCallback, useContext, useEffect} from "react";
 import Icon from "react-icons-kit";
 import {LnForGasSwapState} from "@atomiqlabs/sdk";
-import * as BN from "bn.js";
 import ValidatedInput from "../components/ValidatedInput";
 import {ic_south} from 'react-icons-kit/md/ic_south'
 import {SwapsContext} from "../context/SwapsContext";
@@ -27,7 +26,7 @@ export function SwapForGas() {
 
     const {state} = useLocation() as {state: {returnPath?: string, chainId?: string, amount: string}};
     const chainId = state?.chainId ?? "SOLANA";
-    const amount = new BN(state?.amount ?? defaultSwapAmount);
+    const amount = BigInt(state?.amount ?? defaultSwapAmount);
 
     const [createSwap, loading, swapData, error] = useAsync(
         () => {

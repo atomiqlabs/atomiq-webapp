@@ -1,5 +1,5 @@
 import {useCallback, useContext, useEffect, useRef, useState} from "react";
-import {AbstractSigner, ISwap, LNURLPay, LNURLWithdraw, SCToken, SwapType, Token} from "@atomiqlabs/sdk";
+import {AbstractSigner, ISwap, LNURLPay, LNURLWithdraw, Token} from "@atomiqlabs/sdk";
 import {SwapsContext} from "../context/SwapsContext";
 import BigNumber from "bignumber.js";
 import {fromHumanReadable} from "./Currencies";

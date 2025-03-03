@@ -1,4 +1,3 @@
-import * as BN from "bn.js";
 import BigNumber from "bignumber.js";
 import { toHumanReadableString } from "@atomiqlabs/sdk";
 import { FEConstants, Tokens } from "../FEConstants";
@@ -40,5 +39,5 @@ export function toHumanReadable(amount, currencySpec) {
     return new BigNumber(toHumanReadableString(amount, currencySpec));
 }
 export function fromHumanReadable(amount, currencySpec) {
-    return new BN(amount.multipliedBy(new BigNumber(10).pow(new BigNumber(currencySpec.decimals))).toFixed(0));
+    return BigInt(amount.multipliedBy(new BigNumber(10).pow(new BigNumber(currencySpec.decimals))).toFixed(0));
 }

@@ -1,97 +1,22 @@
 import { AddressPurpose, BitcoinNetworkType, getCapabilities, getAddress, signTransaction } from "sats-connect";
 import { BitcoinWallet } from "../BitcoinWallet";
 import { FEConstants } from "../../../FEConstants";
-import * as bitcoin from "bitcoinjs-lib";
 import { BitcoinNetwork } from "@atomiqlabs/sdk";
+import { Transaction, Address as AddressParser } from "@scure/btc-signer";
 const network = FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? BitcoinNetworkType.Testnet : BitcoinNetworkType.Mainnet;
-const bitcoinNetwork = FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin;
-function identifyAddressType(address) {
-    const outputScript = bitcoin.address.toOutputScript(address, bitcoinNetwork);
-    try {
-        if (bitcoin.payments.p2pkh({
-            output: outputScript,
-            network: bitcoinNetwork
-        }).address === address)
+function identifyAddressType(address, network) {
+    switch (AddressParser(network).decode(address).type) {
+        case "pkh":
             return "p2pkh";
-    }
-    catch (e) {
-        console.error(e);
-    }
-    try {
-        if (bitcoin.payments.p2wpkh({
-            output: outputScript,
-            network: bitcoinNetwork
-        }).address === address)
+        case "wpkh":
             return "p2wpkh";
-    }
-    catch (e) {
-        console.error(e);
-    }
-    try {
-        if (bitcoin.payments.p2tr({
-            output: outputScript,
-            network: bitcoinNetwork
-        }).address === address)
+        case "tr":
             return "p2tr";
-    }
-    catch (e) {
-        console.error(e);
-    }
-    try {
-        if (bitcoin.payments.p2sh({
-            output: outputScript,
-            network: bitcoinNetwork
-        }).address === address)
+        case "sh":
             return "p2sh-p2wpkh";
+        default:
+            return null;
     }
-    catch (e) {
-        console.error(e);
-    }
-    return null;
-}
-function _identifyAddressType(pubkey, address) {
-    const pubkeyBuffer = Buffer.from(pubkey, "hex");
-    try {
-        if (bitcoin.payments.p2pkh({
-            pubkey: pubkeyBuffer,
-            network: bitcoinNetwork
-        }).address === address)
-            return "p2pkh";
-    }
-    catch (e) {
-        console.error(e);
-    }
-    try {
-        if (bitcoin.payments.p2wpkh({
-            pubkey: pubkeyBuffer,
-            network: bitcoinNetwork
-        }).address === address)
-            return "p2wpkh";
-    }
-    catch (e) {
-        console.error(e);
-    }
-    try {
-        if (bitcoin.payments.p2tr({
-            pubkey: pubkeyBuffer,
-            network: bitcoinNetwork
-        }).address === address)
-            return "p2tr";
-    }
-    catch (e) {
-        console.error(e);
-    }
-    try {
-        if (bitcoin.payments.p2sh({
-            redeem: bitcoin.payments.p2wpkh({ pubkey: pubkeyBuffer, network: bitcoinNetwork }),
-            network: bitcoinNetwork
-        }).address === address)
-            return "p2sh-p2wpkh";
-    }
-    catch (e) {
-        console.error(e);
-    }
-    return null;
 }
 export class SatsConnectBitcoinWallet extends BitcoinWallet {
     constructor(account, walletName, iconUrl, wasAutomaticallyConnected) {
@@ -99,7 +24,7 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         this.account = account;
         this.walletName = walletName;
         this.iconUrl = iconUrl;
-        this.addressType = identifyAddressType(account.address);
+        this.addressType = identifyAddressType(account.address, this.network);
     }
     static async isInstalled() {
         let success = false;
@@ -190,13 +115,13 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
             }];
     }
     async getTransactionFee(address, amount, feeRate) {
-        const { psbt, fee } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, amount.toNumber(), feeRate);
+        const { psbt, fee } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
         if (psbt == null)
             return null;
         return fee;
     }
     async sendTransaction(address, amount, feeRate) {
-        const { psbt } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, amount.toNumber(), feeRate);
+        const { psbt } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
         if (psbt == null) {
             throw new Error("Not enough balance!");
         }
@@ -209,11 +134,11 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
                     type: network
                 },
                 message: "Send a swap transaction",
-                psbtBase64: psbt.toBase64(),
+                psbtBase64: Buffer.from(psbt.toPSBT(2)).toString("base64"),
                 broadcast: true,
                 inputsToSign: [{
                         address: this.account.address,
-                        signingIndexes: psbt.txInputs.map((e, index) => index)
+                        signingIndexes: Array.from({ length: psbt.inputsLength }, (_, i) => i)
                     }]
             },
             onFinish: (resp) => {
@@ -228,10 +153,10 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         if (txId == null) {
             if (psbtBase64 == null)
                 throw new Error("Transaction not properly signed by the wallet!");
-            const psbt = bitcoin.Psbt.fromBase64(psbtBase64);
-            psbt.finalizeAllInputs();
-            const tx = psbt.extractTransaction();
-            txId = await super._sendTransaction(tx.toHex());
+            const psbt = Transaction.fromPSBT(Buffer.from(psbtBase64, "base64"));
+            psbt.finalize();
+            const txHex = Buffer.from(psbt.extract()).toString("hex");
+            txId = await super._sendTransaction(txHex);
         }
         console.log("signTransaction returned!");
         return txId;

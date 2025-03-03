@@ -51,6 +51,8 @@ export function ConnectedWalletAnchor(props: {
 }) {
     const {name, icon, connect, disconnect, changeWallet, chainName} = useWalletForCurrency(props.currency);
 
+    console.log("ConnectedWalletAnchor(): chainName: "+chainName+" connect: ", connect);
+
     if(name==null && connect==null) return <></>;
 
     return (

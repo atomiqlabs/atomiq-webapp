@@ -3,13 +3,12 @@ import * as React from "react";
 import {useContext, useMemo} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {ISwap, SCToken, SwapDirection, toHumanReadableString} from "@atomiqlabs/sdk";
-import * as BN from "bn.js";
 import {SwapsContext} from "../context/SwapsContext";
 
-const swapMinimum = new BN(1000000);
+const swapMinimum = 1000000n;
 
 export function SwapForGasAlert(props: {
-    notEnoughForGas: BN,
+    notEnoughForGas: bigint,
     quote: ISwap
 }) {
     const location = useLocation();
@@ -20,7 +19,8 @@ export function SwapForGasAlert(props: {
     const feeNeeded = useMemo(() => {
         if(props.notEnoughForGas==null || props.quote==null || swapper==null) return null;
         const nativeToken = swapper.getNativeToken(props.quote.chainIdentifier);
-        const amount = BN.max(props.notEnoughForGas, swapMinimum);
+        let amount = props.notEnoughForGas;
+        if(amount < swapMinimum) amount = swapMinimum;
         return {
             rawAmount: amount,
             amount: toHumanReadableString(amount, nativeToken),

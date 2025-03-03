@@ -1,8 +1,8 @@
-import {RefObject, useCallback, useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {BitcoinWalletType, getInstalledBitcoinWallets} from "../bitcoin/onchain/BitcoinWalletUtils";
 import * as React from "react";
 import {BitcoinWallet} from "../bitcoin/onchain/BitcoinWallet";
-import {useWallet, Wallet} from "@solana/wallet-adapter-react";
+import {useWallet} from "@solana/wallet-adapter-react";
 import {useStateRef} from "./useStateRef";
 import {useLocalStorage} from "./useLocalStorage";
 

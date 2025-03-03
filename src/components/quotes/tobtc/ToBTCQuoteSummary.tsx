@@ -2,8 +2,7 @@ import * as React from "react";
 import {useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {Alert, Button, Spinner} from "react-bootstrap";
 import {IToBTCSwap, SwapType, ToBTCLNSwap, ToBTCSwap, ToBTCSwapState, toHumanReadableString} from "@atomiqlabs/sdk";
-import * as bolt11 from "bolt11";
-import * as BN from "bn.js";
+import * as bolt11 from "@atomiqlabs/bolt11";
 import {FEConstants} from "../../../FEConstants";
 import {SwapsContext} from "../../../context/SwapsContext";
 import {ButtonWithSigner} from "../../ButtonWithSigner";
@@ -49,7 +48,7 @@ export function ToBTCQuoteSummary(props: {
     setAmountLock: (isLocked: boolean) => void,
     type?: "payment" | "swap",
     autoContinue?: boolean,
-    notEnoughForGas: BN
+    notEnoughForGas: bigint
 }) {
     const {swapper, getSigner} = useContext(SwapsContext);
     const signer = getSigner(props.quote);

@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import { SwapsContext } from "../context/SwapsContext";
-import * as BN from "bn.js";
 import { toHumanReadable } from "./Currencies";
 import { fromHumanReadableString, SwapType } from "@atomiqlabs/sdk";
 import { useLocation } from "react-router-dom";
@@ -10,8 +9,8 @@ export function useAddressData(addressString) {
     const { state } = useLocation();
     const stateLnurlParams = state?.lnurlParams != null ? {
         ...state.lnurlParams,
-        min: new BN(state.lnurlParams.min),
-        max: new BN(state.lnurlParams.max)
+        min: BigInt(state.lnurlParams.min),
+        max: BigInt(state.lnurlParams.max)
     } : null;
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState();

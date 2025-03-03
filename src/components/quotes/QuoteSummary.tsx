@@ -1,10 +1,9 @@
-import {FromBTCLNSwap, FromBTCSwap, IFromBTCSwap, ISwap, IToBTCSwap, SCToken, SwapType} from "@atomiqlabs/sdk";
+import {FromBTCLNSwap, FromBTCSwap, ISwap, IToBTCSwap, SCToken, SwapType} from "@atomiqlabs/sdk";
 import {ToBTCQuoteSummary} from "./tobtc/ToBTCQuoteSummary";
 import {LNURLWithdrawQuoteSummary} from "./frombtc/LNURLWithdrawQuoteSummary";
 import {FromBTCLNQuoteSummary} from "./frombtc/FromBTCLNQuoteSummary";
 import {FromBTCQuoteSummary} from "./frombtc/FromBTCQuoteSummary";
 import * as React from "react";
-import * as BN from "bn.js";
 import {useContext, useEffect, useState} from "react";
 import {SwapsContext} from "../../context/SwapsContext";
 import {FEConstants} from "../../FEConstants";
@@ -15,14 +14,14 @@ export function QuoteSummary(props: {
     setAmountLock?: (isLocked: boolean) => void,
     type?: "payment" | "swap",
     abortSwap?: () => void,
-    balance?: BN,
+    balance?: bigint,
     autoContinue?: boolean,
     feeRate?: number
 }) {
     const {swapper, getSigner} = useContext(SwapsContext);
     const signer = getSigner(props.quote);
 
-    const [notEnoughForGas, setNotEnoughForGas] = useState<BN>(null);
+    const [notEnoughForGas, setNotEnoughForGas] = useState<bigint>(null);
     useEffect(() => {
         setNotEnoughForGas(null);
         let cancelled = false;

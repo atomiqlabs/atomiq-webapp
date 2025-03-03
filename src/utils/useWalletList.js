@@ -53,7 +53,7 @@ export function useWalletList() {
                 changeWallet: starknetChangeWallet
             };
         return obj;
-    }, [solanaWallet, starknetWallet, bitcoinWallet, lnWallet]);
+    }, [solanaWallet, starknetWallet, bitcoinWallet, lnWallet, bitcoinConnect]);
     return chainWalletData;
 }
 export function useWalletForCurrency(token) {

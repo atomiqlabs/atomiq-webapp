@@ -3,7 +3,6 @@ import {BitcoinWallet} from "../bitcoin/onchain/BitcoinWallet";
 import {BitcoinWalletType, getInstalledBitcoinWallets} from "../bitcoin/onchain/BitcoinWalletUtils";
 import {CloseButton, ListGroup, Modal} from "react-bootstrap";
 import * as React from "react";
-import {useBitcoinWalletContext} from "../utils/useBitcoinWalletContext";
 import {useLocalStorage} from "../utils/useLocalStorage";
 import {useStateRef} from "../utils/useStateRef";
 import {useWallet} from "@solana/wallet-adapter-react";
@@ -49,6 +48,8 @@ export function BitcoinWalletProvider(props: {children: React.ReactNode}) {
 
     const [bitcoinWallet, setBitcoinWallet] = React.useState<BitcoinWallet>();
     const [usableWallets, setUsableWallets] = useState<BitcoinWalletType[]>([]);
+
+    console.log("BitcoinWalletProvider(): usable wallets: ", usableWallets);
 
     const [autoConnect, setAutoConnect] = useLocalStorage<boolean>("btc-wallet-autoconnect", true);
     const bitcoinWalletRef = useStateRef(bitcoinWallet);

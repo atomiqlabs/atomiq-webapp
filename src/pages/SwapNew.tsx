@@ -30,8 +30,8 @@ import {useQuote} from "../utils/useQuote";
 import {usePricing} from "../utils/usePricing";
 import {BitcoinWalletContext} from "../context/BitcoinWalletProvider";
 import {WebLNContext} from "../context/WebLNContext";
-import * as bitcoin from "bitcoinjs-lib";
 import * as randomBytes from "randombytes";
+import {Address, NETWORK, TEST_NETWORK} from "@scure/btc-signer";
 import {useLocation, useNavigate} from "react-router-dom";
 
 import Icon from "react-icons-kit";
@@ -42,10 +42,10 @@ import {ic_power_off_outline} from 'react-icons-kit/md/ic_power_off_outline';
 import {useExistingSwap} from "../utils/useExistingSwap";
 import {ConnectedWalletAnchor} from "../components/wallet/ConnectedWalletAnchor";
 
-const RANDOM_BTC_ADDRESS = bitcoin.payments.p2wsh({
-    hash: randomBytes(32),
-    network: FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? bitcoin.networks.testnet : bitcoin.networks.bitcoin
-}).address;
+const RANDOM_BTC_ADDRESS = Address(BitcoinNetwork.TESTNET ? TEST_NETWORK : NETWORK).encode({
+    type: "wsh",
+    hash: randomBytes(32)
+});
 
 export function SwapNew(props: {
     supportedCurrencies: SCToken[]
@@ -501,7 +501,7 @@ export function SwapNew(props: {
                                             <a href="#" onClick={(e) => {
                                                 e.preventDefault();
                                                 if (validatedAmount == null) return;
-                                                lnWallet.makeInvoice(fromHumanReadable(validatedAmount, Tokens.BITCOIN.BTCLN).toNumber()).then(res => {
+                                                lnWallet.makeInvoice(Number(fromHumanReadable(validatedAmount, Tokens.BITCOIN.BTCLN))).then(res => {
                                                     addressRef.current.setValue(res.paymentRequest);
                                                 }).catch(e => console.error(e));
                                             }}>Fetch invoice from WebLN</a>

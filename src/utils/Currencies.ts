@@ -1,4 +1,3 @@
-import * as BN from "bn.js";
 import BigNumber from "bignumber.js";
 import {SCToken, toHumanReadableString, Token} from "@atomiqlabs/sdk";
 import {FEConstants, Tokens} from "../FEConstants";
@@ -48,11 +47,11 @@ if(FEConstants.allowedChains.has("STARKNET")) {
 //     }
 // }
 
-export function toHumanReadable(amount: BN, currencySpec: Token): BigNumber {
+export function toHumanReadable(amount: bigint, currencySpec: Token): BigNumber {
     if(amount==null) return null;
     return new BigNumber(toHumanReadableString(amount, currencySpec));
 }
 
-export function fromHumanReadable(amount: BigNumber, currencySpec: Token): BN {
-    return new BN(amount.multipliedBy(new BigNumber(10).pow(new BigNumber(currencySpec.decimals))).toFixed(0));
+export function fromHumanReadable(amount: BigNumber, currencySpec: Token): bigint {
+    return BigInt(amount.multipliedBy(new BigNumber(10).pow(new BigNumber(currencySpec.decimals))).toFixed(0));
 }

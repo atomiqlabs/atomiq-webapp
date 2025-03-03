@@ -1,4 +1,4 @@
-import {RefObject, useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {RefObject, useCallback, useMemo, useRef, useState} from "react";
 
 export function useLocalStorage<T>(name: string, _defaultValue: T): [T, (val: T) => void, RefObject<T>] {
 

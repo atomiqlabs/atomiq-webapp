@@ -116,7 +116,7 @@ export function FromBTCQuoteSummary(props) {
             setClaimable(false);
         };
     }, [state]);
-    const hasEnoughBalance = useMemo(() => props.balance == null || props.quote == null ? true : props.balance.gte(props.quote.getInput().rawAmount), [props.balance, props.quote]);
+    const hasEnoughBalance = useMemo(() => props.balance == null || props.quote == null ? true : props.balance >= props.quote.getInput().rawAmount, [props.balance, props.quote]);
     const isQuoteExpired = state === FromBTCSwapState.QUOTE_EXPIRED ||
         (state === FromBTCSwapState.QUOTE_SOFT_EXPIRED && !commitLoading);
     const isCreated = state === FromBTCSwapState.PR_CREATED ||

@@ -1,7 +1,6 @@
 import {AbstractSigner} from "@atomiqlabs/sdk";
 import {Button} from "react-bootstrap";
 import {useWalletModal} from "@solana/wallet-adapter-react-ui";
-import {useStarknetWalletContext} from "../utils/useStarknetWalletContext";
 import {useContext} from "react";
 import {StarknetWalletContext} from "../context/StarknetWalletContext";
 

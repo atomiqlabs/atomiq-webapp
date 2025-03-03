@@ -31,12 +31,10 @@ import {
 } from "react-bootstrap";
 import {FAQ} from "./pages/FAQ";
 import {About} from "./pages/About";
-import {Map} from "./pages/Map";
 import {info} from 'react-icons-kit/fa/info';
 import {question} from 'react-icons-kit/fa/question';
 import {exchange} from 'react-icons-kit/fa/exchange';
 import Icon from "react-icons-kit";
-import * as BN from "bn.js";
 import {LNNFCReader, LNNFCStartResult} from './lnnfc/LNNFCReader';
 import {ic_contactless} from 'react-icons-kit/md/ic_contactless';
 import {SwapForGas} from "./pages/SwapForGas";
@@ -58,7 +56,7 @@ import {StarknetFees} from "@atomiqlabs/chain-starknet";
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
-const noWalletPaths = new Set(["/about", "/faq", "/map", "/46jh456f45f"]);
+const noWalletPaths = new Set(["/about", "/faq", "/46jh456f45f"]);
 const jitoPubkey = "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL";
 const jitoEndpoint = "https://mainnet.block-engine.jito.wtf/api/v1/transactions";
 
@@ -119,7 +117,7 @@ function WrappedApp() {
             const swapperChains: any = {};
 
             if(FEConstants.solanaRpcUrl!=null) {
-                const solanaFees = new SolanaFees(connection as any, 1000000, 2, 100, "auto", "high", () => new BN(50000)/*, {
+                const solanaFees = new SolanaFees(connection as any, 1000000, 2, 100, "auto", "high", () => 50000n/*, {
                     address: jitoPubkey,
                     endpoint: jitoEndpoint
                 }*/);
@@ -147,7 +145,7 @@ function WrappedApp() {
                 getRequestTimeout: 15000,
                 postRequestTimeout: 30000,
                 bitcoinNetwork: FEConstants.bitcoinNetwork,
-                pricingFeeDifferencePPM: new BN(50000),
+                pricingFeeDifferencePPM: 50000n,
                 defaultAdditionalParameters: {
                     affiliate: affiliateLink
                 },
@@ -156,8 +154,6 @@ function WrappedApp() {
             });
 
             console.log("Swapper: ", swapper);
-
-            swapper.chains.STARKNET.tobtcln.options.paymentTimeoutSeconds = 10*24*3600;
 
             await swapper.init();
             if(abortController.current.signal.aborted) return;
@@ -238,11 +234,6 @@ function WrappedApp() {
                         <Navbar.Collapse role="" id="basic-navbar-nav">
                             <Nav className={"d-flex d-lg-none me-auto text-start border-top border-dark-subtle my-2 "+(swapper==null ? "" : "border-bottom")}>
                                 <Nav.Link href="/" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
-                                {/*<Nav.Link href="/map" className="d-flex flex-row align-items-center">*/}
-                                {/*    <Icon icon={map} className="d-flex me-1"/>*/}
-                                {/*    <span className="me-auto">Map</span>*/}
-                                {/*    <small>Find merchants accepting lightning!</small>*/}
-                                {/*</Nav.Link>*/}
                                 <Nav.Link href="/about" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
                                 <Nav.Link href="/faq" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
                                 <Nav.Link href="/referral" onClick={navigateHref} className="d-flex flex-row align-items-center">
@@ -266,15 +257,6 @@ function WrappedApp() {
                             </Nav>
                             <Nav className="d-none d-lg-flex me-auto text-start" navbarScroll style={{ maxHeight: '100px' }}>
                                 <Nav.Link href="/" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
-
-                                {/*<OverlayTrigger placement="bottom" overlay={<Tooltip id="map-tooltip">*/}
-                                {/*    Find merchants near you accepting bitcoin lightning!*/}
-                                {/*</Tooltip>}>*/}
-                                {/*    <Nav.Link href="/map" className="d-flex flex-row align-items-center">*/}
-                                {/*        <Icon icon={map} className="d-flex me-1"/>*/}
-                                {/*        <span>Map</span>*/}
-                                {/*    </Nav.Link>*/}
-                                {/*</OverlayTrigger>*/}
 
                                 <Nav.Link href="/about" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
                                 <Nav.Link href="/faq" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
@@ -376,7 +358,6 @@ function WrappedApp() {
                                 <Route path="gas" element={<SwapForGas/>}/>
                                 <Route path="faq" element={<FAQ/>}/>
                                 <Route path="about" element={<About/>}/>
-                                <Route path="map" element={<Map/>}/>
                                 <Route path="46jh456f45f" element={<SwapExplorer/>}/>
                                 <Route path="referral" element={<Affiliate/>}/>
                             </Route>

@@ -1,7 +1,6 @@
 
 import {useCallback, useContext, useEffect, useRef, useState} from "react";
 import {BitcoinWalletContext} from "../../context/BitcoinWalletProvider";
-import * as BN from "bn.js";
 
 export function useOnchainWallet() {
 
@@ -16,7 +15,7 @@ export function useOnchainWallet() {
         setPayError(null);
     }, [bitcoinWallet]);
 
-    const pay = useCallback((address: string, amount: BN, feeRate?: number) => {
+    const pay = useCallback((address: string, amount: bigint, feeRate?: number) => {
         if(sendingRef.current) return;
         sendingRef.current = true;
         setPayLoading(true);
