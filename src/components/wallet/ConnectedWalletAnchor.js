@@ -12,7 +12,6 @@ export function BitcoinWalletModal(props) {
 const ConnectedWallet = React.forwardRef(({ name, icon, onClick, noText }, ref) => (_jsxs("div", { className: "d-flex flex-row align-items-center cursor-pointer", onClick: onClick, children: [_jsx(Icon, { className: "text-success d-flex align-items-center me-1", icon: ic_brightness_1, size: 12 }), _jsx("img", { width: 16, height: 16, src: icon, className: "me-1" }), !noText ? name : ""] })));
 export function ConnectedWalletAnchor(props) {
     const { name, icon, connect, disconnect, changeWallet, chainName } = useWalletForCurrency(props.currency);
-    console.log("ConnectedWalletAnchor(): chainName: " + chainName + " connect: ", connect);
     if (name == null && connect == null)
         return _jsx(_Fragment, {});
     return (_jsx(_Fragment, { children: name == null ? (_jsx(Button, { variant: "outline-light", style: { marginBottom: "2px" }, className: "py-0 px-1", onClick: () => connect(), children: _jsxs("small", { className: "font-smallest", style: { marginBottom: "-2px" }, children: ["Connect ", chainName, " wallet"] }) })) : (_jsxs(Dropdown, { align: { md: "start" }, children: [_jsx(Dropdown.Toggle, { as: ConnectedWallet, id: "dropdown-custom-components", className: props.className, name: name, icon: icon, noText: props.noText, children: "Custom toggle" }), _jsxs(Dropdown.Menu, { children: [_jsx(Dropdown.Item, { eventKey: "1", onClick: disconnect, children: "Disconnect" }), changeWallet != null ? (_jsx(Dropdown.Item, { eventKey: "2", onClick: () => {

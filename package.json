@@ -62,7 +62,10 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "globals": {
+      "BigInt": true
+    }
   },
   "browserslist": {
     "production": [

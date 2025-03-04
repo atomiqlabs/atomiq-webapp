@@ -16,7 +16,6 @@ export function BitcoinWalletModal(props) {
 export function BitcoinWalletProvider(props) {
     const [bitcoinWallet, setBitcoinWallet] = React.useState();
     const [usableWallets, setUsableWallets] = useState([]);
-    console.log("BitcoinWalletProvider(): usable wallets: ", usableWallets);
     const [autoConnect, setAutoConnect] = useLocalStorage("btc-wallet-autoconnect", true);
     const bitcoinWalletRef = useStateRef(bitcoinWallet);
     const prevConnectedWalletRef = useRef();

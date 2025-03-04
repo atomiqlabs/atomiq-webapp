@@ -36,7 +36,7 @@ export function QuoteSummary(props: {
             const nativeToken = result.balance.token as SCToken;
 
             if(!result.enoughBalance) {
-                setNotEnoughForGas(FEConstants.scBalances[props.quote.chainIdentifier].optimal[nativeToken.address].add(result.required.rawAmount).sub(result.balance.rawAmount));
+                setNotEnoughForGas(FEConstants.scBalances[props.quote.chainIdentifier].optimal[nativeToken.address] + result.required.rawAmount - result.balance.rawAmount);
             }
         });
 
