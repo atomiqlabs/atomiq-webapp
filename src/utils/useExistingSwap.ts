@@ -18,10 +18,9 @@ export function useExistingSwap(swapId: string): [ISwap, boolean] {
         let canceled = false;
 
         setLoading(true);
-        swapper.getAllSwaps().then(swaps => {
+        swapper.getSwapById(swapId).then(swap => {
             if(canceled) return;
-            const foundSwap = swaps.find(swap => swap.getIdentifierHashString()===swapId);
-            setSwap(foundSwap);
+            setSwap(swap);
             setLoading(false);
         });
 

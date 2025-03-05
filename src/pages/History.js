@@ -65,6 +65,8 @@ export function History() {
         swapper.on("swapState", listener);
         return () => {
             swapper.off("swapState", listener);
+            setSwaps([]);
+            console.log("History: Set swaps to []");
         };
     }, [swapper]);
     return (_jsxs(_Fragment, { children: [_jsx(SwapTopbar, { selected: 2, enabled: true }), _jsx("div", { className: "flex-fill text-white container text-start", children: _jsx(SingleColumnStaticTable, { column: {

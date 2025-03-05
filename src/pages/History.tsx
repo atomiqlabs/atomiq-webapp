@@ -153,6 +153,8 @@ export function History() {
 
         return () => {
             swapper.off("swapState", listener);
+            setSwaps([]);
+            console.log("History: Set swaps to []");
         }
     }, [swapper]);
 
