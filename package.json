@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@atomiqlabs/chain-solana": "github:atomiqlabs/atomiq-chain-solana#add-starknet",
-    "@atomiqlabs/chain-starknet": "github:atomiqlabs/atomiq-chain-starknet",
-    "@atomiqlabs/sdk": "github:atomiqlabs/atomiq-sdk#refactor-storage",
+    "@atomiqlabs/chain-solana": "8.0.0",
+    "@atomiqlabs/chain-starknet": "1.0.1",
+    "@atomiqlabs/sdk": "2.1.0",
     "@coral-xyz/anchor": "0.29.0",
     "@scure/btc-signer": "1.6.0",
     "@solana/spl-token": "0.3.9",

@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { SwapTopbar } from "../components/SwapTopbar";
 import { Badge, Button, Col, Row } from "react-bootstrap";
-import { isSCToken, SwapDirection } from "@atomiqlabs/sdk";
+import { isSCToken, SwapDirection, SwapType } from "@atomiqlabs/sdk";
 import { useContext, useEffect, useState } from "react";
 import { SwapsContext } from "../context/SwapsContext";
 import { useNavigate } from "react-router-dom";
@@ -42,7 +42,9 @@ export function History() {
         if (swapper == null)
             return;
         swapper.getAllSwaps().then(swaps => {
-            setSwaps(swaps.filter(swap => swap.isInitiated()).sort((a, b) => {
+            setSwaps(swaps.filter(swap => swap.isInitiated() &&
+                swap.getType() !== SwapType.TRUSTED_FROM_BTC &&
+                swap.getType() !== SwapType.TRUSTED_FROM_BTCLN).sort((a, b) => {
                 const _a = a.isActionable();
                 const _b = b.isActionable();
                 if (_a === _b)
@@ -55,6 +57,8 @@ export function History() {
         });
         const listener = (swap) => {
             if (!swap.isInitiated())
+                return;
+            if (swap.getType() === SwapType.TRUSTED_FROM_BTC || swap.getType() === SwapType.TRUSTED_FROM_BTCLN)
                 return;
             setSwaps(swaps => {
                 if (swaps.includes(swap))

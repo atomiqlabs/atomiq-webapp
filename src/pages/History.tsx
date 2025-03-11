@@ -5,7 +5,7 @@ import {
     isSCToken,
     ISwap,
     IToBTCSwap,
-    SwapDirection
+    SwapDirection, SwapType
 } from "@atomiqlabs/sdk";
 import * as React from "react";
 import {useContext, useEffect, useState} from "react";
@@ -133,7 +133,11 @@ export function History() {
     useEffect(() => {
         if (swapper == null) return;
         swapper.getAllSwaps().then(swaps => {
-            setSwaps(swaps.filter(swap => swap.isInitiated()).sort((a, b) => {
+            setSwaps(swaps.filter(swap =>
+                swap.isInitiated() &&
+                swap.getType()!==SwapType.TRUSTED_FROM_BTC &&
+                swap.getType()!==SwapType.TRUSTED_FROM_BTCLN
+            ).sort((a, b) => {
                 const _a = a.isActionable();
                 const _b = b.isActionable();
                 if(_a===_b) return b.createdAt - a.createdAt;
@@ -144,6 +148,7 @@ export function History() {
 
         const listener = (swap: ISwap) => {
             if(!swap.isInitiated()) return;
+            if(swap.getType()===SwapType.TRUSTED_FROM_BTC || swap.getType()===SwapType.TRUSTED_FROM_BTCLN) return;
             setSwaps(swaps => {
                 if (swaps.includes(swap)) return [...swaps];
                 return [swap, ...swaps];
