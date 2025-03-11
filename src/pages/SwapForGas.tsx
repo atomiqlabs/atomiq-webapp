@@ -2,10 +2,9 @@ import {Alert, Button, Spinner} from "react-bootstrap";
 import {useLocation, useNavigate} from "react-router-dom";
 import {SwapTopbar} from "../components/SwapTopbar";
 import * as React from "react";
-import {useContext, useEffect} from "react";
+import {useCallback, useContext, useEffect} from "react";
 import Icon from "react-icons-kit";
-import {LnForGasSwapState, Tokens} from "@atomiqlabs/sdk";
-import * as BN from "bn.js";
+import {LnForGasSwapState} from "@atomiqlabs/sdk";
 import ValidatedInput from "../components/ValidatedInput";
 import {ic_south} from 'react-icons-kit/md/ic_south'
 import {SwapsContext} from "../context/SwapsContext";
@@ -15,6 +14,7 @@ import {useAsync} from "../utils/useAsync";
 import {TrustedFromBTCLNQuoteSummary} from "../components/quotes/frombtc/TrustedFromBTCLNQuoteSummary";
 import {useSwapState} from "../utils/useSwapState";
 import {ErrorAlert} from "../components/ErrorAlert";
+import {Tokens} from "../FEConstants";
 
 const defaultSwapAmount = "12500000";
 
@@ -26,7 +26,7 @@ export function SwapForGas() {
 
     const {state} = useLocation() as {state: {returnPath?: string, chainId?: string, amount: string}};
     const chainId = state?.chainId ?? "SOLANA";
-    const amount = new BN(state?.amount ?? defaultSwapAmount);
+    const amount = BigInt(state?.amount ?? defaultSwapAmount);
 
     const [createSwap, loading, swapData, error] = useAsync(
         () => {
@@ -44,6 +44,10 @@ export function SwapForGas() {
     useEffect(() => {
         createSwap();
     }, [createSwap]);
+
+    const onContinue = useCallback(() => {
+        navigate(state.returnPath);
+    }, [swapData]);
 
     const nativeCurrency = swapper==null ? null : swapper.getNativeToken(chainId);
 
@@ -113,9 +117,7 @@ export function SwapForGas() {
                         ) : ""}
 
                         {swapState===LnForGasSwapState.FINISHED && state?.returnPath!=null ? (
-                            <Button onClick={() => {
-                                navigate(state.returnPath);
-                            }} variant="primary" className="mt-3">
+                            <Button onClick={onContinue} variant="primary" className="mt-3">
                                 Continue
                             </Button>
                         ) : ""}

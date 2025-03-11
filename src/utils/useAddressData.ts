@@ -1,10 +1,10 @@
 import {useContext, useEffect, useState} from "react";
 import {SwapsContext} from "../context/SwapsContext";
-import * as BN from "bn.js";
-import {fromHumanReadableString, toHumanReadable} from "./Currencies";
-import {LNURLPay, LNURLWithdraw, SwapType, Tokens} from "@atomiqlabs/sdk";
+import {toHumanReadable} from "./Currencies";
+import {fromHumanReadableString, LNURLPay, LNURLWithdraw, SwapType} from "@atomiqlabs/sdk";
 import {useLocation} from "react-router-dom";
 import BigNumber from "bignumber.js";
+import {Tokens} from "../FEConstants";
 
 type AddressDataResult = {
     address: string,
@@ -22,10 +22,10 @@ export function useAddressData(addressString: string): [boolean, AddressDataResu
     const {swapper} = useContext(SwapsContext);
 
     const {state} = useLocation() as {state: any};
-    const stateLnurlParams = state?.lnurlParams!=null ? {
+    const stateLnurlParams: any & {min: bigint, max: bigint} = state?.lnurlParams!=null ? {
         ...state.lnurlParams,
-        min: new BN(state.lnurlParams.min),
-        max: new BN(state.lnurlParams.max)
+        min: BigInt(state.lnurlParams.min),
+        max: BigInt(state.lnurlParams.max)
     } : null;
 
     const [loading, setLoading] = useState<boolean>(false);
@@ -64,7 +64,7 @@ export function useAddressData(addressString: string): [boolean, AddressDataResu
 
         if(swapper.isValidBitcoinAddress(resultText)) {
             //On-chain send
-            let amountBN: BN = null;
+            let amountBN: bigint = null;
             if(_amount!=null) amountBN = fromHumanReadableString(_amount, Tokens.BITCOIN.BTC);
             setResult({swapType: SwapType.TO_BTC, address: resultText, amount: toHumanReadable(amountBN, Tokens.BITCOIN.BTC), isSend: true});
         } else if(swapper.isValidLightningInvoice(resultText)) {

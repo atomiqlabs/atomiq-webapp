@@ -1,9 +1,8 @@
-import * as BN from "bn.js";
 import {BitcoinWallet, BitcoinWalletUtxo} from "../BitcoinWallet";
 import {CoinselectAddressTypes} from "../coinselect2/utils";
-import * as bitcoin from "bitcoinjs-lib";
 import * as EventEmitter from "events";
 import {filterInscriptionUtxosOnlyConfirmed} from "../InscriptionUtils";
+import {Transaction} from "@scure/btc-signer";
 
 const addressTypePriorities = {
     "p2tr": 0,
@@ -137,14 +136,14 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         return utxos;
     }
 
-    async getBalance(): Promise<{ confirmedBalance: BN; unconfirmedBalance: BN }> {
+    async getBalance(): Promise<{ confirmedBalance: bigint; unconfirmedBalance: bigint }> {
         const balances = await Promise.all(this.accounts.map(acc => super._getBalance(acc.address)));
         return balances.reduce((prevValue, currValue) => {
             return {
-                confirmedBalance: prevValue.confirmedBalance.add(currValue.confirmedBalance),
-                unconfirmedBalance: prevValue.confirmedBalance.add(currValue.unconfirmedBalance),
+                confirmedBalance: prevValue.confirmedBalance + currValue.confirmedBalance,
+                unconfirmedBalance: prevValue.confirmedBalance + currValue.unconfirmedBalance,
             }
-        }, {confirmedBalance: new BN(0), unconfirmedBalance: new BN(0)})
+        }, {confirmedBalance: 0n, unconfirmedBalance: 0n})
     }
 
     getReceiveAddress(): string {
@@ -152,7 +151,7 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
     }
 
     getSpendableBalance(): Promise<{
-        balance: BN,
+        balance: bigint,
         feeRate: number,
         totalFee: number
     }> {
@@ -165,34 +164,31 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         }})
     }
 
-    async getTransactionFee(address: string, amount: BN, feeRate?: number): Promise<number> {
-        const {psbt, fee} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, amount.toNumber(), feeRate);
+    async getTransactionFee(address: string, amount: bigint, feeRate?: number): Promise<number> {
+        const {psbt, fee} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
         if(psbt==null) return null;
         return fee;
     }
 
-    async sendTransaction(address: string, amount: BN, feeRate?: number): Promise<string> {
-        const {psbt, inputAddressIndexes} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, amount.toNumber(), feeRate);
+    async sendTransaction(address: string, amount: bigint, feeRate?: number): Promise<string> {
+        const {psbt, inputAddressIndexes} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
 
         if(psbt==null) {
             throw new Error("Not enough balance!");
         }
 
-        const psbtHex = psbt.toBuffer();
+        const psbtBuffer = psbt.toPSBT(2);
 
-        const resultSignedPsbtHex = await provider.signPSBT(psbtHex, {
+        const resultSignedPsbtHex = await provider.signPSBT(psbtBuffer, {
             inputsToSign: Object.keys(inputAddressIndexes).map(address => {
                 return {sigHash: 0x01, address, signingIndexes: inputAddressIndexes[address]}
             })
         });
 
-        const signedPsbt = bitcoin.Psbt.fromHex(resultSignedPsbtHex);
-        signedPsbt.finalizeAllInputs();
+        const signedPsbt = Transaction.fromPSBT(Buffer.from(resultSignedPsbtHex, "hex"));
+        signedPsbt.finalize();
 
-        const btcTx = signedPsbt.extractTransaction();
-
-        const btcTxHex = btcTx.toHex();
-
+        const btcTxHex = Buffer.from(signedPsbt.extract()).toString("hex");
         return await super._sendTransaction(btcTxHex);
     }
 

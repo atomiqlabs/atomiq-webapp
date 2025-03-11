@@ -1,8 +1,13 @@
-import {FromBTCSwap, IFromBTCSwap, ISwap, IToBTCSwap, SwapType, Token, TokenAmount} from "@atomiqlabs/sdk";
 import {
-    toHumanReadableString
-} from "../../utils/Currencies";
-import * as BN from "bn.js";
+    FromBTCSwap,
+    IFromBTCSwap,
+    ISwap,
+    IToBTCSwap,
+    SwapType,
+    toHumanReadableString,
+    Token,
+    TokenAmount
+} from "@atomiqlabs/sdk";
 import {Badge, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as React from "react";
 import {getFeePct} from "../../utils/Utils";
@@ -16,8 +21,8 @@ function FeePart(props: {
 
     className?: string,
 
-    feePPM?: BN,
-    feeBase?: BN,
+    feePPM?: bigint,
+    feeBase?: bigint,
     feeCurrency?: Token,
 
     description?: string
@@ -27,13 +32,13 @@ function FeePart(props: {
             <span className="d-flex align-items-center">
                 {props.text}
                 {props.feePPM==null ? "" : props.feeBase==null ? (
-                    <Badge bg="primary" className="ms-1 pill-round px-2" pill>{props.feePPM.toNumber()/10000} %</Badge>
+                    <Badge bg="primary" className="ms-1 pill-round px-2" pill>{Number(props.feePPM)/10000} %</Badge>
                 ) : (
                     <OverlayTrigger overlay={<Tooltip id={"fee-tooltip-"+props.text}>
-                        <span>{props.feePPM.toNumber()/10000}% + {toHumanReadableString(props.feeBase, props.feeCurrency)} {props.feeCurrency.ticker}</span>
+                        <span>{Number(props.feePPM)/10000}% + {toHumanReadableString(props.feeBase, props.feeCurrency)} {props.feeCurrency.ticker}</span>
                     </Tooltip>}>
                         <Badge bg="primary" className="ms-1 pill-round px-2" pill>
-                            <span className="dottedUnderline">{props.feePPM.toNumber()/10000}%</span>
+                            <span className="dottedUnderline">{Number(props.feePPM)/10000}%</span>
                         </Badge>
                     </OverlayTrigger>
                 )}

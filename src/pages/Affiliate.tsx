@@ -1,5 +1,4 @@
 import {
-    Alert,
     Badge,
     Card,
     Col,
@@ -7,22 +6,18 @@ import {
     Placeholder,
     Row,
 } from "react-bootstrap";
-import {
-    bitcoinTokenArray,
-    toHumanReadableString
-} from "../utils/Currencies";
+import {bitcoinTokenArray} from "../utils/Currencies";
 import {useContext, useEffect, useState} from "react";
 import * as React from "react";
 import ValidatedInput from "../components/ValidatedInput";
-import {FEConstants} from "../FEConstants";
-import * as BN from "bn.js";
+import {FEConstants, TokenResolver, Tokens} from "../FEConstants";
 import {SingleColumnStaticTable} from "../components/table/SingleColumnTable";
 import {getTimeDeltaText} from "../utils/Utils";
 import {SwapsContext} from "../context/SwapsContext";
 import {TokenIcon} from "../components/TokenIcon";
-import {TokenResolver, Tokens} from "@atomiqlabs/sdk";
 import {ButtonWithSigner} from "../components/ButtonWithSigner";
 import {ErrorAlert} from "../components/ErrorAlert";
+import {toHumanReadableString} from "@atomiqlabs/sdk";
 
 type AffiliatePayout = {
     timestamp: number,
@@ -110,7 +105,7 @@ export function Affiliate() {
                         <>
                             <p>
                                 Minimum
-                                payout: <strong>{toHumanReadableString(new BN(data?.minPayoutSats), Tokens.BITCOIN.BTC)} BTC</strong>
+                                payout: <strong>{toHumanReadableString(data?.minPayoutSats==null ? 0n : BigInt(data?.minPayoutSats), Tokens.BITCOIN.BTC)} BTC</strong>
                             </p>
                             <p>
                                 Next
@@ -141,7 +136,7 @@ export function Affiliate() {
                                 ) : (
                                     <>
                                         <TokenIcon tokenOrTicker={Tokens.BITCOIN.BTC} className="currency-icon-medium pb-2"/>
-                                        {toHumanReadableString(new BN(data?.stats?.totalVolumeSats), bitcoinTokenArray[0])+" BTC"}
+                                        {toHumanReadableString(data?.stats?.totalVolumeSats==null ? 0n : BigInt(data?.stats?.totalVolumeSats), Tokens.BITCOIN.BTC)+" BTC"}
                                     </>
                                 )}</h4>
                                 <small className="mb-2" style={{marginTop: "-6px"}}>{loading || currencySpec==null ? (
@@ -157,7 +152,7 @@ export function Affiliate() {
                                 ) : (
                                     <>
                                         <TokenIcon tokenOrTicker={Tokens.BITCOIN.BTC} className="currency-icon-medium pb-2"/>
-                                        {toHumanReadableString(new BN(data?.stats?.totalFeeSats), bitcoinTokenArray[0])+" BTC"}
+                                        {toHumanReadableString(data?.stats?.totalFeeSats==null ? 0n : BigInt(data?.stats?.totalFeeSats), bitcoinTokenArray[0])+" BTC"}
                                     </>
                                 )}</h4>
                             </Card>
@@ -170,7 +165,7 @@ export function Affiliate() {
                                 ) : (
                                     <>
                                         <TokenIcon tokenOrTicker={Tokens.BITCOIN.BTC} className="currency-icon-medium pb-2"/>
-                                        {toHumanReadableString(new BN(data?.stats?.unclaimedFeeSats), bitcoinTokenArray[0])+" BTC"}
+                                        {toHumanReadableString(data?.stats?.unclaimedFeeSats==null ? 0n : BigInt(data?.stats?.unclaimedFeeSats), bitcoinTokenArray[0])+" BTC"}
                                     </>
                                 )}</h4>
                                 <label className="mb-2">{loading || currencySpec==null ? (
@@ -178,7 +173,7 @@ export function Affiliate() {
                                 ) : (
                                     <>
                                         <TokenIcon tokenOrTicker={currencySpec} className="currency-icon-small pb-2"/>
-                                        {"~"+toHumanReadableString(new BN(data?.unclaimedUsdcValue), currencySpec)+" "+currencySpec.ticker}
+                                        {"~"+toHumanReadableString(data?.unclaimedUsdcValue==null ? 0n : BigInt(data?.unclaimedUsdcValue), currencySpec)+" "+currencySpec.ticker}
                                     </>
                                 )}</label>
                             </Card>
@@ -191,9 +186,9 @@ export function Affiliate() {
                         data={data?.stats?.payouts!=null ? data.stats.payouts : []}
                         column={{
                             renderer: (row: AffiliatePayout) => {
-                                let inputAmount: BN = new BN(row.amountSats);
+                                let inputAmount: bigint = BigInt(row.amountSats);
                                 let inputCurrency = Tokens.BITCOIN.BTC;
-                                let outputAmount: BN = new BN(row.amountToken);
+                                let outputAmount: bigint = BigInt(row.amountToken);
                                 let outputCurrency = TokenResolver[chain].getToken(row.token);
 
                                 let txIdInput: string = row.txId;

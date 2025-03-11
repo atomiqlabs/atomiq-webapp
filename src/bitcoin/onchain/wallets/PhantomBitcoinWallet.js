@@ -1,8 +1,7 @@
-import * as BN from "bn.js";
 import { BitcoinWallet } from "../BitcoinWallet";
-import * as bitcoin from "bitcoinjs-lib";
 import * as EventEmitter from "events";
 import { filterInscriptionUtxosOnlyConfirmed } from "../InscriptionUtils";
+import { Transaction } from "@scure/btc-signer";
 const addressTypePriorities = {
     "p2tr": 0,
     "p2wpkh": 1,
@@ -109,10 +108,10 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         const balances = await Promise.all(this.accounts.map(acc => super._getBalance(acc.address)));
         return balances.reduce((prevValue, currValue) => {
             return {
-                confirmedBalance: prevValue.confirmedBalance.add(currValue.confirmedBalance),
-                unconfirmedBalance: prevValue.confirmedBalance.add(currValue.unconfirmedBalance),
+                confirmedBalance: prevValue.confirmedBalance + currValue.confirmedBalance,
+                unconfirmedBalance: prevValue.confirmedBalance + currValue.unconfirmedBalance,
             };
-        }, { confirmedBalance: new BN(0), unconfirmedBalance: new BN(0) });
+        }, { confirmedBalance: 0n, unconfirmedBalance: 0n });
     }
     getReceiveAddress() {
         return this.account.address;
@@ -128,26 +127,25 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         });
     }
     async getTransactionFee(address, amount, feeRate) {
-        const { psbt, fee } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, amount.toNumber(), feeRate);
+        const { psbt, fee } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
         if (psbt == null)
             return null;
         return fee;
     }
     async sendTransaction(address, amount, feeRate) {
-        const { psbt, inputAddressIndexes } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, amount.toNumber(), feeRate);
+        const { psbt, inputAddressIndexes } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
         if (psbt == null) {
             throw new Error("Not enough balance!");
         }
-        const psbtHex = psbt.toBuffer();
-        const resultSignedPsbtHex = await provider.signPSBT(psbtHex, {
+        const psbtBuffer = psbt.toPSBT(2);
+        const resultSignedPsbtHex = await provider.signPSBT(psbtBuffer, {
             inputsToSign: Object.keys(inputAddressIndexes).map(address => {
                 return { sigHash: 0x01, address, signingIndexes: inputAddressIndexes[address] };
             })
         });
-        const signedPsbt = bitcoin.Psbt.fromHex(resultSignedPsbtHex);
-        signedPsbt.finalizeAllInputs();
-        const btcTx = signedPsbt.extractTransaction();
-        const btcTxHex = btcTx.toHex();
+        const signedPsbt = Transaction.fromPSBT(Buffer.from(resultSignedPsbtHex, "hex"));
+        signedPsbt.finalize();
+        const btcTxHex = Buffer.from(signedPsbt.extract()).toString("hex");
         return await super._sendTransaction(btcTxHex);
     }
     getName() {

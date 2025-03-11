@@ -1,4 +1,4 @@
-import { ChainUtils } from "./BitcoinWallet";
+import { FEConstants } from "../../FEConstants";
 /**
  * Traverses to latest confirmed ancestor UTXOs, whose output sats are contained in the specified UTXO according to
  *  ordinal theory, with the offset and sats range.
@@ -14,7 +14,7 @@ import { ChainUtils } from "./BitcoinWallet";
 export async function traverseToConfirmedOrdinalInputs(utxo, satsOffset = 0, satsRange = utxo.value) {
     if (utxo.value < satsOffset + satsRange)
         throw new Error("Invalid UTXO traversal range! Offset: " + satsOffset + " range: " + satsRange + " utxo value: " + utxo.value + " utxo: " + utxo.txId + ":" + utxo.vout);
-    const tx = await ChainUtils.getTransaction(utxo.txId);
+    const tx = await FEConstants.mempoolApi.getTransaction(utxo.txId);
     if (tx.status.confirmed)
         return [utxo];
     const outputSatOffsetStart = tx.vout.slice(0, utxo.vout).reduce((prev, curr) => prev + curr.value, 0) + satsOffset;

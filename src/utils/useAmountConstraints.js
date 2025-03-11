@@ -1,10 +1,10 @@
-import { isSCToken, SwapType, Tokens } from "@atomiqlabs/sdk";
-import * as BN from "bn.js";
+import { isSCToken, SwapType, } from "@atomiqlabs/sdk";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { toHumanReadable } from "./Currencies";
 import { SwapsContext } from "../context/SwapsContext";
+import { Tokens } from "../FEConstants";
 const defaultConstraints = {
-    min: new BN(1),
+    min: 1n,
     max: null
 };
 function getSwapType(inCurrency, outCurrency) {
@@ -59,11 +59,14 @@ export function useAmountConstraints(exactIn, inCurrency, outCurrency) {
             result[swapType] = { min: null, max: null };
             for (let chainId in btcAmountConstraints[swapType]) {
                 for (let token in btcAmountConstraints[swapType][chainId]) {
+                    let min = btcAmountConstraints[swapType][chainId][token].min;
+                    if (result[swapType].min != null && result[swapType].min < min)
+                        min = result[swapType].min;
+                    let max = btcAmountConstraints[swapType][chainId][token].max;
+                    if (result[swapType].max != null && result[swapType].max > max)
+                        max = result[swapType].max;
                     result[swapType] = {
-                        min: result[swapType].min === null ? btcAmountConstraints[swapType][chainId][token].min :
-                            BN.min(result[swapType].min, btcAmountConstraints[swapType][chainId][token].min),
-                        max: result[swapType].max === null ? btcAmountConstraints[swapType][chainId][token].max :
-                            BN.max(result[swapType].max, btcAmountConstraints[swapType][chainId][token].max)
+                        min, max
                     };
                 }
             }

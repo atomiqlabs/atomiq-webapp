@@ -3,7 +3,7 @@ import {WebLNContext} from "../../context/WebLNContext";
 
 export function useLightningWallet() {
 
-    const {lnWallet, setLnWallet} = useContext(WebLNContext);
+    const {lnWallet, disconnect} = useContext(WebLNContext);
     const [payError, setPayError] = useState<any>(null);
     const [payLoading, setPayLoading] = useState<boolean>(false);
     const [paySuccess, setPaySuccess] = useState<boolean>(false);
@@ -31,10 +31,6 @@ export function useLightningWallet() {
             console.error(e);
         });
     }, [lnWallet]);
-
-    const disconnect = useCallback(() => {
-        setLnWallet(null);
-    }, []);
 
     return {
         walletConnected: lnWallet!=null,

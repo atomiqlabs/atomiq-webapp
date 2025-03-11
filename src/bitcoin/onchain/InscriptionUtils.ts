@@ -1,4 +1,5 @@
-import {BitcoinWalletUtxo, ChainUtils} from "./BitcoinWallet";
+import {BitcoinWalletUtxo} from "./BitcoinWallet";
+import {FEConstants} from "../../FEConstants";
 
 /**
  * Traverses to latest confirmed ancestor UTXOs, whose output sats are contained in the specified UTXO according to
@@ -14,7 +15,7 @@ import {BitcoinWalletUtxo, ChainUtils} from "./BitcoinWallet";
  */
 export async function traverseToConfirmedOrdinalInputs(utxo: {txId: string, vout: number, value: number}, satsOffset = 0, satsRange = utxo.value): Promise<{txId: string, vout: number, value: number}[]> {
     if(utxo.value < satsOffset + satsRange) throw new Error("Invalid UTXO traversal range! Offset: "+satsOffset+" range: "+satsRange+" utxo value: "+utxo.value+" utxo: "+utxo.txId+":"+utxo.vout);
-    const tx = await ChainUtils.getTransaction(utxo.txId);
+    const tx = await FEConstants.mempoolApi.getTransaction(utxo.txId);
 
     if(tx.status.confirmed) return [utxo];
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import {Accordion, Card} from "react-bootstrap";
+import {Accordion} from "react-bootstrap";
 import {useLocation} from "react-router-dom";
 import {useEffect} from "react";
 import {useAnchorNavigate} from "../utils/useAnchorNavigate";

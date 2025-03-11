@@ -3,13 +3,12 @@ import {useCallback, useContext, useEffect, useMemo, useRef, useState} from "rea
 import {Alert, Badge, Button, Spinner} from "react-bootstrap";
 import {QRCodeSVG} from "qrcode.react";
 import ValidatedInput, {ValidatedInputRef} from "../../ValidatedInput";
-import {FromBTCSwap, FromBTCSwapState, Tokens} from "@atomiqlabs/sdk";
+import {FromBTCSwap, FromBTCSwapState} from "@atomiqlabs/sdk";
 import Icon from "react-icons-kit";
 import {clipboard} from "react-icons-kit/fa/clipboard";
-import * as BN from "bn.js";
 import {externalLink} from 'react-icons-kit/fa/externalLink';
 import {getDeltaText} from "../../../utils/Utils";
-import {FEConstants} from "../../../FEConstants";
+import {FEConstants, Tokens} from "../../../FEConstants";
 import {SwapsContext} from "../../../context/SwapsContext";
 import {ButtonWithSigner} from "../../ButtonWithSigner";
 import {ScrollAnchor} from "../../ScrollAnchor";
@@ -50,9 +49,9 @@ export function FromBTCQuoteSummary(props: {
     setAmountLock: (isLocked: boolean) => void,
     type?: "payment" | "swap",
     abortSwap?: () => void,
-    notEnoughForGas: BN,
+    notEnoughForGas: bigint,
     feeRate?: number,
-    balance?: BN
+    balance?: bigint
 }) {
     const {getSigner} = useContext(SwapsContext);
     const signer = getSigner(props.quote);
@@ -151,7 +150,7 @@ export function FromBTCQuoteSummary(props: {
     }, [state]);
 
     const hasEnoughBalance = useMemo(
-        () => props.balance==null || props.quote==null ? true : props.balance.gte(props.quote.getInput().rawAmount),
+        () => props.balance==null || props.quote==null ? true : props.balance >= props.quote.getInput().rawAmount,
         [props.balance, props.quote]
     );
 

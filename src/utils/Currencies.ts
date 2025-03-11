@@ -1,6 +1,6 @@
-import * as BN from "bn.js";
 import BigNumber from "bignumber.js";
-import {fromDecimal, SCToken, toDecimal, Token, TokenResolver, Tokens} from "@atomiqlabs/sdk";
+import {SCToken, toHumanReadableString, Token} from "@atomiqlabs/sdk";
+import {FEConstants, Tokens} from "../FEConstants";
 
 type TokensType = typeof Tokens;
 type TokenTickers = {
@@ -16,7 +16,9 @@ export const TokenIcons: {
     SOL: "/icons/crypto/SOL.svg",
     BONK: "/icons/crypto/BONK.png",
     BTC: "/icons/crypto/BTC.svg",
-    BTCLN: "/icons/crypto/BTC.svg"
+    BTCLN: "/icons/crypto/BTC.svg",
+    ETH: "/icons/crypto/ETH.png",
+    STRK: "/icons/crypto/STRK.png"
 };
 
 export const bitcoinTokenArray = [
@@ -24,12 +26,20 @@ export const bitcoinTokenArray = [
     Tokens.BITCOIN.BTCLN
 ];
 
-export const smartChainTokenArray: SCToken[] = [
-    Tokens.SOLANA.SOL,
-    Tokens.SOLANA.USDC,
-    Tokens.SOLANA.WBTC,
-    Tokens.SOLANA.BONK
-];
+export const smartChainTokenArray: SCToken[] = [];
+
+if(FEConstants.allowedChains.has("SOLANA")) {
+    smartChainTokenArray.push(Tokens.SOLANA.SOL);
+    smartChainTokenArray.push(Tokens.SOLANA.USDC);
+    smartChainTokenArray.push(Tokens.SOLANA.WBTC);
+    smartChainTokenArray.push(Tokens.SOLANA.BONK);
+}
+
+if(FEConstants.allowedChains.has("STARKNET")) {
+    smartChainTokenArray.push(Tokens.STARKNET.STRK);
+    smartChainTokenArray.push(Tokens.STARKNET.ETH);
+}
+
 // for(let chainId in Tokens) {
 //     if(chainId==="BITCOIN") continue;
 //     for(let ticker in Tokens[chainId]) {
@@ -37,21 +47,11 @@ export const smartChainTokenArray: SCToken[] = [
 //     }
 // }
 
-export function toHumanReadable(amount: BN, currencySpec: Token): BigNumber {
+export function toHumanReadable(amount: bigint, currencySpec: Token): BigNumber {
     if(amount==null) return null;
     return new BigNumber(toHumanReadableString(amount, currencySpec));
 }
 
-export function toHumanReadableString(amount: BN, currencySpec: Token): string {
-    if(amount==null) return null;
-    return toDecimal(amount, currencySpec.decimals);
-}
-
-export function fromHumanReadable(amount: BigNumber, currencySpec: Token): BN {
-    return new BN(amount.multipliedBy(new BigNumber(10).pow(new BigNumber(currencySpec.decimals))).toFixed(0));
-}
-
-export function fromHumanReadableString(amount: string, currencySpec: Token): BN {
-    if(amount==="") return null;
-    return fromDecimal(amount, currencySpec.decimals);
+export function fromHumanReadable(amount: BigNumber, currencySpec: Token): bigint {
+    return BigInt(amount.multipliedBy(new BigNumber(10).pow(new BigNumber(currencySpec.decimals))).toFixed(0));
 }

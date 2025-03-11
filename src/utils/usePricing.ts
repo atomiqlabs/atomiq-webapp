@@ -1,6 +1,5 @@
 import {Token} from "@atomiqlabs/sdk";
 import {useContext, useEffect, useRef, useState} from "react";
-import * as BN from "bn.js";
 import {SwapsContext} from "../context/SwapsContext";
 import BigNumber from "bignumber.js";
 import {fromHumanReadable} from "./Currencies";
@@ -31,11 +30,11 @@ export function usePricing(_amount: BigNumber, currency: Token<any>): number {
         pricing.current.updates++;
         const updateNum = pricing.current.updates;
 
-        const amount: BN = _amount==null ? null : fromHumanReadable(_amount, currency);
+        const amount: bigint = _amount==null ? null : fromHumanReadable(_amount, currency);
 
         setValue(null);
 
-        if(amount==null || amount.isZero()) return;
+        if(amount==null || amount === 0n) return;
 
         const process = () => pricing.current.promise = swapper.prices.getUsdValue(amount, currency).then(value => {
             if(pricing.current.updates!==updateNum) return;

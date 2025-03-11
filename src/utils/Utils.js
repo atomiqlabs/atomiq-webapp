@@ -1,4 +1,3 @@
-import * as BN from "bn.js";
 export function getDeltaTextHours(delta) {
     let deltaSeconds = Math.floor(delta / 1000);
     if (deltaSeconds < 60) {
@@ -94,9 +93,9 @@ export function elementInViewport(el) {
 export function getFeePct(swap, digits) {
     const feeOriginal = swap.getRealSwapFeePercentagePPM();
     // console.log("Fee PPM: ", feeOriginal.toString(10));
-    const feePPM = feeOriginal.add(new BN(9).mul(new BN(10).pow(new BN(3 - digits))));
+    const feePPM = feeOriginal + (9n * (10n ** (3n - BigInt(digits))));
     // console.log("Fee PPM: ", feePPM.toString(10));
-    return feePPM.div(new BN(10).pow(new BN(4 - digits))).mul(new BN(10).pow(new BN(4 - digits)));
+    return feePPM / (10n ** (4n - BigInt(digits))) * (10n ** (4n - BigInt(digits)));
 }
 export function bnEqual(a, b) {
     if (a == null && b == null)
@@ -111,4 +110,7 @@ export function capitalizeFirstLetter(txt) {
     if (txt == null)
         return null;
     return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
+}
+export function timeoutPromise(timeout) {
+    return new Promise(resolve => setTimeout(resolve, timeout));
 }

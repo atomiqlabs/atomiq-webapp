@@ -2,23 +2,19 @@ import {
     Fee,
     FromBTCSwap,
     ISwap,
-    IToBTCSwap, SwapType,
-    ToBTCSwap, Token, Tokens, toTokenAmount
+    IToBTCSwap, SwapType, toHumanReadableString,
+    Token, toTokenAmount
 } from "@atomiqlabs/sdk";
-import {
-    bitcoinTokenArray,
-    toHumanReadableString
-} from "../../utils/Currencies";
-import * as BN from "bn.js";
-import {BitcoinWalletContext} from "../../context/BitcoinWalletContext";
+import {BitcoinWalletContext} from "../../context/BitcoinWalletProvider";
 import {useContext, useEffect, useState} from "react";
-import {Accordion, Badge, OverlayTrigger, Placeholder, Spinner, Tooltip} from "react-bootstrap";
+import {Accordion, Badge, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
 import {capitalizeFirstLetter, getFeePct} from "../../utils/Utils";
 import * as React from "react";
 import Icon from "react-icons-kit";
 import {ic_receipt_outline} from 'react-icons-kit/md/ic_receipt_outline';
 import {SwapsContext} from "../../context/SwapsContext";
 import {TokenIcon} from "../TokenIcon";
+import {Tokens} from "../../FEConstants";
 
 function FeePart(props: {
     bold?: boolean,
@@ -27,8 +23,8 @@ function FeePart(props: {
     usdValue?: number,
     className?: string,
 
-    feePPM?: BN,
-    feeBase?: BN,
+    feePPM?: bigint,
+    feeBase?: bigint,
     feeCurrency?: Token,
     description?: string
 }) {
@@ -39,13 +35,13 @@ function FeePart(props: {
                 {props.text}
                 {props.feePPM == null ? "" : props.feeBase == null ? (
                     <Badge bg="primary" className="ms-1 pill-round px-2"
-                           pill>{props.feePPM.toNumber() / 10000} %</Badge>
+                           pill>{Number(props.feePPM) / 10000} %</Badge>
                 ) : (
                     <OverlayTrigger overlay={<Tooltip id={"fee-tooltip-" + props.text}>
-                        <span>{props.feePPM.toNumber() / 10000}% + {toHumanReadableString(props.feeBase, props.feeCurrency)} {props.feeCurrency.ticker}</span>
+                        <span>{Number(props.feePPM) / 10000}% + {toHumanReadableString(props.feeBase, props.feeCurrency)} {props.feeCurrency.ticker}</span>
                     </Tooltip>}>
                         <Badge bg="primary" className="ms-1 pill-round px-2" pill>
-                            <span className="dottedUnderline">{props.feePPM.toNumber() / 10000}%</span>
+                            <span className="dottedUnderline">{Number(props.feePPM) / 10000}%</span>
                         </Badge>
                     </OverlayTrigger>
                 )}
@@ -99,8 +95,8 @@ type SingleFee = {
     usdValue?: number,
     className?: string,
 
-    feePPM?: BN,
-    feeBase?: BN,
+    feePPM?: bigint,
+    feeBase?: bigint,
     feeCurrency?: Token,
     description?: string
 }
@@ -118,7 +114,7 @@ function FeeSummary(props: {
         <Accordion>
             <Accordion.Item eventKey="0" className="tab-accent-nop">
                 <Accordion.Header className="font-bigger d-flex flex-row" bsPrefix="fee-accordion-header">
-                    <small className="me-auto">1 {props.dstCurrency.ticker} = {props.swapPrice.toFixed(props.srcCurrency.decimals)} {props.srcCurrency.ticker}</small>
+                    <small className="me-auto">1 {props.dstCurrency.ticker} = {props.swapPrice.toFixed(props.srcCurrency.displayDecimals ?? props.srcCurrency.decimals)} {props.srcCurrency.ticker}</small>
                     <Icon className="d-flex me-1" size={16} icon={ic_receipt_outline}/>
                     <span className="me-2">{props.loading ? (
                         <Spinner animation="border" size="sm" />
@@ -177,7 +173,7 @@ export function SimpleFeeSummaryScreen(props: {
                     setBtcTxFeeLoading(false);
                     return;
                 }
-                const feeInBtc = toTokenAmount(new BN(btcTxFee), Tokens.BITCOIN.BTC, swapper.prices);
+                const feeInBtc = toTokenAmount(BigInt(btcTxFee), Tokens.BITCOIN.BTC, swapper.prices);
 
                 const btcNetworkFee: Fee = {
                     amountInSrcToken: feeInBtc,

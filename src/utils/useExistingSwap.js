@@ -11,11 +11,10 @@ export function useExistingSwap(swapId) {
         }
         let canceled = false;
         setLoading(true);
-        swapper.getAllSwaps().then(swaps => {
+        swapper.getSwapById(swapId).then(swap => {
             if (canceled)
                 return;
-            const foundSwap = swaps.find(swap => swap.getPaymentHashString() === swapId);
-            setSwap(foundSwap);
+            setSwap(swap);
             setLoading(false);
         });
         return () => {

@@ -1,14 +1,11 @@
 import {SwapTopbar} from "../components/SwapTopbar";
 import {Badge, Button, Col, Row} from "react-bootstrap";
 import {
-    FromBTCSwap,
     IFromBTCSwap,
     isSCToken,
     ISwap,
     IToBTCSwap,
-    SwapDirection,
-    SwapType,
-    ToBTCSwap
+    SwapDirection, SwapType
 } from "@atomiqlabs/sdk";
 import * as React from "react";
 import {useContext, useEffect, useState} from "react";
@@ -33,22 +30,18 @@ function HistoryEntry(props: {
     const inputExplorer = isSCToken(input.token) ? FEConstants.blockExplorers[input.token.chainId] : !input.token.lightning ? FEConstants.btcBlockExplorer : null;
     const outputExplorer = isSCToken(output.token) ? FEConstants.blockExplorers[output.token.chainId] : !output.token.lightning ? FEConstants.btcBlockExplorer : null;
 
-    const txIdInput = props.swap.getType()===SwapType.TO_BTCLN || props.swap.getType()===SwapType.TO_BTC ? props.swap.commitTxId :
-        props.swap.getType()===SwapType.FROM_BTC ? (props.swap as FromBTCSwap).txId : props.swap.getPaymentHashString();
-    const txIdOutput = props.swap.getType()===SwapType.FROM_BTCLN || props.swap.getType()===SwapType.FROM_BTC ? props.swap.commitTxId :
-        props.swap.getType()===SwapType.TO_BTC ? (props.swap as ToBTCSwap).getBitcoinTxId() : props.swap.getPaymentHashString();
+    const txIdInput = props.swap.getInputTxId();
+    const txIdOutput = props.swap.getOutputTxId();
 
-    const inputAddress = props.swap.getType()===SwapType.TO_BTCLN || props.swap.getType()===SwapType.TO_BTC ? props.swap.getInitiator() :
-        (props.swap as IFromBTCSwap).getAddress();
-    const outputAddress = props.swap.getType()===SwapType.TO_BTCLN || props.swap.getType()===SwapType.TO_BTC ? (props.swap as IToBTCSwap).getRecipient() :
-        props.swap.getInitiator();
+    const inputAddress = props.swap.getInputAddress();
+    const outputAddress = props.swap.getOutputAddress();
 
     const refundable = props.swap.getDirection()===SwapDirection.TO_BTC && (props.swap as IToBTCSwap).isRefundable();
     const claimable = props.swap.getDirection()===SwapDirection.FROM_BTC && (props.swap as IFromBTCSwap).isClaimable();
 
     const navigateToSwap = (event) => {
         event.preventDefault();
-        navigate("/?swapId="+props.swap.getPaymentHashString());
+        navigate("/?swapId="+props.swap.getIdentifierHashString());
     }
 
     const badge = props.swap.isSuccessful() ? (
@@ -123,7 +116,7 @@ function HistoryEntry(props: {
                 <div className="d-none d-md-block mb-1">
                     {badge}
                 </div>
-                <Button variant={claimable || refundable ? "primary" : "secondary"} size="sm" href={"/?swapId="+props.swap.getPaymentHashString()} className="width-fill" onClick={navigateToSwap}>
+                <Button variant={claimable || refundable ? "primary" : "secondary"} size="sm" href={"/?swapId="+props.swap.getIdentifierHashString()} className="width-fill" onClick={navigateToSwap}>
                     {refundable ? "Refund" : claimable ? "Claim" : "View"}
                 </Button>
             </Col>
@@ -140,7 +133,11 @@ export function History() {
     useEffect(() => {
         if (swapper == null) return;
         swapper.getAllSwaps().then(swaps => {
-            setSwaps(swaps.filter(swap => swap.isInitiated()).sort((a, b) => {
+            setSwaps(swaps.filter(swap =>
+                swap.isInitiated() &&
+                swap.getType()!==SwapType.TRUSTED_FROM_BTC &&
+                swap.getType()!==SwapType.TRUSTED_FROM_BTCLN
+            ).sort((a, b) => {
                 const _a = a.isActionable();
                 const _b = b.isActionable();
                 if(_a===_b) return b.createdAt - a.createdAt;
@@ -151,6 +148,7 @@ export function History() {
 
         const listener = (swap: ISwap) => {
             if(!swap.isInitiated()) return;
+            if(swap.getType()===SwapType.TRUSTED_FROM_BTC || swap.getType()===SwapType.TRUSTED_FROM_BTCLN) return;
             setSwaps(swaps => {
                 if (swaps.includes(swap)) return [...swaps];
                 return [swap, ...swaps];
@@ -160,6 +158,8 @@ export function History() {
 
         return () => {
             swapper.off("swapState", listener);
+            setSwaps([]);
+            console.log("History: Set swaps to []");
         }
     }, [swapper]);
 
@@ -181,38 +181,3 @@ export function History() {
         </>
     )
 }
-
-/*
-<ListGroup.Item as="li" className="text-start d-flex flex-row">
-    <Col>
-        <div>
-            <b>Swap</b>
-            <Badge bg="danger" className="ms-2">Failed (refundable)</Badge>
-        </div>
-        <img src="/icons/crypto/BTC.svg" className="currency-icon-history me-1"/>
-        0.001 -{">"} <img src="/icons/crypto/SOL.svg" className="currency-icon-history me-1"/>
-        0.021232
-    </Col>
-    <Col xs={3} className="d-flex">
-        <Button className="px-1 flex-fill">
-            Refund
-        </Button>
-    </Col>
-</ListGroup.Item>
-<ListGroup.Item as="li" className="text-start d-flex flex-row">
-    <Col>
-        <div>
-            <b>Swap</b>
-            <Badge bg="success" className="ms-2">Claimable</Badge>
-        </div>
-        <img src="/icons/crypto/BTC.svg" className="currency-icon-history me-1"/>
-        0.00191293 -{">"} <img src="/icons/crypto/SOL.svg" className="currency-icon-history me-1"/>
-        0.021232941
-    </Col>
-    <Col xs={3} className="d-flex">
-        <Button variant="outline-primary" className="px-1 flex-fill">
-            Continue
-        </Button>
-    </Col>
-</ListGroup.Item>
- */

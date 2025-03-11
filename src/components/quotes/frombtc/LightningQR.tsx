@@ -1,4 +1,4 @@
-import {Alert, Badge, Button, Form, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
+import {Badge, Button, Form, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
 import {CopyOverlay} from "../../CopyOverlay";
 import {QRCodeSVG} from "qrcode.react";
 import {LNNFCStartResult} from "../../../lnnfc/LNNFCReader";

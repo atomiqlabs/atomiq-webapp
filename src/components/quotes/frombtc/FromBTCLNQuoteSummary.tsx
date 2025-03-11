@@ -9,23 +9,13 @@ import {ScrollAnchor} from "../../ScrollAnchor";
 import {LightningHyperlinkModal} from "./LightningHyperlinkModal";
 import {useLightningWallet} from "../../../bitcoin/lightning/useLightningWallet";
 import {SwapExpiryProgressBar} from "../../SwapExpiryProgressBar";
-import {useAsync} from "../../../utils/useAsync";
-import {useAbortSignalRef} from "../../../utils/useAbortSignal";
 import {SwapForGasAlert} from "../../SwapForGasAlert";
 
-import {ic_refresh} from 'react-icons-kit/md/ic_refresh';
-import {ic_flash_on_outline} from 'react-icons-kit/md/ic_flash_on_outline';
-import {ic_hourglass_disabled_outline} from 'react-icons-kit/md/ic_hourglass_disabled_outline';
-import {ic_watch_later_outline} from 'react-icons-kit/md/ic_watch_later_outline';
-import {ic_check_circle_outline} from 'react-icons-kit/md/ic_check_circle_outline';
-import {ic_swap_horizontal_circle_outline} from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
-import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
-import {SingleStep, StepByStep} from "../../StepByStep";
-import {useStateRef} from "../../../utils/useStateRef";
-import * as BN from "bn.js";
+import {StepByStep} from "../../StepByStep";
 import {useLocalStorage} from "../../../utils/useLocalStorage";
 import {LightningQR} from "./LightningQR";
 import {ErrorAlert} from "../../ErrorAlert";
+import {useFromBtcLnQuote} from "../../../utils/useFromBtcLnQuote";
 
 /*
 Steps:
@@ -40,18 +30,16 @@ export function FromBTCLNQuoteSummary(props: {
     setAmountLock: (isLocked: boolean) => void,
     type?: "payment" | "swap",
     abortSwap?: () => void,
-    notEnoughForGas: BN
+    notEnoughForGas: bigint
 }) {
     const {getSigner} = useContext(SwapsContext);
     const signer = getSigner(props.quote);
 
+    const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
     const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote);
     const [autoClaim, setAutoClaim] = useLocalStorage("crossLightning-autoClaim", false);
     const [initClicked, setInitClicked] = useState<boolean>(false);
 
-    const setAmountLockRef = useStateRef(props.setAmountLock);
-
-    const abortSignalRef = useAbortSignalRef([props.quote]);
     const openModalRef = useRef<() => void>(null);
     const onHyperlink = useCallback(() => {
         openModalRef.current();
@@ -59,70 +47,36 @@ export function FromBTCLNQuoteSummary(props: {
 
     const {walletConnected} = useLightningWallet();
 
-    const [onCommit, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
-        if(setAmountLockRef.current!=null) setAmountLockRef.current(true);
-        return props.quote.waitForPayment(abortSignalRef.current, 2).then(() => true).catch(err => {
-            if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
-            throw err;
-        });
-    }, [props.quote]);
+    const {
+        waitForPayment, onCommit, onClaim,
+        paymentWaiting, committing, claiming,
+        paymentError, commitError, claimError,
+
+        isQuoteExpired,
+        isQuoteExpiredClaim,
+        isFailed,
+        isCreated,
+        isClaimCommittable,
+        isClaimClaimable,
+        isClaimable,
+        isSuccess,
+
+        executionSteps
+    } = useFromBtcLnQuote(props.quote, props.setAmountLock);
 
     useEffect(() => {
         if(props.quote!=null && props.quote.isInitiated()) {
-            onCommit();
+            waitForPayment();
         }
     }, [props.quote]);
 
-    const [onClaim, claiming, claimSuccess, claimError] = useAsync(
-        (skipChecks?: boolean) => props.quote.commitAndClaim(signer, null, skipChecks),
-        [props.quote, signer]
-    );
-
     useEffect(() => {
         if(state===FromBTCLNSwapState.PR_PAID) {
-            if(autoClaim || walletConnected) onClaim(true);
+            if(autoClaim || walletConnected) onCommit(true).then(() => {
+                if(!canClaimInOneShot) onClaim(true)
+            });
         }
     }, [state]);
-
-    const isQuoteExpired = state === FromBTCLNSwapState.QUOTE_EXPIRED ||
-        (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !claiming && !paymentWaiting);
-
-    const isQuoteExpiredClaim = isQuoteExpired && props.quote.signatureData!=null;
-
-    const isFailed = state===FromBTCLNSwapState.FAILED ||
-        state===FromBTCLNSwapState.EXPIRED;
-
-    const isCreated = state===FromBTCLNSwapState.PR_CREATED ||
-        (state===FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && paymentWaiting);
-
-    const isClaimable = state===FromBTCLNSwapState.PR_PAID ||
-        (state===FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && claiming) ||
-        state===FromBTCLNSwapState.CLAIM_COMMITED;
-
-    const isSuccess = state===FromBTCLNSwapState.CLAIM_CLAIMED;
-
-    useEffect(() => {
-        if(isQuoteExpired || isFailed || isSuccess) {
-            if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
-        }
-    }, [isQuoteExpired, isFailed, isSuccess]);
-
-    const executionSteps: SingleStep[] = [
-        {icon: ic_check_circle_outline, text: "Lightning payment received", type: "success"},
-        {icon: ic_swap_horizontal_circle_outline, text: "Send claim transaction", type: "disabled"}
-    ];
-    if(isCreated) executionSteps[0] = {icon: ic_flash_on_outline, text: "Awaiting lightning payment", type: "loading"};
-    if(isQuoteExpired && !isQuoteExpiredClaim) executionSteps[0] = {icon: ic_hourglass_disabled_outline, text: "Quote expired", type: "failed"};
-    if(isQuoteExpiredClaim) {
-        executionSteps[0] = {icon: ic_refresh, text: "Lightning payment reverted", type: "failed"};
-        executionSteps[1] = {icon: ic_watch_later_outline, text: "Claim transaction expired", type: "failed"};
-    }
-    if(isClaimable) executionSteps[1] = {icon: ic_swap_horizontal_circle_outline, text: claiming ? "Sending claim transaction" : "Send claim transaction", type: "loading"};
-    if(isSuccess) executionSteps[1] = {icon: ic_verified_outline, text: "Claim success", type: "success"};
-    if(isFailed) {
-        executionSteps[0] = {icon: ic_refresh, text: "Lightning payment reverted", type: "failed"};
-        executionSteps[1] = {icon: ic_watch_later_outline, text: "Swap expired", type: "failed"};
-    }
 
     return (
         <>
@@ -146,7 +100,7 @@ export function FromBTCLNQuoteSummary(props: {
 
                         <ButtonWithSigner signer={signer} chainId={props.quote?.chainIdentifier} onClick={() => {
                             setInitClicked(true);
-                            onCommit();
+                            waitForPayment();
                         }} disabled={!!props.notEnoughForGas} size="lg">
                             Initiate swap
                         </ButtonWithSigner>
@@ -183,23 +137,47 @@ export function FromBTCLNQuoteSummary(props: {
                         <label>Claim it below to finish the swap!</label>
                     </div>
 
-                    <ErrorAlert className="mb-3" title="Swap claim error" error={claimError}/>
+                    <ErrorAlert
+                        className="mb-3"
+                        title={"Swap "+((canClaimInOneShot || claimError!=null) ? "claim" : " claim initialization")+" error"}
+                        error={commitError ?? claimError}
+                    />
 
                     <SwapExpiryProgressBar
                         timeRemaining={quoteTimeRemaining} totalTime={totalQuoteTime}
-                        show={state === FromBTCLNSwapState.PR_PAID && !claiming}
+                        show={state === FromBTCLNSwapState.PR_PAID && !claiming && !committing}
                     />
 
                     <ButtonWithSigner
                         signer={signer}
                         chainId={props.quote?.chainIdentifier}
-                        onClick={() => onClaim()}
-                        disabled={claiming}
-                        size="lg"
+                        onClick={() => onCommit()}
+                        disabled={committing || (!canClaimInOneShot && !isClaimCommittable)}
+                        size={canClaimInOneShot ? "lg" : isClaimCommittable ? "lg" : "sm"}
                     >
-                        {claiming ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
-                        Finish swap (claim funds)
+                        {committing ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
+                        {canClaimInOneShot ?
+                            "Finish swap (claim funds)" :
+                            !isClaimCommittable ?
+                                "1. Initialized" :
+                                committing ?
+                                    "1. Initializing..." :
+                                    "1. Finish swap (initialize)"
+                        }
                     </ButtonWithSigner>
+                    {!canClaimInOneShot ? (
+                        <ButtonWithSigner
+                            signer={signer}
+                            chainId={props.quote?.chainIdentifier}
+                            onClick={() => onClaim()}
+                            disabled={claiming || !isClaimClaimable}
+                            size={isClaimClaimable ? "lg" : "sm"}
+                            className="mt-2"
+                        >
+                            {claiming ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
+                            {claiming ? "2. Claiming funds..." : "2. Finish swap (claim funds)"}
+                        </ButtonWithSigner>
+                    ) : ""}
                 </>
             ) : ""}
 

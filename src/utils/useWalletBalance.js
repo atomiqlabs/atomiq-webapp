@@ -1,10 +1,10 @@
-import { isBtcToken, isSCToken, Tokens } from "@atomiqlabs/sdk";
+import { isBtcToken, isSCToken, toHumanReadableString } from "@atomiqlabs/sdk";
 import { useContext, useEffect, useState } from "react";
-import { BitcoinWalletContext } from "../context/BitcoinWalletContext";
+import { BitcoinWalletContext } from "../context/BitcoinWalletProvider";
 import { SwapsContext } from "../context/SwapsContext";
 import BigNumber from "bignumber.js";
-import { toHumanReadableString } from "./Currencies";
 import { useStateRef } from "./useStateRef";
+import { Tokens } from "../FEConstants";
 export function useWalletBalance(signer, currency, pause) {
     const { swapper } = useContext(SwapsContext);
     const { bitcoinWallet } = useContext(BitcoinWalletContext);

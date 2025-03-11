@@ -1,6 +1,8 @@
 import {AbstractSigner} from "@atomiqlabs/sdk";
 import {Button} from "react-bootstrap";
 import {useWalletModal} from "@solana/wallet-adapter-react-ui";
+import {useContext} from "react";
+import {StarknetWalletContext} from "../context/StarknetWalletContext";
 
 export function ButtonWithSigner(props: {
     chainId: string,
@@ -13,11 +15,19 @@ export function ButtonWithSigner(props: {
     className?: string
 }) {
     const { setVisible: setModalVisible } = useWalletModal();
+    const {connect} = useContext(StarknetWalletContext);
     return (
         <Button onClick={() => {
             if(props.signer===undefined) {
                 //TODO: Redirect the user to connect the wallet for the specific chainId
-                setModalVisible(true);
+                switch(props.chainId) {
+                    case "STARKNET":
+                        connect();
+                        break;
+                    case "SOLANA":
+                        setModalVisible(true);
+                        break;
+                }
             } else {
                 props.onClick();
             }
