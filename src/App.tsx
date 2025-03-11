@@ -366,12 +366,25 @@ function WrappedApp() {
                     <Row className="mt-auto bg-dark bg-opacity-50 g-0 p-2" style={{zIndex: 1000}}>
 
                         <Col className="d-flex flex-row">
-                            <a href="https://twitter.com/atomiqlabs" target="_blank" className="mx-2 hover-opacity-75 d-flex align-items-center"><img className="social-icon" src="/icons/socials/twitter.png"/></a>
-                            <a href="https://github.com/adambor/SolLightning-readme" target="_blank" className="mx-2 hover-opacity-75 d-flex align-items-center"><img className="social-icon" src="/icons/socials/github.png"/></a>
-                            <a href="https://docs.atomiq.exchange/" target="_blank" className="mx-2 hover-opacity-75 d-flex align-items-center"><img className="social-icon" src="/icons/socials/gitbook.png"/></a>
+                            <a href="https://t.me/+_MQNtlBXQ2Q1MGEy" target="_blank"
+                               className="mx-2 hover-opacity-75 d-flex align-items-center">
+                                <img className="social-icon" src="/icons/socials/telegram.png"/>
+                            </a>
+                            <a href="https://twitter.com/atomiqlabs" target="_blank"
+                               className="mx-2 hover-opacity-75 d-flex align-items-center">
+                                <img className="social-icon" src="/icons/socials/twitter.png"/>
+                            </a>
+                            <a href="https://github.com/atomiqlabs" target="_blank"
+                               className="mx-2 hover-opacity-75 d-flex align-items-center">
+                                <img className="social-icon" src="/icons/socials/github.png"/>
+                            </a>
+                            <a href="https://docs.atomiq.exchange/" target="_blank"
+                               className="mx-2 hover-opacity-75 d-flex align-items-center">
+                                <img className="social-icon" src="/icons/socials/gitbook.png"/>
+                            </a>
                         </Col>
 
-                        {affiliateLink!=null && affiliateLink!=="" ? (
+                        {affiliateLink != null && affiliateLink !== "" ? (
                             <Col xs={"auto"} className="d-flex justify-content-center">
                                 <OverlayTrigger overlay={<Tooltip id="referral-tooltip">
                                     <span>Swap fee reduced to 0.2%, thanks to being referred to atomiq.exchange!</span>
@@ -384,8 +397,8 @@ function WrappedApp() {
                         ) : ""}
 
                         <Col className="d-flex justify-content-end">
-                            <a href="https://t.me/+_MQNtlBXQ2Q1MGEy" target="_blank" className="ms-auto d-flex flex-row align-items-center text-white text-decoration-none hover-opacity-75 font-small">
-                                <img className="social-icon me-1" src="/icons/socials/telegram.png"/>Talk to us
+                            <a href="https://t.me/atomiq_support" target="_blank" className="ms-auto d-flex flex-row align-items-center text-white text-decoration-none hover-opacity-75 font-small">
+                                <img className="social-icon me-1" src="/icons/socials/telegram.png"/>Talk to support
                             </a>
                         </Col>
                     </Row>
