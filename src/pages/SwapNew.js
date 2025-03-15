@@ -31,7 +31,7 @@ import { lock } from 'react-icons-kit/fa/lock';
 import { ic_power_off_outline } from 'react-icons-kit/md/ic_power_off_outline';
 import { useExistingSwap } from "../utils/useExistingSwap";
 import { ConnectedWalletAnchor } from "../components/wallet/ConnectedWalletAnchor";
-const RANDOM_BTC_ADDRESS = Address(BitcoinNetwork.TESTNET ? TEST_NETWORK : NETWORK).encode({
+const RANDOM_BTC_ADDRESS = Address(FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? TEST_NETWORK : NETWORK).encode({
     type: "wsh",
     hash: randomBytes(32)
 });

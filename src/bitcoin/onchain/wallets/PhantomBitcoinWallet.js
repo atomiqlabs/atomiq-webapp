@@ -137,7 +137,7 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         if (psbt == null) {
             throw new Error("Not enough balance!");
         }
-        const psbtBuffer = psbt.toPSBT(2);
+        const psbtBuffer = psbt.toPSBT(0);
         const resultSignedPsbtHex = await provider.signPSBT(psbtBuffer, {
             inputsToSign: Object.keys(inputAddressIndexes).map(address => {
                 return { sigHash: 0x01, address, signingIndexes: inputAddressIndexes[address] };

@@ -134,7 +134,7 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
                     type: network
                 },
                 message: "Send a swap transaction",
-                psbtBase64: Buffer.from(psbt.toPSBT(2)).toString("base64"),
+                psbtBase64: Buffer.from(psbt.toPSBT(0)).toString("base64"),
                 broadcast: true,
                 inputsToSign: [{
                         address: this.account.address,
