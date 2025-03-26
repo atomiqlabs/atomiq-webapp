@@ -1,12 +1,12 @@
-import {AbstractSigner} from "@atomiqlabs/sdk";
 import {Button} from "react-bootstrap";
 import {useWalletModal} from "@solana/wallet-adapter-react-ui";
 import {useContext} from "react";
 import {StarknetWalletContext} from "../context/StarknetWalletContext";
+import {BitcoinWalletContext} from "../context/BitcoinWalletProvider";
 
-export function ButtonWithSigner(props: {
+export function ButtonWithSigner<T>(props: {
     chainId: string,
-    signer: undefined | null | AbstractSigner,
+    signer: undefined | null | T,
     onClick?: () => void,
     disabled?: boolean,
     size?: "lg" | "sm",
@@ -15,17 +15,21 @@ export function ButtonWithSigner(props: {
     className?: string
 }) {
     const { setVisible: setModalVisible } = useWalletModal();
-    const {connect} = useContext(StarknetWalletContext);
+    const {connect: connectStarknet} = useContext(StarknetWalletContext);
+    const {connect: connectBitcoin} = useContext(BitcoinWalletContext);
     return (
         <Button onClick={() => {
             if(props.signer===undefined) {
                 //TODO: Redirect the user to connect the wallet for the specific chainId
                 switch(props.chainId) {
                     case "STARKNET":
-                        connect();
+                        connectStarknet();
                         break;
                     case "SOLANA":
                         setModalVisible(true);
+                        break;
+                    case "BITCOIN":
+                        connectBitcoin();
                         break;
                 }
             } else {
@@ -33,7 +37,7 @@ export function ButtonWithSigner(props: {
             }
         }} disabled={props.signer===null || props.disabled} size={props.size} variant={props.signer===undefined ? "warning" : props.variant} className={props.className}>
             {props.signer===undefined ?
-                "Connect wallet" : props.signer===null ?
+                "Connect "+props.chainId.charAt(0)+props.chainId.substring(1).toLowerCase()+" wallet" : props.signer===null ?
                 "Invalid wallet connected" : props.children}
         </Button>
     )

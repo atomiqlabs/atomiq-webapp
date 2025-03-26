@@ -95,30 +95,10 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
     getReceiveAddress() {
         return this.account.address;
     }
-    getSpendableBalance() {
-        return this._getSpendableBalance(this.toBitcoinWalletAccounts());
-    }
-    //Workaround for undefined BigInt() convertor in es2020
-    toBigInt(num) {
-        let sum = 0n;
-        for (let i = 0n; i < 53n; i++) {
-            if ((num & 0b1) === 0b1) {
-                sum |= 1n << i;
-            }
-            num = Math.floor(num / 2);
-        }
-        return sum;
-    }
     toBitcoinWalletAccounts() {
         return [{
                 pubkey: this.account.publicKey, address: this.account.address, addressType: this.addressType
             }];
-    }
-    async getTransactionFee(address, amount, feeRate) {
-        const { psbt, fee } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
-        if (psbt == null)
-            return null;
-        return fee;
     }
     async sendTransaction(address, amount, feeRate) {
         const { psbt } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
@@ -170,5 +150,32 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
     offWalletChanged(cbk) {
     }
     onWalletChanged(cbk) {
+    }
+    async signPsbt(psbt, signInputs) {
+        let psbtBase64 = null;
+        let cancelled = false;
+        await signTransaction({
+            payload: {
+                network: {
+                    type: network
+                },
+                message: "Send a swap transaction",
+                psbtBase64: Buffer.from(psbt.toPSBT(0)).toString("base64"),
+                inputsToSign: [{
+                        address: this.account.address,
+                        signingIndexes: signInputs
+                    }]
+            },
+            onFinish: (resp) => {
+                console.log("TX signed: ", resp);
+                psbtBase64 = resp.psbtBase64;
+            },
+            onCancel: () => { cancelled = true; }
+        });
+        if (cancelled)
+            throw new Error("User declined the transaction request");
+        if (psbtBase64 == null)
+            throw new Error("Transaction not properly signed by the wallet!");
+        return Transaction.fromPSBT(Buffer.from(psbtBase64, "base64"));
     }
 }

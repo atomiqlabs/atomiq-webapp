@@ -1,7 +1,6 @@
 import {FEConstants} from "../../FEConstants";
-import {CoinselectAddressTypes} from "./coinselect2/utils";
-import {BitcoinNetwork, MempoolBitcoinWallet} from "@atomiqlabs/sdk";
-import {NETWORK, TEST_NETWORK} from "@scure/btc-signer";
+import {BitcoinNetwork, CoinselectAddressTypes, MempoolBitcoinWallet} from "@atomiqlabs/sdk";
+import {NETWORK, TEST_NETWORK, Transaction} from "@scure/btc-signer";
 
 const bitcoinNetwork = FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? TEST_NETWORK : NETWORK;
 
@@ -26,7 +25,14 @@ export abstract class BitcoinWallet extends MempoolBitcoinWallet {
     readonly wasAutomaticallyInitiated: boolean;
 
     constructor(wasAutomaticallyInitiated?: boolean) {
-        super(FEConstants.mempoolApi, bitcoinNetwork, feeMultiplier);
+        super(
+            FEConstants.mempoolApi,
+            bitcoinNetwork,
+            feeMultiplier,
+            process.env.REACT_APP_OVERRIDE_BITCOIN_FEE==null ?
+                null :
+                parseInt(process.env.REACT_APP_OVERRIDE_BITCOIN_FEE)
+        );
         this.wasAutomaticallyInitiated = wasAutomaticallyInitiated;
     }
 
@@ -52,17 +58,14 @@ export abstract class BitcoinWallet extends MempoolBitcoinWallet {
         localStorage.removeItem("btc-wallet");
     }
 
+    protected abstract toBitcoinWalletAccounts(): {pubkey: string, address: string, addressType: CoinselectAddressTypes}[];
+
     abstract sendTransaction(address: string, amount: bigint, feeRate?: number): Promise<string>;
-    abstract getTransactionFee(address: string, amount: bigint, feeRate?: number): Promise<number>;
+
     abstract getReceiveAddress(): string;
     abstract getBalance(): Promise<{
         confirmedBalance: bigint,
         unconfirmedBalance: bigint
-    }>;
-    abstract getSpendableBalance(): Promise<{
-        balance: bigint,
-        feeRate: number,
-        totalFee: number
     }>;
 
     abstract getName(): string;
@@ -70,5 +73,29 @@ export abstract class BitcoinWallet extends MempoolBitcoinWallet {
 
     abstract onWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void;
     abstract offWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void;
+
+    async getTransactionFee(address: string, amount: bigint, feeRate?: number): Promise<number> {
+        const {psbt, fee} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
+        if(psbt==null) return null;
+        return fee;
+    }
+
+    getSpendableBalance(): Promise<{
+        balance: bigint,
+        feeRate: number,
+        totalFee: number
+    }> {
+        return this._getSpendableBalance(this.toBitcoinWalletAccounts());
+    }
+
+    async fundPsbt(inputPsbt: Transaction, feeRate?: number): Promise<Transaction> {
+        const {psbt} = await super._fundPsbt(this.toBitcoinWalletAccounts(), inputPsbt, feeRate);
+
+        if(psbt==null) {
+            throw new Error("Not enough balance!");
+        }
+
+        return psbt;
+    }
 
 }

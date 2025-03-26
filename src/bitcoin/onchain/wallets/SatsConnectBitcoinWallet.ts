@@ -9,8 +9,7 @@ import {
 } from "sats-connect";
 import {BitcoinWallet} from "../BitcoinWallet";
 import {FEConstants} from "../../../FEConstants";
-import {CoinselectAddressTypes} from "../coinselect2/utils";
-import {BitcoinNetwork} from "@atomiqlabs/sdk";
+import {BitcoinNetwork, CoinselectAddressTypes} from "@atomiqlabs/sdk";
 import {BTC_NETWORK} from "@scure/btc-signer/utils";
 import {Transaction, Address as AddressParser} from "@scure/btc-signer";
 
@@ -124,36 +123,10 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         return this.account.address;
     }
 
-    getSpendableBalance(): Promise<{
-        balance: bigint,
-        feeRate: number,
-        totalFee: number
-    }> {
-        return this._getSpendableBalance(this.toBitcoinWalletAccounts());
-    }
-
-    //Workaround for undefined BigInt() convertor in es2020
-    toBigInt(num: number): bigint {
-        let sum: bigint = 0n;
-        for(let i=0n;i<53n;i++) {
-            if((num & 0b1)===0b1) {
-                sum |= 1n << i;
-            }
-            num = Math.floor(num/2);
-        }
-        return sum;
-    }
-
-    private toBitcoinWalletAccounts(): {pubkey: string, address: string, addressType: CoinselectAddressTypes}[] {
+    protected toBitcoinWalletAccounts(): {pubkey: string, address: string, addressType: CoinselectAddressTypes}[] {
         return [{
             pubkey: this.account.publicKey, address: this.account.address, addressType: this.addressType
         }];
-    }
-
-    async getTransactionFee(address: string, amount: bigint, feeRate?: number): Promise<number> {
-        const {psbt, fee} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
-        if(psbt==null) return null;
-        return fee;
     }
 
     async sendTransaction(address: string, amount: bigint, feeRate?: number): Promise<string> {
@@ -213,6 +186,35 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
     }
 
     onWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void {
+    }
+
+    async signPsbt(psbt: Transaction, signInputs: number[]): Promise<Transaction> {
+        let psbtBase64: string = null;
+        let cancelled: boolean = false;
+        await signTransaction({
+            payload: {
+                network: {
+                    type: network
+                },
+                message: "Send a swap transaction",
+                psbtBase64: Buffer.from(psbt.toPSBT(0)).toString("base64"),
+                inputsToSign: [{
+                    address: this.account.address,
+                    signingIndexes: signInputs
+                }]
+            },
+            onFinish: (resp: {txId?: string, psbtBase64?: string}) => {
+                console.log("TX signed: ", resp);
+                psbtBase64 = resp.psbtBase64;
+            },
+            onCancel: () => {cancelled = true}
+        });
+
+        if(cancelled) throw new Error("User declined the transaction request");
+
+        if(psbtBase64==null) throw new Error("Transaction not properly signed by the wallet!");
+
+        return Transaction.fromPSBT(Buffer.from(psbtBase64, "base64"));
     }
 
 }

@@ -1,8 +1,8 @@
 import {BitcoinWallet, BitcoinWalletUtxo} from "../BitcoinWallet";
-import {CoinselectAddressTypes} from "../coinselect2/utils";
 import * as EventEmitter from "events";
 import {filterInscriptionUtxosOnlyConfirmed} from "../InscriptionUtils";
-import {Transaction} from "@scure/btc-signer";
+import {Address, OutScript, Transaction} from "@scure/btc-signer";
+import {CoinselectAddressTypes} from "@atomiqlabs/sdk";
 
 const addressTypePriorities = {
     "p2tr": 0,
@@ -150,24 +150,10 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         return this.account.address;
     }
 
-    getSpendableBalance(): Promise<{
-        balance: bigint,
-        feeRate: number,
-        totalFee: number
-    }> {
-        return this._getSpendableBalance(this.toBitcoinWalletAccounts());
-    }
-
-    private toBitcoinWalletAccounts(): {pubkey: string, address: string, addressType: CoinselectAddressTypes}[] {
+    protected toBitcoinWalletAccounts(): {pubkey: string, address: string, addressType: CoinselectAddressTypes}[] {
         return this.accounts.map(acc => {return {
             pubkey: acc.publicKey, address: acc.address, addressType: ADDRESS_FORMAT_MAP[this.account.addressType]
         }})
-    }
-
-    async getTransactionFee(address: string, amount: bigint, feeRate?: number): Promise<number> {
-        const {psbt, fee} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
-        if(psbt==null) return null;
-        return fee;
     }
 
     async sendTransaction(address: string, amount: bigint, feeRate?: number): Promise<string> {
@@ -206,6 +192,27 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
 
     onWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void {
         events.on("newWallet", cbk);
+    }
+
+    async signPsbt(psbt: Transaction, signInputs: number[]): Promise<Transaction> {
+        const psbtBuffer = psbt.toPSBT(0);
+
+        const inputAddressIndexes: {[address: string]: number[]} = {};
+        signInputs.forEach(index => {
+            const input = psbt.getInput(index);
+            const prevOutScript: Uint8Array = input.witnessUtxo ? input.witnessUtxo.script : input.nonWitnessUtxo.outputs[input.index].script;
+            const address = Address(this.network).encode(OutScript.decode(prevOutScript));
+            inputAddressIndexes[address] ??= [];
+            inputAddressIndexes[address].push(index);
+        })
+
+        const resultSignedPsbtHex = await provider.signPSBT(psbtBuffer, {
+            inputsToSign: Object.keys(inputAddressIndexes).map(address => {
+                return {sigHash: 0x01, address, signingIndexes: inputAddressIndexes[address]}
+            })
+        });
+
+        return Transaction.fromPSBT(Buffer.from(resultSignedPsbtHex, "hex"));
     }
 
 }

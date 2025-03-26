@@ -7,6 +7,7 @@ import { FromBTCQuoteSummary } from "./frombtc/FromBTCQuoteSummary";
 import { useContext, useEffect, useState } from "react";
 import { SwapsContext } from "../../context/SwapsContext";
 import { FEConstants } from "../../FEConstants";
+import { SpvVaultFromBTCQuoteSummary } from "./frombtc/SpvVaultFromBTCQuoteSummary";
 export function QuoteSummary(props) {
     const { swapper, getSigner } = useContext(SwapsContext);
     const signer = getSigner(props.quote);
@@ -18,6 +19,8 @@ export function QuoteSummary(props) {
             return;
         //Check if the user has enough lamports to cover solana transaction fees
         props.quote.hasEnoughForTxFees().then((result) => {
+            if (result.enoughBalance)
+                return;
             console.log("Quote hasEnoughForTxFees(): Balance: " + result.balance.amount + " Required: " + result.required.amount + " Enough: " + result.enoughBalance);
             if (cancelled)
                 return;
@@ -47,6 +50,9 @@ export function QuoteSummary(props) {
             else {
                 swapElement = _jsx(FromBTCLNQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: _quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: notEnoughForGas });
             }
+            break;
+        case SwapType.SPV_VAULT_FROM_BTC:
+            swapElement = _jsx(SpvVaultFromBTCQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: props.quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, balance: props.balance, feeRate: props.feeRate });
             break;
     }
     return swapElement;

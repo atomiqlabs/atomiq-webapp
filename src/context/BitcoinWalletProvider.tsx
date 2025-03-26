@@ -46,7 +46,7 @@ export function BitcoinWalletModal(props: {
 
 export function BitcoinWalletProvider(props: {children: React.ReactNode}) {
 
-    const [bitcoinWallet, setBitcoinWallet] = React.useState<BitcoinWallet>();
+    const [bitcoinWallet, setBitcoinWallet] = React.useState<BitcoinWallet>(undefined);
     const [usableWallets, setUsableWallets] = useState<BitcoinWalletType[]>([]);
 
     const [autoConnect, setAutoConnect] = useLocalStorage<boolean>("btc-wallet-autoconnect", true);
@@ -96,7 +96,7 @@ export function BitcoinWalletProvider(props: {children: React.ReactNode}) {
             console.log("BitcoinWalletProvider(): New bitcoin wallet set: ", newWallet);
             if(newWallet==null) {
                 BitcoinWallet.clearState();
-                setBitcoinWallet(null);
+                setBitcoinWallet(undefined);
                 return;
             }
             if(bitcoinWallet.getReceiveAddress()===newWallet.getReceiveAddress()) return;
@@ -115,7 +115,7 @@ export function BitcoinWalletProvider(props: {children: React.ReactNode}) {
     const disconnect: (skipToggleAutoConnect?: boolean) => void = useCallback((skipToggleAutoConnect?: boolean) => {
         if(skipToggleAutoConnect!==true && bitcoinWalletRef.current!=null && bitcoinWalletRef.current.wasAutomaticallyInitiated) setAutoConnect(false);
         BitcoinWallet.clearState();
-        setBitcoinWallet(null);
+        setBitcoinWallet(undefined);
     }, []);
 
     const [modalOpened, setModalOpened] = useState<boolean>(false);

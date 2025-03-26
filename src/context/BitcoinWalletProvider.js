@@ -14,7 +14,7 @@ export function BitcoinWalletModal(props) {
                     }) }) })] }));
 }
 export function BitcoinWalletProvider(props) {
-    const [bitcoinWallet, setBitcoinWallet] = React.useState();
+    const [bitcoinWallet, setBitcoinWallet] = React.useState(undefined);
     const [usableWallets, setUsableWallets] = useState([]);
     const [autoConnect, setAutoConnect] = useLocalStorage("btc-wallet-autoconnect", true);
     const bitcoinWalletRef = useStateRef(bitcoinWallet);
@@ -66,7 +66,7 @@ export function BitcoinWalletProvider(props) {
             console.log("BitcoinWalletProvider(): New bitcoin wallet set: ", newWallet);
             if (newWallet == null) {
                 BitcoinWallet.clearState();
-                setBitcoinWallet(null);
+                setBitcoinWallet(undefined);
                 return;
             }
             if (bitcoinWallet.getReceiveAddress() === newWallet.getReceiveAddress())
@@ -85,7 +85,7 @@ export function BitcoinWalletProvider(props) {
         if (skipToggleAutoConnect !== true && bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
             setAutoConnect(false);
         BitcoinWallet.clearState();
-        setBitcoinWallet(null);
+        setBitcoinWallet(undefined);
     }, []);
     const [modalOpened, setModalOpened] = useState(false);
     const connect = useCallback(() => {

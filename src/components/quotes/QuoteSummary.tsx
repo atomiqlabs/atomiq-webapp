@@ -1,4 +1,4 @@
-import {FromBTCLNSwap, FromBTCSwap, ISwap, IToBTCSwap, SCToken, SwapType} from "@atomiqlabs/sdk";
+import {FromBTCLNSwap, FromBTCSwap, ISwap, IToBTCSwap, SCToken, SpvFromBTCSwap, SwapType} from "@atomiqlabs/sdk";
 import {ToBTCQuoteSummary} from "./tobtc/ToBTCQuoteSummary";
 import {LNURLWithdrawQuoteSummary} from "./frombtc/LNURLWithdrawQuoteSummary";
 import {FromBTCLNQuoteSummary} from "./frombtc/FromBTCLNQuoteSummary";
@@ -7,6 +7,7 @@ import * as React from "react";
 import {useContext, useEffect, useState} from "react";
 import {SwapsContext} from "../../context/SwapsContext";
 import {FEConstants} from "../../FEConstants";
+import {SpvVaultFromBTCQuoteSummary} from "./frombtc/SpvVaultFromBTCQuoteSummary";
 
 export function QuoteSummary(props: {
     quote: ISwap,
@@ -30,6 +31,7 @@ export function QuoteSummary(props: {
 
         //Check if the user has enough lamports to cover solana transaction fees
         props.quote.hasEnoughForTxFees().then((result) => {
+            if(result.enoughBalance) return;
             console.log("Quote hasEnoughForTxFees(): Balance: "+result.balance.amount+" Required: "+result.required.amount+" Enough: "+result.enoughBalance);
             if(cancelled) return;
 
@@ -92,6 +94,17 @@ export function QuoteSummary(props: {
                     notEnoughForGas={notEnoughForGas}
                 />;
             }
+            break;
+        case SwapType.SPV_VAULT_FROM_BTC:
+            swapElement = <SpvVaultFromBTCQuoteSummary
+                type={props.type}
+                setAmountLock={props.setAmountLock}
+                quote={props.quote as SpvFromBTCSwap<any>}
+                refreshQuote={props.refreshQuote}
+                abortSwap={props.abortSwap}
+                balance={props.balance}
+                feeRate={props.feeRate}
+            />;
             break;
     }
 

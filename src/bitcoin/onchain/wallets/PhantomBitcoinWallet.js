@@ -1,7 +1,7 @@
 import { BitcoinWallet } from "../BitcoinWallet";
 import * as EventEmitter from "events";
 import { filterInscriptionUtxosOnlyConfirmed } from "../InscriptionUtils";
-import { Transaction } from "@scure/btc-signer";
+import { Address, OutScript, Transaction } from "@scure/btc-signer";
 const addressTypePriorities = {
     "p2tr": 0,
     "p2wpkh": 1,
@@ -116,21 +116,12 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
     getReceiveAddress() {
         return this.account.address;
     }
-    getSpendableBalance() {
-        return this._getSpendableBalance(this.toBitcoinWalletAccounts());
-    }
     toBitcoinWalletAccounts() {
         return this.accounts.map(acc => {
             return {
                 pubkey: acc.publicKey, address: acc.address, addressType: ADDRESS_FORMAT_MAP[this.account.addressType]
             };
         });
-    }
-    async getTransactionFee(address, amount, feeRate) {
-        const { psbt, fee } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
-        if (psbt == null)
-            return null;
-        return fee;
     }
     async sendTransaction(address, amount, feeRate) {
         const { psbt, inputAddressIndexes } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
@@ -159,6 +150,23 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
     }
     onWalletChanged(cbk) {
         events.on("newWallet", cbk);
+    }
+    async signPsbt(psbt, signInputs) {
+        const psbtBuffer = psbt.toPSBT(0);
+        const inputAddressIndexes = {};
+        signInputs.forEach(index => {
+            const input = psbt.getInput(index);
+            const prevOutScript = input.witnessUtxo ? input.witnessUtxo.script : input.nonWitnessUtxo.outputs[input.index].script;
+            const address = Address(this.network).encode(OutScript.decode(prevOutScript));
+            inputAddressIndexes[address] ?? (inputAddressIndexes[address] = []);
+            inputAddressIndexes[address].push(index);
+        });
+        const resultSignedPsbtHex = await provider.signPSBT(psbtBuffer, {
+            inputsToSign: Object.keys(inputAddressIndexes).map(address => {
+                return { sigHash: 0x01, address, signingIndexes: inputAddressIndexes[address] };
+            })
+        });
+        return Transaction.fromPSBT(Buffer.from(resultSignedPsbtHex, "hex"));
     }
 }
 PhantomBitcoinWallet.iconUrl = "wallets/btc/phantom.png";

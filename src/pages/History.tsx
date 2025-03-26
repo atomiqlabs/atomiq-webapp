@@ -41,7 +41,7 @@ function HistoryEntry(props: {
 
     const navigateToSwap = (event) => {
         event.preventDefault();
-        navigate("/?swapId="+props.swap.getIdentifierHashString());
+        navigate("/?swapId="+props.swap.getId());
     }
 
     const badge = props.swap.isSuccessful() ? (
@@ -116,7 +116,7 @@ function HistoryEntry(props: {
                 <div className="d-none d-md-block mb-1">
                     {badge}
                 </div>
-                <Button variant={claimable || refundable ? "primary" : "secondary"} size="sm" href={"/?swapId="+props.swap.getIdentifierHashString()} className="width-fill" onClick={navigateToSwap}>
+                <Button variant={claimable || refundable ? "primary" : "secondary"} size="sm" href={"/?swapId="+props.swap.getId()} className="width-fill" onClick={navigateToSwap}>
                     {refundable ? "Refund" : claimable ? "Claim" : "View"}
                 </Button>
             </Col>

@@ -1,5 +1,15 @@
 import {useCallback, useContext, useEffect, useRef, useState} from "react";
-import {AbstractSigner, ISwap, LNURLPay, LNURLWithdraw, Token} from "@atomiqlabs/sdk";
+import {
+    AbstractSigner,
+    isBtcToken,
+    isSCToken,
+    ISwap,
+    LNURLPay,
+    LNURLWithdraw,
+    SpvFromBTCOptions,
+    SwapType,
+    Token
+} from "@atomiqlabs/sdk";
 import {SwapsContext} from "../context/SwapsContext";
 import BigNumber from "bignumber.js";
 import {fromHumanReadable} from "./Currencies";
@@ -11,6 +21,7 @@ export function useQuote(
     inToken: Token<any>,
     outToken: Token<any>,
     address: string | LNURLWithdraw | LNURLPay,
+    gasDropAmount?: bigint,
     handleQuotingError?: (exactIn: boolean, inToken: Token, outToken: Token, error: any) => boolean
 ): [() => void, ISwap, boolean, any] {
     const {swapper, chains} = useContext(SwapsContext);
@@ -45,7 +56,17 @@ export function useQuote(
         const process = () => {
             if(quoteUpdates.current!==updateNum) return;
             setLoading(true);
-            currentQuotation.current = swapper.create(signer.getAddress(), inToken, outToken, fromHumanReadable(amount, exactIn ? inToken : outToken), exactIn, address).then(swap => {
+            let createPromise: Promise<ISwap>;
+            if(isSCToken(outToken) && isBtcToken(inToken) && swapper.getSwapBounds(outToken.chainId)[SwapType.SPV_VAULT_FROM_BTC]!=null) {
+                const options: SpvFromBTCOptions = {};
+                if(gasDropAmount!=null && gasDropAmount!==0n) {
+                    options.gasAmount = gasDropAmount;
+                }
+                createPromise = swapper.createFromBTCSwapNew(outToken.chainId, signer.getAddress(), outToken.address, fromHumanReadable(amount, exactIn ? inToken : outToken), !exactIn, undefined, options)
+            } else {
+                createPromise = swapper.create(signer.getAddress(), inToken, outToken, fromHumanReadable(amount, exactIn ? inToken : outToken), exactIn, address);
+            }
+            currentQuotation.current = createPromise.then(swap => {
                 if(quoteUpdates.current!==updateNum) return;
                 setLoading(false);
                 setQuote(swap);
@@ -59,11 +80,11 @@ export function useQuote(
         };
 
         currentQuotation.current.then(process, process);
-    }, [swapper, amount, exactIn, inToken, outToken, address, signer]);
+    }, [swapper, amount, exactIn, inToken, outToken, address, signer, gasDropAmount]);
 
     useEffect(() => {
         getQuote();
-    }, [swapper, amount, exactIn, inToken, outToken, address, signer]);
+    }, [swapper, amount, exactIn, inToken, outToken, address, signer, gasDropAmount]);
 
     return [getQuote, quote, loading, error];
 }

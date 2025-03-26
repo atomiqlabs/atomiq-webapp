@@ -2,7 +2,7 @@ import {
     BitcoinNetwork,
     isBtcToken,
     isSCToken,
-    SCToken,
+    SCToken, SpvFromBTCSwap,
     SwapType,
     ToBTCLNSwap,
     ToBTCSwap,
@@ -19,7 +19,7 @@ import {useBigNumberState} from "../utils/useBigNumberState";
 import {SwapTopbar} from "../components/SwapTopbar";
 import {QRScannerModal} from "../components/qr/QRScannerModal";
 import {Alert, Button, Card, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
-import {bitcoinTokenArray, fromHumanReadable, smartChainTokenArray} from "../utils/Currencies";
+import {bitcoinTokenArray, fromHumanReadable, smartChainTokenArray, toHumanReadable} from "../utils/Currencies";
 import {FEConstants, Tokens} from "../FEConstants";
 import BigNumber from "bignumber.js";
 import {CurrencyDropdown} from "../components/CurrencyDropdown";
@@ -71,7 +71,7 @@ export function SwapNew(props: {
     const isSend: boolean = swapType===SwapType.TO_BTCLN || swapType===SwapType.TO_BTC;
     const scCurrency: SCToken = existingSwap!=null ? (isSend ? existingSwap.getInput() : existingSwap.getOutput()).token as SCToken : _scCurrency;
     const inputToken: Token | null = useMemo(
-        () => swapType===SwapType.FROM_BTCLN ? Tokens.BITCOIN.BTCLN : swapType===SwapType.FROM_BTC ? Tokens.BITCOIN.BTC : scCurrency,
+        () => swapType===SwapType.FROM_BTCLN ? Tokens.BITCOIN.BTCLN : (swapType===SwapType.FROM_BTC || swapType===SwapType.SPV_VAULT_FROM_BTC) ? Tokens.BITCOIN.BTC : scCurrency,
         [swapType, scCurrency]
     );
     const outputToken: Token | null = useMemo(
@@ -166,6 +166,56 @@ export function SwapNew(props: {
             .filter(currency => supportedTokensSet.has(currency.chainId+":"+currency.address));
     }, [props.supportedCurrencies, supportedTokensSet]);
 
+    //Gas drop
+    const [_gasDropToken, setGasDropToken] = useState<SCToken>(null);
+    const [_gasDropChecked, setGasDropChecked] = useState<boolean>(false);
+    const gasDropToken = existingSwap==null ?
+        _gasDropToken :
+        existingSwap.getType()===SwapType.SPV_VAULT_FROM_BTC && (existingSwap as SpvFromBTCSwap<any>).getGasOutput().rawAmount>0n ?
+            (existingSwap as SpvFromBTCSwap<any>).getGasOutput().token :
+            null;
+    const gasDropChecked = existingSwap==null ?
+        _gasDropChecked :
+        existingSwap.getType()===SwapType.SPV_VAULT_FROM_BTC ?
+            (existingSwap as SpvFromBTCSwap<any>).getGasOutput().rawAmount>0n :
+            false;
+    const gasDropAmount = existingSwap==null ?
+        toHumanReadable(FEConstants.scBalances[gasDropToken?.chainId]?.optimal[gasDropToken?.address], gasDropToken) :
+        existingSwap.getType()===SwapType.SPV_VAULT_FROM_BTC ?
+            new BigNumber((existingSwap as SpvFromBTCSwap<any>).getGasOutput().amount) :
+            new BigNumber(0);
+
+    useEffect(() => {
+        if(swapper==null) return;
+        let cancelled = false;
+        if(existingSwap!=null) return;
+        if(!isSCToken(outputToken)) return;
+        const chainId = outputToken.chainId;
+        if(swapper.getSwapBounds(chainId)[SwapType.SPV_VAULT_FROM_BTC]==null) {
+            setGasDropToken(null);
+            return;
+        } //Check if SPV vault swaps are working for the chain
+        const nativeToken = swapper.getNativeToken(chainId);
+        if(nativeToken.address===outputToken.address) {
+            setGasDropToken(null);
+            setGasDropChecked(false);
+            return;
+        } //No need for gas drop if swapping to native token
+        setGasDropToken(nativeToken);
+        //Check native currency balance
+        if(signerData?.random || signerData?.signer==null) return;
+        swapper.getNativeBalance(chainId, signerData.signer.getAddress()).then(value => {
+            if(cancelled) return;
+            const requiredBalance = FEConstants.scBalances[chainId].optimal[nativeToken.address];
+            if(value < requiredBalance) {
+                setGasDropChecked(true);
+            }
+        });
+        return () => {
+            cancelled = true;
+        }
+    }, [outputToken, existingSwap, signerData, swapper]);
+
     //Quote
     const [refreshQuote, quote, quoteLoading, quoteError] = useQuote(
         existingSwap!=null ? null : signerData?.signer, validatedAmount, exactIn, inputToken, outputToken,
@@ -173,6 +223,7 @@ export function SwapNew(props: {
             addressData?.error ? null :
             addressData?.isLnurl ? addressData.lnurlResult :
             addressData?.address,
+        gasDropToken!=null && gasDropChecked ? FEConstants.scBalances[gasDropToken.chainId]?.optimal[gasDropToken.address] : null,
         handleQuoteError
     );
 
@@ -230,7 +281,7 @@ export function SwapNew(props: {
         if(swapType===SwapType.TO_BTCLN) setSwapType(SwapType.FROM_BTCLN);
         if(swapType===SwapType.TO_BTC) setSwapType(SwapType.FROM_BTC);
         if(swapType===SwapType.FROM_BTCLN) setSwapType(SwapType.TO_BTCLN);
-        if(swapType===SwapType.FROM_BTC) setSwapType(SwapType.TO_BTC);
+        if(swapType===SwapType.FROM_BTC || swapType===SwapType.SPV_VAULT_FROM_BTC) setSwapType(SwapType.TO_BTC);
         addressRef.current.setValue("", false);
         if(existingSwap!=null) return;
         if(exactIn) {
@@ -259,8 +310,9 @@ export function SwapNew(props: {
     const setAmountLock = useCallback((val: boolean) => {
         if (existingSwap==null) {
             if(val) {
+                console.log("SwapNew: setAmountLock, locking swap and redirecting to swap: "+quote.getId())
                 setUnlocked(false);
-                navigate("/?swapId=" + quote.getIdentifierHashString());
+                navigate("/?swapId=" + quote.getId());
             } else {
                 navigate("/");
             }
@@ -425,7 +477,7 @@ export function SwapNew(props: {
                                 step={outputToken == null ? new BigNumber("0.00000001") : new BigNumber(10).pow(new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals)))}
                                 min={outConstraints?.min}
                                 max={outConstraints?.max}
-                                validated={(exactIn && quote!=null) || existingSwap!=null ? null : undefined}
+                                validated={(exactIn && quote != null) || existingSwap != null ? null : undefined}
                                 elementEnd={(
                                     <CurrencyDropdown
                                         currencyList={isSend ? bitcoinTokenArray : allowedScTokens}
@@ -435,7 +487,7 @@ export function SwapNew(props: {
                                             if (isSend) {
                                                 if (isBtcToken(val)) {
                                                     const swapType = val.lightning ? SwapType.TO_BTCLN : SwapType.TO_BTC;
-                                                    console.log("SwapNew: CurrencyDropdown(input): Setting swap type: "+SwapType[swapType]);
+                                                    console.log("SwapNew: CurrencyDropdown(input): Setting swap type: " + SwapType[swapType]);
                                                     setSwapType(swapType);
                                                 }
                                                 addressRef.current.setValue("", false);
@@ -449,7 +501,20 @@ export function SwapNew(props: {
                                 )}
                             />
                         </div>
-                        <div className={"flex-column "+(isSend ? "d-flex" : "d-none")}>
+                        <div className={(gasDropToken!=null ? "d-flex" : "d-none")}>
+                            <ValidatedInput
+                                type={"checkbox"}
+                                className={"flex-fill mt-1"}
+                                onChange={(val: boolean) => {
+                                    setGasDropChecked(val);
+                                }}
+                                placeholder={"Request gas drop of "+gasDropAmount?.toString(10)+" "+gasDropToken?.ticker}
+                                value={gasDropChecked}
+                                onValidate={() => null}
+                                disabled={locked}
+                            />
+                        </div>
+                        <div className={"flex-column " + (isSend ? "d-flex" : "d-none")}>
                             <ValidatedInput
                                 type={"text"}
                                 className={"flex-fill mt-3 " + (webLnForOutput && (validatedAddress == null || validatedAddress === "") ? "d-none" : "")}
@@ -467,7 +532,8 @@ export function SwapNew(props: {
                                 textEnd={locked || webLnForOutput ? null : (btcWalletForOutput ? (
                                     <OverlayTrigger
                                         placement="top"
-                                        overlay={<Tooltip id="scan-qr-tooltip">Disconnect bitcoin wallet & use external wallet</Tooltip>}
+                                        overlay={<Tooltip id="scan-qr-tooltip">Disconnect bitcoin wallet & use external
+                                            wallet</Tooltip>}
                                     >
                                         <a href="#" style={{
                                             marginTop: "-3px"
@@ -491,7 +557,7 @@ export function SwapNew(props: {
                                 ))}
                                 successFeedback={
                                     btcWalletForOutput ? "Address fetched from your " + bitcoinWallet.getName() + " wallet!" :
-                                    webLnForOutput ? "Lightning invoice fetched from your WebLN lightning wallet!" : null
+                                        webLnForOutput ? "Lightning invoice fetched from your WebLN lightning wallet!" : null
                                 }
                             />
                             {webLnForOutput ? (
@@ -513,7 +579,7 @@ export function SwapNew(props: {
                             <Alert
                                 variant={"success"}
                                 className="mt-3 mb-0 text-center"
-                                show={!locked && lnWallet == null && swapType === SwapType.TO_BTCLN && addressData == null && existingSwap==null}
+                                show={!locked && lnWallet == null && swapType === SwapType.TO_BTCLN && addressData == null && existingSwap == null}
                             >
                                 <label>Only lightning invoices with pre-set amount are supported! Use lightning
                                     address/LNURL for variable amount.</label>
@@ -540,8 +606,8 @@ export function SwapNew(props: {
                                         quote={existingSwap ?? quote}
                                         balance={maxSpendable?.rawAmount ?? null}
                                         refreshQuote={() => {
-                                            if(existingSwap!=null) {
-                                                if(existingSwap.exactIn) {
+                                            if (existingSwap != null) {
+                                                if (existingSwap.exactIn) {
                                                     inputRef.current.setValue(existingSwap.getInput().amount, false);
                                                 } else {
                                                     outputRef.current.setValue(existingSwap.getOutput().amount, false);

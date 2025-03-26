@@ -165,6 +165,17 @@ export function SimpleFeeSummaryScreen(props) {
                 };
             }));
         }
+        if (props.swap.getType() === SwapType.SPV_VAULT_FROM_BTC) {
+            const claimerBounty = props.swap.getCallerFee();
+            fees.push(usdPricePromise.then(usdPrice => claimerBounty.usdValue(abortController.signal, usdPrice)).then(claimerBountyUsd => {
+                return {
+                    text: "Watchtower fee",
+                    description: "Fee paid to swap watchtowers which automatically claim the swap for you as soon as the bitcoin transaction confirms.",
+                    fee: claimerBounty,
+                    usdValue: claimerBountyUsd
+                };
+            }));
+        }
         Promise.all(fees).then(fees => {
             if (abortController.signal.aborted)
                 return;

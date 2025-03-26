@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WalletAccount } from "starknet";
+import { wallet, WalletAccount } from "starknet";
 import { connect, disconnect } from "@starknet-io/get-starknet";
 import { FEConstants } from "../FEConstants";
 import { useLocalStorage } from "./useLocalStorage";
@@ -33,12 +33,26 @@ export function useStarknetWalletContext() {
             return;
         }
         const walletAccount = new WalletAccount(FEConstants.starknetRpc, swo);
+        const chainId = await wallet.requestChainId(walletAccount.walletProvider);
+        console.log("useStarknetWalletContext(): connected wallet chainId: ", chainId);
+        if (FEConstants.starknetChainId !== chainId) {
+            setStarknetSigner(null);
+            return;
+        }
         currentSWORef.current = {
             swo,
             listener: (accounts) => {
                 console.log("useStarknetWalletContext(): accountsChanged listener, new accounts: ", accounts);
                 const starknetSigner = new StarknetSigner(walletAccount);
-                setStarknetSigner(starknetSigner);
+                wallet.requestChainId(walletAccount.walletProvider).then(chainId => {
+                    console.log("useStarknetWalletContext(): connected wallet chainId: ", chainId);
+                    if (FEConstants.starknetChainId !== chainId) {
+                        setStarknetSigner(null);
+                    }
+                    else {
+                        setStarknetSigner(starknetSigner);
+                    }
+                });
             }
         };
         swo.on("accountsChanged", currentSWORef.current.listener);

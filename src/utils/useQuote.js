@@ -1,7 +1,8 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { isBtcToken, isSCToken, SwapType } from "@atomiqlabs/sdk";
 import { SwapsContext } from "../context/SwapsContext";
 import { fromHumanReadable } from "./Currencies";
-export function useQuote(signer, amount, exactIn, inToken, outToken, address, handleQuotingError) {
+export function useQuote(signer, amount, exactIn, inToken, outToken, address, gasDropAmount, handleQuotingError) {
     const { swapper, chains } = useContext(SwapsContext);
     const [quote, setQuote] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -26,7 +27,18 @@ export function useQuote(signer, amount, exactIn, inToken, outToken, address, ha
             if (quoteUpdates.current !== updateNum)
                 return;
             setLoading(true);
-            currentQuotation.current = swapper.create(signer.getAddress(), inToken, outToken, fromHumanReadable(amount, exactIn ? inToken : outToken), exactIn, address).then(swap => {
+            let createPromise;
+            if (isSCToken(outToken) && isBtcToken(inToken) && swapper.getSwapBounds(outToken.chainId)[SwapType.SPV_VAULT_FROM_BTC] != null) {
+                const options = {};
+                if (gasDropAmount != null && gasDropAmount !== 0n) {
+                    options.gasAmount = gasDropAmount;
+                }
+                createPromise = swapper.createFromBTCSwapNew(outToken.chainId, signer.getAddress(), outToken.address, fromHumanReadable(amount, exactIn ? inToken : outToken), !exactIn, undefined, options);
+            }
+            else {
+                createPromise = swapper.create(signer.getAddress(), inToken, outToken, fromHumanReadable(amount, exactIn ? inToken : outToken), exactIn, address);
+            }
+            currentQuotation.current = createPromise.then(swap => {
                 if (quoteUpdates.current !== updateNum)
                     return;
                 setLoading(false);
@@ -43,9 +55,9 @@ export function useQuote(signer, amount, exactIn, inToken, outToken, address, ha
             });
         };
         currentQuotation.current.then(process, process);
-    }, [swapper, amount, exactIn, inToken, outToken, address, signer]);
+    }, [swapper, amount, exactIn, inToken, outToken, address, signer, gasDropAmount]);
     useEffect(() => {
         getQuote();
-    }, [swapper, amount, exactIn, inToken, outToken, address, signer]);
+    }, [swapper, amount, exactIn, inToken, outToken, address, signer, gasDropAmount]);
     return [getQuote, quote, loading, error];
 }

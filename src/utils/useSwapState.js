@@ -1,4 +1,4 @@
-import { FromBTCLNSwapState, FromBTCSwapState, SwapType, ToBTCSwapState } from "@atomiqlabs/sdk";
+import { FromBTCLNSwapState, FromBTCSwapState, SpvFromBTCSwapState, SwapType, ToBTCSwapState } from "@atomiqlabs/sdk";
 import { useEffect, useRef, useState } from "react";
 function getStateToString(swapType, state) {
     switch (swapType) {
@@ -9,6 +9,8 @@ function getStateToString(swapType, state) {
             return FromBTCLNSwapState[state];
         case SwapType.FROM_BTC:
             return FromBTCSwapState[state];
+        case SwapType.SPV_VAULT_FROM_BTC:
+            return SpvFromBTCSwapState[state];
     }
 }
 export function useSwapState(quote) {
@@ -60,7 +62,7 @@ export function useSwapState(quote) {
             checkExpiry(state);
             setState(state);
             setInitiated(quote.isInitiated());
-            console.log("useSwapState(" + quote.getIdentifierHashString() + "): State changed to: " + getStateToString(quote.getType(), state), quote);
+            console.log("useSwapState(" + quote.getId() + "): State changed to: " + getStateToString(quote.getType(), state), quote);
             if (quote.isFinished()) {
                 setInitialQuoteTimeout(null);
                 setQuoteTimeRemaining(null);

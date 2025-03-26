@@ -5,7 +5,9 @@ const bitcoinNetwork = FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? T
 const feeMultiplier = 1.25;
 export class BitcoinWallet extends MempoolBitcoinWallet {
     constructor(wasAutomaticallyInitiated) {
-        super(FEConstants.mempoolApi, bitcoinNetwork, feeMultiplier);
+        super(FEConstants.mempoolApi, bitcoinNetwork, feeMultiplier, process.env.REACT_APP_OVERRIDE_BITCOIN_FEE == null ?
+            null :
+            parseInt(process.env.REACT_APP_OVERRIDE_BITCOIN_FEE));
         this.wasAutomaticallyInitiated = wasAutomaticallyInitiated;
     }
     static loadState() {
@@ -28,5 +30,21 @@ export class BitcoinWallet extends MempoolBitcoinWallet {
     }
     static clearState() {
         localStorage.removeItem("btc-wallet");
+    }
+    async getTransactionFee(address, amount, feeRate) {
+        const { psbt, fee } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
+        if (psbt == null)
+            return null;
+        return fee;
+    }
+    getSpendableBalance() {
+        return this._getSpendableBalance(this.toBitcoinWalletAccounts());
+    }
+    async fundPsbt(inputPsbt, feeRate) {
+        const { psbt } = await super._fundPsbt(this.toBitcoinWalletAccounts(), inputPsbt, feeRate);
+        if (psbt == null) {
+            throw new Error("Not enough balance!");
+        }
+        return psbt;
     }
 }
