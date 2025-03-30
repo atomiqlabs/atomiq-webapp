@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@atomiqlabs/chain-solana": "8.0.0",
-    "@atomiqlabs/chain-starknet": "1.0.1",
+    "@atomiqlabs/chain-solana": "8.0.1",
+    "@atomiqlabs/chain-starknet": "1.0.8",
     "@atomiqlabs/sdk": "2.1.0",
     "@coral-xyz/anchor": "0.29.0",
     "@scure/btc-signer": "1.6.0",
