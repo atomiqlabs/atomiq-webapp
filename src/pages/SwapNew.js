@@ -50,7 +50,19 @@ export function SwapNew(props) {
     //Tokens
     const [_swapType, setSwapType] = useState(SwapType.FROM_BTC);
     const [_scCurrency, setScCurrency] = useState(smartChainTokenArray[0]);
-    const swapType = existingSwap != null ? existingSwap.getType() : _swapType;
+    const swapType = useMemo(() => {
+        if (existingSwap != null)
+            return existingSwap.getType();
+        if (swapper != null) {
+            if (_swapType === SwapType.FROM_BTC || _swapType === SwapType.SPV_VAULT_FROM_BTC) {
+                return swapper.supportsSwapType(_scCurrency.chainId, SwapType.SPV_VAULT_FROM_BTC) ?
+                    SwapType.SPV_VAULT_FROM_BTC :
+                    SwapType.FROM_BTC;
+            }
+        }
+        return _swapType;
+    }, [existingSwap, swapper, _swapType, _scCurrency]);
+    console.log("Swap type: ", swapType);
     const isSend = swapType === SwapType.TO_BTCLN || swapType === SwapType.TO_BTC;
     const scCurrency = existingSwap != null ? (isSend ? existingSwap.getInput() : existingSwap.getOutput()).token : _scCurrency;
     const inputToken = useMemo(() => swapType === SwapType.FROM_BTCLN ? Tokens.BITCOIN.BTCLN : (swapType === SwapType.FROM_BTC || swapType === SwapType.SPV_VAULT_FROM_BTC) ? Tokens.BITCOIN.BTC : scCurrency, [swapType, scCurrency]);
@@ -60,7 +72,7 @@ export function SwapNew(props) {
     const addressRef = useRef();
     const addressValidator = useCallback((val) => {
         if (val === "")
-            return "Destination address/lightning invoice required";
+            return "Destination wallet address required";
         if (val.startsWith("lightning:")) {
             val = val.substring(10);
         }
@@ -70,18 +82,30 @@ export function SwapNew(props) {
                 val = val.split("?")[0];
             }
         }
-        if (swapper.isValidLNURL(val) || swapper.isValidBitcoinAddress(val) || swapper.isValidLightningInvoice(val))
+        const chainInterface = swapper.chains[scCurrency.chainId].chainInterface;
+        if (swapper.isValidLNURL(val) ||
+            swapper.isValidBitcoinAddress(val) ||
+            swapper.isValidLightningInvoice(val) ||
+            chainInterface.isValidAddress(val))
             return null;
         try {
             if (swapper.getLightningInvoiceValue(val) == null)
                 return "Lightning invoice needs to contain a payment amount!";
         }
         catch (e) { }
-        return "Invalid bitcoin address/lightning network invoice";
-    }, [swapper]);
+        return "Invalid wallet address";
+    }, [swapper, scCurrency]);
     const [_validatedAddress, setValidatedAddress] = useState(null);
-    const validatedAddress = existingSwap != null ? null : (swapType === SwapType.TO_BTC && bitcoinWallet != null) ? bitcoinWallet.getReceiveAddress() : _validatedAddress;
-    const [addressLoading, addressData] = useAddressData(validatedAddress);
+    const validatedAddress = useMemo(() => {
+        if (existingSwap != null)
+            return null;
+        if (swapType === SwapType.TO_BTC && bitcoinWallet != null)
+            return bitcoinWallet.getReceiveAddress();
+        if (swapType === SwapType.SPV_VAULT_FROM_BTC && !signerData?.random && signerData?.signer != null)
+            return signerData.signer.getAddress();
+        return _validatedAddress;
+    }, [existingSwap, swapType, bitcoinWallet, signerData, _validatedAddress]);
+    const [addressLoading, addressData] = useAddressData(validatedAddress, scCurrency.chainId);
     useEffect(() => {
         if (addressData?.swapType != null) {
             console.log("SwapNew: useEffect(addressData.swapType): Setting swap type: " + SwapType[addressData.swapType]);
@@ -141,50 +165,44 @@ export function SwapNew(props) {
             .filter(currency => supportedTokensSet.has(currency.chainId + ":" + currency.address));
     }, [props.supportedCurrencies, supportedTokensSet]);
     //Gas drop
-    const [_gasDropToken, setGasDropToken] = useState(null);
-    const [_gasDropChecked, setGasDropChecked] = useState(false);
-    const gasDropToken = existingSwap == null ?
-        _gasDropToken :
-        existingSwap.getType() === SwapType.SPV_VAULT_FROM_BTC && existingSwap.getGasOutput().rawAmount > 0n ?
-            existingSwap.getGasOutput().token :
-            null;
-    const gasDropChecked = existingSwap == null ?
-        _gasDropChecked :
-        existingSwap.getType() === SwapType.SPV_VAULT_FROM_BTC ?
-            existingSwap.getGasOutput().rawAmount > 0n :
-            false;
-    const gasDropAmount = existingSwap == null ?
-        toHumanReadable(FEConstants.scBalances[gasDropToken?.chainId]?.optimal[gasDropToken?.address], gasDropToken) :
-        existingSwap.getType() === SwapType.SPV_VAULT_FROM_BTC ?
-            new BigNumber(existingSwap.getGasOutput().amount) :
-            new BigNumber(0);
+    const [gasDropChecked, setGasDropChecked] = useState(false);
+    const gasDropToken = useMemo(() => {
+        if (existingSwap != null) {
+            if (existingSwap.getType() === SwapType.SPV_VAULT_FROM_BTC)
+                return existingSwap.getGasOutput().token;
+            return null;
+        }
+        if (swapper == null)
+            return null;
+        if (swapType !== SwapType.SPV_VAULT_FROM_BTC)
+            return null;
+        if (!isSCToken(outputToken))
+            return null;
+        const nativeToken = swapper.getNativeToken(outputToken.chainId);
+        if (outputToken.address === swapper.getNativeTokenAddress(outputToken.chainId))
+            return null;
+        return nativeToken;
+    }, [swapper, existingSwap, swapType, outputToken]);
+    const gasDropAmount = existingSwap?.getType() === SwapType.SPV_VAULT_FROM_BTC && existingSwap.getGasOutput().rawAmount > 0n ?
+        new BigNumber(existingSwap.getGasOutput().amount) :
+        toHumanReadable(FEConstants.scBalances[gasDropToken?.chainId]?.optimal[gasDropToken?.address], gasDropToken);
     useEffect(() => {
         if (swapper == null)
             return;
         let cancelled = false;
-        if (existingSwap != null)
+        if (existingSwap != null) {
+            if (existingSwap.getType() === SwapType.SPV_VAULT_FROM_BTC) {
+                setGasDropChecked(existingSwap.getGasOutput().rawAmount > 0n);
+            }
             return;
-        if (!isSCToken(outputToken))
-            return;
-        const chainId = outputToken.chainId;
-        if (swapper.getSwapBounds(chainId)[SwapType.SPV_VAULT_FROM_BTC] == null) {
-            setGasDropToken(null);
-            return;
-        } //Check if SPV vault swaps are working for the chain
-        const nativeToken = swapper.getNativeToken(chainId);
-        if (nativeToken.address === outputToken.address) {
-            setGasDropToken(null);
-            setGasDropChecked(false);
-            return;
-        } //No need for gas drop if swapping to native token
-        setGasDropToken(nativeToken);
+        }
         //Check native currency balance
-        if (signerData?.random || signerData?.signer == null)
+        if (addressData?.address == null)
             return;
-        swapper.getNativeBalance(chainId, signerData.signer.getAddress()).then(value => {
+        swapper.getNativeBalance(gasDropToken.chainId, addressData?.address).then(value => {
             if (cancelled)
                 return;
-            const requiredBalance = FEConstants.scBalances[chainId].optimal[nativeToken.address];
+            const requiredBalance = FEConstants.scBalances[gasDropToken.chainId].optimal[gasDropToken.address];
             if (value < requiredBalance) {
                 setGasDropChecked(true);
             }
@@ -192,15 +210,40 @@ export function SwapNew(props) {
         return () => {
             cancelled = true;
         };
-    }, [outputToken, existingSwap, signerData, swapper]);
+    }, [gasDropToken, addressData?.address, swapper]);
     //Quote
-    const [refreshQuote, quote, quoteLoading, quoteError] = useQuote(existingSwap != null ? null : signerData?.signer, validatedAmount, exactIn, inputToken, outputToken, !isSend ? null : (validatedAddress == null || validatedAddress === "") && swapType === SwapType.TO_BTC ? RANDOM_BTC_ADDRESS :
-        addressData?.error ? null :
-            addressData?.isLnurl ? addressData.lnurlResult :
-                addressData?.address, gasDropToken != null && gasDropChecked ? FEConstants.scBalances[gasDropToken.chainId]?.optimal[gasDropToken.address] : null, handleQuoteError);
-    const outputAddress = existingSwap?.getType() === SwapType.TO_BTCLN ? (existingSwap.getLNURL() ?? existingSwap.getLightningInvoice()) :
-        existingSwap?.getType() === SwapType.TO_BTC ? existingSwap.getBitcoinAddress() :
-            (swapType === SwapType.TO_BTC && bitcoinWallet != null) ? bitcoinWallet.getReceiveAddress() : null;
+    const quoteAddress = useMemo(() => {
+        if (swapType === SwapType.TO_BTC || swapType === SwapType.TO_BTCLN || swapType === SwapType.SPV_VAULT_FROM_BTC) {
+            if (validatedAddress == null || validatedAddress === "") {
+                if (swapType === SwapType.TO_BTC)
+                    return RANDOM_BTC_ADDRESS;
+                if (swapType === SwapType.SPV_VAULT_FROM_BTC)
+                    return signerData?.signer?.getAddress();
+            }
+            if (addressData?.error != null)
+                return null;
+            if (addressData?.isLnurl)
+                return addressData.lnurlResult;
+            return addressData?.address;
+        }
+    }, [isSend, validatedAddress, swapType, addressData, signerData]);
+    const [refreshQuote, quote, quoteLoading, quoteError] = useQuote(existingSwap != null ? null : signerData?.signer, validatedAmount, exactIn, inputToken, outputToken, quoteAddress, gasDropToken != null && gasDropChecked ? FEConstants.scBalances[gasDropToken.chainId]?.optimal[gasDropToken.address] : null, handleQuoteError);
+    const outputAddress = useMemo(() => {
+        if (existingSwap != null) {
+            if (existingSwap.getType() === SwapType.TO_BTCLN) {
+                const swap = existingSwap;
+                return swap.getLNURL() ?? swap.getLightningInvoice();
+            }
+            if (existingSwap.getType() === SwapType.TO_BTC)
+                return existingSwap.getBitcoinAddress();
+            if (existingSwap.getType() === SwapType.SPV_VAULT_FROM_BTC)
+                return existingSwap.getInitiator();
+        }
+        if (swapType === SwapType.TO_BTC && bitcoinWallet != null)
+            return bitcoinWallet.getReceiveAddress();
+        if (swapType === SwapType.SPV_VAULT_FROM_BTC && signerData?.signer != null && !signerData?.random)
+            return signerData.signer.getAddress();
+    }, [existingSwap, swapType, bitcoinWallet, signerData]);
     const inputAmount = existingSwap != null ? existingSwap.getInput().amount :
         !exactIn ? (quote == null ? "" : quote.getInput().amount) :
             null;
@@ -272,6 +315,9 @@ export function SwapNew(props) {
     const btcWalletForOutput = existingSwap == null && bitcoinWallet != null && swapType === SwapType.TO_BTC;
     const isSwapToRandomBtcAddress = quote != null && quote.getType() === SwapType.TO_BTC &&
         quote.getBitcoinAddress() === RANDOM_BTC_ADDRESS;
+    const smartChainWalletForOutput = existingSwap == null && !signerData?.random && signerData?.signer != null && swapType === SwapType.SPV_VAULT_FROM_BTC;
+    const isSwapToRandomScAddress = quote != null && quote.getType() === SwapType.SPV_VAULT_FROM_BTC && signerData?.random &&
+        quote.getInitiator() === signerData?.signer?.getAddress();
     //Don't lock amounts when WebLN wallet is connected
     const amountsLocked = webLnForOutput ? false : addressData?.amount != null;
     const setAmountLock = useCallback((val) => {
@@ -294,6 +340,7 @@ export function SwapNew(props) {
             }
         }
     }, [quote, existingSwap]);
+    //Show "Use external wallet" when amount is too high
     const [_inputAmountValue, setInputAmountValue] = useState();
     const inputAmountValue = inputAmount ?? _inputAmountValue;
     let shouldShowUseExternalWallet = false;
@@ -363,25 +410,32 @@ export function SwapNew(props) {
                                                 }
                                             }, value: outputToken, className: "round-right text-white bg-black bg-opacity-10" })) }) }), _jsx("div", { className: (gasDropToken != null ? "d-flex" : "d-none"), children: _jsx(ValidatedInput, { type: "checkbox", className: "flex-fill mt-1", onChange: (val) => {
                                             setGasDropChecked(val);
-                                        }, placeholder: "Request gas drop of " + gasDropAmount?.toString(10) + " " + gasDropToken?.ticker, value: gasDropChecked, onValidate: () => null, disabled: locked }) }), _jsxs("div", { className: "flex-column " + (isSend ? "d-flex" : "d-none"), children: [_jsx(ValidatedInput, { type: "text", className: "flex-fill mt-3 " + (webLnForOutput && (validatedAddress == null || validatedAddress === "") ? "d-none" : ""), onChange: (val) => leaveExistingSwap(false, true), onValidatedInput: setValidatedAddress, value: outputAddress, inputRef: addressRef, placeholder: "Paste Bitcoin/Lightning address", onValidate: addressValidator, validated: addressData?.error, disabled: locked || webLnForOutput || btcWalletForOutput, textStart: addressLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, textEnd: locked || webLnForOutput ? null : (btcWalletForOutput ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect bitcoin wallet & use external wallet" }), children: _jsx("a", { href: "#", style: {
+                                            leaveExistingSwap(true, true);
+                                        }, placeholder: "Request gas drop of " + gasDropAmount?.toString(10) + " " + gasDropToken?.ticker, value: gasDropChecked, onValidate: () => null, disabled: locked }) }), _jsxs("div", { className: "flex-column " + (isSend || swapType === SwapType.SPV_VAULT_FROM_BTC ? "d-flex" : "d-none"), children: [_jsx(ValidatedInput, { type: "text", className: "flex-fill mt-3 " + (webLnForOutput && (validatedAddress == null || validatedAddress === "") ? "d-none" : ""), onChange: (val) => leaveExistingSwap(false, true), onValidatedInput: setValidatedAddress, value: outputAddress, inputRef: addressRef, placeholder: "Paste wallet address", onValidate: addressValidator, validated: addressData?.error, disabled: locked || webLnForOutput || btcWalletForOutput || smartChainWalletForOutput, textStart: addressLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, textEnd: locked || webLnForOutput ? null : (btcWalletForOutput || smartChainWalletForOutput ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", style: {
                                                         marginTop: "-3px"
                                                     }, onClick: (e) => {
                                                         e.preventDefault();
-                                                        disconnect();
+                                                        if (swapType === SwapType.SPV_VAULT_FROM_BTC) {
+                                                            signerData?.disconnect();
+                                                        }
+                                                        else {
+                                                            disconnect();
+                                                        }
                                                     }, children: _jsx(Icon, { size: 24, icon: ic_power_off_outline }) }) })) : (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Scan QR code" }), children: _jsx("a", { href: "#", style: {
                                                         marginTop: "-3px"
                                                     }, onClick: (e) => {
                                                         e.preventDefault();
                                                         setQrScanning(true);
-                                                    }, children: _jsx(Icon, { size: 24, icon: ic_qr_code_scanner }) }) }))), successFeedback: btcWalletForOutput ? "Address fetched from your " + bitcoinWallet.getName() + " wallet!" :
-                                                webLnForOutput ? "Lightning invoice fetched from your WebLN lightning wallet!" : null }), webLnForOutput ? (_jsx(_Fragment, { children: validatedAddress == null || validatedAddress === "" ? (_jsx("div", { className: "mt-2", children: _jsx("a", { href: "#", onClick: (e) => {
+                                                    }, children: _jsx(Icon, { size: 24, icon: ic_qr_code_scanner }) }) }))), successFeedback: smartChainWalletForOutput ? "Address fetched from your " + signerData?.walletName + " wallet!" :
+                                                btcWalletForOutput ? "Address fetched from your " + bitcoinWallet.getName() + " wallet!" :
+                                                    webLnForOutput ? "Lightning invoice fetched from your WebLN lightning wallet!" : null }), webLnForOutput ? (_jsx(_Fragment, { children: validatedAddress == null || validatedAddress === "" ? (_jsx("div", { className: "mt-2", children: _jsx("a", { href: "#", onClick: (e) => {
                                                         e.preventDefault();
                                                         if (validatedAmount == null)
                                                             return;
                                                         lnWallet.makeInvoice(Number(fromHumanReadable(validatedAmount, Tokens.BITCOIN.BTCLN))).then(res => {
                                                             addressRef.current.setValue(res.paymentRequest);
                                                         }).catch(e => console.error(e));
-                                                    }, children: "Fetch invoice from WebLN" }) })) : "" })) : "", _jsx(Alert, { variant: "success", className: "mt-3 mb-0 text-center", show: !locked && lnWallet == null && swapType === SwapType.TO_BTCLN && addressData == null && existingSwap == null, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] })] }), quoteError != null ? (_jsx(Button, { variant: "light", className: "mt-3", onClick: refreshQuote, children: "Retry" })) : "", quote != null || existingSwap != null ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "mt-3", children: _jsx(SimpleFeeSummaryScreen, { swap: existingSwap ?? quote, btcFeeRate: inputToken.chain === "BTC" ? maxSpendable?.feeRate : null }) }), !isSwapToRandomBtcAddress ? (_jsx("div", { className: "mt-3 d-flex flex-column text-white", children: _jsx(QuoteSummary, { type: "swap", quote: existingSwap ?? quote, balance: maxSpendable?.rawAmount ?? null, refreshQuote: () => {
+                                                    }, children: "Fetch invoice from WebLN" }) })) : "" })) : "", _jsx(Alert, { variant: "success", className: "mt-3 mb-0 text-center", show: !locked && lnWallet == null && swapType === SwapType.TO_BTCLN && addressData == null && existingSwap == null, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] })] }), quoteError != null ? (_jsx(Button, { variant: "light", className: "mt-3", onClick: refreshQuote, children: "Retry" })) : "", quote != null || existingSwap != null ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "mt-3", children: _jsx(SimpleFeeSummaryScreen, { swap: existingSwap ?? quote, btcFeeRate: inputToken.chain === "BTC" ? maxSpendable?.feeRate : null }) }), !isSwapToRandomBtcAddress && !isSwapToRandomScAddress ? (_jsx("div", { className: "mt-3 d-flex flex-column text-white", children: _jsx(QuoteSummary, { type: "swap", quote: existingSwap ?? quote, balance: maxSpendable?.rawAmount ?? null, refreshQuote: () => {
                                             if (existingSwap != null) {
                                                 if (existingSwap.exactIn) {
                                                     inputRef.current.setValue(existingSwap.getInput().amount, false);

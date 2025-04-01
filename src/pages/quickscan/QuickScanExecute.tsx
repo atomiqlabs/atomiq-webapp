@@ -58,7 +58,7 @@ export function QuickScanExecute() {
 
     const [autoContinue, setAutoContinue] = useLocalStorage("crossLightning-autoContinue", false);
 
-    const [addressLoading, addressResult] = useAddressData(propAddress);
+    const [addressLoading, addressResult] = useAddressData(propAddress, selectedCurrency.chainId);
     const inToken = addressResult?.swapType==null ? null :
         addressResult.swapType===SwapType.FROM_BTCLN ? Tokens.BITCOIN.BTCLN : selectedCurrency;
     const outToken = addressResult?.swapType==null ? null :

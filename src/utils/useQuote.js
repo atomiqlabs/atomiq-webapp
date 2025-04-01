@@ -14,6 +14,7 @@ export function useQuote(signer, amount, exactIn, inToken, outToken, address, ga
     const quoteUpdates = useRef(0);
     const currentQuotation = useRef(Promise.resolve());
     const getQuote = useCallback(() => {
+        console.log("useQuote(): Connected signer: ", signer);
         quoteUpdates.current++;
         const updateNum = quoteUpdates.current;
         setQuote(null);
@@ -28,12 +29,12 @@ export function useQuote(signer, amount, exactIn, inToken, outToken, address, ga
                 return;
             setLoading(true);
             let createPromise;
-            if (isSCToken(outToken) && isBtcToken(inToken) && swapper.getSwapBounds(outToken.chainId)[SwapType.SPV_VAULT_FROM_BTC] != null) {
+            if (isSCToken(outToken) && isBtcToken(inToken) && !inToken.lightning && swapper.supportsSwapType(outToken.chainId, SwapType.SPV_VAULT_FROM_BTC)) {
                 const options = {};
                 if (gasDropAmount != null && gasDropAmount !== 0n) {
                     options.gasAmount = gasDropAmount;
                 }
-                createPromise = swapper.createFromBTCSwapNew(outToken.chainId, signer.getAddress(), outToken.address, fromHumanReadable(amount, exactIn ? inToken : outToken), !exactIn, undefined, options);
+                createPromise = swapper.createFromBTCSwapNew(outToken.chainId, address, outToken.address, fromHumanReadable(amount, exactIn ? inToken : outToken), !exactIn, undefined, options);
             }
             else {
                 createPromise = swapper.create(signer.getAddress(), inToken, outToken, fromHumanReadable(amount, exactIn ? inToken : outToken), exactIn, address);

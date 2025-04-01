@@ -65,7 +65,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
             }
             throw e;
         });
-    }, [props.quote, signer]);
+    }, [props.quote, signer, walletConnected]);
 
     const abortSignalRef = useAbortSignalRef([props.quote]);
 
@@ -91,9 +91,6 @@ export function SpvVaultFromBTCQuoteSummary(props: {
     const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
         return props.quote.claim(signer);
     }, [props.quote, signer]);
-
-    const textFieldRef = useRef<ValidatedInputRef>();
-    const openModalRef = useRef<() => void>(null);
 
     const [txData, setTxData] = useState<{
         txId: string,
@@ -182,34 +179,25 @@ export function SpvVaultFromBTCQuoteSummary(props: {
                 expired={isQuoteExpired}
                 timeRemaining={quoteTimeRemaining}
                 totalTime={totalQuoteTime}
-                show={(isCreated || isQuoteExpired) && !sendLoading && signer!==undefined && hasEnoughBalance}
+                show={(isCreated || isQuoteExpired) && !sendLoading && walletConnected!=null && hasEnoughBalance}
             />
 
             {isCreated ? (
-                signer==null ? (
+                <>
+                    <ErrorAlert className="mb-3" title="Sending BTC failed" error={sendError}/>
+
                     <ButtonWithSigner
-                        signer={signer}
-                        chainId={props.quote?.chainIdentifier}
+                        signer={walletConnected}
+                        chainId="BITCOIN"
+                        onClick={onSend}
+                        disabled={sendLoading || !hasEnoughBalance}
                         size="lg"
                         className="d-flex flex-row"
-                    />
-                ) : (
-                    <>
-                        <ErrorAlert className="mb-3" title="Sending BTC failed" error={sendError}/>
-
-                        <ButtonWithSigner
-                            signer={walletConnected}
-                            chainId="BITCOIN"
-                            onClick={onSend}
-                            disabled={sendLoading || !hasEnoughBalance}
-                            size="lg"
-                            className="d-flex flex-row"
-                        >
-                            {sendLoading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
-                            Pay with <img width={20} height={20} src={walletConnected?.getIcon()} className="ms-2 me-1"/> {walletConnected?.getName()}
-                        </ButtonWithSigner>
-                    </>
-                )
+                    >
+                        {sendLoading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
+                        Pay with <img width={20} height={20} src={walletConnected?.getIcon()} className="ms-2 me-1"/> {walletConnected?.getName()}
+                    </ButtonWithSigner>
+                </>
             ) : ""}
 
             {isBroadcasting ? (

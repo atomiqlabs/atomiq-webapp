@@ -49,7 +49,10 @@ export function useAmountConstraints(exactIn, inCurrency, outCurrency) {
             swapper.off("lpsAdded", addListener);
         };
     }, [swapper]);
-    const swapType = getSwapType(inCurrency, outCurrency);
+    let swapType = getSwapType(inCurrency, outCurrency);
+    if (swapType === SwapType.FROM_BTC && swapper != null && swapper.supportsSwapType(outCurrency.chainId, SwapType.SPV_VAULT_FROM_BTC)) {
+        swapType = SwapType.SPV_VAULT_FROM_BTC;
+    }
     const btcAmountConstraints = useMemo(() => swapper == null ? null : swapper.getSwapBounds(), [swapper, lpsUpdateCount]);
     const defaultBtcConstraints = useMemo(() => {
         if (btcAmountConstraints == null)
@@ -76,25 +79,29 @@ export function useAmountConstraints(exactIn, inCurrency, outCurrency) {
     const supportedTokensSet = useMemo(() => swapper == null || swapType == null ? null : new Set(swapper.getSupportedTokens(swapType).map(token => token.chainId + ":" + token.address)), [swapper, swapType, lpsUpdateCount]);
     const [tokenConstraints, setTokenConstraints] = useState();
     const handleQuoteError = useCallback((exactIn, inToken, outToken, err) => {
-        const swapType = getSwapType(inToken, outToken);
+        let swapType = getSwapType(inToken, outToken);
+        if (swapType === SwapType.FROM_BTC && swapper != null && swapper.supportsSwapType(outToken.chainId, SwapType.SPV_VAULT_FROM_BTC)) {
+            swapType = SwapType.SPV_VAULT_FROM_BTC;
+        }
+        console.log("useAmountConstraints(): Handling swap error swapType: " + SwapType[swapType], err);
         const currency = exactIn ? inToken : outToken;
         if (!isSCToken(currency))
             return false;
         if (err == null || err.min == null || err.max == null)
             return false;
         setTokenConstraints(val => {
-            var _a, _b, _c, _d;
+            var _a, _b;
             val ?? (val = {});
             val[swapType] ?? (val[swapType] = {});
             (_a = val[swapType])[_b = currency.chainId] ?? (_a[_b] = {});
-            (_c = val[swapType][currency.chainId])[_d = currency.address] ?? (_c[_d] = {
+            val[swapType][currency.chainId][currency.address] = {
                 min: err.min,
                 max: err.max
-            });
+            };
             return val;
         });
         return true;
-    }, []);
+    }, [swapper]);
     const { inConstraints, outConstraints } = useMemo(() => {
         const isSend = swapType === SwapType.TO_BTC || swapType === SwapType.TO_BTCLN;
         let inConstraints;
@@ -141,7 +148,7 @@ export function useAmountConstraints(exactIn, inCurrency, outCurrency) {
             inConstraints: toBigNumbers(inConstraints, inCurrency),
             outConstraints: toBigNumbers(outConstraints, outCurrency)
         };
-    }, [btcAmountConstraints, tokenConstraints, inCurrency, outCurrency, exactIn]);
+    }, [btcAmountConstraints, tokenConstraints, inCurrency, outCurrency, swapType, exactIn]);
     return {
         inConstraints,
         outConstraints,

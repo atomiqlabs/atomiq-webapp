@@ -4,7 +4,7 @@ import {useContext, useEffect, useRef} from "react";
 import SolanaWalletProvider from "./context/SolanaWalletProvider";
 import {QuickScan} from "./pages/quickscan/QuickScan";
 import {QuickScanExecute} from "./pages/quickscan/QuickScanExecute";
-import {useAnchorWallet, useConnection} from '@solana/wallet-adapter-react';
+import {useAnchorWallet, useConnection, useWallet} from '@solana/wallet-adapter-react';
 import {Factory, FEConstants} from "./FEConstants";
 import {smartChainTokenArray} from "./utils/Currencies";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
@@ -14,21 +14,11 @@ import {
     BitcoinNetwork,
     isSCToken,
     ISwap,
-    SCToken, Swapper,
+    SCToken,
+    Swapper,
 } from "@atomiqlabs/sdk";
 import {History} from "./pages/History";
-import {
-    Badge,
-    Col,
-    Container,
-    Form,
-    Nav,
-    Navbar,
-    OverlayTrigger,
-    Row,
-    Spinner,
-    Tooltip
-} from "react-bootstrap";
+import {Badge, Col, Container, Form, Nav, Navbar, OverlayTrigger, Row, Spinner, Tooltip} from "react-bootstrap";
 import {FAQ} from "./pages/FAQ";
 import {About} from "./pages/About";
 import {info} from 'react-icons-kit/fa/info';
@@ -73,23 +63,40 @@ function WrappedApp() {
     const [signers, setSigners] = React.useState<{
         [chainId: string]: {
             signer: AbstractSigner,
-            random: boolean
+            random: boolean,
+            disconnect: () => Promise<void>,
+            walletName?: string
         }
     }>({});
 
     const solanaWallet = useAnchorWallet();
+    const {wallet: solWallet, disconnect: solanaDisconnect} = useWallet();
     useEffect(() => {
         if(swapper==null || !FEConstants.allowedChains.has("SOLANA")) return;
         setSigners((prevValue) => {
-            return {...prevValue,SOLANA: {signer: solanaWallet==null ? swapper.randomSigner("SOLANA") : new SolanaSigner(solanaWallet), random: solanaWallet==null}};
+            return {
+                ...prevValue, SOLANA: {
+                    signer: solanaWallet==null ? swapper.randomSigner("SOLANA") : new SolanaSigner(solanaWallet),
+                    random: solanaWallet==null,
+                    disconnect: solanaDisconnect,
+                    walletName: solWallet?.adapter?.name
+                }
+            };
         });
     }, [solanaWallet, swapper]);
 
-    const {starknetSigner} = useContext(StarknetWalletContext);
+    const {starknetSigner, disconnect: starknetDisconnect, starknetWalletData} = useContext(StarknetWalletContext);
     useEffect(() => {
         if(swapper==null || !FEConstants.allowedChains.has("STARKNET")) return;
         setSigners((prevValue) => {
-            return {...prevValue,STARKNET: {signer: starknetSigner==null ? swapper.randomSigner("STARKNET") : starknetSigner, random: starknetSigner==null}};
+            return {
+                ...prevValue, STARKNET: {
+                    signer: starknetSigner==null ? swapper.randomSigner("STARKNET") : starknetSigner,
+                    random: starknetSigner==null,
+                    disconnect: starknetDisconnect,
+                    walletName: starknetWalletData?.name
+                }
+            };
         });
     }, [starknetSigner, swapper]);
 
@@ -166,7 +173,7 @@ function WrappedApp() {
             setSigners((prevValue) => {
                 const cpy = {...prevValue};
                 for(let chainId of swapper.getChains()) {
-                    if(cpy[chainId]==null) cpy[chainId] = {signer: swapper.randomSigner(chainId), random: true};
+                    if(cpy[chainId]==null) cpy[chainId] = {signer: swapper.randomSigner(chainId), random: true, disconnect: () => Promise.resolve()};
                 }
                 return cpy;
             });

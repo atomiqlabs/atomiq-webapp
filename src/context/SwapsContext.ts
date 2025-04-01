@@ -8,7 +8,9 @@ export const SwapsContext: React.Context<{
     chains: {
         [chainId: string]: {
             signer: AbstractSigner,
-            random: boolean //Whether this is a random signer - we shouldn't allow swap initialization with random signer
+            random: boolean, //Whether this is a random signer - we shouldn't allow swap initialization with random signer
+            disconnect: () => Promise<void>,
+            walletName?: string
         }
     }
     getSigner(swap: ISwap | SCToken): undefined | null | AbstractSigner

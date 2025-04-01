@@ -4,7 +4,7 @@ import { toHumanReadable } from "./Currencies";
 import { fromHumanReadableString, SwapType } from "@atomiqlabs/sdk";
 import { useLocation } from "react-router-dom";
 import { Tokens } from "../FEConstants";
-export function useAddressData(addressString) {
+export function useAddressData(addressString, chainId) {
     const { swapper } = useContext(SwapsContext);
     const { state } = useLocation();
     const stateLnurlParams = state?.lnurlParams != null ? {
@@ -99,6 +99,9 @@ export function useAddressData(addressString) {
                     setLoading(false);
                 });
             }
+        }
+        else if (swapper.supportsSwapType(chainId, SwapType.SPV_VAULT_FROM_BTC) && swapper.chains[chainId].chainInterface.isValidAddress(resultText)) {
+            setResult({ swapType: SwapType.SPV_VAULT_FROM_BTC, address: resultText, isSend: false });
         }
         else {
             setResult({ address: resultText, error: "Invalid address, lightning invoice or LNURL!" });

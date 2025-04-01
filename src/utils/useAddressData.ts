@@ -18,7 +18,7 @@ type AddressDataResult = {
     max?: BigNumber
 };
 
-export function useAddressData(addressString: string): [boolean, AddressDataResult] {
+export function useAddressData(addressString: string, chainId: string): [boolean, AddressDataResult] {
     const {swapper} = useContext(SwapsContext);
 
     const {state} = useLocation() as {state: any};
@@ -113,6 +113,8 @@ export function useAddressData(addressString: string): [boolean, AddressDataResu
                     setLoading(false);
                 });
             }
+        } else if(swapper.supportsSwapType(chainId, SwapType.SPV_VAULT_FROM_BTC) && swapper.chains[chainId].chainInterface.isValidAddress(resultText)) {
+            setResult({swapType: SwapType.SPV_VAULT_FROM_BTC, address: resultText, isSend: false});
         } else {
             setResult({address: resultText, error: "Invalid address, lightning invoice or LNURL!"});
         }

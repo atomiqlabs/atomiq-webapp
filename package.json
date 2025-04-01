@@ -20,6 +20,8 @@
     "buffer": "^6.0.3",
     "crypto-browserify": "3.12.0",
     "https-browserify": "^1.0.0",
+    "i": "0.3.7",
+    "npm": "11.2.0",
     "process": "^0.11.10",
     "qr-scanner": "^1.4.2",
     "qrcode.react": "^3.1.0",
