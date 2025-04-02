@@ -5,7 +5,7 @@
   "dependencies": {
     "@atomiqlabs/chain-solana": "8.0.1",
     "@atomiqlabs/chain-starknet": "1.0.8",
-    "@atomiqlabs/sdk": "2.1.0",
+    "@atomiqlabs/sdk": "3.0.4",
     "@coral-xyz/anchor": "0.29.0",
     "@scure/btc-signer": "1.6.0",
     "@solana/spl-token": "0.3.9",

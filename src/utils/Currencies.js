@@ -24,6 +24,7 @@ if (FEConstants.allowedChains.has("SOLANA")) {
     smartChainTokenArray.push(Tokens.SOLANA.BONK);
 }
 if (FEConstants.allowedChains.has("STARKNET")) {
+    smartChainTokenArray.push(Tokens.STARKNET.WBTC);
     smartChainTokenArray.push(Tokens.STARKNET.STRK);
     smartChainTokenArray.push(Tokens.STARKNET.ETH);
 }
