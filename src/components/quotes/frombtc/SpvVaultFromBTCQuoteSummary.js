@@ -29,7 +29,7 @@ Steps:
  */
 export function SpvVaultFromBTCQuoteSummary(props) {
     const { getSigner } = useContext(SwapsContext);
-    const signer = getSigner(props.quote);
+    const signer = getSigner(props.quote, false);
     const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
     const { walletConnected, disconnect } = useOnchainWallet();
     const isAlreadyClaimable = useMemo(() => props.quote != null ? props.quote.canClaim() : false, [props.quote]);
@@ -39,14 +39,14 @@ export function SpvVaultFromBTCQuoteSummary(props) {
             console.log("SpvVaultFromBTCQuoteSummary: onSend(): setting amount lock to true");
             setAmountLockRef.current(true);
         }
-        return props.quote.signAndSubmit(walletConnected).catch(e => {
+        return props.quote.signAndSubmit(walletConnected, props.feeRate).catch(e => {
             if (setAmountLockRef.current != null) {
                 console.log("SpvVaultFromBTCQuoteSummary: onSend(): signAndSubmit failed - setting amount lock to false");
                 setAmountLockRef.current(false);
             }
             throw e;
         });
-    }, [props.quote, signer, walletConnected]);
+    }, [props.quote, walletConnected, props.feeRate]);
     const abortSignalRef = useAbortSignalRef([props.quote]);
     const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => {
         return props.quote.waitForBitcoinTransaction(abortSignalRef.current, null, (txId, confirmations, confirmationTarget, txEtaMs) => {

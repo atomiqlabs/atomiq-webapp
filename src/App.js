@@ -199,7 +199,7 @@ function WrappedApp() {
                         },
                         chains: signers,
                         swapper,
-                        getSigner: (swap) => {
+                        getSigner: (swap, requireSameAsInitiator = true) => {
                             if (swap == null)
                                 return null;
                             if (isSCToken(swap)) {
@@ -212,7 +212,7 @@ function WrappedApp() {
                                     return undefined;
                                 if (signers[swap.chainIdentifier].random)
                                     return undefined;
-                                if (signers[swap.chainIdentifier].signer.getAddress() !== swap.getInitiator())
+                                if (requireSameAsInitiator && signers[swap.chainIdentifier].signer.getAddress() !== swap.getInitiator())
                                     return null;
                                 return signers[swap.chainIdentifier].signer;
                             }

@@ -314,7 +314,7 @@ function WrappedApp() {
                     },
                     chains: signers,
                     swapper,
-                    getSigner: (swap: ISwap | SCToken) => {
+                    getSigner: (swap: ISwap | SCToken, requireSameAsInitiator = true) => {
                         if(swap==null) return null;
                         if(isSCToken(swap)) {
                             if(signers[swap.chainId]==null) return undefined;
@@ -322,7 +322,7 @@ function WrappedApp() {
                         } else {
                             if(signers[swap.chainIdentifier]==null) return undefined;
                             if(signers[swap.chainIdentifier].random) return undefined;
-                            if(signers[swap.chainIdentifier].signer.getAddress()!==swap.getInitiator()) return null;
+                            if(requireSameAsInitiator && signers[swap.chainIdentifier].signer.getAddress()!==swap.getInitiator()) return null;
                             return signers[swap.chainIdentifier].signer;
                         }
                     }

@@ -41,7 +41,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
     balance?: bigint
 }) {
     const {getSigner} = useContext(SwapsContext);
-    const signer = getSigner(props.quote);
+    const signer = getSigner(props.quote, false);
 
     const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote);
 
@@ -58,14 +58,14 @@ export function SpvVaultFromBTCQuoteSummary(props: {
             console.log("SpvVaultFromBTCQuoteSummary: onSend(): setting amount lock to true");
             setAmountLockRef.current(true);
         }
-        return props.quote.signAndSubmit(walletConnected).catch(e => {
+        return props.quote.signAndSubmit(walletConnected, props.feeRate).catch(e => {
             if(setAmountLockRef.current!=null) {
                 console.log("SpvVaultFromBTCQuoteSummary: onSend(): signAndSubmit failed - setting amount lock to false");
                 setAmountLockRef.current(false);
             }
             throw e;
         });
-    }, [props.quote, signer, walletConnected]);
+    }, [props.quote, walletConnected, props.feeRate]);
 
     const abortSignalRef = useAbortSignalRef([props.quote]);
 

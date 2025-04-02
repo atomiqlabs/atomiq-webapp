@@ -13,7 +13,7 @@ export const SwapsContext: React.Context<{
             walletName?: string
         }
     }
-    getSigner(swap: ISwap | SCToken): undefined | null | AbstractSigner
+    getSigner(swap: ISwap | SCToken, requireSameAsInitiator?: boolean): undefined | null | AbstractSigner
 }> = createContext({
     actionableSwaps: [],
     removeSwap: null,
