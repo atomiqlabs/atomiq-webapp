@@ -80,12 +80,18 @@ export abstract class BitcoinWallet extends MempoolBitcoinWallet {
         return fee;
     }
 
-    getSpendableBalance(): Promise<{
+    async getFundedPsbtFee(basePsbt: Transaction, feeRate?: number) {
+        const {psbt, fee} = await super._fundPsbt(this.toBitcoinWalletAccounts(), basePsbt, feeRate);
+        if(psbt==null) return null;
+        return fee;
+    }
+
+    getSpendableBalance(basePsbt?: Transaction, feeRate?: number): Promise<{
         balance: bigint,
         feeRate: number,
         totalFee: number
     }> {
-        return this._getSpendableBalance(this.toBitcoinWalletAccounts());
+        return this._getSpendableBalance(this.toBitcoinWalletAccounts(), basePsbt, feeRate);
     }
 
     async fundPsbt(inputPsbt: Transaction, feeRate?: number): Promise<Transaction> {

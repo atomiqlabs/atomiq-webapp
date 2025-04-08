@@ -1,4 +1,4 @@
-import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { SwapType, toHumanReadableString, toTokenAmount } from "@atomiqlabs/sdk";
 import { BitcoinWalletContext } from "../../context/BitcoinWalletProvider";
 import { useContext, useEffect, useState } from "react";
@@ -10,7 +10,7 @@ import { SwapsContext } from "../../context/SwapsContext";
 import { TokenIcon } from "../TokenIcon";
 import { Tokens } from "../../FEConstants";
 function FeePart(props) {
-    return (_jsxs("div", { className: "d-flex font-medium " + props.className, children: [_jsxs("small", { className: "d-flex align-items-center" + (props.bold ? " fw-bold" : ""), children: [props.text, props.feePPM == null ? "" : props.feeBase == null ? (_jsxs(Badge, { bg: "primary", className: "ms-1 pill-round px-2", pill: true, children: [Number(props.feePPM) / 10000, " %"] })) : (_jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "fee-tooltip-" + props.text, children: _jsxs("span", { children: [Number(props.feePPM) / 10000, "% + ", toHumanReadableString(props.feeBase, props.feeCurrency), " ", props.feeCurrency.ticker] }) }), children: _jsx(Badge, { bg: "primary", className: "ms-1 pill-round px-2", pill: true, children: _jsxs("span", { className: "dottedUnderline", children: [Number(props.feePPM) / 10000, "%"] }) }) })), props.description != null ? (_jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "fee-tooltip-desc-" + props.text, children: _jsx("span", { children: props.description }) }), children: _jsx(Badge, { bg: "primary", className: "ms-1 pill-round px-2", pill: true, children: _jsx("span", { className: "dottedUnderline", children: "?" }) }) })) : ""] }), _jsx("span", { className: "ms-auto fw-bold d-flex align-items-center", children: _jsx(OverlayTrigger, { placement: "left", overlay: _jsx(Tooltip, { id: "fee-tooltip-" + props.text, className: "font-default", children: props.fee.amountInDstToken == null ? (_jsxs("span", { className: "ms-auto d-flex align-items-center", children: [_jsx(TokenIcon, { tokenOrTicker: props.fee.amountInSrcToken.token, className: "currency-icon-small", style: { marginTop: "-2px" } }), _jsxs("span", { children: [props.fee.amountInSrcToken.amount, " ", props.fee.amountInSrcToken.token.ticker] })] })) : (_jsxs("span", { className: "ms-auto text-end", children: [_jsxs("span", { className: "d-flex align-items-center justify-content-start", children: [_jsx(TokenIcon, { tokenOrTicker: props.fee.amountInSrcToken.token, className: "currency-icon-small", style: { marginTop: "-1px" } }), _jsxs("span", { children: [props.fee.amountInSrcToken.amount, " ", props.fee.amountInSrcToken.token.ticker] })] }), _jsx("span", { className: "d-flex align-items-center justify-content-center fw-bold", children: "=" }), _jsxs("span", { className: "d-flex align-items-center justify-content-start", children: [_jsx(TokenIcon, { tokenOrTicker: props.fee.amountInDstToken.token, className: "currency-icon-small" }), _jsxs("span", { children: [props.fee.amountInDstToken.amount, " ", props.fee.amountInDstToken.token.ticker] })] })] })) }), children: _jsxs("span", { className: "text-decoration-dotted font-monospace", children: ["$", (props.usdValue == null ? 0 : props.usdValue).toFixed(2)] }) }) })] }));
+    return (_jsxs("div", { className: "d-flex font-medium " + props.className, children: [_jsxs("small", { className: "d-flex align-items-center" + (props.bold ? " fw-bold" : ""), children: [props.description != null ? (_jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "fee-tooltip-desc-" + props.text, children: _jsx("span", { children: props.description }) }), children: _jsx("span", { className: "dottedUnderline", children: props.text }) })) : props.text, props.feePPM == null ? "" : props.feeBase == null ? (_jsxs(Badge, { bg: "primary", className: "ms-1 pill-round px-2", pill: true, children: [Number(props.feePPM) / 10000, " %"] })) : (_jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "fee-tooltip-" + props.text, children: _jsxs("span", { children: [Number(props.feePPM) / 10000, "% + ", toHumanReadableString(props.feeBase, props.feeCurrency), " ", props.feeCurrency.ticker] }) }), children: _jsx(Badge, { bg: "primary", className: "ms-1 pill-round px-2", pill: true, children: _jsxs("span", { className: "text-decoration-dotted", children: [Number(props.feePPM) / 10000, "%"] }) }) }))] }), _jsx("span", { className: "ms-auto fw-bold d-flex align-items-center", children: _jsx(OverlayTrigger, { placement: "left", overlay: _jsx(Tooltip, { id: "fee-tooltip-" + props.text, className: "font-default", children: props.fee.amountInDstToken == null ? (_jsxs("span", { className: "ms-auto d-flex align-items-center", children: [_jsx(TokenIcon, { tokenOrTicker: props.fee.amountInSrcToken.token, className: "currency-icon-small", style: { marginTop: "-2px" } }), _jsxs("span", { children: [props.fee.amountInSrcToken.amount, " ", props.fee.amountInSrcToken.token.ticker] })] })) : (_jsxs("span", { className: "ms-auto text-end", children: [_jsxs("span", { className: "d-flex align-items-center justify-content-start", children: [_jsx(TokenIcon, { tokenOrTicker: props.fee.amountInSrcToken.token, className: "currency-icon-small", style: { marginTop: "-1px" } }), _jsxs("span", { children: [props.fee.amountInSrcToken.amount, " ", props.fee.amountInSrcToken.token.ticker] })] }), _jsx("span", { className: "d-flex align-items-center justify-content-center fw-bold", children: "=" }), _jsxs("span", { className: "d-flex align-items-center justify-content-start", children: [_jsx(TokenIcon, { tokenOrTicker: props.fee.amountInDstToken.token, className: "currency-icon-small" }), _jsxs("span", { children: [props.fee.amountInDstToken.amount, " ", props.fee.amountInDstToken.token.ticker] })] })] })) }), children: _jsxs("span", { className: "text-decoration-dotted font-monospace", children: ["$", (props.usdValue == null ? 0 : props.usdValue).toFixed(2)] }) }) })] }));
 }
 function FeeSummary(props) {
     const totalUsdFee = props.feeBreakdown == null ? 0 : props.feeBreakdown.reduce((value, e) => e.usdValue == null ? value : value + parseFloat(e.usdValue.toFixed(2)), 0);
@@ -28,17 +28,27 @@ export function SimpleFeeSummaryScreen(props) {
         if (swapper == null)
             return;
         setBtcTxFee(null);
-        if (bitcoinWallet == null || props.btcFeeRate == null || props.btcFeeRate == 0 || props.swap == null || props.swap.getType() !== SwapType.FROM_BTC)
+        if (bitcoinWallet == null || props.btcFeeRate == null || props.btcFeeRate == 0 || props.swap == null)
             return;
-        const swap = props.swap;
+        if (props.swap.getType() !== SwapType.FROM_BTC && props.swap.getType() !== SwapType.SPV_VAULT_FROM_BTC)
+            return;
         setBtcTxFeeLoading(true);
         let cancelled = false;
         (async () => {
             try {
                 const input = props.swap.getInput();
+                let txFeePromise;
+                if (props.swap.getType() === SwapType.FROM_BTC) {
+                    const swap = props.swap;
+                    txFeePromise = bitcoinWallet.getTransactionFee(swap.address, input.rawAmount, props.btcFeeRate);
+                }
+                else if (props.swap.getType() === SwapType.SPV_VAULT_FROM_BTC) {
+                    const swap = props.swap;
+                    txFeePromise = swap.estimateBitcoinFee(bitcoinWallet, Math.max(props.btcFeeRate, swap.minimumBtcFeeRate));
+                }
                 const [usdPrice, btcTxFee] = await Promise.all([
                     swapper.prices.preFetchUsdPrice(),
-                    bitcoinWallet.getTransactionFee(swap.address, input.rawAmount, props.btcFeeRate)
+                    txFeePromise
                 ]);
                 if (btcTxFee == null) {
                     if (cancelled)

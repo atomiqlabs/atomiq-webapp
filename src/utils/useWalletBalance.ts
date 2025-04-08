@@ -1,4 +1,4 @@
-import {AbstractSigner, isBtcToken, isSCToken, toHumanReadableString, Token} from "@atomiqlabs/sdk";
+import {AbstractSigner, isBtcToken, isSCToken, SwapType, toHumanReadableString, Token} from "@atomiqlabs/sdk";
 import {useContext, useEffect, useState} from "react";
 import {BitcoinWalletContext} from "../context/BitcoinWalletProvider";
 import {SwapsContext} from "../context/SwapsContext";
@@ -10,7 +10,11 @@ import {Tokens} from "../FEConstants";
 export function useWalletBalance(
     signer: AbstractSigner,
     currency: Token,
-    pause?: boolean
+    swapType: SwapType,
+    swapChainId?: string,
+    requestGasDrop?: boolean,
+    pause?: boolean,
+    minBtcFeeRate?: number
 ): {
     amountString: string,
     amount: BigNumber,
@@ -48,11 +52,15 @@ export function useWalletBalance(
 
         setMaxSpendable(null);
 
+        if(swapper==null) return;
         if(bitcoinWallet==null) return;
 
         let canceled = false;
 
-        const fetchBalance = () => bitcoinWallet.getSpendableBalance().then(resp => {
+        const fetchBalance = () => bitcoinWallet.getFeeRate().then(feeRate => bitcoinWallet.getSpendableBalance(
+            swapType===SwapType.SPV_VAULT_FROM_BTC ? swapper.getRandomSpvVaultPsbt(swapChainId, requestGasDrop) : null,
+            minBtcFeeRate==null ? feeRate : Math.max(feeRate, minBtcFeeRate)
+        )).then(resp => {
             if(canceled) return;
             if(pauseRef.current) return;
             const amountString = toHumanReadableString(resp.balance, Tokens.BITCOIN.BTC);
@@ -72,7 +80,12 @@ export function useWalletBalance(
             clearInterval(interval);
             canceled = true;
         }
-    }, [bitcoinWallet, currency?.chain, currency?.ticker, (currency as any)?.chainId]);
+    }, [
+        swapper, bitcoinWallet,
+        currency?.chain, currency?.ticker, (currency as any)?.chainId,
+        swapType, swapType===SwapType.SPV_VAULT_FROM_BTC ? swapChainId : null, swapType===SwapType.SPV_VAULT_FROM_BTC ? requestGasDrop : false,
+        minBtcFeeRate
+    ]);
 
     useEffect(() => {
         if(currency==null || !isSCToken(currency)) return;
@@ -91,7 +104,7 @@ export function useWalletBalance(
                 amountString,
                 rawAmount: resp,
                 amount: new BigNumber(amountString),
-                feeRate: 0,
+                feeRate: null,
                 totalFee: null
             });
         });

@@ -14,6 +14,9 @@ import {SwapsContext} from "../context/SwapsContext";
 import BigNumber from "bignumber.js";
 import {fromHumanReadable} from "./Currencies";
 
+const btcFeeMaxOffset = 3;
+const btcFeeMaxMultiple = 1.5;
+
 export function useQuote(
     signer: AbstractSigner,
     amount: BigNumber,
@@ -22,7 +25,8 @@ export function useQuote(
     outToken: Token<any>,
     address: string | LNURLWithdraw | LNURLPay,
     gasDropAmount?: bigint,
-    handleQuotingError?: (exactIn: boolean, inToken: Token, outToken: Token, error: any) => boolean
+    handleQuotingError?: (exactIn: boolean, inToken: Token, outToken: Token, error: any) => boolean,
+    btcFeeRate?: number
 ): [() => void, ISwap, boolean, any] {
     const {swapper, chains} = useContext(SwapsContext);
 
@@ -64,6 +68,7 @@ export function useQuote(
                 if(gasDropAmount!=null && gasDropAmount!==0n) {
                     options.gasAmount = gasDropAmount;
                 }
+                if(btcFeeRate!=null) options.maxAllowedNetworkFeeRate = btcFeeMaxOffset + (btcFeeRate * btcFeeMaxMultiple);
                 createPromise = swapper.createFromBTCSwapNew(outToken.chainId, address as string, outToken.address, fromHumanReadable(amount, exactIn ? inToken : outToken), !exactIn, undefined, options)
             } else {
                 createPromise = swapper.create(signer.getAddress(), inToken, outToken, fromHumanReadable(amount, exactIn ? inToken : outToken), exactIn, address);
@@ -82,10 +87,11 @@ export function useQuote(
         };
 
         currentQuotation.current.then(process, process);
-    }, [swapper, amount, exactIn, inToken, outToken, address, signer, gasDropAmount]);
+    }, [swapper, amount, exactIn, inToken, outToken, address, signer, gasDropAmount, btcFeeRate]);
 
     useEffect(() => {
         getQuote();
+        // console.log("useQuote(): Request new quote: ", [amount, exactIn, inToken, outToken, address, signer, gasDropAmount, btcFeeRate]);
     }, [swapper, amount, exactIn, inToken, outToken, address, signer, gasDropAmount]);
 
     return [getQuote, quote, loading, error];

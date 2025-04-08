@@ -1,7 +1,6 @@
 import * as React from "react";
-import {useContext, useEffect, useMemo, useRef, useState} from "react";
+import {useContext, useEffect, useMemo, useState} from "react";
 import {Alert, Badge, Button, Spinner} from "react-bootstrap";
-import {ValidatedInputRef} from "../../ValidatedInput";
 import {SpvFromBTCSwap, SpvFromBTCSwapState} from "@atomiqlabs/sdk";
 import {getDeltaText} from "../../../utils/Utils";
 import {FEConstants} from "../../../FEConstants";
@@ -58,7 +57,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
             console.log("SpvVaultFromBTCQuoteSummary: onSend(): setting amount lock to true");
             setAmountLockRef.current(true);
         }
-        return props.quote.signAndSubmit(walletConnected, props.feeRate).catch(e => {
+        return props.quote.signAndSubmit(walletConnected, Math.max(props.feeRate, props.quote.minimumBtcFeeRate)).catch(e => {
             if(setAmountLockRef.current!=null) {
                 console.log("SpvVaultFromBTCQuoteSummary: onSend(): signAndSubmit failed - setting amount lock to false");
                 setAmountLockRef.current(false);

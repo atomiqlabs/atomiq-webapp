@@ -81,7 +81,7 @@ export function QuickScanExecute() {
         smartChainTokenArray :
         smartChainTokenArray.filter(token => supportedTokensSet.has(token.chainId+":"+token.address));
 
-    const walletBalanceResp = useWalletBalance(signer, inToken);
+    const walletBalanceResp = useWalletBalance(signer, inToken, addressResult?.swapType);
     const walletBalance = walletBalanceResp?.rawAmount ?? null;
 
     return (

@@ -1,11 +1,13 @@
 import {
-    BitcoinNetwork, ChainInterface,
+    BitcoinNetwork,
+    ChainInterface,
     isBtcToken,
     isSCToken,
-    SCToken, SpvFromBTCSwap,
+    SCToken,
+    SpvFromBTCSwap,
     SwapType,
     ToBTCLNSwap,
-    ToBTCSwap,
+    ToBTCSwap, toHumanReadableString,
     Token
 } from "@atomiqlabs/sdk";
 import * as React from "react";
@@ -18,7 +20,7 @@ import {useWalletBalance} from "../utils/useWalletBalance";
 import {useBigNumberState} from "../utils/useBigNumberState";
 import {SwapTopbar} from "../components/SwapTopbar";
 import {QRScannerModal} from "../components/qr/QRScannerModal";
-import {Alert, Button, Card, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
+import {Alert, Badge, Button, Card, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
 import {bitcoinTokenArray, fromHumanReadable, smartChainTokenArray, toHumanReadable} from "../utils/Currencies";
 import {FEConstants, Tokens} from "../FEConstants";
 import BigNumber from "bignumber.js";
@@ -41,6 +43,7 @@ import {lock} from 'react-icons-kit/fa/lock';
 import {ic_power_off_outline} from 'react-icons-kit/md/ic_power_off_outline';
 import {useExistingSwap} from "../utils/useExistingSwap";
 import {ConnectedWalletAnchor} from "../components/wallet/ConnectedWalletAnchor";
+import {useWalletForCurrency} from "../utils/useWalletList";
 
 const RANDOM_BTC_ADDRESS = Address(FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? TEST_NETWORK : NETWORK).encode({
     type: "wsh",
@@ -94,7 +97,7 @@ export function SwapNew(props: {
     //Address
     const addressRef = useRef<ValidatedInputRef>();
     const addressValidator = useCallback((val) => {
-        if(val==="") return "Destination wallet address required";
+        if(val==="") return "Destination address required";
         if(val.startsWith("lightning:")) {
             val = val.substring(10);
         }
@@ -207,7 +210,7 @@ export function SwapNew(props: {
         toHumanReadable(FEConstants.scBalances[gasDropToken?.chainId]?.optimal[gasDropToken?.address], gasDropToken);
 
     useEffect(() => {
-        if(swapper==null) return;
+        if(swapper==null || gasDropToken==null) return;
         let cancelled = false;
         if(existingSwap!=null) {
             if(existingSwap.getType()===SwapType.SPV_VAULT_FROM_BTC) {
@@ -220,7 +223,7 @@ export function SwapNew(props: {
         if(addressData?.address==null) return;
         swapper.getNativeBalance(gasDropToken.chainId, addressData?.address).then(value => {
             if(cancelled) return;
-            const requiredBalance = FEConstants.scBalances[gasDropToken.chainId].optimal[gasDropToken.address];
+            const requiredBalance = FEConstants.scBalances[gasDropToken.chainId].minimum[gasDropToken.address];
             if(value < requiredBalance) {
                 setGasDropChecked(true);
             }
@@ -229,6 +232,12 @@ export function SwapNew(props: {
             cancelled = true;
         }
     }, [gasDropToken, addressData?.address, swapper]);
+
+    //Max spendable
+    const [minBtcTxFee, setMinBtcTxFee] = useState<number>(null);
+    const maxSpendable = useWalletBalance(signerData?.random ? null : signerData?.signer, inputToken, swapType, scCurrency.chainId, gasDropChecked, locked, minBtcTxFee);
+    let inputMax = BigNumber.min(maxSpendable?.amount ?? new BigNumber(Infinity), inConstraints?.max ?? new BigNumber(Infinity));
+    if(!inputMax.isFinite()) inputMax = null;
 
     //Quote
     const quoteAddress = useMemo(() => {
@@ -246,8 +255,21 @@ export function SwapNew(props: {
         existingSwap!=null ? null : signerData?.signer, validatedAmount, exactIn, inputToken, outputToken,
         quoteAddress,
         gasDropToken!=null && gasDropChecked ? FEConstants.scBalances[gasDropToken.chainId]?.optimal[gasDropToken.address] : null,
-        handleQuoteError
+        handleQuoteError,
+        maxSpendable?.feeRate
     );
+    useEffect(() => {
+        if(quote==null) return;
+        if(swapType===SwapType.SPV_VAULT_FROM_BTC && quote?.getType()===SwapType.SPV_VAULT_FROM_BTC) {
+            if(maxSpendable?.feeRate==null) return;
+            const quoteMinFee = (quote as SpvFromBTCSwap<any>).minimumBtcFeeRate;
+            if(quoteMinFee >= maxSpendable?.feeRate) {
+                setMinBtcTxFee(quoteMinFee);
+                return;
+            }
+        }
+        setMinBtcTxFee(null);
+    }, [quote, swapType, maxSpendable?.feeRate]);
 
     const outputAddress = useMemo(() => {
         if(existingSwap!=null) {
@@ -280,11 +302,6 @@ export function SwapNew(props: {
         quote!=null ? new BigNumber(quote.getOutput().amount) : null,
         outputToken
     );
-
-    //Max spendable
-    const maxSpendable = useWalletBalance(signerData?.random ? null : signerData?.signer, inputToken, locked);
-    let inputMax = BigNumber.min(maxSpendable?.amount ?? new BigNumber(Infinity), inConstraints?.max ?? new BigNumber(Infinity));
-    if(!inputMax.isFinite()) inputMax = null;
 
     //QR scanner
     const [qrScanning, setQrScanning] = useState<boolean>(false);
@@ -365,12 +382,14 @@ export function SwapNew(props: {
     const [_inputAmountValue, setInputAmountValue] = useState<string>();
     const inputAmountValue = inputAmount ?? _inputAmountValue;
     let shouldShowUseExternalWallet = false;
-    if(inConstraints?.max!=null && maxSpendable?.amount!=null && inputAmountValue!=null && !isSend) {
+    if(inConstraints?.max!=null && maxSpendable?.amount!=null && inputAmountValue!=null && swapType===SwapType.FROM_BTC) {
         const parsedAmount = new BigNumber(inputAmountValue);
         console.log("Parsed amount: ", parsedAmount);
         if(!parsedAmount.isNaN())
             shouldShowUseExternalWallet = parsedAmount.gt(maxSpendable?.amount) && parsedAmount.lte(inConstraints.max);
     }
+
+    const {disconnect: outputWalletDisconnect, connect: outputWalletConnect, chainName: outputChainName} = useWalletForCurrency(outputToken);
 
     return (
         <>
@@ -546,7 +565,15 @@ export function SwapNew(props: {
                                     setGasDropChecked(val);
                                     leaveExistingSwap(true, true);
                                 }}
-                                placeholder={"Request gas drop of "+gasDropAmount?.toString(10)+" "+gasDropToken?.ticker}
+                                placeholder={(
+                                    <span>
+                                        <OverlayTrigger overlay={<Tooltip id={"fee-tooltip-gas-drop"}>
+                                            <span>Swap some amount of BTC to {gasDropToken?.ticker} (gas token on the destination chain), so that you can transact on {gasDropToken?.chainId}</span>
+                                        </Tooltip>}>
+                                            <span className="dottedUnderline">{"Request gas drop of "+gasDropAmount?.toString(10)+" "+gasDropToken?.ticker}</span>
+                                        </OverlayTrigger>
+                                    </span>
+                                )}
                                 value={gasDropChecked}
                                 onValidate={() => null}
                                 disabled={locked}
@@ -564,6 +591,12 @@ export function SwapNew(props: {
                                 onValidate={addressValidator}
                                 validated={addressData?.error}
                                 disabled={locked || webLnForOutput || btcWalletForOutput || smartChainWalletForOutput}
+                                feedbackEndElement={!webLnForOutput && !btcWalletForOutput && !smartChainWalletForOutput ? (
+                                    <a className="ms-auto" href="#" onClick={(event) => {
+                                        event.preventDefault();
+                                        outputWalletConnect();
+                                    }}>Connect {outputChainName} wallet</a>
+                                ) : null}
                                 textStart={addressLoading ? (
                                     <Spinner size="sm" className="text-white"/>
                                 ) : null}
@@ -576,11 +609,7 @@ export function SwapNew(props: {
                                             marginTop: "-3px"
                                         }} onClick={(e) => {
                                             e.preventDefault();
-                                            if(swapType===SwapType.SPV_VAULT_FROM_BTC) {
-                                                signerData?.disconnect();
-                                            } else {
-                                                disconnect();
-                                            }
+                                            outputWalletDisconnect();
                                         }}><Icon size={24} icon={ic_power_off_outline}/></a>
                                     </OverlayTrigger>
                                 ) : (

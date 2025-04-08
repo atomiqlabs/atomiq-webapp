@@ -31,6 +31,7 @@ import { lock } from 'react-icons-kit/fa/lock';
 import { ic_power_off_outline } from 'react-icons-kit/md/ic_power_off_outline';
 import { useExistingSwap } from "../utils/useExistingSwap";
 import { ConnectedWalletAnchor } from "../components/wallet/ConnectedWalletAnchor";
+import { useWalletForCurrency } from "../utils/useWalletList";
 const RANDOM_BTC_ADDRESS = Address(FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? TEST_NETWORK : NETWORK).encode({
     type: "wsh",
     hash: randomBytes(32)
@@ -72,7 +73,7 @@ export function SwapNew(props) {
     const addressRef = useRef();
     const addressValidator = useCallback((val) => {
         if (val === "")
-            return "Destination wallet address required";
+            return "Destination address required";
         if (val.startsWith("lightning:")) {
             val = val.substring(10);
         }
@@ -187,7 +188,7 @@ export function SwapNew(props) {
         new BigNumber(existingSwap.getGasOutput().amount) :
         toHumanReadable(FEConstants.scBalances[gasDropToken?.chainId]?.optimal[gasDropToken?.address], gasDropToken);
     useEffect(() => {
-        if (swapper == null)
+        if (swapper == null || gasDropToken == null)
             return;
         let cancelled = false;
         if (existingSwap != null) {
@@ -202,7 +203,7 @@ export function SwapNew(props) {
         swapper.getNativeBalance(gasDropToken.chainId, addressData?.address).then(value => {
             if (cancelled)
                 return;
-            const requiredBalance = FEConstants.scBalances[gasDropToken.chainId].optimal[gasDropToken.address];
+            const requiredBalance = FEConstants.scBalances[gasDropToken.chainId].minimum[gasDropToken.address];
             if (value < requiredBalance) {
                 setGasDropChecked(true);
             }
@@ -211,6 +212,12 @@ export function SwapNew(props) {
             cancelled = true;
         };
     }, [gasDropToken, addressData?.address, swapper]);
+    //Max spendable
+    const [minBtcTxFee, setMinBtcTxFee] = useState(null);
+    const maxSpendable = useWalletBalance(signerData?.random ? null : signerData?.signer, inputToken, swapType, scCurrency.chainId, gasDropChecked, locked, minBtcTxFee);
+    let inputMax = BigNumber.min(maxSpendable?.amount ?? new BigNumber(Infinity), inConstraints?.max ?? new BigNumber(Infinity));
+    if (!inputMax.isFinite())
+        inputMax = null;
     //Quote
     const quoteAddress = useMemo(() => {
         if (swapType === SwapType.TO_BTC || swapType === SwapType.TO_BTCLN || swapType === SwapType.SPV_VAULT_FROM_BTC) {
@@ -227,7 +234,21 @@ export function SwapNew(props) {
             return addressData?.address;
         }
     }, [isSend, validatedAddress, swapType, addressData, signerData]);
-    const [refreshQuote, quote, quoteLoading, quoteError] = useQuote(existingSwap != null ? null : signerData?.signer, validatedAmount, exactIn, inputToken, outputToken, quoteAddress, gasDropToken != null && gasDropChecked ? FEConstants.scBalances[gasDropToken.chainId]?.optimal[gasDropToken.address] : null, handleQuoteError);
+    const [refreshQuote, quote, quoteLoading, quoteError] = useQuote(existingSwap != null ? null : signerData?.signer, validatedAmount, exactIn, inputToken, outputToken, quoteAddress, gasDropToken != null && gasDropChecked ? FEConstants.scBalances[gasDropToken.chainId]?.optimal[gasDropToken.address] : null, handleQuoteError, maxSpendable?.feeRate);
+    useEffect(() => {
+        if (quote == null)
+            return;
+        if (swapType === SwapType.SPV_VAULT_FROM_BTC && quote?.getType() === SwapType.SPV_VAULT_FROM_BTC) {
+            if (maxSpendable?.feeRate == null)
+                return;
+            const quoteMinFee = quote.minimumBtcFeeRate;
+            if (quoteMinFee >= maxSpendable?.feeRate) {
+                setMinBtcTxFee(quoteMinFee);
+                return;
+            }
+        }
+        setMinBtcTxFee(null);
+    }, [quote, swapType, maxSpendable?.feeRate]);
     const outputAddress = useMemo(() => {
         if (existingSwap != null) {
             if (existingSwap.getType() === SwapType.TO_BTCLN) {
@@ -256,11 +277,6 @@ export function SwapNew(props) {
     const outputValue = usePricing(existingSwap != null ? new BigNumber(existingSwap.getOutput().amount) :
         !exactIn ? validatedAmount :
             quote != null ? new BigNumber(quote.getOutput().amount) : null, outputToken);
-    //Max spendable
-    const maxSpendable = useWalletBalance(signerData?.random ? null : signerData?.signer, inputToken, locked);
-    let inputMax = BigNumber.min(maxSpendable?.amount ?? new BigNumber(Infinity), inConstraints?.max ?? new BigNumber(Infinity));
-    if (!inputMax.isFinite())
-        inputMax = null;
     //QR scanner
     const [qrScanning, setQrScanning] = useState(false);
     const leaveExistingSwap = (noChangeSwapType, noSetAddress) => {
@@ -344,12 +360,13 @@ export function SwapNew(props) {
     const [_inputAmountValue, setInputAmountValue] = useState();
     const inputAmountValue = inputAmount ?? _inputAmountValue;
     let shouldShowUseExternalWallet = false;
-    if (inConstraints?.max != null && maxSpendable?.amount != null && inputAmountValue != null && !isSend) {
+    if (inConstraints?.max != null && maxSpendable?.amount != null && inputAmountValue != null && swapType === SwapType.FROM_BTC) {
         const parsedAmount = new BigNumber(inputAmountValue);
         console.log("Parsed amount: ", parsedAmount);
         if (!parsedAmount.isNaN())
             shouldShowUseExternalWallet = parsedAmount.gt(maxSpendable?.amount) && parsedAmount.lte(inConstraints.max);
     }
+    const { disconnect: outputWalletDisconnect, connect: outputWalletConnect, chainName: outputChainName } = useWalletForCurrency(outputToken);
     return (_jsxs(_Fragment, { children: [_jsx(SwapTopbar, { selected: 0, enabled: !locked }), _jsx(QRScannerModal, { onScanned: (data) => {
                     console.log("QR scanned: ", data);
                     addressRef.current.setValue(data);
@@ -411,16 +428,14 @@ export function SwapNew(props) {
                                             }, value: outputToken, className: "round-right text-white bg-black bg-opacity-10" })) }) }), _jsx("div", { className: (gasDropToken != null ? "d-flex" : "d-none"), children: _jsx(ValidatedInput, { type: "checkbox", className: "flex-fill mt-1", onChange: (val) => {
                                             setGasDropChecked(val);
                                             leaveExistingSwap(true, true);
-                                        }, placeholder: "Request gas drop of " + gasDropAmount?.toString(10) + " " + gasDropToken?.ticker, value: gasDropChecked, onValidate: () => null, disabled: locked }) }), _jsxs("div", { className: "flex-column " + (isSend || swapType === SwapType.SPV_VAULT_FROM_BTC ? "d-flex" : "d-none"), children: [_jsx(ValidatedInput, { type: "text", className: "flex-fill mt-3 " + (webLnForOutput && (validatedAddress == null || validatedAddress === "") ? "d-none" : ""), onChange: (val) => leaveExistingSwap(false, true), onValidatedInput: setValidatedAddress, value: outputAddress, inputRef: addressRef, placeholder: "Paste wallet address", onValidate: addressValidator, validated: addressData?.error, disabled: locked || webLnForOutput || btcWalletForOutput || smartChainWalletForOutput, textStart: addressLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, textEnd: locked || webLnForOutput ? null : (btcWalletForOutput || smartChainWalletForOutput ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", style: {
+                                        }, placeholder: (_jsx("span", { children: _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "fee-tooltip-gas-drop", children: _jsxs("span", { children: ["Swap some amount of BTC to ", gasDropToken?.ticker, " (gas token on the destination chain), so that you can transact on ", gasDropToken?.chainId] }) }), children: _jsx("span", { className: "dottedUnderline", children: "Request gas drop of " + gasDropAmount?.toString(10) + " " + gasDropToken?.ticker }) }) })), value: gasDropChecked, onValidate: () => null, disabled: locked }) }), _jsxs("div", { className: "flex-column " + (isSend || swapType === SwapType.SPV_VAULT_FROM_BTC ? "d-flex" : "d-none"), children: [_jsx(ValidatedInput, { type: "text", className: "flex-fill mt-3 " + (webLnForOutput && (validatedAddress == null || validatedAddress === "") ? "d-none" : ""), onChange: (val) => leaveExistingSwap(false, true), onValidatedInput: setValidatedAddress, value: outputAddress, inputRef: addressRef, placeholder: "Paste wallet address", onValidate: addressValidator, validated: addressData?.error, disabled: locked || webLnForOutput || btcWalletForOutput || smartChainWalletForOutput, feedbackEndElement: !webLnForOutput && !btcWalletForOutput && !smartChainWalletForOutput ? (_jsxs("a", { className: "ms-auto", href: "#", onClick: (event) => {
+                                                    event.preventDefault();
+                                                    outputWalletConnect();
+                                                }, children: ["Connect ", outputChainName, " wallet"] })) : null, textStart: addressLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, textEnd: locked || webLnForOutput ? null : (btcWalletForOutput || smartChainWalletForOutput ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", style: {
                                                         marginTop: "-3px"
                                                     }, onClick: (e) => {
                                                         e.preventDefault();
-                                                        if (swapType === SwapType.SPV_VAULT_FROM_BTC) {
-                                                            signerData?.disconnect();
-                                                        }
-                                                        else {
-                                                            disconnect();
-                                                        }
+                                                        outputWalletDisconnect();
                                                     }, children: _jsx(Icon, { size: 24, icon: ic_power_off_outline }) }) })) : (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Scan QR code" }), children: _jsx("a", { href: "#", style: {
                                                         marginTop: "-3px"
                                                     }, onClick: (e) => {

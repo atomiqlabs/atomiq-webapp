@@ -39,7 +39,7 @@ export function SpvVaultFromBTCQuoteSummary(props) {
             console.log("SpvVaultFromBTCQuoteSummary: onSend(): setting amount lock to true");
             setAmountLockRef.current(true);
         }
-        return props.quote.signAndSubmit(walletConnected, props.feeRate).catch(e => {
+        return props.quote.signAndSubmit(walletConnected, Math.max(props.feeRate, props.quote.minimumBtcFeeRate)).catch(e => {
             if (setAmountLockRef.current != null) {
                 console.log("SpvVaultFromBTCQuoteSummary: onSend(): signAndSubmit failed - setting amount lock to false");
                 setAmountLockRef.current(false);

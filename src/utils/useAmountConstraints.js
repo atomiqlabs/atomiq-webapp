@@ -89,9 +89,10 @@ export function useAmountConstraints(exactIn, inCurrency, outCurrency) {
             return false;
         if (err == null || err.min == null || err.max == null)
             return false;
-        setTokenConstraints(val => {
+        console.log("useAmountConstraints(): Setting new constraints for: " + currency.chainId + " address: " + currency.address, [err.min, err.max]);
+        setTokenConstraints(original => {
             var _a, _b;
-            val ?? (val = {});
+            const val = { ...original };
             val[swapType] ?? (val[swapType] = {});
             (_a = val[swapType])[_b = currency.chainId] ?? (_a[_b] = {});
             val[swapType][currency.chainId][currency.address] = {
@@ -106,6 +107,7 @@ export function useAmountConstraints(exactIn, inCurrency, outCurrency) {
         const isSend = swapType === SwapType.TO_BTC || swapType === SwapType.TO_BTCLN;
         let inConstraints;
         let outConstraints;
+        console.log("useAmountConstraints(): Checking constraints for exactIn: " + exactIn + " isSend: " + isSend + " swapType: " + swapType + " currencies: ", [inCurrency, outCurrency]);
         if (exactIn) {
             outConstraints = defaultConstraints;
             if (!isSend) {

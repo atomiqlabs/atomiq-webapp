@@ -32,7 +32,13 @@ function FeePart(props: {
     return (
         <div className={"d-flex font-medium " + props.className}>
             <small className={"d-flex align-items-center" + (props.bold ? " fw-bold" : "")}>
-                {props.text}
+                {props.description != null ? (
+                    <OverlayTrigger overlay={<Tooltip id={"fee-tooltip-desc-" + props.text}>
+                        <span>{props.description}</span>
+                    </Tooltip>}>
+                        <span className="dottedUnderline">{props.text}</span>
+                    </OverlayTrigger>
+                ) : props.text}
                 {props.feePPM == null ? "" : props.feeBase == null ? (
                     <Badge bg="primary" className="ms-1 pill-round px-2"
                            pill>{Number(props.feePPM) / 10000} %</Badge>
@@ -41,19 +47,10 @@ function FeePart(props: {
                         <span>{Number(props.feePPM) / 10000}% + {toHumanReadableString(props.feeBase, props.feeCurrency)} {props.feeCurrency.ticker}</span>
                     </Tooltip>}>
                         <Badge bg="primary" className="ms-1 pill-round px-2" pill>
-                            <span className="dottedUnderline">{Number(props.feePPM) / 10000}%</span>
+                            <span className="text-decoration-dotted">{Number(props.feePPM) / 10000}%</span>
                         </Badge>
                     </OverlayTrigger>
                 )}
-                {props.description != null ? (
-                    <OverlayTrigger overlay={<Tooltip id={"fee-tooltip-desc-" + props.text}>
-                        <span>{props.description}</span>
-                    </Tooltip>}>
-                        <Badge bg="primary" className="ms-1 pill-round px-2" pill>
-                            <span className="dottedUnderline">?</span>
-                        </Badge>
-                    </OverlayTrigger>
-                ) : ""}
             </small>
             <span className="ms-auto fw-bold d-flex align-items-center">
                 <OverlayTrigger placement="left" overlay={
@@ -157,16 +154,24 @@ export function SimpleFeeSummaryScreen(props: {
     useEffect(() => {
         if(swapper==null) return;
         setBtcTxFee(null);
-        if(bitcoinWallet==null || props.btcFeeRate==null || props.btcFeeRate==0 || props.swap==null || props.swap.getType()!==SwapType.FROM_BTC) return;
-        const swap = props.swap as FromBTCSwap<any>;
+        if(bitcoinWallet==null || props.btcFeeRate==null || props.btcFeeRate==0 || props.swap==null) return;
+        if(props.swap.getType()!==SwapType.FROM_BTC && props.swap.getType()!==SwapType.SPV_VAULT_FROM_BTC) return;
         setBtcTxFeeLoading(true);
         let cancelled = false;
         (async() => {
             try {
                 const input = props.swap.getInput();
+                let txFeePromise: Promise<number>;
+                if(props.swap.getType()===SwapType.FROM_BTC) {
+                    const swap = props.swap as FromBTCSwap<any>;
+                    txFeePromise = bitcoinWallet.getTransactionFee(swap.address, input.rawAmount, props.btcFeeRate);
+                } else if(props.swap.getType()===SwapType.SPV_VAULT_FROM_BTC) {
+                    const swap = props.swap as SpvFromBTCSwap<any>;
+                    txFeePromise = swap.estimateBitcoinFee(bitcoinWallet, Math.max(props.btcFeeRate, swap.minimumBtcFeeRate));
+                }
                 const [usdPrice, btcTxFee] = await Promise.all([
                     swapper.prices.preFetchUsdPrice(),
-                    bitcoinWallet.getTransactionFee(swap.address, input.rawAmount, props.btcFeeRate)
+                    txFeePromise
                 ]);
                 if(btcTxFee==null) {
                     if(cancelled) return;

@@ -2,7 +2,9 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { isBtcToken, isSCToken, SwapType } from "@atomiqlabs/sdk";
 import { SwapsContext } from "../context/SwapsContext";
 import { fromHumanReadable } from "./Currencies";
-export function useQuote(signer, amount, exactIn, inToken, outToken, address, gasDropAmount, handleQuotingError) {
+const btcFeeMaxOffset = 3;
+const btcFeeMaxMultiple = 1.5;
+export function useQuote(signer, amount, exactIn, inToken, outToken, address, gasDropAmount, handleQuotingError, btcFeeRate) {
     const { swapper, chains } = useContext(SwapsContext);
     const [quote, setQuote] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -34,6 +36,8 @@ export function useQuote(signer, amount, exactIn, inToken, outToken, address, ga
                 if (gasDropAmount != null && gasDropAmount !== 0n) {
                     options.gasAmount = gasDropAmount;
                 }
+                if (btcFeeRate != null)
+                    options.maxAllowedNetworkFeeRate = btcFeeMaxOffset + (btcFeeRate * btcFeeMaxMultiple);
                 createPromise = swapper.createFromBTCSwapNew(outToken.chainId, address, outToken.address, fromHumanReadable(amount, exactIn ? inToken : outToken), !exactIn, undefined, options);
             }
             else {
@@ -56,9 +60,10 @@ export function useQuote(signer, amount, exactIn, inToken, outToken, address, ga
             });
         };
         currentQuotation.current.then(process, process);
-    }, [swapper, amount, exactIn, inToken, outToken, address, signer, gasDropAmount]);
+    }, [swapper, amount, exactIn, inToken, outToken, address, signer, gasDropAmount, btcFeeRate]);
     useEffect(() => {
         getQuote();
+        // console.log("useQuote(): Request new quote: ", [amount, exactIn, inToken, outToken, address, signer, gasDropAmount, btcFeeRate]);
     }, [swapper, amount, exactIn, inToken, outToken, address, signer, gasDropAmount]);
     return [getQuote, quote, loading, error];
 }

@@ -1,11 +1,11 @@
-import { isBtcToken, isSCToken, toHumanReadableString } from "@atomiqlabs/sdk";
+import { isBtcToken, isSCToken, SwapType, toHumanReadableString } from "@atomiqlabs/sdk";
 import { useContext, useEffect, useState } from "react";
 import { BitcoinWalletContext } from "../context/BitcoinWalletProvider";
 import { SwapsContext } from "../context/SwapsContext";
 import BigNumber from "bignumber.js";
 import { useStateRef } from "./useStateRef";
 import { Tokens } from "../FEConstants";
-export function useWalletBalance(signer, currency, pause) {
+export function useWalletBalance(signer, currency, swapType, swapChainId, requestGasDrop, pause, minBtcFeeRate) {
     const { swapper } = useContext(SwapsContext);
     const { bitcoinWallet } = useContext(BitcoinWalletContext);
     const pauseRef = useStateRef(pause);
@@ -28,10 +28,12 @@ export function useWalletBalance(signer, currency, pause) {
         if (currency.lightning)
             return;
         setMaxSpendable(null);
+        if (swapper == null)
+            return;
         if (bitcoinWallet == null)
             return;
         let canceled = false;
-        const fetchBalance = () => bitcoinWallet.getSpendableBalance().then(resp => {
+        const fetchBalance = () => bitcoinWallet.getFeeRate().then(feeRate => bitcoinWallet.getSpendableBalance(swapType === SwapType.SPV_VAULT_FROM_BTC ? swapper.getRandomSpvVaultPsbt(swapChainId, requestGasDrop) : null, minBtcFeeRate == null ? feeRate : Math.max(feeRate, minBtcFeeRate))).then(resp => {
             if (canceled)
                 return;
             if (pauseRef.current)
@@ -51,7 +53,12 @@ export function useWalletBalance(signer, currency, pause) {
             clearInterval(interval);
             canceled = true;
         };
-    }, [bitcoinWallet, currency?.chain, currency?.ticker, currency?.chainId]);
+    }, [
+        swapper, bitcoinWallet,
+        currency?.chain, currency?.ticker, currency?.chainId,
+        swapType, swapType === SwapType.SPV_VAULT_FROM_BTC ? swapChainId : null, swapType === SwapType.SPV_VAULT_FROM_BTC ? requestGasDrop : false,
+        minBtcFeeRate
+    ]);
     useEffect(() => {
         if (currency == null || !isSCToken(currency))
             return;
@@ -69,7 +76,7 @@ export function useWalletBalance(signer, currency, pause) {
                 amountString,
                 rawAmount: resp,
                 amount: new BigNumber(amountString),
-                feeRate: 0,
+                feeRate: null,
                 totalFee: null
             });
         });
