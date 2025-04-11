@@ -169,5 +169,6 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         return Transaction.fromPSBT(Buffer.from(resultSignedPsbtHex, "hex"));
     }
 }
+PhantomBitcoinWallet.installUrl = "https://phantom.com/download";
 PhantomBitcoinWallet.iconUrl = "wallets/btc/phantom.png";
 PhantomBitcoinWallet.walletName = "Phantom";

@@ -3,6 +3,7 @@ import {MagicEdenBitcoinWallet} from "./MagicEdenBitcoinWallet";
 
 export class XverseBitcoinWallet extends SatsConnectBitcoinWallet {
 
+    static installUrl: string = "https://www.xverse.app/download";
     static iconUrl: string = "wallets/btc/xverse.png";
     static walletName: string = "Xverse";
 

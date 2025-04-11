@@ -2,6 +2,7 @@ import {SatsConnectBitcoinWallet} from "./SatsConnectBitcoinWallet";
 
 export class MagicEdenBitcoinWallet extends SatsConnectBitcoinWallet {
 
+    static installUrl: string = "https://wallet.magiceden.io/download";
     static iconUrl: string = "wallets/btc/MagicEden.png";
     static walletName: string = "Magic Eden";
 

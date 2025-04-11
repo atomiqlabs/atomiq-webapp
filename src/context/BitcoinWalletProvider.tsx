@@ -18,7 +18,8 @@ export function BitcoinWalletModal(props: {
     modalOpened: boolean,
     setModalOpened: (opened: boolean) => void,
     connectWallet: (wallet?: BitcoinWalletType) => void,
-    usableWallets: BitcoinWalletType[]
+    usableWallets: BitcoinWalletType[],
+    installableWallets: BitcoinWalletType[]
 }) {
     return (
         <Modal contentClassName="text-white bg-dark" size="sm" centered show={props.modalOpened} onHide={() => props.setModalOpened(false)} dialogClassName="min-width-400px">
@@ -30,11 +31,20 @@ export function BitcoinWalletModal(props: {
             </Modal.Header>
             <Modal.Body>
                 <ListGroup variant="flush">
-                    {props.usableWallets.map((e, index) => {
+                    {props.usableWallets.map((e) => {
                         return (
                             <ListGroup.Item action key={e.name} onClick={() => props.connectWallet(e)} className="d-flex flex-row bg-transparent text-white border-0">
                                 <img width={20} height={20} src={e.iconUrl} className="me-2"/>
                                 <span>{e.name}</span>
+                                <small className="ms-auto">Installed</small>
+                            </ListGroup.Item>
+                        );
+                    })}
+                    {props.installableWallets.map((e) => {
+                        return (
+                            <ListGroup.Item action key={e.name} href={e.installUrl} target="_blank" className="d-flex flex-row bg-transparent text-white border-0">
+                                <img width={20} height={20} src={e.iconUrl} className="me-2"/>
+                                <span>Install {e.name}</span>
                             </ListGroup.Item>
                         );
                     })}
@@ -48,6 +58,7 @@ export function BitcoinWalletProvider(props: {children: React.ReactNode}) {
 
     const [bitcoinWallet, setBitcoinWallet] = React.useState<BitcoinWallet>(undefined);
     const [usableWallets, setUsableWallets] = useState<BitcoinWalletType[]>([]);
+    const [installableWallets, setInstallableWallets] = useState<BitcoinWalletType[]>([]);
 
     const [autoConnect, setAutoConnect] = useLocalStorage<boolean>("btc-wallet-autoconnect", true);
     const bitcoinWalletRef = useStateRef(bitcoinWallet);
@@ -80,6 +91,7 @@ export function BitcoinWalletProvider(props: {children: React.ReactNode}) {
     useEffect(() => {
         getInstalledBitcoinWallets().then(resp => {
             setUsableWallets(resp.installed);
+            setInstallableWallets(resp.installable);
             if(resp.active!=null && bitcoinWallet==null) {
                 resp.active().then(wallet => setBitcoinWallet(wallet)).catch(e => {
                     console.error(e);
@@ -121,7 +133,7 @@ export function BitcoinWalletProvider(props: {children: React.ReactNode}) {
     const [modalOpened, setModalOpened] = useState<boolean>(false);
 
     const connect = useCallback(() => {
-        if(usableWallets.length===0) {
+        if(usableWallets.length===1) {
             connectWallet(usableWallets[0]).catch(e => {
                 console.error(e);
             })
@@ -134,13 +146,13 @@ export function BitcoinWalletProvider(props: {children: React.ReactNode}) {
     return (
         <BitcoinWalletContext.Provider value={{
             bitcoinWallet,
-            connect: usableWallets.length>0 ? connect : null,
+            connect: usableWallets.length>0 || installableWallets.length>0 ? connect : null,
             disconnect: bitcoinWallet!=null ? disconnect : null,
             changeWallet: bitcoinWallet!=null && usableWallets.length>1 ? connect : null
         }}>
             <BitcoinWalletModal modalOpened={modalOpened} setModalOpened={setModalOpened} connectWallet={(wallet) => {
                 connectWallet(wallet).then(() => setModalOpened(false)).catch(err => console.error(err));
-            }} usableWallets={usableWallets}/>
+            }} usableWallets={usableWallets} installableWallets={installableWallets}/>
             {props.children}
         </BitcoinWalletContext.Provider>
     )

@@ -77,6 +77,7 @@ if(provider!=null) provider.on("accountsChanged", (accounts: PhantomBtcAccount[]
 
 export class PhantomBitcoinWallet extends BitcoinWallet {
 
+    static installUrl: string = "https://phantom.com/download";
     static iconUrl: string = "wallets/btc/phantom.png";
     static walletName: string = "Phantom";
 

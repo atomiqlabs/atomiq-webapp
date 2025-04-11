@@ -6,32 +6,42 @@ const bitcoinWalletList = [
     {
         iconUrl: PhantomBitcoinWallet.iconUrl,
         name: PhantomBitcoinWallet.walletName,
+        installUrl: PhantomBitcoinWallet.installUrl,
         detect: PhantomBitcoinWallet.isInstalled,
         use: PhantomBitcoinWallet.init
     },
     {
         iconUrl: MagicEdenBitcoinWallet.iconUrl,
         name: MagicEdenBitcoinWallet.walletName,
+        installUrl: MagicEdenBitcoinWallet.installUrl,
         detect: MagicEdenBitcoinWallet.isInstalled,
         use: MagicEdenBitcoinWallet.init
     },
     {
         iconUrl: XverseBitcoinWallet.iconUrl,
         name: XverseBitcoinWallet.walletName,
+        installUrl: XverseBitcoinWallet.installUrl,
         detect: XverseBitcoinWallet.isInstalled,
         use: XverseBitcoinWallet.init
     }
 ];
 let installedBitcoinWallets;
+let installableBitcoinWallets;
 export async function getInstalledBitcoinWallets() {
     if (installedBitcoinWallets == null) {
-        const resultArr = [];
+        const _installedBitcoinWallets = [];
+        const _installableBitcoinWallets = [];
         for (let wallet of bitcoinWalletList) {
             if (await wallet.detect()) {
-                resultArr.push(wallet);
+                _installedBitcoinWallets.push(wallet);
+            }
+            else {
+                if (wallet.installUrl != null)
+                    _installableBitcoinWallets.push(wallet);
             }
         }
-        installedBitcoinWallets = resultArr;
+        installedBitcoinWallets = _installedBitcoinWallets;
+        installableBitcoinWallets = _installableBitcoinWallets;
     }
     let active = null;
     const activeWallet = BitcoinWallet.loadState();
@@ -43,6 +53,7 @@ export async function getInstalledBitcoinWallets() {
     }
     return {
         installed: installedBitcoinWallets,
+        installable: installableBitcoinWallets,
         active
     };
 }

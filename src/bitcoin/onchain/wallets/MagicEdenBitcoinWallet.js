@@ -14,5 +14,6 @@ export class MagicEdenBitcoinWallet extends SatsConnectBitcoinWallet {
         return !!window.magicEden;
     }
 }
+MagicEdenBitcoinWallet.installUrl = "https://wallet.magiceden.io/download";
 MagicEdenBitcoinWallet.iconUrl = "wallets/btc/MagicEden.png";
 MagicEdenBitcoinWallet.walletName = "Magic Eden";

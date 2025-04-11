@@ -13,5 +13,6 @@ export class XverseBitcoinWallet extends SatsConnectBitcoinWallet {
         return SatsConnectBitcoinWallet.init(XverseBitcoinWallet.walletName, XverseBitcoinWallet.iconUrl, XverseBitcoinWallet, _data);
     }
 }
+XverseBitcoinWallet.installUrl = "https://www.xverse.app/download";
 XverseBitcoinWallet.iconUrl = "wallets/btc/xverse.png";
 XverseBitcoinWallet.walletName = "Xverse";

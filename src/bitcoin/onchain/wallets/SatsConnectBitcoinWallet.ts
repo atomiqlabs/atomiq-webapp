@@ -68,7 +68,7 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
             } catch (e) {
                 success = false;
                 // console.error(e);
-                await new Promise((resolve) => setTimeout(resolve, 200));
+                await new Promise((resolve) => setTimeout(resolve, 100));
             }
         }
         return success;

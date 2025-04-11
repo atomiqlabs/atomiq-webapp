@@ -1,40 +1,9 @@
-import {Button, CloseButton, Dropdown, ListGroup, Modal} from "react-bootstrap";
+import {Button, Dropdown} from "react-bootstrap";
 import * as React from "react";
-import {BitcoinWalletType} from "../../bitcoin/onchain/BitcoinWalletUtils";
 import {ic_brightness_1} from 'react-icons-kit/md/ic_brightness_1';
 import Icon from "react-icons-kit";
 import {Token} from "@atomiqlabs/sdk";
 import {useWalletForCurrency} from "../../utils/useWalletList";
-
-export function BitcoinWalletModal(props: {
-    modalOpened: boolean,
-    setModalOpened: (opened: boolean) => void,
-    connectWallet: (wallet?: BitcoinWalletType) => void,
-    usableWallets: BitcoinWalletType[]
-}) {
-    return (
-        <Modal contentClassName="text-white bg-dark" size="sm" centered show={props.modalOpened} onHide={() => props.setModalOpened(false)} dialogClassName="min-width-400px">
-            <Modal.Header className="border-0">
-                <Modal.Title id="contained-modal-title-vcenter" className="d-flex flex-grow-1">
-                    Select a Bitcoin wallet
-                    <CloseButton className="ms-auto" variant="white" onClick={() => props.setModalOpened(false)}/>
-                </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <ListGroup variant="flush">
-                    {props.usableWallets.map((e, index) => {
-                        return (
-                            <ListGroup.Item action key={e.name} onClick={() => props.connectWallet(e)} className="d-flex flex-row bg-transparent text-white border-0">
-                                <img width={20} height={20} src={e.iconUrl} className="me-2"/>
-                                <span>{e.name}</span>
-                            </ListGroup.Item>
-                        );
-                    })}
-                </ListGroup>
-            </Modal.Body>
-        </Modal>
-    )
-}
 
 const ConnectedWallet = React.forwardRef<any, any>(({ name, icon, onClick, noText }, ref) => (
     <div className={"d-flex flex-row align-items-center cursor-pointer"} onClick={onClick}>
