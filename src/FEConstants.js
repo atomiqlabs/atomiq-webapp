@@ -78,5 +78,5 @@ export const FEConstants = {
     dappUrl,
     affiliateUrl,
     trustedGasSwapLp: process.env.REACT_APP_TRUSTED_GAS_SWAP,
-    defaultLp: process.env.REACT_APP_DEFAULT_LP
+    defaultLp: process.env.REACT_APP_DEFAULT_LP?.split(",")
 };

@@ -64,9 +64,6 @@ export function useAmountConstraints(exactIn: boolean, inCurrency: Token, outCur
     }, [swapper]);
 
     let swapType: SwapType = getSwapType(inCurrency, outCurrency);
-    if(swapType===SwapType.FROM_BTC && swapper!=null && swapper.supportsSwapType((outCurrency as SCToken).chainId, SwapType.SPV_VAULT_FROM_BTC)) {
-        swapType = SwapType.SPV_VAULT_FROM_BTC;
-    }
 
     const btcAmountConstraints = useMemo<MultichainSwapBounds>(
         () => swapper==null? null : swapper.getSwapBounds(),
@@ -94,9 +91,26 @@ export function useAmountConstraints(exactIn: boolean, inCurrency: Token, outCur
     }, [btcAmountConstraints]);
 
     const supportedTokensSet = useMemo<Set<string>>(
-        () => swapper==null || swapType==null ? null : new Set(swapper.getSupportedTokens(swapType).map(token => token.chainId+":"+token.address)),
+        () => {
+            if(swapper==null || swapType==null) return;
+            if(swapType===SwapType.FROM_BTC) {
+                const set = new Set<string>();
+                swapper.getChains().forEach(chainId => {
+                    const _set = swapper.supportsSwapType(chainId, SwapType.SPV_VAULT_FROM_BTC) ?
+                        swapper.getSupportedTokenAddresses(chainId, SwapType.SPV_VAULT_FROM_BTC) :
+                        swapper.getSupportedTokenAddresses(chainId, swapType);
+                    _set.forEach(val => set.add(chainId+":"+val));
+                });
+                return set;
+            }
+            return new Set(swapper.getSupportedTokens(swapType).map(token => token.chainId+":"+token.address))
+        },
         [swapper, swapType, lpsUpdateCount]
     );
+
+    if(swapType===SwapType.FROM_BTC && swapper!=null && swapper.supportsSwapType((outCurrency as SCToken).chainId, SwapType.SPV_VAULT_FROM_BTC)) {
+        swapType = SwapType.SPV_VAULT_FROM_BTC;
+    }
 
     const [tokenConstraints, setTokenConstraints] = useState<MultichainSwapBounds>();
     const handleQuoteError = useCallback((exactIn: boolean, inToken: Token, outToken: Token, err: any) => {

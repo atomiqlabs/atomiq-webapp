@@ -50,9 +50,6 @@ export function useAmountConstraints(exactIn, inCurrency, outCurrency) {
         };
     }, [swapper]);
     let swapType = getSwapType(inCurrency, outCurrency);
-    if (swapType === SwapType.FROM_BTC && swapper != null && swapper.supportsSwapType(outCurrency.chainId, SwapType.SPV_VAULT_FROM_BTC)) {
-        swapType = SwapType.SPV_VAULT_FROM_BTC;
-    }
     const btcAmountConstraints = useMemo(() => swapper == null ? null : swapper.getSwapBounds(), [swapper, lpsUpdateCount]);
     const defaultBtcConstraints = useMemo(() => {
         if (btcAmountConstraints == null)
@@ -76,7 +73,24 @@ export function useAmountConstraints(exactIn, inCurrency, outCurrency) {
         }
         return result;
     }, [btcAmountConstraints]);
-    const supportedTokensSet = useMemo(() => swapper == null || swapType == null ? null : new Set(swapper.getSupportedTokens(swapType).map(token => token.chainId + ":" + token.address)), [swapper, swapType, lpsUpdateCount]);
+    const supportedTokensSet = useMemo(() => {
+        if (swapper == null || swapType == null)
+            return;
+        if (swapType === SwapType.FROM_BTC) {
+            const set = new Set();
+            swapper.getChains().forEach(chainId => {
+                const _set = swapper.supportsSwapType(chainId, SwapType.SPV_VAULT_FROM_BTC) ?
+                    swapper.getSupportedTokenAddresses(chainId, SwapType.SPV_VAULT_FROM_BTC) :
+                    swapper.getSupportedTokenAddresses(chainId, swapType);
+                _set.forEach(val => set.add(chainId + ":" + val));
+            });
+            return set;
+        }
+        return new Set(swapper.getSupportedTokens(swapType).map(token => token.chainId + ":" + token.address));
+    }, [swapper, swapType, lpsUpdateCount]);
+    if (swapType === SwapType.FROM_BTC && swapper != null && swapper.supportsSwapType(outCurrency.chainId, SwapType.SPV_VAULT_FROM_BTC)) {
+        swapType = SwapType.SPV_VAULT_FROM_BTC;
+    }
     const [tokenConstraints, setTokenConstraints] = useState();
     const handleQuoteError = useCallback((exactIn, inToken, outToken, err) => {
         let swapType = getSwapType(inToken, outToken);
