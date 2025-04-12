@@ -2,6 +2,7 @@ import {PhantomBitcoinWallet} from "./wallets/PhantomBitcoinWallet";
 import {BitcoinWallet} from "./BitcoinWallet";
 import {XverseBitcoinWallet} from "./wallets/XverseBitcoinWallet";
 import {MagicEdenBitcoinWallet} from "./wallets/MagicEdenBitcoinWallet";
+import {UnisatBitcoinWallet} from "./wallets/UnisatBitcoinWallet";
 
 export type BitcoinWalletType = {
     iconUrl: string,
@@ -20,18 +21,25 @@ const bitcoinWalletList: BitcoinWalletType[] = [
         use: PhantomBitcoinWallet.init
     },
     {
-        iconUrl: MagicEdenBitcoinWallet.iconUrl,
-        name: MagicEdenBitcoinWallet.walletName,
-        installUrl: MagicEdenBitcoinWallet.installUrl,
-        detect: MagicEdenBitcoinWallet.isInstalled,
-        use: MagicEdenBitcoinWallet.init
-    },
-    {
         iconUrl: XverseBitcoinWallet.iconUrl,
         name: XverseBitcoinWallet.walletName,
         installUrl: XverseBitcoinWallet.installUrl,
         detect: XverseBitcoinWallet.isInstalled,
         use: XverseBitcoinWallet.init
+    },
+    {
+        iconUrl: UnisatBitcoinWallet.iconUrl,
+        name: UnisatBitcoinWallet.walletName,
+        installUrl: UnisatBitcoinWallet.installUrl,
+        detect: UnisatBitcoinWallet.isInstalled,
+        use: UnisatBitcoinWallet.init
+    },
+    {
+        iconUrl: MagicEdenBitcoinWallet.iconUrl,
+        name: MagicEdenBitcoinWallet.walletName,
+        installUrl: MagicEdenBitcoinWallet.installUrl,
+        detect: MagicEdenBitcoinWallet.isInstalled,
+        use: MagicEdenBitcoinWallet.init
     }
 ];
 

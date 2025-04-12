@@ -1,8 +1,8 @@
-import {BitcoinWallet, BitcoinWalletUtxo} from "../BitcoinWallet";
+import {BitcoinWallet} from "../BitcoinWallet";
 import * as EventEmitter from "events";
-import {filterInscriptionUtxosOnlyConfirmed} from "../InscriptionUtils";
 import {Address, OutScript, Transaction} from "@scure/btc-signer";
 import {CoinselectAddressTypes} from "@atomiqlabs/sdk";
+import {BitcoinWalletNonSeparated} from "./BitcoinWalletNonSeparated";
 
 const addressTypePriorities = {
     "p2tr": 0,
@@ -75,7 +75,7 @@ if(provider!=null) provider.on("accountsChanged", (accounts: PhantomBtcAccount[]
     }
 });
 
-export class PhantomBitcoinWallet extends BitcoinWallet {
+export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
 
     static installUrl: string = "https://phantom.com/download";
     static iconUrl: string = "wallets/btc/phantom.png";
@@ -124,17 +124,9 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         return new PhantomBitcoinWallet(accounts, _data?.multichainConnected);
     }
 
-    protected async _getUtxoPool(
-        sendingAddress: string,
-        sendingAddressType: CoinselectAddressTypes
-    ): Promise<BitcoinWalletUtxo[]> {
-        let utxos = await super._getUtxoPool(sendingAddress, sendingAddressType);
-        const accountType = this.accounts.find(acc => acc.address===sendingAddress);
-        if(accountType.purpose==="ordinals") utxos = await filterInscriptionUtxosOnlyConfirmed(utxos).catch(err => {
-            console.error(err);
-            return [];
-        });
-        return utxos;
+    protected _isOrdinalsAddress(address: string): boolean {
+        const acc = this.accounts.find(val => val.address===address);
+        return acc?.purpose==="ordinals";
     }
 
     async getBalance(): Promise<{ confirmedBalance: bigint; unconfirmedBalance: bigint }> {

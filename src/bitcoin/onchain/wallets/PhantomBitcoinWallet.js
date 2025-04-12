@@ -1,7 +1,7 @@
 import { BitcoinWallet } from "../BitcoinWallet";
 import * as EventEmitter from "events";
-import { filterInscriptionUtxosOnlyConfirmed } from "../InscriptionUtils";
 import { Address, OutScript, Transaction } from "@scure/btc-signer";
+import { BitcoinWalletNonSeparated } from "./BitcoinWalletNonSeparated";
 const addressTypePriorities = {
     "p2tr": 0,
     "p2wpkh": 1,
@@ -57,7 +57,7 @@ if (provider != null)
             events.emit("newWallet", null);
         }
     });
-export class PhantomBitcoinWallet extends BitcoinWallet {
+export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
     constructor(accounts, wasAutomaticallyConnected) {
         super(wasAutomaticallyConnected);
         this.accounts = deduplicateAccounts(accounts);
@@ -94,15 +94,9 @@ export class PhantomBitcoinWallet extends BitcoinWallet {
         });
         return new PhantomBitcoinWallet(accounts, _data?.multichainConnected);
     }
-    async _getUtxoPool(sendingAddress, sendingAddressType) {
-        let utxos = await super._getUtxoPool(sendingAddress, sendingAddressType);
-        const accountType = this.accounts.find(acc => acc.address === sendingAddress);
-        if (accountType.purpose === "ordinals")
-            utxos = await filterInscriptionUtxosOnlyConfirmed(utxos).catch(err => {
-                console.error(err);
-                return [];
-            });
-        return utxos;
+    _isOrdinalsAddress(address) {
+        const acc = this.accounts.find(val => val.address === address);
+        return acc?.purpose === "ordinals";
     }
     async getBalance() {
         const balances = await Promise.all(this.accounts.map(acc => super._getBalance(acc.address)));
