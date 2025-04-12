@@ -234,7 +234,7 @@ function WrappedApp() {
                         </Navbar.Brand>
 
                         <div className="d-flex flex-column">
-                            <Badge className="newBadgeCollapse d-lg-none">New!</Badge>
+                            {/*<Badge className="newBadgeCollapse d-lg-none">New!</Badge>*/}
                             <Navbar.Toggle aria-controls="basic-navbar-nav" className="ms-3" />
                         </div>
 
@@ -243,11 +243,11 @@ function WrappedApp() {
                                 <Nav.Link href="/" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
                                 <Nav.Link href="/about" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
                                 <Nav.Link href="/faq" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
-                                <Nav.Link href="/referral" onClick={navigateHref} className="d-flex flex-row align-items-center">
-                                    <Icon icon={gift} className="d-flex me-1"/>
-                                    <span className="me-1">Referral</span>
-                                    <Badge className="me-2">New!</Badge>
-                                </Nav.Link>
+                                {/*<Nav.Link href="/referral" onClick={navigateHref} className="d-flex flex-row align-items-center">*/}
+                                {/*    <Icon icon={gift} className="d-flex me-1"/>*/}
+                                {/*    <span className="me-1">Referral</span>*/}
+                                {/*    <Badge className="me-2">New!</Badge>*/}
+                                {/*</Nav.Link>*/}
                                 {nfcSupported ? (
                                     <div className="nav-link d-flex flex-row align-items-center">
                                         <Icon icon={ic_contactless} className="d-flex me-1"/>
@@ -268,15 +268,15 @@ function WrappedApp() {
                                 <Nav.Link href="/about" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
                                 <Nav.Link href="/faq" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={question} className="d-flex me-1"/><span>FAQ</span></Nav.Link>
 
-                                {FEConstants.affiliateUrl!=null ? (
-                                    <Nav.Link href="/referral" onClick={navigateHref} className="d-flex flex-column align-items-center">
-                                        <div className="d-flex flex-row align-items-center">
-                                            <Icon icon={gift} className="d-flex me-1"/>
-                                            <span className="me-1">Referral</span>
-                                        </div>
-                                        <Badge className="newBadge">New!</Badge>
-                                    </Nav.Link>
-                                ) : ""}
+                                {/*{FEConstants.affiliateUrl!=null ? (*/}
+                                {/*    <Nav.Link href="/referral" onClick={navigateHref} className="d-flex flex-column align-items-center">*/}
+                                {/*        <div className="d-flex flex-row align-items-center">*/}
+                                {/*            <Icon icon={gift} className="d-flex me-1"/>*/}
+                                {/*            <span className="me-1">Referral</span>*/}
+                                {/*        </div>*/}
+                                {/*        <Badge className="newBadge">New!</Badge>*/}
+                                {/*    </Nav.Link>*/}
+                                {/*) : ""}*/}
 
                                 {nfcSupported ? (
                                     <div className="nav-link d-flex flex-row align-items-center">
