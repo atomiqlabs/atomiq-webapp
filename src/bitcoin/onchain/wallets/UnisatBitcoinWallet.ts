@@ -105,11 +105,7 @@ export class UnisatBitcoinWallet extends BitcoinWalletNonSeparated {
     static async init(_data?: any): Promise<UnisatBitcoinWallet> {
         const provider = getProvider();
         if(_data?.account!=null) {
-            const accs = await provider.getAccounts();
-            if(accs.length===0) throw new Error("No account returned from unisat wallet!");
-            const publicKey = await provider.getPublicKey();
-
-            return new UnisatBitcoinWallet({address: accs[0], publicKey}, _data?.multichainConnected);
+            return new UnisatBitcoinWallet(_data.account, _data?.multichainConnected);
         }
 
         ignoreAccountChange = true;
@@ -130,15 +126,17 @@ export class UnisatBitcoinWallet extends BitcoinWalletNonSeparated {
         const publicKey = await provider.getPublicKey();
         console.log("UnisatBitcoinWallet: init(): Fetched account's public key: ", publicKey);
 
+        const acc = {
+            address: addresses[0],
+            publicKey
+        };
+
         BitcoinWallet.saveState(UnisatBitcoinWallet.walletName, {
-            account: addresses[0],
+            account: acc,
             multichainConnected: _data?.multichainConnected
         });
 
-        return new UnisatBitcoinWallet({
-            address: addresses[0],
-            publicKey
-        }, _data?.multichainConnected);
+        return new UnisatBitcoinWallet(acc, _data?.multichainConnected);
     }
 
     protected _isOrdinalsAddress(address: string): boolean {

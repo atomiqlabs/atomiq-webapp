@@ -35,7 +35,7 @@ export function useStarknetWalletContext() {
         const walletAccount = new WalletAccount(FEConstants.starknetRpc, swo);
         const chainId = await wallet.requestChainId(walletAccount.walletProvider);
         console.log("useStarknetWalletContext(): connected wallet chainId: ", chainId);
-        if (FEConstants.starknetChainId !== chainId) {
+        if (chainId != null && FEConstants.starknetChainId !== chainId) {
             setStarknetSigner(null);
             return;
         }
