@@ -97,7 +97,7 @@ export function SwapNew(props: {
     //Address
     const addressRef = useRef<ValidatedInputRef>();
     const addressValidator = useCallback((val) => {
-        if(val==="") return "Destination address required";
+        if(val==="") return "Address required";
         if(val.startsWith("lightning:")) {
             val = val.substring(10);
         }
@@ -117,7 +117,7 @@ export function SwapNew(props: {
         try {
             if(swapper.getLightningInvoiceValue(val)==null) return "Lightning invoice needs to contain a payment amount!";
         } catch (e) {}
-        return "Invalid wallet address";
+        return "Invalid address";
     }, [swapper, scCurrency]);
     const [_validatedAddress, setValidatedAddress] = useState<string>(null);
     const validatedAddress = useMemo(() => {
@@ -412,12 +412,12 @@ export function SwapNew(props: {
 
                             {maxSpendable != null ? (
                                 <>
-                                    <small className="">
+                                    <div className="d-flex align-items-center">
                                         <ConnectedWalletAnchor noText={true} currency={inputToken}/>
-                                    </small>
-                                    <small className="me-2">
-                                        {maxSpendable.amountString} {inputToken.ticker}
-                                    </small>
+                                        <small className="me-2">
+                                            {maxSpendable.amountString} {inputToken.ticker}
+                                        </small>
+                                    </div>
                                     <Button
                                         variant="outline-light"
                                         style={{marginBottom: "2px"}}
@@ -587,7 +587,7 @@ export function SwapNew(props: {
                                 onValidatedInput={setValidatedAddress}
                                 value={outputAddress}
                                 inputRef={addressRef}
-                                placeholder={"Paste wallet address"}
+                                placeholder={"Destination wallet address"}
                                 onValidate={addressValidator}
                                 validated={addressData?.error}
                                 disabled={locked || webLnForOutput || btcWalletForOutput || smartChainWalletForOutput}
@@ -595,7 +595,7 @@ export function SwapNew(props: {
                                     <a className="ms-auto" href="#" onClick={(event) => {
                                         event.preventDefault();
                                         outputWalletConnect();
-                                    }}>Connect {outputChainName} wallet</a>
+                                    }}>Connect wallet</a>
                                 ) : null}
                                 textStart={addressLoading ? (
                                     <Spinner size="sm" className="text-white"/>

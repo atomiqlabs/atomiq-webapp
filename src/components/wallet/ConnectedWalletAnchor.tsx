@@ -4,6 +4,7 @@ import {ic_brightness_1} from 'react-icons-kit/md/ic_brightness_1';
 import Icon from "react-icons-kit";
 import {Token} from "@atomiqlabs/sdk";
 import {useWalletForCurrency} from "../../utils/useWalletList";
+import {ic_power_outline} from 'react-icons-kit/md/ic_power_outline';
 
 const ConnectedWallet = React.forwardRef<any, any>(({ name, icon, onClick, noText }, ref) => (
     <div className={"d-flex flex-row align-items-center cursor-pointer"} onClick={onClick}>
@@ -31,7 +32,10 @@ export function ConnectedWalletAnchor(props: {
                     className="py-0 px-1"
                     onClick={() => connect()}
                 >
-                    <small className="font-smallest" style={{marginBottom: "-2px"}}>Connect {chainName} wallet</small>
+                    <small className="font-smallest d-flex" style={{marginBottom: "-2px"}}>
+                        <Icon icon={ic_power_outline} size={16} style={{marginTop: "-3px"}}/>
+                        <span>{chainName} wallet</span>
+                    </small>
                 </Button>
             ) : (
                 <Dropdown align={{md: "start"}}>
