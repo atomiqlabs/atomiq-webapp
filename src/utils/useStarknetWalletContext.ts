@@ -10,7 +10,7 @@ function waitTillAddressPopulated(acc: WalletAccount) {
     return new Promise<void>((resolve) => {
         let interval;
         interval = setInterval(() => {
-            if(acc.address!="0x0000000000000000000000000000000000000000000000000000000000000000") {
+            if(acc.address!="0x0000000000000000000000000000000000000000000000000000000000000000" && acc.address!=="") {
                 clearInterval(interval);
                 resolve();
             }
@@ -51,6 +51,8 @@ export function useStarknetWalletContext(): {
         console.log("useStarknetWalletContext(): connected wallet chainId: ", chainId);
         if(chainId!=null && FEConstants.starknetChainId!==chainId) {
             setStarknetSigner(null);
+            setStarknetWalletData(null);
+            console.log("useStarknetWalletContext(): Invalid chainId got from wallet...");
             return;
         }
         currentSWORef.current = {
@@ -69,6 +71,7 @@ export function useStarknetWalletContext(): {
             }
         };
         swo.on("accountsChanged", currentSWORef.current.listener);
+
         await waitTillAddressPopulated(walletAccount);
         const starknetSigner = new StarknetSigner(walletAccount);
         setStarknetSigner(starknetSigner);
@@ -90,7 +93,7 @@ export function useStarknetWalletContext(): {
         console.log("useStarknetWalletContext(): connect()");
         const swo = await connect({ modalMode: 'alwaysAsk', modalTheme: 'dark' });
         console.log("useStarknetWalletContext(): connect() wallet connection: ", swo);
-        setStarknetAutoConnect(swo.id);
+        setStarknetAutoConnect(swo?.id);
         setWallet(swo);
     }, []);
 
