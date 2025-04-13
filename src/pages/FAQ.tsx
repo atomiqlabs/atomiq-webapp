@@ -24,33 +24,18 @@ export function FAQ(props: {}) {
             <h1 className="section-title">FAQ</h1>
             <div className="mb-3 border-0">
                 <Accordion defaultActiveKey={tabOpen}>
-                    <Accordion.Item eventKey="10" id="10">
-                        <Accordion.Header><span className="faq-number">1</span>Where is SolLightning?</Accordion.Header>
-                        <Accordion.Body>
-                            <p>
-                                We've rebranded SolLightning to <strong>atomiq.exchange</strong> as it better represents our product, and doesn't
-                                convey false information that we only support bitcoin lightning. The name atomiq refers to atomic swaps, which are our core
-                                differentiator and allow us to secure our swaps by cryptography and bitcoin's proof-of-work. This is in stark contrast
-                                to cross-chain bridges, which generally use a federation of validators and their security heavily depends on bridge token's price.
-                            </p>
-
-                            <p>
-                                We will continue providing seamless & trustless swap experience under new name - <strong>atomiq.exchange</strong>!
-                            </p>
-                        </Accordion.Body>
-                    </Accordion.Item>
                     <Accordion.Item eventKey="0" id="0">
                         <Accordion.Header><span className="faq-number">2</span>What is atomiq.exchange?</Accordion.Header>
                         <Accordion.Body>
                             <p>
                                 <strong>atomiq.exchange</strong> is a fully trustless cross-chain DEX (decentralized exchange) allowing you to swap between
-                                Solana assets (SOL and USDC) and Bitcoin (on-chain and on the lightning network). All swaps are done atomically, so you
+                                Solana & Starknet assets and Bitcoin (on-chain and on the lightning network). All swaps are done atomically, so you
                                 are never exposed to the risk of losing funds.
                             </p>
 
                             <p>
                                 atomiq.exchange was launched in mid June 2023, by a team of blockchain veterans to provide the first fully trustless way
-                                to swap between Solana & Bitcoin ecosystems.
+                                to swap between Solana & Bitcoin ecosystems, we've since expanded our support to Starknet in April of 2025.
                             </p>
                         </Accordion.Body>
                     </Accordion.Item>
