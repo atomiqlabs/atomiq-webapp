@@ -25,7 +25,7 @@ export function FAQ(props: {}) {
             <div className="mb-3 border-0">
                 <Accordion defaultActiveKey={tabOpen}>
                     <Accordion.Item eventKey="0" id="0">
-                        <Accordion.Header><span className="faq-number">2</span>What is atomiq.exchange?</Accordion.Header>
+                        <Accordion.Header><span className="faq-number">1</span>What is atomiq.exchange?</Accordion.Header>
                         <Accordion.Body>
                             <p>
                                 <strong>atomiq.exchange</strong> is a fully trustless cross-chain DEX (decentralized exchange) allowing you to swap between
@@ -40,35 +40,40 @@ export function FAQ(props: {}) {
                         </Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="2" id="2">
-                        <Accordion.Header><span className="faq-number">3</span>How does it work?</Accordion.Header>
+                        <Accordion.Header><span className="faq-number">2</span>How does it work?</Accordion.Header>
                         <Accordion.Body>
-                            <h4>Connect your Solana wallet</h4>
+                            <h4>Connect your Solana or Starknet wallet and Bitcoin wallet</h4>
                             <p>
-                                In order to interact with atomiq.exchange webapp, you need a Solana wallet. In case you don't have a Solana wallet yet we recommend downloading <a target="_blank" href="https://phantom.app/">Phantom wallet</a>, which is best compatible with our webapp.
+                                In order to interact with atomiq.exchange webapp, you need a Solana or Starknet wallet and a Bitcoin wallet. In case you don't have any wallet yet we recommend downloading:
+                                <ul>
+                                    <li><a target="_blank" href="https://phantom.app/">Phantom wallet</a> - works with both Solana & Bitcoin</li>
+                                    <li><a target="_blank" href="https://www.xverse.app/">Xverse wallet</a> - works with Bitcoin only</li>
+                                    <li><a target="_blank" href="https://braavos.app/">Braavos wallet</a> - works with Starknet only</li>
+                                </ul>
                             </p>
                             <p>
-                                Connect your Solana wallet by clicking on "Connect" when prompted.
+                                Connect your wallets by clicking on "Connect" when prompted.
                             </p>
 
                             <h4>Paying to a bitcoin/lightning qr code (Scan function)</h4>
                             <p>
-                                If you are presented with a Bitcoin/Lightning network QR code and want to initiate a Solana -&gt; Bitcoin swap:
+                                If you are presented with a Bitcoin/Lightning network QR code and want to initiate a Solana/Starknet -&gt; Bitcoin swap:
                                 <ol>
                                     <li>Select the <a href="/scan" onClick={anchorNavigate}>"Scan" function</a> & allow the use of camera by the browser</li>
                                     <li>Scan the QR code</li>
-                                    <li>Select the Solana asset you want use for the payment payment (SOL or USDC)</li>
+                                    <li>Select the Solana/Starknet asset you want use for the payment payment</li>
                                     <li>You are presented with the quote, summarizing swap amount & fees, click "Pay" to approve</li>
                                     <li>You will be prompted to approve the transaction in your wallet, approve it there</li>
                                     <li>In a few seconds the swap will be executed</li>
                                 </ol>
                             </p>
 
-                            <h4>Swapping Solana -&gt; Bitcoin (Swap function)</h4>
+                            <h4>Swapping Solana/Starknet -&gt; Bitcoin (Swap function)</h4>
                             <p>
-                                You can seamlessly swap Solana assets (like SOL and USDC) to Bitcoin (on-chain and lightning):
+                                You can seamlessly swap Solana and Starknet assets to Bitcoin (on-chain and lightning):
                                 <ol>
                                     <li>Select the <a href="/" onClick={anchorNavigate}>"Swap" function</a></li>
-                                    <li>Select the desired input asset (USDC or SOL) - you can click on the arrow to reverse asset selection</li>
+                                    <li>Select the desired input asset - you can click on the arrow to reverse asset selection</li>
                                     <li>Fill in the amount you want to send/receive</li>
                                     <li>Copy in the bitcoin/lightning network address where you want to receive your BTC to the address field</li>
                                     <li>You are presented with the quote, summarizing the swap amount & fees, click "Swap" to approve</li>
@@ -77,7 +82,7 @@ export function FAQ(props: {}) {
                                 </ol>
                             </p>
 
-                            <h4>Swapping Bitcoin -&gt; Solana (Swap function)</h4>
+                            <h4>Swapping Bitcoin -&gt; Solana/Starknet (Swap function)</h4>
                             <p>
                                 Seamlessly swapping Bitcoin (on-chain and lightning) to Solana assets (like SOL and USDC):
                                 <ol>
@@ -95,29 +100,29 @@ export function FAQ(props: {}) {
                         </Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="1" id="1">
-                        <Accordion.Header><span className="faq-number">4</span>Do I have to trust anyone?</Accordion.Header>
+                        <Accordion.Header><span className="faq-number">3</span>Do I have to trust anyone?</Accordion.Header>
                         <Accordion.Body>
                             <p>
                                 The whole swap is fully trustless and atomic, therefore you are not trusting anyone with the swap funds.
                             </p>
 
                             <p>
-                                This means that your trade counterparty can only take the swap funds once it processes the swap (e.g. pay you out in BTC for Solana -&gt; Bitcoin swaps, or pay you out in Solana asset for Bitcoin -&gt; Solana swaps)
+                                This means that your trade counterparty can only take the swap funds once it processes the swap (e.g. pay you out in BTC for Solana/Starknet -&gt; Bitcoin swaps, or pay you out in Solana/Starknet asset for Bitcoin -&gt; Solana/Starknet swaps)
                                 - this is ensured by using Submarine swaps and Proof-time locked contracts.
                             </p>
 
                             <p>
-                                In case the counterparty don't cooperate you can claim the full amount back in a short while (5 days for lightning network swaps & 1 day for on-chain swaps) - this is ensured by smart contract on Solana.
+                                In case the counterparty don't cooperate you can claim the full amount back in a short while (5 days for lightning network swaps & 1 day for on-chain swaps) - this is ensured by smart contracts on Solana & Starknet.
                             </p>
 
                             <p>
                                 Additionally all our code is open source and available on github for anyone to see. This includes
-                                smart contracts (<a href="https://github.com/adambor/SolLightning-program" target="_blank">swap contract</a>, <a href="https://github.com/adambor/BTCRelay-Sol" target="_blank">bitcoin light client</a>), <a href="https://github.com/adambor/SolLightning-sdk" target="_blank">SDK</a>, <a href="https://github.com/adambor/SolLightning-Intermediary-TS" target="_blank">swap intermediary</a> & also <a href="https://github.com/adambor/SolLightning-dApp-v2" target="_blank">this webapp</a>.
+                                smart contracts (<a href="https://github.com/atomiqlabs/atomiq-contracts-solana" target="_blank">Solana contracts</a>, <a href="https://github.com/atomiqlabs/atomiq-contracts-starknet" target="_blank">Starknet contracts</a>), <a href="https://github.com/atomiqlabs/atomiq-sdk" target="_blank">SDK</a>, <a href="https://github.com/atomiqlabs/atomiq-lp" target="_blank">swap LP</a> & also <a href="https://github.com/atomiqlabs/atomiq-webapp" target="_blank">this webapp</a>.
                             </p>
                         </Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="3" id="3">
-                        <Accordion.Header><span className="faq-number">5</span>Why should you use atomiq.exchange?</Accordion.Header>
+                        <Accordion.Header><span className="faq-number">4</span>Why should you use atomiq.exchange?</Accordion.Header>
                         <Accordion.Body>
                             <h4>
                                 1. No counterparty risk
@@ -152,7 +157,7 @@ export function FAQ(props: {}) {
                         </Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="4" id="4">
-                        <Accordion.Header><span className="faq-number">6</span>Where can I learn more?</Accordion.Header>
+                        <Accordion.Header><span className="faq-number">5</span>Where can I learn more?</Accordion.Header>
                         <Accordion.Body>
                             <p>
                                 We have an extensive documentation about how our whole system works, if you'd like to dive deeper you can check out our <a target="_blank" href="https://docs.atomiq.exchange/">GitBook</a>.
@@ -160,7 +165,7 @@ export function FAQ(props: {}) {
                         </Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="11" id="11">
-                        <Accordion.Header><span className="faq-number">7</span>What is swap for gas?</Accordion.Header>
+                        <Accordion.Header><span className="faq-number">6</span>What is swap for gas?</Accordion.Header>
                         <Accordion.Body>
                             <p>
                                 For our swaps to work in a fully trustless way the user needs to be able to cover the gas/transaction fees on Solana.
@@ -170,18 +175,22 @@ export function FAQ(props: {}) {
                         </Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="5" id="5">
-                        <Accordion.Header><span className="faq-number">8</span>Where can I reach you?</Accordion.Header>
+                        <Accordion.Header><span className="faq-number">7</span>Where can I reach you?</Accordion.Header>
                         <Accordion.Body>
                             <p>
-                                In case you have any questions or issues feel free to bring them up in our <a target="_blank" href="https://t.me/+_MQNtlBXQ2Q1MGEy">Telegram group</a>
+                                In case you have any questions or issues feel free to write to <a target="_blank" href="https://t.me/atomiq_support">our official telegram support</a>.
                             </p>
                         </Accordion.Body>
                     </Accordion.Item>
                     <Accordion.Item eventKey="6" id="6">
-                        <Accordion.Header><span className="faq-number">9</span>Are you audited?</Accordion.Header>
+                        <Accordion.Header><span className="faq-number">8</span>Are you audited?</Accordion.Header>
                         <Accordion.Body>
                             <p>
-                                Our smart contracts were audited by an independent security auditor <a target="_blank" href="https://ackeeblockchain.com/">Ackee Blockchain Security a.s.</a>, which found no exploitable issues in atomiq's (previously SolLightning's) smart contracts, full audit report is publicly available here: <a target="_blank" href="https://github.com/adambor/SolLightning-readme/blob/main/audits/ackee-blockchain-sollightning-report.pdf">Ackee Blockchain, SolLightning: Security Audit, 12.1.2024</a>
+                                Our smart contracts were audited by independent security auditors:
+                                <ul>
+                                    <li>Solana smart contracts - <a target="_blank" href="https://ackeeblockchain.com/">Ackee Blockchain Security a.s.</a>, full audit report is publicly available here (audited under our old SolLightning name): <a target="_blank" href="https://github.com/atomiqlabs/atomiq-readme/blob/main/ackee-blockchain-solana_svm-sollightning-audit.pdf">Ackee Blockchain, SolLightning: Security Audit, 12.1.2024</a></li>
+                                    <li>Starknet smart contracts - <a target="_blank" href="https://cairosecurityclan.com/">Cairo Security Clan</a>, full audit report is publicly available here: <a target="_blank" href="https://github.com/atomiqlabs/atomiq-readme/blob/main/csc-starknet_cairo-atomiq-audit.pdf">Cairo Security Clan, Atomiq Exchange: Security Review, 7.4.2025</a></li>
+                                </ul>
                             </p>
                         </Accordion.Body>
                     </Accordion.Item>
