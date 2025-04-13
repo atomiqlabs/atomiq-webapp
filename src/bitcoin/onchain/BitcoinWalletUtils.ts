@@ -54,13 +54,13 @@ export async function getInstalledBitcoinWallets(): Promise<{
     if(installedBitcoinWallets==null) {
         const _installedBitcoinWallets: BitcoinWalletType[] = [];
         const _installableBitcoinWallets: BitcoinWalletType[] = [];
-        for(let wallet of bitcoinWalletList) {
-            if (await wallet.detect()) {
+        await Promise.all(bitcoinWalletList.map(wallet => wallet.detect().then(detected => {
+            if (detected) {
                 _installedBitcoinWallets.push(wallet);
             } else {
                 if(wallet.installUrl!=null) _installableBitcoinWallets.push(wallet);
             }
-        }
+        })));
         installedBitcoinWallets = _installedBitcoinWallets;
         installableBitcoinWallets = _installableBitcoinWallets;
     }
