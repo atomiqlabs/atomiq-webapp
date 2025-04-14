@@ -25,8 +25,8 @@ if (FEConstants.allowedChains.has("SOLANA")) {
 }
 if (FEConstants.allowedChains.has("STARKNET")) {
     smartChainTokenArray.push(Tokens.STARKNET.WBTC);
-    smartChainTokenArray.push(Tokens.STARKNET.STRK);
-    smartChainTokenArray.push(Tokens.STARKNET.ETH);
+    // smartChainTokenArray.push(Tokens.STARKNET.STRK);
+    // smartChainTokenArray.push(Tokens.STARKNET.ETH);
 }
 // for(let chainId in Tokens) {
 //     if(chainId==="BITCOIN") continue;

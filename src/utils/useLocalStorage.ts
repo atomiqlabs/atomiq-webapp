@@ -4,7 +4,9 @@ export function useLocalStorage<T>(name: string, _defaultValue: T): [T, (val: T)
 
     const initialStoredValue = useMemo(() => window.localStorage.getItem(name), []);
 
-    const defaultValue = initialStoredValue===null ? _defaultValue : JSON.parse(initialStoredValue);
+    const defaultValue = initialStoredValue===null ? _defaultValue :
+        initialStoredValue==="undefined" ? undefined :
+        initialStoredValue==="null" ? null : JSON.parse(initialStoredValue);
     const [value, setValue] = useState<T>(defaultValue);
     const valueRef = useRef<T>(defaultValue);
 

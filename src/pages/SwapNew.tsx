@@ -168,9 +168,18 @@ export function SwapNew(props: {
         if(swapType!=null) setSwapType(parseInt(swapType));
         const chainId = params.get("chainId");
         const token = params.get("token");
-        if(chainId!=null && token!=null) {
-            const scToken = Tokens[chainId]?.[token];
-            if(scToken!=null) setScCurrency(scToken);
+        if(chainId!=null) {
+            if(token!=null) {
+                const scToken = Tokens[chainId]?.[token];
+                if(scToken!=null) setScCurrency(scToken);
+            } else {
+                const scTokens = Tokens[chainId];
+                if(scTokens!=null) {
+                    const tickers = Object.keys(scTokens);
+                    const scToken = scTokens[tickers[tickers.length-1]];
+                    if(scToken!=null) setScCurrency(scToken);
+                }
+            }
         }
         const exactIn = params.get("exactIn");
         const amount = params.get("amount");
