@@ -1,6 +1,6 @@
 import { isSCToken, SwapType, } from "@atomiqlabs/sdk";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { toHumanReadable } from "./Currencies";
+import { excludeChainTokens, toHumanReadable } from "./Currencies";
 import { SwapsContext } from "../context/SwapsContext";
 import { Tokens } from "../FEConstants";
 const defaultConstraints = {
@@ -86,7 +86,7 @@ export function useAmountConstraints(exactIn, inCurrency, outCurrency) {
             });
             return set;
         }
-        return new Set(swapper.getSupportedTokens(swapType).map(token => token.chainId + ":" + token.address));
+        return new Set(swapper.getSupportedTokens(swapType).map(token => excludeChainTokens[swapType]?.has(token.address) ? null : token.chainId + ":" + token.address));
     }, [swapper, swapType, lpsUpdateCount]);
     if (swapType === SwapType.FROM_BTC && swapper != null && swapper.supportsSwapType(outCurrency.chainId, SwapType.SPV_VAULT_FROM_BTC)) {
         swapType = SwapType.SPV_VAULT_FROM_BTC;

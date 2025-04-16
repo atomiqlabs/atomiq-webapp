@@ -718,10 +718,17 @@ export function SwapNew(props: {
                 >
                     <Icon size={18} icon={lock} style={{marginTop: "-0.5rem"}}/>
                     <small>Audited by</small>
-                    <img
-                        className="opacity-50 d-block ms-1" height={18}
-                        src="/ackee_blockchain.svg" style={{marginTop: "-0.125rem"}}
-                    />
+                    {scCurrency?.chainId==="STARKNET" ? (
+                        <img
+                            className="d-block ms-1" height={18}
+                            src="/csc-white-logo.png" style={{marginTop: "-0.075rem", opacity: 0.6}}
+                        />
+                    ) : (
+                        <img
+                            className="opacity-50 d-block ms-1" height={18}
+                            src="/ackee_blockchain.svg" style={{marginTop: "-0.125rem"}}
+                        />
+                    )}
                 </div>
             </div>
         </>

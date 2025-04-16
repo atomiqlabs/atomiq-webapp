@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import {SCToken, toHumanReadableString, Token} from "@atomiqlabs/sdk";
+import {SCToken, SwapType, toHumanReadableString, Token} from "@atomiqlabs/sdk";
 import {FEConstants, Tokens} from "../FEConstants";
 
 type TokensType = typeof Tokens;
@@ -37,9 +37,13 @@ if(FEConstants.allowedChains.has("SOLANA")) {
 
 if(FEConstants.allowedChains.has("STARKNET")) {
     smartChainTokenArray.push(Tokens.STARKNET.WBTC);
-    // smartChainTokenArray.push(Tokens.STARKNET.STRK);
-    // smartChainTokenArray.push(Tokens.STARKNET.ETH);
+    smartChainTokenArray.push(Tokens.STARKNET.STRK);
+    smartChainTokenArray.push(Tokens.STARKNET.ETH);
 }
+
+export const excludeChainTokens: {[swapType in SwapType]?: Set<string>} = {
+    [SwapType.TO_BTC]: new Set<string>([Tokens.STARKNET.STRK, Tokens.STARKNET.ETH].map(val => val.address))
+};
 
 // for(let chainId in Tokens) {
 //     if(chainId==="BITCOIN") continue;

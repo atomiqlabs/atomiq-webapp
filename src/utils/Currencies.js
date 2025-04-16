@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { toHumanReadableString } from "@atomiqlabs/sdk";
+import { SwapType, toHumanReadableString } from "@atomiqlabs/sdk";
 import { FEConstants, Tokens } from "../FEConstants";
 export const TokenIcons = {
     WBTC: "/icons/crypto/WBTC.png",
@@ -25,9 +25,12 @@ if (FEConstants.allowedChains.has("SOLANA")) {
 }
 if (FEConstants.allowedChains.has("STARKNET")) {
     smartChainTokenArray.push(Tokens.STARKNET.WBTC);
-    // smartChainTokenArray.push(Tokens.STARKNET.STRK);
-    // smartChainTokenArray.push(Tokens.STARKNET.ETH);
+    smartChainTokenArray.push(Tokens.STARKNET.STRK);
+    smartChainTokenArray.push(Tokens.STARKNET.ETH);
 }
+export const excludeChainTokens = {
+    [SwapType.TO_BTC]: new Set([Tokens.STARKNET.STRK, Tokens.STARKNET.ETH].map(val => val.address))
+};
 // for(let chainId in Tokens) {
 //     if(chainId==="BITCOIN") continue;
 //     for(let ticker in Tokens[chainId]) {

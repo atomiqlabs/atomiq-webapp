@@ -48,6 +48,15 @@ export function CurrencyDropdown(props: {
     const chainId = currenciesByChainId[_chainId]!=null ? _chainId : chains?.[0];
 
     useEffect(() => {
+        if(currenciesByChainId!=null && props.value!=null) {
+            if(isSCToken(props.value)) {
+                const chainCurrencies = currenciesByChainId[props.value.chainId];
+                if(chainCurrencies!=null && chainCurrencies.indexOf(props.value)===-1) props.onSelect(chainCurrencies[0])
+            }
+        }
+    }, [props.value, currenciesByChainId]);
+
+    useEffect(() => {
         if(props.value!=null) setChainId(isSCToken(props.value) ? props.value.chainId : "BITCOIN");
     }, [props.value]);
 

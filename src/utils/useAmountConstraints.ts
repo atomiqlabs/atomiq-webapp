@@ -1,7 +1,7 @@
 import {isSCToken, MultichainSwapBounds, SCToken, SwapType, Token,} from "@atomiqlabs/sdk";
 import BigNumber from "bignumber.js";
 import {useCallback, useContext, useEffect, useMemo, useState} from "react";
-import {toHumanReadable} from "./Currencies";
+import {excludeChainTokens, toHumanReadable} from "./Currencies";
 import {SwapsContext} from "../context/SwapsContext";
 import {Tokens} from "../FEConstants";
 
@@ -103,7 +103,7 @@ export function useAmountConstraints(exactIn: boolean, inCurrency: Token, outCur
                 });
                 return set;
             }
-            return new Set(swapper.getSupportedTokens(swapType).map(token => token.chainId+":"+token.address))
+            return new Set(swapper.getSupportedTokens(swapType).map(token => excludeChainTokens[swapType]?.has(token.address) ? null : token.chainId+":"+token.address))
         },
         [swapper, swapType, lpsUpdateCount]
     );
