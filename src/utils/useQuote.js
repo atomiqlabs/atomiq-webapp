@@ -32,7 +32,9 @@ export function useQuote(signer, amount, exactIn, inToken, outToken, address, ga
             setLoading(true);
             let createPromise;
             if (isSCToken(outToken) && isBtcToken(inToken) && !inToken.lightning && swapper.supportsSwapType(outToken.chainId, SwapType.SPV_VAULT_FROM_BTC)) {
-                const options = {};
+                const options = {
+                    unsafeZeroWatchtowerFee: true
+                };
                 if (gasDropAmount != null && gasDropAmount !== 0n) {
                     options.gasAmount = gasDropAmount;
                 }

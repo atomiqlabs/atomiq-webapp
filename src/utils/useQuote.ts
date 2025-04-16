@@ -64,7 +64,9 @@ export function useQuote(
             setLoading(true);
             let createPromise: Promise<ISwap>;
             if(isSCToken(outToken) && isBtcToken(inToken) && !inToken.lightning && swapper.supportsSwapType(outToken.chainId, SwapType.SPV_VAULT_FROM_BTC)) {
-                const options: SpvFromBTCOptions = {};
+                const options: SpvFromBTCOptions = {
+                    unsafeZeroWatchtowerFee: true
+                };
                 if(gasDropAmount!=null && gasDropAmount!==0n) {
                     options.gasAmount = gasDropAmount;
                 }

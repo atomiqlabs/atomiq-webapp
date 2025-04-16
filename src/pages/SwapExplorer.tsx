@@ -145,7 +145,7 @@ export function SwapExplorer(props: {}) {
 
                     type: "LN" | "CHAIN",
                     direction: "ToBTC" | "FromBTC",
-                    kind: ChainSwapType,
+                    kind: ChainSwapType | -1,
                     nonce: string,
 
                     lpWallet: string,
@@ -255,11 +255,10 @@ export function SwapExplorer(props: {}) {
                                                 )}
                                             </Col>
                                             <Col xl={6} md={2} xs={6}>
-                                                {row.type==="CHAIN" ? (
-                                                    <Badge bg="warning" className="width-fill">On-chain</Badge>
-                                                ) : (
-                                                    <Badge bg="dark" className="width-fill">Lightning</Badge>
-                                                )}
+                                                <Badge bg={row.type === "LN" ? "dark" : row.kind === -1 ? "info" : "warning"} className="width-fill">
+                                                    {row.type === "LN" ? "Lightning" : "On-chain"}
+                                                    <img src={"/icons/chains/" + chainId + ".svg"} className="ms-1" style={{width: "18px", marginTop: "-8px", marginBottom: "-4px"}}/>
+                                                </Badge>
                                             </Col>
                                             <Col xl={0} lg={2} md={1} xs={0}>
                                             </Col>

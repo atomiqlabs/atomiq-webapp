@@ -85,7 +85,7 @@ export function SpvVaultFromBTCQuoteSummary(props) {
         if (state === SpvFromBTCSwapState.BTC_TX_CONFIRMED) {
             timer = setTimeout(() => {
                 setClaimable(true);
-            }, 20 * 1000);
+            }, 60 * 1000);
         }
         return () => {
             if (timer != null)
