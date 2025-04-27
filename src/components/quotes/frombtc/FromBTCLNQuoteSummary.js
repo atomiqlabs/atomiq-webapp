@@ -11,7 +11,7 @@ import { useLightningWallet } from "../../../bitcoin/lightning/useLightningWalle
 import { SwapExpiryProgressBar } from "../../SwapExpiryProgressBar";
 import { SwapForGasAlert } from "../../SwapForGasAlert";
 import { StepByStep } from "../../StepByStep";
-import { useLocalStorage } from "../../../utils/useLocalStorage";
+import { useLocalStorage } from "../../../utils/hooks/useLocalStorage";
 import { LightningQR } from "./LightningQR";
 import { ErrorAlert } from "../../ErrorAlert";
 import { useFromBtcLnQuote } from "../../../utils/useFromBtcLnQuote";

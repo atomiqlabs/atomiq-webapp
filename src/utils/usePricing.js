@@ -18,7 +18,6 @@ export function usePricing(_amount, currency) {
                 return;
         }
         lastValues.current = { amount: _amount, token: currency };
-        console.log("useEffect(): usePricing, ", _amount?.toString(), currency);
         pricing.current.updates++;
         const updateNum = pricing.current.updates;
         const amount = _amount == null ? null : fromHumanReadable(_amount, currency);

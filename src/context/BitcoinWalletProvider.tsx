@@ -3,8 +3,8 @@ import {BitcoinWallet} from "../bitcoin/onchain/BitcoinWallet";
 import {BitcoinWalletType, getInstalledBitcoinWallets} from "../bitcoin/onchain/BitcoinWalletUtils";
 import {CloseButton, ListGroup, Modal} from "react-bootstrap";
 import * as React from "react";
-import {useLocalStorage} from "../utils/useLocalStorage";
-import {useStateRef} from "../utils/useStateRef";
+import {useLocalStorage} from "../utils/hooks/useLocalStorage";
+import {useStateRef} from "../utils/hooks/useStateRef";
 import {useWallet} from "@solana/wallet-adapter-react";
 
 export const BitcoinWalletContext: React.Context<{

@@ -10,7 +10,7 @@ import {ic_south} from 'react-icons-kit/md/ic_south'
 import {SwapsContext} from "../context/SwapsContext";
 import {TokenIcon} from "../components/TokenIcon";
 import {useAnchorNavigate} from "../utils/useAnchorNavigate";
-import {useAsync} from "../utils/useAsync";
+import {useAsync} from "../utils/hooks/useAsync";
 import {TrustedFromBTCLNQuoteSummary} from "../components/quotes/frombtc/TrustedFromBTCLNQuoteSummary";
 import {useSwapState} from "../utils/useSwapState";
 import {ErrorAlert} from "../components/ErrorAlert";

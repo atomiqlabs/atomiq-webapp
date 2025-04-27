@@ -25,7 +25,6 @@ export function usePricing(_amount: BigNumber, currency: Token<any>): number {
             if(bnEqual(lastValues.current.amount, _amount) && lastValues.current.token===currency) return;
         }
         lastValues.current = {amount: _amount, token: currency};
-        console.log("useEffect(): usePricing, ", _amount?.toString(), currency);
 
         pricing.current.updates++;
         const updateNum = pricing.current.updates;

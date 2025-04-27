@@ -40,7 +40,6 @@ const fetchWithTimeout = async (input, init) => {
         }
     }
 };
-function SolanaWalletProvider(props) {
+export function SolanaWalletProvider(props) {
     return (_jsx(ConnectionProvider, { endpoint: FEConstants.solanaRpcUrl ?? "http://example.com/", config: { fetch: fetchWithTimeout, commitment: "confirmed" }, children: _jsx(WalletProvider, { wallets: wallets, autoConnect: true, children: _jsx(WalletModalProvider, { children: props.children }) }) }));
 }
-export default SolanaWalletProvider;

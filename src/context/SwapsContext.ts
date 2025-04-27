@@ -3,7 +3,6 @@ import {AbstractSigner, ISwap, SCToken, Swapper} from "@atomiqlabs/sdk";
 
 export const SwapsContext: React.Context<{
     actionableSwaps: ISwap[],
-    removeSwap: (swap: ISwap) => void,
     swapper: Swapper<any>,
     chains: {
         [chainId: string]: {

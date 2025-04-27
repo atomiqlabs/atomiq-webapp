@@ -20,10 +20,10 @@ import {TokenIcon} from "../../components/TokenIcon";
 import {useAddressData} from "../../utils/useAddressData";
 import {useAmountConstraints} from "../../utils/useAmountConstraints";
 import {useQuote} from "../../utils/useQuote";
-import {useBigNumberState} from "../../utils/useBigNumberState";
+import {useBigNumberState} from "../../utils/hooks/useBigNumberState";
 import {useWalletBalance} from "../../utils/useWalletBalance";
 import {ScrollAnchor} from "../../components/ScrollAnchor";
-import {useLocalStorage} from "../../utils/useLocalStorage";
+import {useLocalStorage} from "../../utils/hooks/useLocalStorage";
 import {ErrorAlert} from "../../components/ErrorAlert";
 import {Tokens} from "../../FEConstants";
 

@@ -41,7 +41,7 @@ const fetchWithTimeout = async (input: RequestInfo | URL, init: RequestInit) => 
     }
 };
 
-function SolanaWalletProvider(props: {
+export function SolanaWalletProvider(props: {
     children: any
 }) {
     return (
@@ -53,7 +53,4 @@ function SolanaWalletProvider(props: {
             </WalletProvider>
         </ConnectionProvider>
     )
-
 }
-
-export default SolanaWalletProvider;

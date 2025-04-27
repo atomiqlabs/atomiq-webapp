@@ -15,7 +15,7 @@ import { ScrollAnchor } from "../../ScrollAnchor";
 import { CopyOverlay } from "../../CopyOverlay";
 import { useOnchainWallet } from "../../../bitcoin/onchain/useOnchainWallet";
 import { useSwapState } from "../../../utils/useSwapState";
-import { useAsync } from "../../../utils/useAsync";
+import { useAsync } from "../../../utils/hooks/useAsync";
 import { SwapExpiryProgressBar } from "../../SwapExpiryProgressBar";
 import { SwapForGasAlert } from "../../SwapForGasAlert";
 import { ic_gavel_outline } from 'react-icons-kit/md/ic_gavel_outline';
@@ -29,10 +29,10 @@ import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_ou
 import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { StepByStep } from "../../StepByStep";
-import { useStateRef } from "../../../utils/useStateRef";
-import { useAbortSignalRef } from "../../../utils/useAbortSignal";
+import { useStateRef } from "../../../utils/hooks/useStateRef";
+import { useAbortSignalRef } from "../../../utils/hooks/useAbortSignal";
 import { OnchainAddressCopyModal } from "./OnchainAddressCopyModal";
-import { useLocalStorage } from "../../../utils/useLocalStorage";
+import { useLocalStorage } from "../../../utils/hooks/useLocalStorage";
 import { ErrorAlert } from "../../ErrorAlert";
 /*
 Steps:

@@ -1,14 +1,16 @@
-import {AbstractSigner, isBtcToken, isSCToken, SwapType, toHumanReadableString, Token} from "@atomiqlabs/sdk";
+import {
+    isBtcToken,
+    isSCToken,
+    SwapType,
+    Token,
+    TokenAmount
+} from "@atomiqlabs/sdk";
 import {useContext, useEffect, useState} from "react";
-import {BitcoinWalletContext} from "../context/BitcoinWalletProvider";
 import {SwapsContext} from "../context/SwapsContext";
-import BigNumber from "bignumber.js";
-import {useStateRef} from "./useStateRef";
-import {Tokens} from "../FEConstants";
-
+import {useStateRef} from "./hooks/useStateRef";
+import {useChainForCurrency} from "../wallets/useChainForCurrency";
 
 export function useWalletBalance(
-    signer: AbstractSigner,
     currency: Token,
     swapType: SwapType,
     swapChainId?: string,
@@ -16,61 +18,53 @@ export function useWalletBalance(
     pause?: boolean,
     minBtcFeeRate?: number
 ): {
-    amountString: string,
-    amount: BigNumber,
-    rawAmount: bigint,
-    feeRate: number,
-    totalFee?: number
+    balance: TokenAmount
+    feeRate?: number
 } {
     const {swapper} = useContext(SwapsContext);
-    const {bitcoinWallet} = useContext(BitcoinWalletContext);
+    const chain = useChainForCurrency(currency);
 
     const pauseRef = useStateRef(pause);
 
-    const [_maxSpendable, setMaxSpendable] = useState<{
-        amountString: string,
-        amount: BigNumber,
-        rawAmount: bigint,
-        feeRate: number,
-        totalFee?: number
+    const [maxSpendable, setMaxSpendable] = useState<{
+        balance: TokenAmount
+        feeRate?: number
     }>(null);
-    let maxSpendable = _maxSpendable;
-    if(currency!=null && isBtcToken(currency)) {
-        if(!currency.lightning && bitcoinWallet==null) maxSpendable = null;
-        if(currency.lightning) maxSpendable = null;
-    }
 
     useEffect(() => {
-        if(currency==null) {
-            setMaxSpendable(null);
-        }
-    }, [currency?.chain, currency?.ticker, (currency as any)?.chainId]);
-
-    useEffect(() => {
-        if(currency==null || !isBtcToken(currency)) return;
-        if(currency.lightning) return;
-
         setMaxSpendable(null);
 
+        if(currency==null || (isBtcToken(currency) && currency.lightning)) return;
         if(swapper==null) return;
-        if(bitcoinWallet==null) return;
+        if(chain==null || chain.wallet==null) return;
 
         let canceled = false;
 
-        const fetchBalance = () => bitcoinWallet.getFeeRate().then(feeRate => bitcoinWallet.getSpendableBalance(
-            swapType===SwapType.SPV_VAULT_FROM_BTC ? swapper.getRandomSpvVaultPsbt(swapChainId, requestGasDrop) : null,
-            minBtcFeeRate==null ? feeRate : Math.max(feeRate, minBtcFeeRate)
-        )).then(resp => {
+        let getBalance: () => Promise<{balance: TokenAmount, feeRate?: number}>;
+        if(isBtcToken(currency)) {
+            getBalance = () => swapper.Utils.getBitcoinSpendableBalance(
+                chain.wallet.instance,
+                swapType as any,
+                swapChainId,
+                {gasDrop: requestGasDrop, minFeeRate: minBtcFeeRate}
+            );
+        } else if(isSCToken(currency)) {
+            getBalance = async () => {
+                return {
+                    balance: await swapper.Utils.getSpendableBalance(
+                        chain.wallet.instance,
+                        currency,
+                        {feeMultiplier: 1.5}
+                    )
+                };
+            };
+        }
+        if(getBalance==null) return;
+
+        const fetchBalance = () => getBalance().then(resp => {
             if(canceled) return;
             if(pauseRef.current) return;
-            const amountString = toHumanReadableString(resp.balance, Tokens.BITCOIN.BTC);
-            setMaxSpendable({
-                rawAmount: resp.balance,
-                amount: new BigNumber(amountString),
-                amountString: amountString,
-                feeRate: resp.feeRate,
-                totalFee: resp.totalFee
-            });
+            setMaxSpendable(resp);
         });
 
         fetchBalance();
@@ -81,42 +75,13 @@ export function useWalletBalance(
             canceled = true;
         }
     }, [
-        swapper, bitcoinWallet,
+        swapper, chain?.wallet,
         currency?.chain, currency?.ticker, (currency as any)?.chainId,
-        swapType, swapType===SwapType.SPV_VAULT_FROM_BTC ? swapChainId : null, swapType===SwapType.SPV_VAULT_FROM_BTC ? requestGasDrop : false,
+        swapType,
+        swapType===SwapType.SPV_VAULT_FROM_BTC ? swapChainId : null,
+        swapType===SwapType.SPV_VAULT_FROM_BTC ? requestGasDrop : false,
         minBtcFeeRate
     ]);
-
-    useEffect(() => {
-        if(currency==null || !isSCToken(currency)) return;
-
-        setMaxSpendable(null);
-
-        if(swapper==null || signer==null) return;
-
-        let canceled = false;
-
-        const fetchBalance = () => swapper.getSpendableBalance(signer.getAddress(), currency, 1.25).then(resp => {
-            if(canceled) return;
-            if(pauseRef.current) return;
-            const amountString = toHumanReadableString(resp, currency);
-            setMaxSpendable({
-                amountString,
-                rawAmount: resp,
-                amount: new BigNumber(amountString),
-                feeRate: null,
-                totalFee: null
-            });
-        });
-
-        fetchBalance();
-        const interval = setInterval(fetchBalance, 2*60*1000);
-
-        return () => {
-            clearInterval(interval);
-            canceled = true;
-        }
-    }, [swapper, signer, currency?.chain, currency?.ticker, (currency as any)?.chainId]);
 
     return maxSpendable;
 }

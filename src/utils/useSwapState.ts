@@ -51,7 +51,7 @@ export function useSwapState<S extends number>(quote: ISwap<any, S>) {
         }, 500);
 
         const checkExpiry = (state: S) => {
-            expiryTime.current = quote.getExpiry();
+            expiryTime.current = quote.getQuoteExpiry();
             if(quote.getType()===SwapType.FROM_BTCLN) {
                 if(state===FromBTCLNSwapState.PR_CREATED) {
                     expiryTime.current = (quote as ISwap as FromBTCLNSwap<any>).getTimeoutTime();

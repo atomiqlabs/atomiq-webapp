@@ -17,7 +17,7 @@ import {useAddressData} from "../utils/useAddressData";
 import ValidatedInput, {ValidatedInputRef} from "../components/ValidatedInput";
 import {useAmountConstraints} from "../utils/useAmountConstraints";
 import {useWalletBalance} from "../utils/useWalletBalance";
-import {useBigNumberState} from "../utils/useBigNumberState";
+import {useBigNumberState} from "../utils/hooks/useBigNumberState";
 import {SwapTopbar} from "../components/SwapTopbar";
 import {QRScannerModal} from "../components/qr/QRScannerModal";
 import {Alert, Badge, Button, Card, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";

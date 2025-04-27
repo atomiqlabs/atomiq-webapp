@@ -5,8 +5,8 @@ import {LnForGasSwap, LnForGasSwapState} from "@atomiqlabs/sdk";
 import {useSwapState} from "../../../utils/useSwapState";
 import {ScrollAnchor} from "../../ScrollAnchor";
 import {SwapExpiryProgressBar} from "../../SwapExpiryProgressBar";
-import {useAsync} from "../../../utils/useAsync";
-import {useAbortSignalRef} from "../../../utils/useAbortSignal";
+import {useAsync} from "../../../utils/hooks/useAsync";
+import {useAbortSignalRef} from "../../../utils/hooks/useAbortSignal";
 
 import {ic_refresh} from 'react-icons-kit/md/ic_refresh';
 import {ic_flash_on_outline} from 'react-icons-kit/md/ic_flash_on_outline';
@@ -17,7 +17,7 @@ import {ic_swap_horizontal_circle_outline} from 'react-icons-kit/md/ic_swap_hori
 import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
 import {ic_hourglass_top_outline} from "react-icons-kit/md/ic_hourglass_top_outline";
 import {SingleStep, StepByStep} from "../../StepByStep";
-import {useStateRef} from "../../../utils/useStateRef";
+import {useStateRef} from "../../../utils/hooks/useStateRef";
 import {LightningQR} from "./LightningQR";
 import {ErrorAlert} from "../../ErrorAlert";
 
