@@ -35,7 +35,7 @@ import {BitcoinWalletProvider} from './context/BitcoinWalletProvider';
 import {WebLNContext} from './context/WebLNContext';
 import {heart} from 'react-icons-kit/fa/heart';
 import {SwapNew} from "./pages/SwapNew";
-import {useAnchorNavigate} from "./utils/useAnchorNavigate";
+import {useAnchorNavigate} from "./utils/hooks/useAnchorNavigate";
 import {ErrorAlert} from "./components/ErrorAlert";
 import {StarknetWalletContext} from "./context/StarknetWalletContext";
 import {useStarknetWalletContext} from "./utils/useStarknetWalletContext";
@@ -304,14 +304,6 @@ function WrappedApp() {
 
                 <SwapsContext.Provider value={{
                     actionableSwaps: [],
-                    removeSwap: (swap: ISwap) => {
-                        // setActionableSwaps((val) => {
-                        //     const cpy = [...val];
-                        //     const i = cpy.indexOf(swap);
-                        //     if(i>=0) cpy.splice(i, 1);
-                        //     return cpy;
-                        // });
-                    },
                     chains: signers,
                     swapper,
                     getSigner: (swap: ISwap | SCToken, requireSameAsInitiator = true) => {

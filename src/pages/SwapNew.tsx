@@ -7,20 +7,20 @@ import {
     SpvFromBTCSwap,
     SwapType,
     ToBTCLNSwap,
-    ToBTCSwap, toHumanReadableString,
+    ToBTCSwap,
     Token
 } from "@atomiqlabs/sdk";
 import * as React from "react";
 import {useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {SwapsContext} from "../context/SwapsContext";
-import {useAddressData} from "../utils/useAddressData";
+import {useAddressData} from "../swaps/hooks/useAddressData";
 import ValidatedInput, {ValidatedInputRef} from "../components/ValidatedInput";
-import {useAmountConstraints} from "../utils/useAmountConstraints";
-import {useWalletBalance} from "../utils/useWalletBalance";
+import {useAmountConstraints} from "../swaps/hooks/useAmountConstraints";
+import {useWalletBalance} from "../wallets/hooks/useWalletBalance";
 import {useBigNumberState} from "../utils/hooks/useBigNumberState";
 import {SwapTopbar} from "../components/SwapTopbar";
 import {QRScannerModal} from "../components/qr/QRScannerModal";
-import {Alert, Badge, Button, Card, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
+import {Alert, Button, Card, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
 import {bitcoinTokenArray, fromHumanReadable, smartChainTokenArray, toHumanReadable} from "../utils/Currencies";
 import {FEConstants, Tokens} from "../FEConstants";
 import BigNumber from "bignumber.js";
@@ -28,10 +28,8 @@ import {CurrencyDropdown} from "../components/CurrencyDropdown";
 import {SimpleFeeSummaryScreen} from "../components/fees/SimpleFeeScreen";
 import {QuoteSummary} from "../components/quotes/QuoteSummary";
 import {ErrorAlert} from "../components/ErrorAlert";
-import {useQuote} from "../utils/useQuote";
-import {usePricing} from "../utils/usePricing";
-import {BitcoinWalletContext} from "../context/BitcoinWalletProvider";
-import {WebLNContext} from "../context/WebLNContext";
+import {useQuote} from "../swaps/hooks/useQuote";
+import {usePricing} from "../swaps/hooks/usePricing";
 import * as randomBytes from "randombytes";
 import {Address, NETWORK, TEST_NETWORK} from "@scure/btc-signer";
 import {useLocation, useNavigate} from "react-router-dom";
@@ -41,9 +39,9 @@ import {arrows_vertical} from 'react-icons-kit/ikons/arrows_vertical';
 import {ic_qr_code_scanner} from 'react-icons-kit/md/ic_qr_code_scanner';
 import {lock} from 'react-icons-kit/fa/lock';
 import {ic_power_off_outline} from 'react-icons-kit/md/ic_power_off_outline';
-import {useExistingSwap} from "../utils/useExistingSwap";
+import {useExistingSwap} from "../swaps/hooks/useExistingSwap";
 import {ConnectedWalletAnchor} from "../components/wallet/ConnectedWalletAnchor";
-import {useWalletForCurrency} from "../utils/useWalletList";
+import {useStateWithOverride} from "../swaps/hooks/useStateWithOverride";
 
 const RANDOM_BTC_ADDRESS = Address(FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? TEST_NETWORK : NETWORK).encode({
     type: "wsh",
@@ -55,112 +53,80 @@ export function SwapNew(props: {
 }) {
     const navigate = useNavigate();
 
-    const {swapper, chains} = useContext(SwapsContext);
-    const {bitcoinWallet, disconnect} = useContext(BitcoinWalletContext);
-    const {lnWallet} = useContext(WebLNContext);
+    const {swapper} = useContext(SwapsContext);
 
     //Existing swap quote
     const {search} = useLocation();
     const params = new URLSearchParams(search);
     const propSwapId = params.get("swapId");
     const [existingSwap, existingSwapLoading] = useExistingSwap(propSwapId);
-    const [isUnlocked,setUnlocked] = useState<boolean>(false);
+
+    const [isUnlocked, setUnlocked] = useState<boolean>(false);
     const locked = !isUnlocked && existingSwap!=null;
 
     //Tokens
-    const [_swapType, setSwapType] = useState<SwapType>(SwapType.FROM_BTC);
-    const [_scCurrency, setScCurrency] = useState<SCToken>(smartChainTokenArray[0]);
-    const swapType = useMemo(() => {
-        if(existingSwap!=null) return existingSwap.getType();
-        if(swapper!=null) {
-            if(_swapType===SwapType.FROM_BTC || _swapType===SwapType.SPV_VAULT_FROM_BTC) {
-                return swapper.supportsSwapType(_scCurrency.chainId, SwapType.SPV_VAULT_FROM_BTC) ?
-                    SwapType.SPV_VAULT_FROM_BTC :
-                    SwapType.FROM_BTC;
-            }
-        }
-        return _swapType;
-    }, [existingSwap, swapper, _swapType, _scCurrency]);
-    console.log("Swap type: ", swapType);
-    const isSend: boolean = swapType===SwapType.TO_BTCLN || swapType===SwapType.TO_BTC;
-    const scCurrency: SCToken = existingSwap!=null ? (isSend ? existingSwap.getInput() : existingSwap.getOutput()).token as SCToken : _scCurrency;
-    const inputToken: Token | null = useMemo(
-        () => swapType===SwapType.FROM_BTCLN ? Tokens.BITCOIN.BTCLN : (swapType===SwapType.FROM_BTC || swapType===SwapType.SPV_VAULT_FROM_BTC) ? Tokens.BITCOIN.BTC : scCurrency,
-        [swapType, scCurrency]
-    );
-    const outputToken: Token | null = useMemo(
-        () => swapType===SwapType.TO_BTCLN ? Tokens.BITCOIN.BTCLN : swapType===SwapType.TO_BTC ? Tokens.BITCOIN.BTC : scCurrency,
-        [swapType, scCurrency]
-    );
-    const signerData = scCurrency==null ? null : chains[scCurrency.chainId];
+    const [inputToken, setInputToken] = useStateWithOverride(Tokens.BITCOIN.BTC, existingSwap?.getInput().token);
+    const [outputToken, setOutputToken] = useStateWithOverride(smartChainTokenArray[0], existingSwap?.getOutput().token);
+
+    // const [_swapType, setSwapType] = useState<SwapType>(SwapType.FROM_BTC);
+    // const [_scCurrency, setScCurrency] = useState<SCToken>(smartChainTokenArray[0]);
+    // const swapType = useMemo(() => {
+    //     if(existingSwap!=null) return existingSwap.getType();
+    //     if(swapper!=null) {
+    //         if(_swapType===SwapType.FROM_BTC || _swapType===SwapType.SPV_VAULT_FROM_BTC) {
+    //             return swapper.supportsSwapType(_scCurrency.chainId, SwapType.SPV_VAULT_FROM_BTC) ?
+    //                 SwapType.SPV_VAULT_FROM_BTC :
+    //                 SwapType.FROM_BTC;
+    //         }
+    //     }
+    //     return _swapType;
+    // }, [existingSwap, swapper, _swapType, _scCurrency]);
+    // console.log("Swap type: ", swapType);
+    // const isSend: boolean = swapType===SwapType.TO_BTCLN || swapType===SwapType.TO_BTC;
+    // const scCurrency: SCToken = existingSwap!=null ? (isSend ? existingSwap.getInput() : existingSwap.getOutput()).token as SCToken : _scCurrency;
+    // const inputToken: Token | null = useMemo(
+    //     () => swapType===SwapType.FROM_BTCLN ? Tokens.BITCOIN.BTCLN : (swapType===SwapType.FROM_BTC || swapType===SwapType.SPV_VAULT_FROM_BTC) ? Tokens.BITCOIN.BTC : scCurrency,
+    //     [swapType, scCurrency]
+    // );
+    // const outputToken: Token | null = useMemo(
+    //     () => swapType===SwapType.TO_BTCLN ? Tokens.BITCOIN.BTCLN : swapType===SwapType.TO_BTC ? Tokens.BITCOIN.BTC : scCurrency,
+    //     [swapType, scCurrency]
+    // );
+    // const signerData = scCurrency==null ? null : chains[scCurrency.chainId];
 
     //Address
     const addressRef = useRef<ValidatedInputRef>();
-    const addressValidator = useCallback((val) => {
-        if(val==="") return "Address required";
-        if(val.startsWith("lightning:")) {
-            val = val.substring(10);
-        }
-        if(val.startsWith("bitcoin:")) {
-            val = val.substring(8);
-            if (val.includes("?")) {
-                val = val.split("?")[0];
-            }
-        }
-        const chainInterface: ChainInterface = swapper.chains[scCurrency.chainId].chainInterface;
-        if(
-            swapper.isValidLNURL(val) ||
-            swapper.isValidBitcoinAddress(val) ||
-            swapper.isValidLightningInvoice(val) ||
-            chainInterface.isValidAddress(val)
-        ) return null;
+    const addressValidator = useCallback((val: string) => {
         try {
-            if(swapper.getLightningInvoiceValue(val)==null) return "Lightning invoice needs to contain a payment amount!";
-        } catch (e) {}
-        return "Invalid address";
-    }, [swapper, scCurrency]);
-    const [_validatedAddress, setValidatedAddress] = useState<string>(null);
-    const validatedAddress = useMemo(() => {
-        if(existingSwap!=null) return null;
-        if(swapType===SwapType.TO_BTC && bitcoinWallet!=null) return bitcoinWallet.getReceiveAddress();
-        if(swapType===SwapType.SPV_VAULT_FROM_BTC && !signerData?.random && signerData?.signer!=null) return signerData.signer.getAddress();
-        return _validatedAddress;
-    }, [existingSwap, swapType, bitcoinWallet, signerData, _validatedAddress]);
-    const [addressLoading, addressData] = useAddressData(validatedAddress, scCurrency.chainId);
+            if(swapper.Utils.parseAddressSync(val)==null) return "Invalid address";
+        } catch (e) {
+            return e.message;
+        }
+        return null;
+    }, [swapper]);
+    const [address, setAddress] = useState<string>(null);
+    const [addressData, addressLoading, addressError] = useAddressData(address);
+    const isValidAddress = addressData!=null;
+    const isFixedAmount = addressData?.min?.rawAmount != null && addressData?.min?.rawAmount === addressData?.max?.rawAmount;
+
     useEffect(() => {
         if(addressData?.swapType!=null) {
-            console.log("SwapNew: useEffect(addressData.swapType): Setting swap type: "+SwapType[addressData.swapType]);
-            setSwapType(addressData.swapType);
+            //TODO: Automatically change to the swap type as decoded from the address type
         }
     }, [addressData?.swapType]);
     useEffect(() => {
-        if(addressData?.lnurlResult==null) return;
-        if(addressData.lnurlResult.type==="withdraw") {
-            navigate("/scan/2?address="+encodeURIComponent(addressData.address)+(
-                scCurrency==null ? "" : "&token="+encodeURIComponent(scCurrency.ticker)
-                    +"&chainId="+encodeURIComponent(scCurrency.chainId)
-            ), {
-                state: {
-                    ...addressData.lnurlResult,
-                    min: addressData.lnurlResult.min.toString(10),
-                    max: addressData.lnurlResult.max.toString(10),
-                }
-            });
-        }
-    }, [addressData?.lnurlResult]);
+        if(addressData?.lnurl?.type==="withdraw") navigate("/scan/2?address="+encodeURIComponent(address));
+    }, [address, addressData?.lnurl]);
 
     //Amounts
     const inputRef = useRef<ValidatedInputRef>();
     const outputRef = useRef<ValidatedInputRef>();
     const [validatedAmount, setValidatedAmount] = useBigNumberState(null);
-    const [_exactIn, setExactIn] = useState(true);
-    const exactIn = addressData?.swapType===SwapType.TO_BTCLN && !addressData?.isLnurl ? false : _exactIn;
+    const [exactIn, setExactIn] = useStateWithOverride(true, !isFixedAmount);
     const {
-        inConstraints,
-        outConstraints,
-        supportedTokensSet,
-        handleQuoteError
-    } = useAmountConstraints(exactIn, inputToken, outputToken);
+        input: inputLimits,
+        output: outputLimits
+    } = useAmountConstraints(inputToken, outputToken);
 
     //Url defined amount & swap type
     useEffect(() => {
@@ -192,13 +158,6 @@ export function SwapNew(props: {
             }
         }
     }, [search]);
-
-    //Allowed tokens
-    const allowedScTokens = useMemo(() => {
-        if(supportedTokensSet==null) return props.supportedCurrencies;
-        return props.supportedCurrencies
-            .filter(currency => supportedTokensSet.has(currency.chainId+":"+currency.address));
-    }, [props.supportedCurrencies, supportedTokensSet]);
 
     //Gas drop
     const [gasDropChecked, setGasDropChecked] = useState<boolean>(false);

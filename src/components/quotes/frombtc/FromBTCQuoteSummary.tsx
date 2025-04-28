@@ -14,7 +14,7 @@ import {ButtonWithSigner} from "../../ButtonWithSigner";
 import {ScrollAnchor} from "../../ScrollAnchor";
 import {CopyOverlay} from "../../CopyOverlay";
 import {useOnchainWallet} from "../../../bitcoin/onchain/useOnchainWallet";
-import {useSwapState} from "../../../utils/useSwapState";
+import {useSwapState} from "../../../swaps/hooks/useSwapState";
 import {useAsync} from "../../../utils/hooks/useAsync";
 import {SwapExpiryProgressBar} from "../../SwapExpiryProgressBar";
 import {SwapForGasAlert} from "../../SwapForGasAlert";

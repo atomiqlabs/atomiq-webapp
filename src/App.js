@@ -28,7 +28,7 @@ import { BitcoinWalletProvider } from './context/BitcoinWalletProvider';
 import { WebLNContext } from './context/WebLNContext';
 import { heart } from 'react-icons-kit/fa/heart';
 import { SwapNew } from "./pages/SwapNew";
-import { useAnchorNavigate } from "./utils/useAnchorNavigate";
+import { useAnchorNavigate } from "./utils/hooks/useAnchorNavigate";
 import { ErrorAlert } from "./components/ErrorAlert";
 import { StarknetWalletContext } from "./context/StarknetWalletContext";
 import { useStarknetWalletContext } from "./utils/useStarknetWalletContext";
@@ -188,14 +188,6 @@ function WrappedApp() {
                                                     , { id: "nfc", type: "switch", onChange: (val) => nfcSet(val.target.checked, val.target), checked: nfcEnabled })] })) : ""] }), _jsxs(Nav, { className: "d-none d-lg-flex me-auto text-start", navbarScroll: true, style: { maxHeight: '100px' }, children: [_jsxs(Nav.Link, { href: "/", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: exchange, className: "d-flex me-1" }), _jsx("span", { children: "Swap" })] }), _jsxs(Nav.Link, { href: "/about", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: info, className: "d-flex me-1" }), _jsx("span", { children: "About" })] }), _jsxs(Nav.Link, { href: "/faq", onClick: navigateHref, className: "d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: question, className: "d-flex me-1" }), _jsx("span", { children: "FAQ" })] }), nfcSupported ? (_jsxs("div", { className: "nav-link d-flex flex-row align-items-center", children: [_jsx(Icon, { icon: ic_contactless, className: "d-flex me-1" }), _jsx("label", { title: "", htmlFor: "nfc", className: "form-check-label me-2", children: "NFC enable" }), _jsx(Form.Check // prettier-ignore
                                                     , { id: "nfc", type: "switch", onChange: (val) => nfcSet(val.target.checked, val.target), checked: nfcEnabled })] })) : ""] }), _jsx(Nav, { className: "ms-auto", children: _jsx("div", { className: "pt-2 ms-auto", style: { height: "3rem" }, children: _jsx(WalletConnectionsSummary, {}) }) })] })] }) }), _jsxs(SwapsContext.Provider, { value: {
                         actionableSwaps: [],
-                        removeSwap: (swap) => {
-                            // setActionableSwaps((val) => {
-                            //     const cpy = [...val];
-                            //     const i = cpy.indexOf(swap);
-                            //     if(i>=0) cpy.splice(i, 1);
-                            //     return cpy;
-                            // });
-                        },
                         chains: signers,
                         swapper,
                         getSigner: (swap, requireSameAsInitiator = true) => {

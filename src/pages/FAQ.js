@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { Accordion } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { useAnchorNavigate } from "../utils/useAnchorNavigate";
+import { useAnchorNavigate } from "../utils/hooks/useAnchorNavigate";
 export function FAQ(props) {
     const { search } = useLocation();
     const params = new URLSearchParams(search);

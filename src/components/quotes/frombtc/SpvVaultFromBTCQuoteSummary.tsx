@@ -7,7 +7,7 @@ import {FEConstants} from "../../../FEConstants";
 import {SwapsContext} from "../../../context/SwapsContext";
 import {ButtonWithSigner} from "../../ButtonWithSigner";
 import {useOnchainWallet} from "../../../bitcoin/onchain/useOnchainWallet";
-import {useSwapState} from "../../../utils/useSwapState";
+import {useSwapState} from "../../../swaps/hooks/useSwapState";
 import {useAsync} from "../../../utils/hooks/useAsync";
 import {SwapExpiryProgressBar} from "../../SwapExpiryProgressBar";
 

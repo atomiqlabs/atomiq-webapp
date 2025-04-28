@@ -1,7 +1,7 @@
 import { FromBTCLNSwapState } from "@atomiqlabs/sdk";
 import { useContext, useEffect } from "react";
 import { SwapsContext } from "../context/SwapsContext";
-import { useSwapState } from "./useSwapState";
+import { useSwapState } from "../swaps/hooks/useSwapState";
 import { useStateRef } from "./hooks/useStateRef";
 import { useAbortSignalRef } from "./hooks/useAbortSignal";
 import { useAsync } from "./hooks/useAsync";

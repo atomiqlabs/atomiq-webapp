@@ -4,7 +4,7 @@ import {Alert, Button, Spinner} from "react-bootstrap";
 import {FromBTCLNSwap, FromBTCLNSwapState} from "@atomiqlabs/sdk";
 import {SwapsContext} from "../../../context/SwapsContext";
 import {ButtonWithSigner} from "../../ButtonWithSigner";
-import {useSwapState} from "../../../utils/useSwapState";
+import {useSwapState} from "../../../swaps/hooks/useSwapState";
 import {SwapExpiryProgressBar} from "../../SwapExpiryProgressBar";
 
 import {StepByStep} from "../../StepByStep";

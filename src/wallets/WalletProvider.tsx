@@ -1,7 +1,7 @@
-import {SolanaWalletWrapper, useSolanaWalletData} from "./hooks/useSolanaWalletData";
-import {useBitcoinWalletData} from "./hooks/useBitcoinWalletData";
-import {useStarknetWalletData} from "./hooks/useStarknetWalletData";
-import {useLightningWalletData} from "./hooks/useLightningWalletData";
+import {SolanaWalletWrapper, useSolanaWalletData} from "./chains/useSolanaWalletData";
+import {useBitcoinWalletData} from "./chains/useBitcoinWalletData";
+import {useStarknetWalletData} from "./chains/useStarknetWalletData";
+import {useLightningWalletData} from "./chains/useLightningWalletData";
 import { WalletContext } from "./context/WalletContext";
 import {useMemo} from "react";
 

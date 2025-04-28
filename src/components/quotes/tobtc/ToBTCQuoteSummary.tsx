@@ -6,7 +6,7 @@ import * as bolt11 from "@atomiqlabs/bolt11";
 import {FEConstants} from "../../../FEConstants";
 import {SwapsContext} from "../../../context/SwapsContext";
 import {ButtonWithSigner} from "../../ButtonWithSigner";
-import {useSwapState} from "../../../utils/useSwapState";
+import {useSwapState} from "../../../swaps/hooks/useSwapState";
 import {SwapExpiryProgressBar} from "../../SwapExpiryProgressBar";
 import {useAsync} from "../../../utils/hooks/useAsync";
 import {useAbortSignalRef} from "../../../utils/hooks/useAbortSignal";

@@ -4,7 +4,7 @@ import { Alert, Button, Spinner } from "react-bootstrap";
 import { FromBTCLNSwapState } from "@atomiqlabs/sdk";
 import { SwapsContext } from "../../../context/SwapsContext";
 import { ButtonWithSigner } from "../../ButtonWithSigner";
-import { useSwapState } from "../../../utils/useSwapState";
+import { useSwapState } from "../../../swaps/hooks/useSwapState";
 import { ScrollAnchor } from "../../ScrollAnchor";
 import { LightningHyperlinkModal } from "./LightningHyperlinkModal";
 import { useLightningWallet } from "../../../bitcoin/lightning/useLightningWallet";

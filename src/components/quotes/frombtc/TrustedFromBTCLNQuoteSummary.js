@@ -2,7 +2,7 @@ import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-run
 import { useEffect } from "react";
 import { Alert, Button, Spinner } from "react-bootstrap";
 import { LnForGasSwapState } from "@atomiqlabs/sdk";
-import { useSwapState } from "../../../utils/useSwapState";
+import { useSwapState } from "../../../swaps/hooks/useSwapState";
 import { ScrollAnchor } from "../../ScrollAnchor";
 import { SwapExpiryProgressBar } from "../../SwapExpiryProgressBar";
 import { useAsync } from "../../../utils/hooks/useAsync";

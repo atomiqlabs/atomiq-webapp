@@ -1,6 +1,6 @@
 import * as React from "react";
 import {Card, Col, Row} from "react-bootstrap";
-import {useAnchorNavigate} from "../utils/useAnchorNavigate";
+import {useAnchorNavigate} from "../utils/hooks/useAnchorNavigate";
 
 export function About(props: {}) {
 
