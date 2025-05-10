@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { SwapsContext } from "../../context/SwapsContext";
+import { SwapsContext } from "../context/SwapsContext";
 import { useWithAwait } from "../../utils/hooks/useWithAwait";
 export function useExistingSwap(swapId) {
     const { swapper } = useContext(SwapsContext);

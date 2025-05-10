@@ -1,34 +1,28 @@
-import {QRScanner} from "../../components/qr/QRScanner";
+import {QRScanner} from "../../qr/QRScanner";
 import {Button} from "react-bootstrap";
 import {useNavigate} from "react-router-dom";
-import {SwapTopbar} from "../../components/SwapTopbar";
+import {SwapTopbar} from "../SwapTopbar";
 import * as React from "react";
-import {useState} from "react";
-import {smartChainTokenArray} from "../../utils/Currencies";
-import {CurrencyDropdown} from "../../components/CurrencyDropdown";
+import {useCallback, useState} from "react";
+import {smartChainTokenArray} from "../../tokens/Tokens";
+import {CurrencyDropdown} from "../../tokens/CurrencyDropdown";
 import Icon from "react-icons-kit";
 import {ic_contactless} from 'react-icons-kit/md/ic_contactless';
-import {LNNFCStartResult} from "../../lnnfc/LNNFCReader";
 import {SCToken} from "@atomiqlabs/sdk";
-import {useNFCScanner} from "../../lnnfc/useNFCScanner";
+import {useNFCScanner} from "../../nfc/hooks/useNFCScanner";
+import {NFCStartResult} from "../../nfc/NFCReader";
 
-export function QuickScan(props: {
-    onScanned?: (data: string) => void
-}) {
+export function QuickScan() {
     const navigate = useNavigate();
 
     const [selectedCurrency, setSelectedCurrency] = useState<SCToken>(null);
 
-    const onScanned = (res: string) => {
-        if(props.onScanned!=null) {
-            props.onScanned(res);
-        } else {
-            navigate("/scan/2?address="+encodeURIComponent(res)+(
-                selectedCurrency==null ? "" : "&token="+encodeURIComponent(selectedCurrency.ticker)
-                    +"&chainId="+encodeURIComponent(selectedCurrency.chainId)
-            ));
-        }
-    };
+    const onScanned = useCallback((res: string) => {
+        navigate("/scan/2?address="+encodeURIComponent(res)+(
+            selectedCurrency==null ? "" : "&token="+encodeURIComponent(selectedCurrency.ticker)
+                +"&chainId="+encodeURIComponent(selectedCurrency.chainId)
+        ));
+    }, [selectedCurrency]);
 
     const NFCScanning = useNFCScanner(onScanned);
 
@@ -57,7 +51,7 @@ export function QuickScan(props: {
                     left: "0px",
                 }}>
                     <div className="d-flex justify-content-center align-items-center flex-column">
-                        <div className={"mx-auto "+(NFCScanning===LNNFCStartResult.OK ? "" : "mb-5")}>
+                        <div className={"mx-auto "+(NFCScanning===NFCStartResult.OK ? "" : "mb-5")}>
                             <div className="text-white p-3 position-relative">
                                 <label>Pay with</label>
                                 <CurrencyDropdown currencyList={smartChainTokenArray} onSelect={val => {
@@ -65,7 +59,7 @@ export function QuickScan(props: {
                                 }} value={selectedCurrency} className="bg-dark bg-opacity-25 text-white"/>
                             </div>
                         </div>
-                        {NFCScanning===LNNFCStartResult.OK ? (
+                        {NFCScanning===NFCStartResult.OK ? (
                             <Button className="mb-4 p-2 bg-opacity-25 bg-dark border-0 d-flex align-items-center text-white flex-row">
                                 <span className="position-relative me-1" style={{fontSize: "1.25rem"}}><b>NFC</b></span>
                                 <Icon size={32} icon={ic_contactless}/>

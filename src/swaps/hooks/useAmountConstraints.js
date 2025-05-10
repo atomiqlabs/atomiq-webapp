@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { toHumanReadable } from "../../utils/Currencies";
-import { SwapsContext } from "../../context/SwapsContext";
+import { toHumanReadable } from "../../tokens/Tokens";
+import { SwapsContext } from "../context/SwapsContext";
 const defaultConstraints = {
     min: 1n,
     max: null
@@ -37,9 +37,10 @@ export function useAmountConstraints(inCurrency, outCurrency) {
                 output: toBigNumbers(defaultConstraints, outCurrency)
             };
         const res = swapper.getSwapLimits(inCurrency, outCurrency);
+        console.log("useAmountConstraints: output", res);
         return {
-            input: toBigNumbers({ min: res.input.min.rawAmount, max: res.input.max.rawAmount }, inCurrency),
-            output: toBigNumbers({ min: res.output.min.rawAmount, max: res.output.max.rawAmount }, outCurrency)
+            input: toBigNumbers({ min: res.input.min?.rawAmount, max: res.input.max?.rawAmount }, inCurrency),
+            output: toBigNumbers({ min: res.output.min?.rawAmount, max: res.output.max?.rawAmount }, outCurrency)
         };
     }, [swapper, inCurrency, outCurrency, updateCount]);
 }

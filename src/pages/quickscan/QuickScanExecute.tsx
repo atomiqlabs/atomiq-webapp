@@ -1,8 +1,8 @@
 import ValidatedInput from "../../components/ValidatedInput";
-import {CurrencyDropdown} from "../../components/CurrencyDropdown";
+import {CurrencyDropdown} from "../../tokens/CurrencyDropdown";
 import * as React from "react";
-import {useContext, useEffect, useState} from "react";
-import {FeeSummaryScreen} from "../../components/fees/FeeSummaryScreen";
+import {useContext, useEffect, useMemo, useState} from "react";
+import {FeeSummaryScreen} from "../../fees/FeeSummaryScreen";
 import {Badge, Button, Form, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
 import {
     SCToken,
@@ -11,24 +11,24 @@ import {
 import BigNumber from "bignumber.js";
 import {
     smartChainTokenArray,
-} from "../../utils/Currencies";
-import {QuoteSummary} from "../../components/quotes/QuoteSummary";
+} from "../../tokens/Tokens";
+import {QuoteSummary} from "../../swaps/QuoteSummary";
 import {useLocation, useNavigate} from "react-router-dom";
-import {SwapTopbar} from "../../components/SwapTopbar";
-import {SwapsContext} from "../../context/SwapsContext";
-import {TokenIcon} from "../../components/TokenIcon";
+import {SwapTopbar} from "../SwapTopbar";
+import {SwapsContext} from "../../swaps/context/SwapsContext";
+import {TokenIcon} from "../../tokens/TokenIcon";
 import {useAddressData} from "../../swaps/hooks/useAddressData";
 import {useAmountConstraints} from "../../swaps/hooks/useAmountConstraints";
 import {useQuote} from "../../swaps/hooks/useQuote";
-import {useBigNumberState} from "../../utils/hooks/useBigNumberState";
 import {useWalletBalance} from "../../wallets/hooks/useWalletBalance";
 import {ScrollAnchor} from "../../components/ScrollAnchor";
 import {useLocalStorage} from "../../utils/hooks/useLocalStorage";
 import {ErrorAlert} from "../../components/ErrorAlert";
 import {Tokens} from "../../FEConstants";
+import {useBigNumberState} from "../../utils/hooks/useBigNumberState";
 
 export function QuickScanExecute() {
-    const {swapper, getSigner} = useContext(SwapsContext);
+    const {swapper} = useContext(SwapsContext);
 
     const navigate = useNavigate();
     const goBack = () => navigate("/scan");
@@ -44,7 +44,6 @@ export function QuickScanExecute() {
     const [validatedAmount, setValidatedAmount] = useBigNumberState(null);
     const [selectedCurrency, setSelectedCurrency] = useState<SCToken>(null);
     const [isCurrencyPreselected, setCurrencyPreselected] = useState<boolean>(false);
-    const signer = getSigner(selectedCurrency);
 
     useEffect(() => {
         const propToken = params.get("token");
@@ -58,31 +57,32 @@ export function QuickScanExecute() {
 
     const [autoContinue, setAutoContinue] = useLocalStorage("crossLightning-autoContinue", false);
 
-    const [addressLoading, addressResult] = useAddressData(propAddress, selectedCurrency.chainId);
+    const [addressResult, addressLoading, addressError] = useAddressData(propAddress);
     const inToken = addressResult?.swapType==null ? null :
         addressResult.swapType===SwapType.FROM_BTCLN ? Tokens.BITCOIN.BTCLN : selectedCurrency;
     const outToken = addressResult?.swapType==null ? null :
         addressResult.swapType===SwapType.TO_BTCLN ? Tokens.BITCOIN.BTCLN :
         addressResult.swapType===SwapType.TO_BTC ? Tokens.BITCOIN.BTC : selectedCurrency;
 
-    const exactIn = !addressResult?.isSend;
+    const exactIn = addressResult?.swapType===SwapType.TO_BTC || addressResult?.swapType===SwapType.TO_BTCLN;
     const btcToken = (exactIn ? inToken : outToken) ?? Tokens.BITCOIN.BTC;
 
-    const {inConstraints, outConstraints, supportedTokensSet} = useAmountConstraints(exactIn, inToken, outToken);
-    const btcConstraints = exactIn ? inConstraints : outConstraints;
+    const {input: inputLimit, output: outputLimit} = useAmountConstraints(inToken, outToken);
+    const btcConstraints = exactIn ? inputLimit : outputLimit;
     const amountConstraints = {
-        min: BigNumber.max(btcConstraints?.min ?? 0, addressResult?.min ?? 0),
-        max: BigNumber.min(btcConstraints?.max ?? Infinity, addressResult?.max ?? Infinity)
+        min: BigNumber.max(btcConstraints?.min ?? 0, new BigNumber(addressResult?.min?.amount) ?? 0),
+        max: BigNumber.min(btcConstraints?.max ?? Infinity, new BigNumber(addressResult?.max?.amount) ?? Infinity)
     };
 
-    const [refresh, quote, quoteLoading, quoteError] = useQuote(signer, validatedAmount, exactIn, inToken, outToken, addressResult?.address);
+    const [refresh, quote, quoteLoading, quoteError] = useQuote(validatedAmount, exactIn, inToken, outToken, addressResult?.address);
 
-    const selectableCurrencies = supportedTokensSet==null ?
-        smartChainTokenArray :
-        smartChainTokenArray.filter(token => supportedTokensSet.has(token.chainId+":"+token.address));
+    const selectableCurrencies = useMemo(() => {
+        if(swapper==null) return smartChainTokenArray;
+        return swapper.getSwapCounterTokens(btcToken, exactIn);
+    }, [swapper, exactIn, btcToken]);
 
-    const walletBalanceResp = useWalletBalance(signer, inToken, addressResult?.swapType);
-    const walletBalance = walletBalanceResp?.rawAmount ?? null;
+    const walletBalanceResp = useWalletBalance(inToken, addressResult?.swapType);
+    const walletBalance = walletBalanceResp?.balance?.rawAmount ?? null;
 
     return (
         <>
@@ -98,7 +98,7 @@ export function QuickScanExecute() {
                             value={addressResult?.address ?? propAddress}
                         />
 
-                        <ErrorAlert className="mt-3" title="Destination parsing error" error={addressResult?.error}/>
+                        <ErrorAlert className="mt-3" title="Destination parsing error" error={addressError}/>
 
                         {addressLoading ? (
                             <div className="d-flex flex-column align-items-center justify-content-center tab-accent mt-3">
@@ -107,9 +107,9 @@ export function QuickScanExecute() {
                             </div>
                         ) : ""}
 
-                        {addressResult?.error==null && swapper!=null && !addressLoading ? (
+                        {addressError==null && swapper!=null && !addressLoading ? (
                             <div className="mt-3 tab-accent-p3 text-center">
-                                <label className="fw-bold mb-1">{addressResult?.isSend ? "Pay" : "Withdraw"}</label>
+                                <label className="fw-bold mb-1">{!exactIn ? "Pay" : "Withdraw"}</label>
 
                                 <ValidatedInput
                                     type={"number"}
@@ -127,13 +127,13 @@ export function QuickScanExecute() {
                                         isLocked
                                     }
                                     size={"lg"}
-                                    defaultValue={!addressResult?.isLnurl ? null : addressResult.isSend ? amountConstraints.min.toString(10) : amountConstraints.max.toString(10)}
-                                    value={addressResult?.amount?.toString(10) ?? null}
+                                    defaultValue={addressResult?.type!=="LNURL" ? null : !exactIn ? amountConstraints.min.toString(10) : amountConstraints.max.toString(10)}
+                                    value={addressResult?.amount?.amount ?? null}
                                     onValidatedInput={setValidatedAmount}
                                     placeholder={"Input amount"}
                                 />
 
-                                <label className="fw-bold mb-1">{addressResult?.isSend ? "with" : "to"}</label>
+                                <label className="fw-bold mb-1">{!exactIn ? "with" : "to"}</label>
 
                                 <div className="d-flex justify-content-center">
                                     <CurrencyDropdown currencyList={selectableCurrencies} onSelect={val => {
@@ -150,7 +150,7 @@ export function QuickScanExecute() {
                                         onChange={(val) => setAutoContinue(val.target.checked)}
                                         checked={autoContinue}
                                     />
-                                    <label title="" htmlFor="autoclaim-pay" className="form-check-label me-2">{addressResult?.isSend ? "Auto-pay" : "Auto-claim"}</label>
+                                    <label title="" htmlFor="autoclaim-pay" className="form-check-label me-2">{!exactIn ? "Auto-pay" : "Auto-claim"}</label>
                                     <OverlayTrigger overlay={<Tooltip id="autoclaim-pay-tooltip">
                                         Automatically requests authorization of the transaction through your wallet - as soon as the swap pricing is returned.
                                     </Tooltip>}>

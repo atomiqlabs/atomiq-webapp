@@ -1,6 +1,6 @@
 import {useCallback, useMemo, useState} from "react";
 import {requestProvider, WebLNProvider} from "webln";
-import {ChainWalletData} from "../WalletProvider";
+import {ChainWalletData} from "../ChainDataProvider";
 
 export function useLightningWalletData(): [ChainWalletData<WebLNProvider>] {
     const isWebLNInstalled = (window as any)?.webln!=null;

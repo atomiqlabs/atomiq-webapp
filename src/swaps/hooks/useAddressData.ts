@@ -1,15 +1,17 @@
 import {useContext} from "react";
-import {SwapsContext} from "../../context/SwapsContext";
+import {SwapsContext} from "../context/SwapsContext";
 import {LNURLPay, LNURLWithdraw, Swapper, SwapType, TokenAmount} from "@atomiqlabs/sdk";
 import {useWithAwait} from "../../utils/hooks/useWithAwait";
 
 
 export function useAddressData(addressString: string): [{
+    address: string,
     type: string,
     swapType: SwapType,
     lnurl?: LNURLWithdraw | LNURLPay,
     min?: TokenAmount,
-    max?: TokenAmount
+    max?: TokenAmount,
+    amount?: TokenAmount
 }, boolean, Error] {
     const {swapper} = useContext(SwapsContext);
 

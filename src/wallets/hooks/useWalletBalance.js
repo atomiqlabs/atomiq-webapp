@@ -1,6 +1,6 @@
 import { isBtcToken, isSCToken, SwapType } from "@atomiqlabs/sdk";
 import { useContext, useEffect, useState } from "react";
-import { SwapsContext } from "../../context/SwapsContext";
+import { SwapsContext } from "../../swaps/context/SwapsContext";
 import { useStateRef } from "../../utils/hooks/useStateRef";
 import { useChainForCurrency } from "./useChainForCurrency";
 export function useWalletBalance(currency, swapType, swapChainId, requestGasDrop, pause, minBtcFeeRate) {
@@ -14,7 +14,7 @@ export function useWalletBalance(currency, swapType, swapChainId, requestGasDrop
             return;
         if (swapper == null)
             return;
-        if (chain == null || chain.wallet == null)
+        if (chain == null || chain.wallet?.instance == null)
             return;
         let canceled = false;
         let getBalance;

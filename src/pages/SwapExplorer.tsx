@@ -2,14 +2,14 @@ import * as React from "react";
 import {Badge, Button, Card, Col, OverlayTrigger, Placeholder, Row, Tooltip} from "react-bootstrap";
 import {FEConstants, TokenResolver, Tokens} from "../FEConstants";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {SingleColumnBackendTable} from "../components/table/SingleColumnTable";
+import {SingleColumnBackendTable} from "../table/SingleColumnBackendTable";
 import Icon from "react-icons-kit";
 import {ic_arrow_forward} from 'react-icons-kit/md/ic_arrow_forward';
 import {ic_arrow_downward} from 'react-icons-kit/md/ic_arrow_downward';
 import ValidatedInput, {ValidatedInputRef} from "../components/ValidatedInput";
 import {ChainSwapType, toHumanReadableString, Token} from "@atomiqlabs/sdk";
 import {getTimeDeltaText} from "../utils/Utils";
-import {TokenIcon} from "../components/TokenIcon";
+import {TokenIcon} from "../tokens/TokenIcon";
 
 const timeframes = ["24h", "7d", "30d"];
 

@@ -10,7 +10,7 @@ import Icon from "react-icons-kit";
 export type ValidatedInputRef = {
     validate: () => boolean,
     getValue: () => any,
-    setValue: (value: any, triggerOnChange?: boolean) => void,
+    setValue: (value: any) => void,
     input: {
         current: HTMLInputElement | HTMLTextAreaElement
     }
@@ -47,9 +47,9 @@ function ValidatedInput(props : {
     },
 
     onSubmit?: Function,
-    onChange?: Function,
+    onChange?: (val: any, forcedChange?: boolean) => void,
     onValidate?: (val: any) => string,
-    onValidatedInput?: (val: any) => void,
+    onValidatedInput?: (val: any, forcedChange?: boolean) => void,
     defaultValue?: any,
     placeholder?: any,
     type?: string,
@@ -97,7 +97,7 @@ function ValidatedInput(props : {
     const inputRef = useRef<HTMLInputElement>(null);
     const inputTextAreaRef = useRef<HTMLTextAreaElement>(null);
 
-    const changeValueHandler = useCallback((value: any, triggerOnChange: boolean = true) => {
+    const changeValueHandler = useCallback((forcedChange: boolean, value: any) => {
         const obj: any = {};
         if(props.type==="number") {
             obj.validated = numberValidator(value, props);
@@ -108,8 +108,8 @@ function ValidatedInput(props : {
         }
         obj.value = value;
         setState(obj);
-        if(triggerOnChange && props.onChange!=null) props.onChange(value);
-        if(props.onValidatedInput!=null) props.onValidatedInput(obj.validated == null ? value : null);
+        if(props.onChange!=null) props.onChange(value, forcedChange);
+        if(props.onValidatedInput!=null) props.onValidatedInput(obj.validated == null ? value : null, forcedChange);
     }, [props.min, props.max, props.onValidate, props.onChange, props.onValidatedInput]);
 
     const refObj = useMemo(() => {
@@ -130,7 +130,7 @@ function ValidatedInput(props : {
             getValue: () => {
                 return valueRef.current;
             },
-            setValue: changeValueHandler,
+            setValue: changeValueHandler.bind(true),
             input: props.type==="textarea" ? inputTextAreaRef : inputRef
         };
     }, [props.type, props.min, props.max, changeValueHandler]);
@@ -165,7 +165,7 @@ function ValidatedInput(props : {
                 defaultValue={props.defaultValue}
                 size={props.size}
                 id={props.inputId}
-                onChange={(evnt: any) => changeValueHandler(evnt.target.value)}
+                onChange={(evnt: any) => changeValueHandler(false, evnt.target.value)}
                 value={value}
                 className={inputClassName}
             >
@@ -187,7 +187,7 @@ function ValidatedInput(props : {
                     placeholder={props.placeholder}
                     defaultValue={props.defaultValue}
                     id={props.inputId}
-                    onChange={(evnt: any) => changeValueHandler(evnt.target.value)}
+                    onChange={(evnt: any) => changeValueHandler(false, evnt.target.value)}
                     value={value}
                     className={inputClassName}
                     onCopy={props.onCopy}
@@ -222,7 +222,7 @@ function ValidatedInput(props : {
                     placeholder={props.placeholder}
                     defaultValue={props.defaultValue}
                     id={props.inputId}
-                    onChange={(evnt: any) => changeValueHandler(evnt.target.value)}
+                    onChange={(evnt: any) => changeValueHandler(false, evnt.target.value)}
                     min={props.min!=null ? props.min.toString(10): null}
                     max={props.max!=null ? props.max.toString(10): null}
                     step={props.step!=null ? props.step.toString(10): null}
@@ -268,7 +268,7 @@ function ValidatedInput(props : {
                             label={props.placeholder}
                             defaultValue={props.defaultValue}
                             id={props.inputId}
-                            onChange={(evnt: any) =>  changeValueHandler(evnt.target.checked)}
+                            onChange={(evnt: any) =>  changeValueHandler(false, evnt.target.checked)}
                             checked={value}
                         />
                     ) : (

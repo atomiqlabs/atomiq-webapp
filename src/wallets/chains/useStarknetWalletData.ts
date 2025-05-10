@@ -1,8 +1,8 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {wallet, WalletAccount} from "starknet";
 import {connect, disconnect, StarknetWindowObject} from "@starknet-io/get-starknet";
-import { StarknetSigner } from "@atomiqlabs/chain-starknet";
-import {ChainWalletData} from "../WalletProvider";
+import {StarknetFees, StarknetSigner} from "@atomiqlabs/chain-starknet";
+import {ChainWalletData} from "../ChainDataProvider";
 import {useLocalStorage} from "../../utils/hooks/useLocalStorage";
 import {FEConstants} from "../../FEConstants";
 import {timeoutPromise} from "../../utils/Utils";
@@ -113,10 +113,16 @@ export function useStarknetWalletData(): [ChainWalletData<StarknetSigner>] {
         wallet: starknetWalletData==null || starknetSigner==null ? null : {
             name: starknetWalletData.name,
             icon: typeof(starknetWalletData?.icon)!=="string" ? starknetWalletData?.icon?.dark : starknetWalletData?.icon,
-            instance: starknetSigner
+            instance: starknetSigner,
+            address: starknetSigner.getAddress()
         },
         connect: _connect,
         disconnect: _disconnect,
-        changeWallet
+        changeWallet,
+        swapperOptions: {
+            rpcUrl: FEConstants.starknetRpc,
+            chainId: FEConstants.starknetChainId,
+            fees: new StarknetFees(FEConstants.starknetRpc, "STRK")
+        }
     }], [starknetWalletData, starknetSigner, _connect, _disconnect, changeWallet]);
 }

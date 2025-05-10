@@ -6,7 +6,7 @@ import {
     TokenAmount
 } from "@atomiqlabs/sdk";
 import {useContext, useEffect, useState} from "react";
-import {SwapsContext} from "../../context/SwapsContext";
+import {SwapsContext} from "../../swaps/context/SwapsContext";
 import {useStateRef} from "../../utils/hooks/useStateRef";
 import {useChainForCurrency} from "./useChainForCurrency";
 
@@ -36,7 +36,7 @@ export function useWalletBalance(
 
         if(currency==null || (isBtcToken(currency) && currency.lightning)) return;
         if(swapper==null) return;
-        if(chain==null || chain.wallet==null) return;
+        if(chain==null || chain.wallet?.instance==null) return;
 
         let canceled = false;
 

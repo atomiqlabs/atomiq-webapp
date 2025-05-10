@@ -4,7 +4,7 @@ import * as React from "react";
 import {useWallet} from "@solana/wallet-adapter-react";
 import {useLocalStorage} from "../../utils/hooks/useLocalStorage";
 import {useStateRef} from "../../utils/hooks/useStateRef";
-import {ChainWalletData} from "../WalletProvider";
+import {ChainWalletData} from "../ChainDataProvider";
 import { BitcoinWallet } from './bitcoin/base/BitcoinWallet';
 import {BitcoinWalletType, getInstalledBitcoinWallets} from "./bitcoin/utils/BitcoinWalletUtils";
 
@@ -149,7 +149,8 @@ export function useBitcoinWalletData(): [ChainWalletData<BitcoinWallet>, JSX.Ele
         wallet: bitcoinWallet==null ? null : {
             name: bitcoinWallet.getName(),
             icon: bitcoinWallet.getIcon(),
-            instance: bitcoinWallet
+            instance: bitcoinWallet,
+            address: bitcoinWallet.getReceiveAddress()
         },
         connect: usableWallets.length>0 || installableWallets.length>0 ? connect : null,
         disconnect: bitcoinWallet!=null ? disconnect : null,

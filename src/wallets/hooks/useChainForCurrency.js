@@ -1,17 +1,20 @@
 import { useContext } from "react";
 import { isBtcToken } from "@atomiqlabs/sdk";
-import { WalletContext } from "../context/WalletContext";
-export function useChainForCurrency(token) {
-    const connectedWallets = useContext(WalletContext);
+import { ChainDataContext } from "../context/ChainDataContext";
+export function getChainIdentifierForCurrency(token) {
     if (isBtcToken(token)) {
         if (token.lightning) {
-            return connectedWallets["LIGHTNING"];
+            return "LIGHTNING";
         }
         else {
-            return connectedWallets["BITCOIN"];
+            return "BITCOIN";
         }
     }
     else {
-        return connectedWallets[token.chainId];
+        return token.chainId;
     }
+}
+export function useChainForCurrency(token) {
+    const connectedWallets = useContext(ChainDataContext);
+    return connectedWallets[getChainIdentifierForCurrency(token)];
 }

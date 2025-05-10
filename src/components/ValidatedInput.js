@@ -45,7 +45,7 @@ function ValidatedInput(props) {
     valueRef.current = value;
     const inputRef = useRef(null);
     const inputTextAreaRef = useRef(null);
-    const changeValueHandler = useCallback((value, triggerOnChange = true) => {
+    const changeValueHandler = useCallback((forcedChange, value) => {
         const obj = {};
         if (props.type === "number") {
             obj.validated = numberValidator(value, props);
@@ -58,10 +58,10 @@ function ValidatedInput(props) {
             }
         obj.value = value;
         setState(obj);
-        if (triggerOnChange && props.onChange != null)
-            props.onChange(value);
+        if (props.onChange != null)
+            props.onChange(value, forcedChange);
         if (props.onValidatedInput != null)
-            props.onValidatedInput(obj.validated == null ? value : null);
+            props.onValidatedInput(obj.validated == null ? value : null, forcedChange);
     }, [props.min, props.max, props.onValidate, props.onChange, props.onValidatedInput]);
     const refObj = useMemo(() => {
         return {
@@ -82,7 +82,7 @@ function ValidatedInput(props) {
             getValue: () => {
                 return valueRef.current;
             },
-            setValue: changeValueHandler,
+            setValue: changeValueHandler.bind(true),
             input: props.type === "textarea" ? inputTextAreaRef : inputRef
         };
     }, [props.type, props.min, props.max, changeValueHandler]);
@@ -107,15 +107,15 @@ function ValidatedInput(props) {
         + " "
         + (props.floatingLabel != null ? "input-with-offset" : props.expectingFloatingLabel ? "py-expect-floating-label" : "");
     const isInvalid = !!(props.validated === undefined ? state.validated : props.validated);
-    const mainElement = props.type === "select" ? (_jsx(Form.Select, { disabled: props.disabled, isInvalid: isInvalid, isValid: !!props.successFeedback, defaultValue: props.defaultValue, size: props.size, id: props.inputId, onChange: (evnt) => changeValueHandler(evnt.target.value), value: value, className: inputClassName, children: props.options == null ? "" : props.options.map((e) => {
+    const mainElement = props.type === "select" ? (_jsx(Form.Select, { disabled: props.disabled, isInvalid: isInvalid, isValid: !!props.successFeedback, defaultValue: props.defaultValue, size: props.size, id: props.inputId, onChange: (evnt) => changeValueHandler(false, evnt.target.value), value: value, className: inputClassName, children: props.options == null ? "" : props.options.map((e) => {
             return (_jsx("option", { value: e.key, children: e.value }, e.key));
-        }) })) : props.type === "textarea" ? (_jsxs(_Fragment, { children: [_jsx(Form.Control, { readOnly: props.readOnly, disabled: props.disabled, ref: inputTextAreaRef, size: props.size, isInvalid: isInvalid, isValid: !!props.successFeedback, type: props.type || "text", as: "textarea", placeholder: props.placeholder, defaultValue: props.defaultValue, id: props.inputId, onChange: (evnt) => changeValueHandler(evnt.target.value), value: value, className: inputClassName, onCopy: props.onCopy }), props.copyEnabled ? (_jsx(InputGroup.Text, { children: _jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "copy-tooltip", children: "Copy" }), children: _jsx("a", { href: "#", onClick: (e) => {
+        }) })) : props.type === "textarea" ? (_jsxs(_Fragment, { children: [_jsx(Form.Control, { readOnly: props.readOnly, disabled: props.disabled, ref: inputTextAreaRef, size: props.size, isInvalid: isInvalid, isValid: !!props.successFeedback, type: props.type || "text", as: "textarea", placeholder: props.placeholder, defaultValue: props.defaultValue, id: props.inputId, onChange: (evnt) => changeValueHandler(false, evnt.target.value), value: value, className: inputClassName, onCopy: props.onCopy }), props.copyEnabled ? (_jsx(InputGroup.Text, { children: _jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "copy-tooltip", children: "Copy" }), children: _jsx("a", { href: "#", onClick: (e) => {
                             e.preventDefault();
                             refObj.input.current.select();
                             refObj.input.current.setSelectionRange(0, 99999);
                             // @ts-ignore
                             navigator.clipboard.writeText(refObj.input.current.value);
-                        }, children: _jsx(Icon, { icon: copy }) }) }) })) : ""] })) : (_jsxs(_Fragment, { children: [_jsx(Form.Control, { readOnly: props.readOnly, disabled: props.disabled, ref: inputRef, size: props.size, isInvalid: isInvalid, isValid: !!props.successFeedback, type: props.type || "text", placeholder: props.placeholder, defaultValue: props.defaultValue, id: props.inputId, onChange: (evnt) => changeValueHandler(evnt.target.value), min: props.min != null ? props.min.toString(10) : null, max: props.max != null ? props.max.toString(10) : null, step: props.step != null ? props.step.toString(10) : null, value: value, className: inputClassName, onCopy: props.onCopy }), props.copyEnabled ? (_jsx(InputGroup.Text, { children: _jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "copy-tooltip", children: "Copy" }), children: _jsx("a", { href: "#", className: "d-flex align-items-center justify-content-center", onClick: (e) => {
+                        }, children: _jsx(Icon, { icon: copy }) }) }) })) : ""] })) : (_jsxs(_Fragment, { children: [_jsx(Form.Control, { readOnly: props.readOnly, disabled: props.disabled, ref: inputRef, size: props.size, isInvalid: isInvalid, isValid: !!props.successFeedback, type: props.type || "text", placeholder: props.placeholder, defaultValue: props.defaultValue, id: props.inputId, onChange: (evnt) => changeValueHandler(false, evnt.target.value), min: props.min != null ? props.min.toString(10) : null, max: props.max != null ? props.max.toString(10) : null, step: props.step != null ? props.step.toString(10) : null, value: value, className: inputClassName, onCopy: props.onCopy }), props.copyEnabled ? (_jsx(InputGroup.Text, { children: _jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "copy-tooltip", children: "Copy" }), children: _jsx("a", { href: "#", className: "d-flex align-items-center justify-content-center", onClick: (e) => {
                             e.preventDefault();
                             refObj.input.current.select();
                             refObj.input.current.setSelectionRange(0, 99999);
@@ -126,6 +126,6 @@ function ValidatedInput(props) {
             evnt.preventDefault();
             if (props.onSubmit != null)
                 props.onSubmit();
-        }, children: _jsxs(Form.Group, { controlId: props.inputId == null ? "validationCustom01" : undefined, children: [props.label ? (_jsx(Form.Label, { children: props.label })) : "", _jsxs(InputGroup, { className: "has-validation " + (props.floatingLabel != null || props.expectingFloatingLabel ? "form-floating" : ""), children: [props.type === "checkbox" ? (_jsx(Form.Check, { disabled: props.disabled, ref: inputRef, isInvalid: isInvalid, isValid: !!props.successFeedback, type: "checkbox", readOnly: props.readOnly, label: props.placeholder, defaultValue: props.defaultValue, id: props.inputId, onChange: (evnt) => changeValueHandler(evnt.target.checked), checked: value })) : (_jsxs(_Fragment, { children: [props.elementStart || "", props.textStart ? (_jsx(InputGroup.Text, { children: props.textStart })) : "", mainElement, props.floatingLabel == null ? "" : _jsx("label", { children: props.floatingLabel }), props.elementEnd || "", props.textEnd ? (_jsx(InputGroup.Text, { children: props.textEnd })) : ""] })), _jsx(Form.Control.Feedback, { type: props.successFeedback ? "valid" : "invalid", children: _jsxs("div", { className: "d-flex align-items-center", children: [props.successFeedback == null ? (_jsx(Icon, { className: "mb-1 me-1", icon: exclamationTriangle })) : "", _jsx("span", { children: props.successFeedback || (props.validated === undefined ? state.validated : props.validated) }), props.feedbackEndElement ?? ""] }) })] })] }) }));
+        }, children: _jsxs(Form.Group, { controlId: props.inputId == null ? "validationCustom01" : undefined, children: [props.label ? (_jsx(Form.Label, { children: props.label })) : "", _jsxs(InputGroup, { className: "has-validation " + (props.floatingLabel != null || props.expectingFloatingLabel ? "form-floating" : ""), children: [props.type === "checkbox" ? (_jsx(Form.Check, { disabled: props.disabled, ref: inputRef, isInvalid: isInvalid, isValid: !!props.successFeedback, type: "checkbox", readOnly: props.readOnly, label: props.placeholder, defaultValue: props.defaultValue, id: props.inputId, onChange: (evnt) => changeValueHandler(false, evnt.target.checked), checked: value })) : (_jsxs(_Fragment, { children: [props.elementStart || "", props.textStart ? (_jsx(InputGroup.Text, { children: props.textStart })) : "", mainElement, props.floatingLabel == null ? "" : _jsx("label", { children: props.floatingLabel }), props.elementEnd || "", props.textEnd ? (_jsx(InputGroup.Text, { children: props.textEnd })) : ""] })), _jsx(Form.Control.Feedback, { type: props.successFeedback ? "valid" : "invalid", children: _jsxs("div", { className: "d-flex align-items-center", children: [props.successFeedback == null ? (_jsx(Icon, { className: "mb-1 me-1", icon: exclamationTriangle })) : "", _jsx("span", { children: props.successFeedback || (props.validated === undefined ? state.validated : props.validated) }), props.feedbackEndElement ?? ""] }) })] })] }) }));
 }
 export default ValidatedInput;

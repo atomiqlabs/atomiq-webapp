@@ -1,7 +1,7 @@
 import {useWalletModal} from "@solana/wallet-adapter-react-ui";
-import {useAnchorWallet, useWallet} from "@solana/wallet-adapter-react";
-import {ChainWalletData} from "../WalletProvider";
-import {SolanaSigner} from "@atomiqlabs/chain-solana";
+import {useAnchorWallet, useConnection, useWallet} from "@solana/wallet-adapter-react";
+import {ChainWalletData} from "../ChainDataProvider";
+import {SolanaFees, SolanaSigner} from "@atomiqlabs/chain-solana";
 import {useCallback, useMemo} from "react";
 
 import * as React from "react";
@@ -16,6 +16,9 @@ const wallets = [
     new TorusWalletAdapter(),
     new LedgerWalletAdapter()
 ];
+
+const jitoPubkey = "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL";
+const jitoEndpoint = "https://mainnet.block-engine.jito.wtf/api/v1/transactions";
 
 const fetchWithTimeout = async (input: RequestInfo | URL, init: RequestInit) => {
     if(init==null) init = {};
@@ -65,6 +68,7 @@ export function useSolanaWalletData(): [ChainWalletData<SolanaSigner>] {
     const {setVisible} = useWalletModal()
     const {wallet, disconnect} = useWallet();
     const solanaWallet = useAnchorWallet();
+    const {connection} = useConnection();
 
     const solanaSigner = useMemo(() => solanaWallet==null ? null : new SolanaSigner(solanaWallet), [solanaWallet]);
 
@@ -72,18 +76,37 @@ export function useSolanaWalletData(): [ChainWalletData<SolanaSigner>] {
         setVisible(true);
     }, [setVisible]);
 
-    return useMemo(() => [{
-        chain: {
-            name: "Solana",
-            icon: "/icons/chains/SOLANA.svg",
-        },
-        wallet: wallet==null ? null : {
-            name: wallet?.adapter?.name,
-            icon: wallet?.adapter?.icon,
-            instance: solanaSigner
-        },
-        disconnect,
-        connect,
-        changeWallet: connect
-    }], [wallet, solanaSigner, disconnect, connect]);
+    return useMemo(() => {
+        const solanaFees = new SolanaFees(
+            connection,
+            1000000, 2, 100,
+            "auto", "high", () => 50000n
+            //, {
+            //    address: jitoPubkey,
+            //    endpoint: jitoEndpoint
+            //}
+        );
+        return [{
+            chain: {
+                name: "Solana",
+                icon: "/icons/chains/SOLANA.svg",
+            },
+            wallet: wallet==null ? null : {
+                name: wallet.adapter?.name,
+                icon: wallet.adapter?.icon,
+                instance: solanaSigner,
+                address: wallet.adapter?.publicKey?.toBase58()
+            },
+            disconnect,
+            connect,
+            changeWallet: connect,
+            swapperOptions: {
+                rpcUrl: connection,
+                retryPolicy: {
+                    transactionResendInterval: 3000
+                },
+                fees: solanaFees
+            }
+        }]
+    }, [wallet, solanaSigner, disconnect, connect, connection]);
 }

@@ -1,10 +1,10 @@
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 
 export function useWithAwait<Args extends any[], Result>(
     executor: (...args: Args) => Promise<Result>,
     args: Args,
     parallel: boolean = true
-): [Result, boolean, any] {
+): [Result, boolean, any, () => void] {
 
     const [loading, setLoading] = useState<boolean>(false);
     const [success, setSuccess] = useState<Result>(null);
@@ -12,22 +12,25 @@ export function useWithAwait<Args extends any[], Result>(
     const sequence = useRef<number>(0);
     const currentPromise = useRef<Promise<void>>(Promise.resolve());
 
-    useEffect(() => {
+    const refresh = useCallback(() => {
         sequence.current++;
         const currSequence = sequence.current;
         setLoading(true);
         setSuccess(null);
         setError(null);
 
-        const execute = () => executor(...args).then(res => {
-            if(currSequence!==sequence.current) return;
-            setLoading(false);
-            setSuccess(res);
-        }).catch(err => {
-            if(currSequence!==sequence.current) return;
-            setLoading(false);
-            setError(err);
-        });
+        const execute = async () => {
+            try {
+                const result = await executor(...args);
+                if(currSequence!==sequence.current) return;
+                setLoading(false);
+                setSuccess(result);
+            } catch (err) {
+                if(currSequence!==sequence.current) return;
+                setLoading(false);
+                setError(err);
+            }
+        }
 
         if(parallel) {
             execute();
@@ -40,5 +43,9 @@ export function useWithAwait<Args extends any[], Result>(
         }
     }, args);
 
-    return [success, loading, error];
+    useEffect(() => {
+        refresh();
+    }, [refresh]);
+
+    return [success, loading, error, refresh];
 }

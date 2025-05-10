@@ -1,43 +1,44 @@
 import {Alert, Button, Spinner} from "react-bootstrap";
 import {useLocation, useNavigate} from "react-router-dom";
-import {SwapTopbar} from "../components/SwapTopbar";
+import {SwapTopbar} from "./SwapTopbar";
 import * as React from "react";
 import {useCallback, useContext, useEffect} from "react";
 import Icon from "react-icons-kit";
-import {LnForGasSwapState} from "@atomiqlabs/sdk";
+import {AbstractSigner, LnForGasSwapState} from "@atomiqlabs/sdk";
 import ValidatedInput from "../components/ValidatedInput";
 import {ic_south} from 'react-icons-kit/md/ic_south'
-import {SwapsContext} from "../context/SwapsContext";
-import {TokenIcon} from "../components/TokenIcon";
+import {SwapsContext} from "../swaps/context/SwapsContext";
+import {TokenIcon} from "../tokens/TokenIcon";
 import {useAnchorNavigate} from "../utils/hooks/useAnchorNavigate";
 import {useAsync} from "../utils/hooks/useAsync";
-import {TrustedFromBTCLNQuoteSummary} from "../components/quotes/frombtc/TrustedFromBTCLNQuoteSummary";
+import {TrustedFromBTCLNQuoteSummary} from "../swaps/frombtc/TrustedFromBTCLNQuoteSummary";
 import {useSwapState} from "../swaps/hooks/useSwapState";
 import {ErrorAlert} from "../components/ErrorAlert";
 import {Tokens} from "../FEConstants";
+import {useChainForCurrency} from "../wallets/hooks/useChainForCurrency";
+import {ChainWalletData} from "../wallets/ChainDataProvider";
 
 const defaultSwapAmount = "12500000";
 
 export function SwapForGas() {
-    const {swapper, chains} = useContext(SwapsContext);
+    const {swapper} = useContext(SwapsContext);
 
     const navigate = useNavigate();
     const navigateHref = useAnchorNavigate();
 
     const {state} = useLocation() as {state: {returnPath?: string, chainId?: string, amount: string}};
     const chainId = state?.chainId ?? "SOLANA";
+    const nativeCurrency = swapper==null ? null : swapper.Utils.getNativeToken(chainId);
     const amount = BigInt(state?.amount ?? defaultSwapAmount);
+
+    const outputChainData: ChainWalletData<AbstractSigner> = useChainForCurrency(nativeCurrency);
 
     const [createSwap, loading, swapData, error] = useAsync(
         () => {
-            if(swapper==null) return null;
-            if(
-                chains[chainId]==null ||
-                chains[chainId].random
-            ) return null;
-            return swapper.createTrustedLNForGasSwap(chainId, chains[chainId].signer.getAddress(), amount);
+            if(swapper==null || outputChainData?.wallet==null) return null;
+            return swapper.createTrustedLNForGasSwap(chainId, outputChainData.wallet.instance.getAddress(), amount);
         },
-        [swapper, chains, chainId]
+        [swapper, outputChainData?.wallet, chainId]
     );
     const {state: swapState} = useSwapState(swapData);
 
@@ -48,8 +49,6 @@ export function SwapForGas() {
     const onContinue = useCallback(() => {
         navigate(state.returnPath);
     }, [swapData]);
-
-    const nativeCurrency = swapper==null ? null : swapper.getNativeToken(chainId);
 
     return (
         <>

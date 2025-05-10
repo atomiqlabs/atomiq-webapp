@@ -1,6 +1,6 @@
 import {ISwap, Swapper} from "@atomiqlabs/sdk";
 import {useContext} from "react";
-import {SwapsContext} from "../../context/SwapsContext";
+import {SwapsContext} from "../context/SwapsContext";
 import {useWithAwait} from "../../utils/hooks/useWithAwait";
 
 

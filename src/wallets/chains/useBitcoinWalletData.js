@@ -113,7 +113,8 @@ export function useBitcoinWalletData() {
             wallet: bitcoinWallet == null ? null : {
                 name: bitcoinWallet.getName(),
                 icon: bitcoinWallet.getIcon(),
-                instance: bitcoinWallet
+                instance: bitcoinWallet,
+                address: bitcoinWallet.getReceiveAddress()
             },
             connect: usableWallets.length > 0 || installableWallets.length > 0 ? connect : null,
             disconnect: bitcoinWallet != null ? disconnect : null,
