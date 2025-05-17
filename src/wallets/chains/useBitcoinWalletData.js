@@ -5,7 +5,7 @@ import * as React from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useLocalStorage } from "../../utils/hooks/useLocalStorage";
 import { useStateRef } from "../../utils/hooks/useStateRef";
-import { BitcoinWallet } from './bitcoin/base/BitcoinWallet';
+import { ExtensionBitcoinWallet } from './bitcoin/base/ExtensionBitcoinWallet';
 import { getInstalledBitcoinWallets } from "./bitcoin/utils/BitcoinWalletUtils";
 function BitcoinWalletModal(props) {
     return (_jsxs(Modal, { contentClassName: "text-white bg-dark", size: "sm", centered: true, show: props.modalOpened, onHide: () => props.setModalOpened(false), dialogClassName: "min-width-400px", children: [_jsx(Modal.Header, { className: "border-0", children: _jsxs(Modal.Title, { id: "contained-modal-title-vcenter", className: "d-flex flex-grow-1", children: ["Select a Bitcoin wallet", _jsx(CloseButton, { className: "ms-auto", variant: "white", onClick: () => props.setModalOpened(false) })] }) }), _jsx(Modal.Body, { children: _jsxs(ListGroup, { variant: "flush", children: [props.usableWallets.map((e) => {
@@ -36,7 +36,7 @@ export function useBitcoinWalletData() {
             return;
         if (!autoConnect)
             return;
-        const activeWallet = BitcoinWallet.loadState();
+        const activeWallet = ExtensionBitcoinWallet.loadState();
         console.log("BitcoinWalletProvider(): Current active wallet: ", activeWallet);
         if (usableWallets == null)
             return;
@@ -68,7 +68,7 @@ export function useBitcoinWalletData() {
         bitcoinWallet.onWalletChanged(listener = (newWallet) => {
             console.log("BitcoinWalletProvider(): New bitcoin wallet set: ", newWallet);
             if (newWallet == null) {
-                BitcoinWallet.clearState();
+                ExtensionBitcoinWallet.clearState();
                 setBitcoinWallet(undefined);
                 return;
             }
@@ -87,7 +87,7 @@ export function useBitcoinWalletData() {
     const disconnect = useCallback((skipToggleAutoConnect) => {
         if (skipToggleAutoConnect !== true && bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
             setAutoConnect(false);
-        BitcoinWallet.clearState();
+        ExtensionBitcoinWallet.clearState();
         setBitcoinWallet(undefined);
     }, []);
     const connect = useCallback(() => {

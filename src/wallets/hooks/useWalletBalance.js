@@ -20,7 +20,7 @@ export function useWalletBalance(currency, swapType, swapChainId, requestGasDrop
         let canceled = false;
         let getBalance;
         if (isBtcToken(currency)) {
-            getBalance = () => swapper.Utils.getBitcoinSpendableBalance(chain.wallet.instance, swapType, swapChainId, { gasDrop: requestGasDrop, minFeeRate: minBtcFeeRate });
+            getBalance = () => swapper.Utils.getBitcoinSpendableBalance(chain.wallet.instance, swapChainId, { gasDrop: requestGasDrop, minFeeRate: minBtcFeeRate });
         }
         else if (isSCToken(currency)) {
             getBalance = async () => {

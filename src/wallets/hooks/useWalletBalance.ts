@@ -45,7 +45,6 @@ export function useWalletBalance(
         if(isBtcToken(currency)) {
             getBalance = () => swapper.Utils.getBitcoinSpendableBalance(
                 chain.wallet.instance,
-                swapType as any,
                 swapChainId,
                 {gasDrop: requestGasDrop, minFeeRate: minBtcFeeRate}
             );

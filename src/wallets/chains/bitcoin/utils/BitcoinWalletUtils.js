@@ -1,4 +1,4 @@
-import { BitcoinWallet } from "../base/BitcoinWallet";
+import { ExtensionBitcoinWallet } from "../base/ExtensionBitcoinWallet";
 import { PhantomBitcoinWallet } from "../PhantomBitcoinWallet";
 import { XverseBitcoinWallet } from "../XverseBitcoinWallet";
 import { UnisatBitcoinWallet } from "../UnisatBitcoinWallet";
@@ -52,7 +52,7 @@ export async function getInstalledBitcoinWallets() {
         installableBitcoinWallets = _installableBitcoinWallets;
     }
     let active = null;
-    const activeWallet = BitcoinWallet.loadState();
+    const activeWallet = ExtensionBitcoinWallet.loadState();
     if (activeWallet != null) {
         const walletType = bitcoinWalletList.find(e => e.name === activeWallet.name);
         if (walletType != null) {
@@ -66,7 +66,7 @@ export async function getInstalledBitcoinWallets() {
     };
 }
 export async function getBitcoinWalletAsPartOfMultichainWallet(smartchainWalletName) {
-    const activeWallet = BitcoinWallet.loadState();
+    const activeWallet = ExtensionBitcoinWallet.loadState();
     if (activeWallet != null) {
         console.log("Active wallet not null");
         return null;

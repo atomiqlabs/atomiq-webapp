@@ -1,4 +1,4 @@
-import { BitcoinWallet } from "../base/BitcoinWallet";
+import { ExtensionBitcoinWallet } from "../base/ExtensionBitcoinWallet";
 import { PhantomBitcoinWallet } from "../PhantomBitcoinWallet";
 import {XverseBitcoinWallet} from "../XverseBitcoinWallet";
 import {UnisatBitcoinWallet} from "../UnisatBitcoinWallet";
@@ -9,7 +9,7 @@ export type BitcoinWalletType = {
     name: string,
     installUrl: string,
     detect: () => Promise<boolean>,
-    use: (data?: any) => Promise<BitcoinWallet>
+    use: (data?: any) => Promise<ExtensionBitcoinWallet>
 };
 
 const bitcoinWalletList: BitcoinWalletType[] = [
@@ -49,7 +49,7 @@ let installableBitcoinWallets: BitcoinWalletType[];
 export async function getInstalledBitcoinWallets(): Promise<{
     installed: BitcoinWalletType[],
     installable: BitcoinWalletType[],
-    active: () => Promise<BitcoinWallet>
+    active: () => Promise<ExtensionBitcoinWallet>
 }> {
     if(installedBitcoinWallets==null) {
         const _installedBitcoinWallets: BitcoinWalletType[] = [];
@@ -65,9 +65,9 @@ export async function getInstalledBitcoinWallets(): Promise<{
         installableBitcoinWallets = _installableBitcoinWallets;
     }
 
-    let active: () => Promise<BitcoinWallet> = null;
+    let active: () => Promise<ExtensionBitcoinWallet> = null;
 
-    const activeWallet = BitcoinWallet.loadState();
+    const activeWallet = ExtensionBitcoinWallet.loadState();
     if(activeWallet!=null) {
         const walletType = bitcoinWalletList.find(e => e.name===activeWallet.name);
         if(walletType!=null) {
@@ -82,8 +82,8 @@ export async function getInstalledBitcoinWallets(): Promise<{
     }
 }
 
-export async function getBitcoinWalletAsPartOfMultichainWallet(smartchainWalletName: string): Promise<BitcoinWallet> {
-    const activeWallet = BitcoinWallet.loadState();
+export async function getBitcoinWalletAsPartOfMultichainWallet(smartchainWalletName: string): Promise<ExtensionBitcoinWallet> {
+    const activeWallet = ExtensionBitcoinWallet.loadState();
     if(activeWallet!=null) {
         console.log("Active wallet not null");
         return null;

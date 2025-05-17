@@ -1,4 +1,4 @@
-import { BitcoinWallet } from "./base/BitcoinWallet";
+import { ExtensionBitcoinWallet } from "./base/ExtensionBitcoinWallet";
 import * as EventEmitter from "events";
 import { Address, OutScript, Transaction } from "@scure/btc-signer";
 import { BitcoinWalletNonSeparated } from "./base/BitcoinWalletNonSeparated";
@@ -40,7 +40,7 @@ if (provider != null)
         console.log("PhantomBitcoinWallet: accountsChanged, ignore: " + ignoreAccountChange + " accounts: ", accounts);
         if (ignoreAccountChange)
             return;
-        let btcWalletState = BitcoinWallet.loadState();
+        let btcWalletState = ExtensionBitcoinWallet.loadState();
         if (btcWalletState == null || btcWalletState.name !== PhantomBitcoinWallet.walletName)
             return;
         if (accounts != null && accounts.length > 0) {
@@ -48,7 +48,7 @@ if (provider != null)
             if (currentAccount != null && paymentAccount.address == currentAccount.address)
                 return;
             currentAccount = paymentAccount;
-            BitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
+            ExtensionBitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
                 accounts
             });
             events.emit("newWallet", new PhantomBitcoinWallet(accounts, btcWalletState.data.multichainConnected));
@@ -88,7 +88,7 @@ export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
         ignoreAccountChange = false;
         const paymentAccount = getPaymentAccount(accounts);
         currentAccount = paymentAccount;
-        BitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
+        ExtensionBitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
             accounts,
             multichainConnected: _data?.multichainConnected
         });

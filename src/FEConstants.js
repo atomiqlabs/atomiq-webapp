@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { constants, RpcProvider } from "starknet";
-import { BitcoinNetwork, MempoolApi, SwapperFactory } from "@atomiqlabs/sdk";
+import { BitcoinNetwork, MempoolApi, MempoolBitcoinRpc, SwapperFactory } from "@atomiqlabs/sdk";
 import { SolanaInitializer } from "@atomiqlabs/chain-solana";
 import { StarknetInitializer } from "@atomiqlabs/chain-starknet";
 const solanaRpcUrl = process.env.REACT_APP_SOLANA_RPC_URL;
@@ -32,6 +32,7 @@ const mempoolApi = new MempoolApi(bitcoinNetwork === "MAINNET" ?
     "https://mempool.va1.mempool.space/testnet/api/",
     "https://mempool.tk7.mempool.space/testnet/api/"
 ]);
+const bitcoinRpc = new MempoolBitcoinRpc(mempoolApi);
 export const Factory = new SwapperFactory([SolanaInitializer, StarknetInitializer]);
 console.log("Factory: ", Factory);
 export const Tokens = Factory.Tokens;
@@ -57,6 +58,7 @@ export const FEConstants = {
         }
     },
     mempoolApi,
+    bitcoinRpc,
     allowedChains: new Set([
         solanaRpcUrl != null ? "SOLANA" : undefined,
         starknetRpcUrl != null ? "STARKNET" : undefined

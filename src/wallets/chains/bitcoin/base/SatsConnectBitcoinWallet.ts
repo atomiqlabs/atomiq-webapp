@@ -7,7 +7,7 @@ import {
     getAddress,
     signTransaction
 } from "sats-connect";
-import {BitcoinWallet} from "./BitcoinWallet";
+import {ExtensionBitcoinWallet} from "./ExtensionBitcoinWallet";
 import {FEConstants} from "../../../../FEConstants";
 import {BitcoinNetwork, CoinselectAddressTypes} from "@atomiqlabs/sdk";
 import {BTC_NETWORK} from "@scure/btc-signer/utils";
@@ -30,7 +30,7 @@ function identifyAddressType(address: string, network: BTC_NETWORK): CoinselectA
     }
 }
 
-export class SatsConnectBitcoinWallet extends BitcoinWallet {
+export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
 
     readonly account: Address;
     readonly addressType: CoinselectAddressTypes;
@@ -107,7 +107,7 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         const paymentAccounts = accounts.filter(e => e.purpose===AddressPurpose.Payment);
         if(paymentAccounts.length===0) throw new Error("No valid payment account found");
 
-        BitcoinWallet.saveState(walletName, {
+        ExtensionBitcoinWallet.saveState(walletName, {
             account: paymentAccounts[0],
             multichainConnected: _data?.multichainConnected
         });
@@ -182,10 +182,10 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         return this.iconUrl;
     }
 
-    offWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void {
+    offWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
     }
 
-    onWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void {
+    onWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
     }
 
     async signPsbt(psbt: Transaction, signInputs: number[]): Promise<Transaction> {

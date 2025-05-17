@@ -1,18 +1,18 @@
 import {FEConstants} from "../../../../FEConstants";
-import {BitcoinNetwork, CoinselectAddressTypes, MempoolBitcoinWallet} from "@atomiqlabs/sdk";
+import {BitcoinNetwork, CoinselectAddressTypes, BitcoinWallet} from "@atomiqlabs/sdk";
 import {NETWORK, TEST_NETWORK, Transaction} from "@scure/btc-signer";
 
 const bitcoinNetwork = FEConstants.bitcoinNetwork===BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK;
 
 const feeMultiplier = 1.25;
 
-export abstract class BitcoinWallet extends MempoolBitcoinWallet {
+export abstract class ExtensionBitcoinWallet extends BitcoinWallet {
 
     readonly wasAutomaticallyInitiated: boolean;
 
     constructor(wasAutomaticallyInitiated?: boolean) {
         super(
-            FEConstants.mempoolApi,
+            FEConstants.bitcoinRpc,
             bitcoinNetwork,
             feeMultiplier,
             process.env.REACT_APP_OVERRIDE_BITCOIN_FEE==null ?
@@ -57,8 +57,8 @@ export abstract class BitcoinWallet extends MempoolBitcoinWallet {
     abstract getName(): string;
     abstract getIcon(): string;
 
-    abstract onWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void;
-    abstract offWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void;
+    abstract onWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void;
+    abstract offWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void;
 
     async getTransactionFee(address: string, amount: bigint, feeRate?: number): Promise<number> {
         const {psbt, fee} = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);

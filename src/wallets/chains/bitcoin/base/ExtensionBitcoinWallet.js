@@ -1,11 +1,11 @@
 import { FEConstants } from "../../../../FEConstants";
-import { BitcoinNetwork, MempoolBitcoinWallet } from "@atomiqlabs/sdk";
+import { BitcoinNetwork, BitcoinWallet } from "@atomiqlabs/sdk";
 import { NETWORK, TEST_NETWORK } from "@scure/btc-signer";
 const bitcoinNetwork = FEConstants.bitcoinNetwork === BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK;
 const feeMultiplier = 1.25;
-export class BitcoinWallet extends MempoolBitcoinWallet {
+export class ExtensionBitcoinWallet extends BitcoinWallet {
     constructor(wasAutomaticallyInitiated) {
-        super(FEConstants.mempoolApi, bitcoinNetwork, feeMultiplier, process.env.REACT_APP_OVERRIDE_BITCOIN_FEE == null ?
+        super(FEConstants.bitcoinRpc, bitcoinNetwork, feeMultiplier, process.env.REACT_APP_OVERRIDE_BITCOIN_FEE == null ?
             null :
             parseInt(process.env.REACT_APP_OVERRIDE_BITCOIN_FEE));
         this.wasAutomaticallyInitiated = wasAutomaticallyInitiated;

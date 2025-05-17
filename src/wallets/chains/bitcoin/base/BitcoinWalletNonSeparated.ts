@@ -1,11 +1,11 @@
-import {BitcoinWallet} from "./BitcoinWallet";
+import {ExtensionBitcoinWallet} from "./ExtensionBitcoinWallet";
 import {BitcoinWalletUtxo, CoinselectAddressTypes} from "@atomiqlabs/sdk";
 import {filterInscriptionUtxosOnlyConfirmed} from "../utils/InscriptionUtils";
 
 /**
  * Bitcoin wallet with no separation between addresses holding Ordinal assets & BTC
  */
-export abstract class BitcoinWalletNonSeparated extends BitcoinWallet {
+export abstract class BitcoinWalletNonSeparated extends ExtensionBitcoinWallet {
 
     protected abstract _isOrdinalsAddress(address: string): boolean;
 

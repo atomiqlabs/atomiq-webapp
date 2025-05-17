@@ -1,5 +1,5 @@
 import { AddressPurpose, BitcoinNetworkType, getCapabilities, getAddress, signTransaction } from "sats-connect";
-import { BitcoinWallet } from "./BitcoinWallet";
+import { ExtensionBitcoinWallet } from "./ExtensionBitcoinWallet";
 import { FEConstants } from "../../../../FEConstants";
 import { BitcoinNetwork } from "@atomiqlabs/sdk";
 import { Transaction, Address as AddressParser } from "@scure/btc-signer";
@@ -18,7 +18,7 @@ function identifyAddressType(address, network) {
             return null;
     }
 }
-export class SatsConnectBitcoinWallet extends BitcoinWallet {
+export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
     constructor(account, walletName, iconUrl, wasAutomaticallyConnected) {
         super(wasAutomaticallyConnected);
         this.account = account;
@@ -83,7 +83,7 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         const paymentAccounts = accounts.filter(e => e.purpose === AddressPurpose.Payment);
         if (paymentAccounts.length === 0)
             throw new Error("No valid payment account found");
-        BitcoinWallet.saveState(walletName, {
+        ExtensionBitcoinWallet.saveState(walletName, {
             account: paymentAccounts[0],
             multichainConnected: _data?.multichainConnected
         });

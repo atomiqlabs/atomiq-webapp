@@ -50,7 +50,7 @@ export function useQuote(amount, exactIn, inToken, outToken, address, gasDropAmo
             return null;
         const inAddress = inputAddress ?? getRandomAddress(swapper, inToken);
         const rawAmount = fromHumanReadableString(amount, exactIn ? inToken : outToken);
-        return swapper.create(inToken, outToken, rawAmount, exactIn, inAddress, outAddress, {
+        return swapper.swap(inToken, outToken, rawAmount, exactIn, inAddress, outAddress, {
             gasAmount: gasDropAmount,
             maxAllowedNetworkFeeRate: btcFeeRate == null ? null : btcFeeMaxOffset + (btcFeeRate * btcFeeMaxMultiple),
             unsafeZeroWatchtowerFee: swapType === SwapType.SPV_VAULT_FROM_BTC

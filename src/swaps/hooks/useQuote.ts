@@ -72,7 +72,7 @@ export function useQuote(
             if(outAddress==null) return null;
             const inAddress = inputAddress as any ?? getRandomAddress(swapper, inToken);
             const rawAmount = fromHumanReadableString(amount, exactIn ? inToken : outToken);
-            return swapper.create(
+            return swapper.swap(
                 inToken, outToken, rawAmount, exactIn,
                 inAddress,
                 outAddress,

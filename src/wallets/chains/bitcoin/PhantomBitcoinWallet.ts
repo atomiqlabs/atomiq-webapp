@@ -1,4 +1,4 @@
-import {BitcoinWallet} from "./base/BitcoinWallet";
+import {ExtensionBitcoinWallet} from "./base/ExtensionBitcoinWallet";
 import * as EventEmitter from "events";
 import {Address, OutScript, Transaction} from "@scure/btc-signer";
 import {CoinselectAddressTypes} from "@atomiqlabs/sdk";
@@ -58,7 +58,7 @@ let ignoreAccountChange: boolean;
 if(provider!=null) provider.on("accountsChanged", (accounts: PhantomBtcAccount[]) => {
     console.log("PhantomBitcoinWallet: accountsChanged, ignore: "+ignoreAccountChange+" accounts: ", accounts);
     if(ignoreAccountChange) return;
-    let btcWalletState = BitcoinWallet.loadState();
+    let btcWalletState = ExtensionBitcoinWallet.loadState();
     if(btcWalletState==null || btcWalletState.name!==PhantomBitcoinWallet.walletName) return;
     if(accounts!=null && accounts.length>0) {
         const paymentAccount: PhantomBtcAccount = getPaymentAccount(accounts);
@@ -66,7 +66,7 @@ if(provider!=null) provider.on("accountsChanged", (accounts: PhantomBtcAccount[]
 
         currentAccount = paymentAccount;
 
-        BitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
+        ExtensionBitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
             accounts
         });
         events.emit("newWallet", new PhantomBitcoinWallet(accounts, btcWalletState.data.multichainConnected));
@@ -117,7 +117,7 @@ export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
         ignoreAccountChange = false;
         const paymentAccount: PhantomBtcAccount = getPaymentAccount(accounts);
         currentAccount = paymentAccount;
-        BitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
+        ExtensionBitcoinWallet.saveState(PhantomBitcoinWallet.walletName, {
             accounts,
             multichainConnected: _data?.multichainConnected
         });
@@ -179,11 +179,11 @@ export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
         return PhantomBitcoinWallet.iconUrl;
     }
 
-    offWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void {
+    offWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
         events.off("newWallet", cbk);
     }
 
-    onWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void {
+    onWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
         events.on("newWallet", cbk);
     }
 

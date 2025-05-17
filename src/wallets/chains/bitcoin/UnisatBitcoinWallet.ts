@@ -1,4 +1,4 @@
-import {BitcoinWallet} from "./base/BitcoinWallet";
+import {ExtensionBitcoinWallet} from "./base/ExtensionBitcoinWallet";
 import {CoinselectAddressTypes} from "@atomiqlabs/sdk";
 import {BTC_NETWORK} from "@scure/btc-signer/utils";
 import {Transaction, Address as AddressParser} from "@scure/btc-signer";
@@ -37,12 +37,12 @@ function setAccountChangeListener() {
     getProvider().on("accountsChanged", (accounts: string[]) => {
         console.log("UnisatBitcoinWallet: accountsChanged, ignore: "+ignoreAccountChange+" accounts: ", accounts);
         if(ignoreAccountChange) return;
-        let btcWalletState = BitcoinWallet.loadState();
+        let btcWalletState = ExtensionBitcoinWallet.loadState();
         if(btcWalletState==null || btcWalletState.name!==UnisatBitcoinWallet.walletName) return;
         if(accounts!=null && accounts.length>0) {
             if(currentAccount!=null && accounts[0]==currentAccount) return;
             currentAccount = accounts[0];
-            BitcoinWallet.saveState(UnisatBitcoinWallet.walletName, {
+            ExtensionBitcoinWallet.saveState(UnisatBitcoinWallet.walletName, {
                 account: accounts[0]
             });
             getProvider().getPublicKey().then(publicKey => {
@@ -130,7 +130,7 @@ export class UnisatBitcoinWallet extends BitcoinWalletNonSeparated {
             publicKey
         };
 
-        BitcoinWallet.saveState(UnisatBitcoinWallet.walletName, {
+        ExtensionBitcoinWallet.saveState(UnisatBitcoinWallet.walletName, {
             account: acc,
             multichainConnected: _data?.multichainConnected
         });
@@ -193,11 +193,11 @@ export class UnisatBitcoinWallet extends BitcoinWalletNonSeparated {
         return UnisatBitcoinWallet.iconUrl;
     }
 
-    offWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void {
+    offWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
         events.off("newWallet", cbk);
     }
 
-    onWalletChanged(cbk: (newWallet: BitcoinWallet) => void): void {
+    onWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
         events.on("newWallet", cbk);
     }
 
