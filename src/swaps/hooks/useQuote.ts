@@ -56,12 +56,11 @@ export function useQuote(
     const outputChain = useChainForCurrency(outToken);
     address ??= outputChain?.wallet?.address;
 
-    const [swapType, swapInfo] = useMemo(() => {
+    const swapType = useMemo(() => {
         if(swapper!=null && inToken!=null && outToken!=null) try {
-            const swapType = swapper?.getSwapType(inToken, outToken);
-            return [swapType, swapper.SwapTypeInfo[swapType]];
+            return swapper?.getSwapType(inToken, outToken);
         } catch (e) {}
-        return [null, null];
+        return null;
     }, [swapper, inToken, outToken]);
 
     const [result, loading, error, refresh] = useWithAwait(
@@ -83,34 +82,14 @@ export function useQuote(
                 }
             ).then(quote => {return {quote, random: address==null}});
         },
-        [swapper, amount, exactIn, toTokenIdentifier(inToken), toTokenIdentifier(outToken), inputAddress, address, gasDropAmount, swapType===SwapType.SPV_VAULT_FROM_BTC ? btcFeeRate : null],
+        [swapper, amount, exactIn, toTokenIdentifier(inToken), toTokenIdentifier(outToken), inputAddress, address, gasDropAmount],
         false,
         null,
-        (manual, currDeps, prevDeps, prevValue) => {
-            if(manual) return true;
-            const onlyFeeRateChanged = currDeps.every((val, index) => index===8 ? true : prevDeps[index]===val);
-            if(onlyFeeRateChanged) {
-                const oldFeeRate: number = prevDeps[8];
-                const newFeeRate: number = currDeps[8];
-                if(oldFeeRate===newFeeRate) return false;
-                if(newFeeRate==null) return false;
-                if(prevValue!=null && prevValue.quote instanceof SpvFromBTCSwap) {
-                    if(prevValue.quote.minimumBtcFeeRate <= btcFeeMaxOffset + (newFeeRate * btcFeeMaxMultiple)) return false;
-                }
-            }
-            return true;
-        },
+        pause,
         true
     );
 
-    const latestUnpausedRefreshRef = useRef<Function>();
-    useMemo(() => {
-        if(pause) {
-            latestUnpausedRefreshRef.current = refresh;
-        } else {
-            if(latestUnpausedRefreshRef.current!==refresh) refresh();
-        }
-    }, [refresh, pause]);
+
 
     return [refresh, result?.quote, result?.random, loading, error];
 }
