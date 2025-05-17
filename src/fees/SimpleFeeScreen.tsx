@@ -23,10 +23,10 @@ function FeePart(props: FeeDetails) {
                 )}
                 {props.composition == null ? "" : (
                     <OverlayTrigger overlay={<Tooltip id={"fee-tooltip-" + props.text}>
-                        <span>{props.composition.percentage.percentage}% + {props.composition.base.amount} {props.composition.base.token.ticker}</span>
+                        <span>{(Math.round(props.composition.percentage.percentage*10)/10).toFixed(1)}% + {props.composition.base.amount} {props.composition.base.token.ticker}</span>
                     </Tooltip>}>
                         <Badge bg="primary" className="ms-1 pill-round px-2" pill>
-                            <span className="text-decoration-dotted">{props.composition.percentage.percentage}%</span>
+                            <span className="text-decoration-dotted">{(Math.round(props.composition.percentage.percentage*10)/10).toFixed(1)}%</span>
                         </Badge>
                     </OverlayTrigger>
                 )}

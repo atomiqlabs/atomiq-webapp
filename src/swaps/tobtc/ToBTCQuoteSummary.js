@@ -79,12 +79,12 @@ export function ToBTCQuoteSummary(props) {
         return () => abortController.abort();
     }, [state]);
     //Checks the balance of the signer in the CREATED state
-    const [notEnoughBalanceError] = useWithAwait(async (swap, signer, state) => {
-        if (swap == null || signer == null || state !== ToBTCSwapState.CREATED)
+    const [notEnoughBalanceError] = useWithAwait(async () => {
+        if (props.quote == null || signer == null || state !== ToBTCSwapState.CREATED)
             return;
-        const resp = await swap.hasEnoughBalance();
+        const resp = await props.quote.hasEnoughBalance();
         if (!resp.enoughBalance)
-            return "You don't have enough funds to initiate the swap, balance: " + resp.balance.amount + " " + resp.balance.token.ticker;
+            return "You don't have enough funds to initiate the swap!";
     }, [props.quote, signer, state]);
     const feeNeeded = useMemo(() => {
         if (props.notEnoughForGas == null || props.quote == null || swapper == null)

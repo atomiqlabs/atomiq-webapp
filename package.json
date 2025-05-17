@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@atomiqlabs/chain-solana": "^9.0.0-beta.0",
-    "@atomiqlabs/chain-starknet": "^2.0.0-beta.3",
-    "@atomiqlabs/sdk": "^4.0.0-beta.2",
+    "@atomiqlabs/chain-solana": "^9.0.0-beta.1",
+    "@atomiqlabs/chain-starknet": "^2.0.0-beta.7",
+    "@atomiqlabs/sdk": "^4.0.0-beta.3",
     "@coral-xyz/anchor": "0.29.0",
     "@scure/btc-signer": "1.6.0",
     "@solana/spl-token": "0.3.9",

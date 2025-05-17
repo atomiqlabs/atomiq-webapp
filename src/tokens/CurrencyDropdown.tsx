@@ -1,9 +1,10 @@
 import {Dropdown, Nav} from "react-bootstrap";
 import * as React from "react";
-import {isSCToken, Token} from "@atomiqlabs/sdk";
+import {isBtcToken, isSCToken, Token} from "@atomiqlabs/sdk";
 import {TokenIcon} from "./TokenIcon";
 import {useEffect, useMemo, useState} from "react";
 import {capitalizeFirstLetter} from "../utils/Utils";
+import {toTokenIdentifier} from "./Tokens";
 
 function CurrenciesEntry(props: {
     currencies: Token[],
@@ -11,16 +12,16 @@ function CurrenciesEntry(props: {
 }) {
     return (
         <>
-            {props.currencies.map(curr => {
+            {props.currencies!=null ? props.currencies.map(curr => {
                 return (
-                    <Dropdown.Item key={curr.ticker} onClick={() => {
+                    <Dropdown.Item key={toTokenIdentifier(curr)} onClick={() => {
                         props.onSelect(curr);
                     }}>
                         <TokenIcon tokenOrTicker={curr} className="currency-icon"/>
                         {curr.name}
                     </Dropdown.Item>
                 )
-            })}
+            }) : ""}
         </>
     );
 }
@@ -48,19 +49,16 @@ export function CurrencyDropdown(props: {
     const chainId = currenciesByChainId[_chainId]!=null ? _chainId : chains?.[0];
 
     useEffect(() => {
-        if(currenciesByChainId!=null && props.value!=null) {
-            if(isSCToken(props.value)) {
-                const chainCurrencies = currenciesByChainId[props.value.chainId];
-                if(chainCurrencies!=null && chainCurrencies.indexOf(props.value)===-1) props.onSelect(chainCurrencies[0])
-            }
-        }
-    }, [props.value, currenciesByChainId]);
-
-    useEffect(() => {
         if(props.value!=null) setChainId(isSCToken(props.value) ? props.value.chainId : "BITCOIN");
     }, [props.value]);
 
     const [show, setShow] = useState<boolean>();
+
+    let currencyChainId: string;
+    if(props.value!=null) {
+        if(isSCToken(props.value)) currencyChainId = props.value.chainId;
+        if(isBtcToken(props.value)) currencyChainId = props.value.lightning ? "LIGHTNING" : "BITCOIN";
+    }
 
     return (
         <Dropdown autoClose="outside" show={show} onToggle={val => setShow(val)}>
@@ -71,10 +69,10 @@ export function CurrencyDropdown(props: {
                         {props.value==null ? "Select currency" : props.value.ticker}
                     </div>
                     <div className="font-smallest d-flex flex-row align-items-center justify-content-center" style={{marginTop: "-4px"}}>
-                        {props.value!=null && isSCToken(props.value) ? (
+                        {currencyChainId!=null ? (
                             <>
-                                <img src={"/icons/chains/"+props.value.chainId+".svg"} className="currency-icon-small"/>
-                                {capitalizeFirstLetter(props.value.chainId)}
+                                <img src={"/icons/chains/"+currencyChainId+".svg"} className="currency-icon-small"/>
+                                {capitalizeFirstLetter(currencyChainId)}
                             </>
                         ) : ""}
                     </div>

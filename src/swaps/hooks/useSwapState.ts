@@ -29,7 +29,7 @@ function getStateToString(swapType: SwapType, state: number) {
 
 export function useSwapState<S extends number>(quote: ISwap<any, S>) {
 
-    const [state, setState] = useState<S>(null);
+    const [state, setState] = useState<S>(quote?.getState());
     const [isInitiated, setInitiated] = useState<boolean>(null);
 
     const [quoteTimeRemaining, setQuoteTimeRemaining] = useState<number>();

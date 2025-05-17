@@ -2,7 +2,7 @@ import {FEConstants} from "../../../../FEConstants";
 import {BitcoinNetwork, CoinselectAddressTypes, MempoolBitcoinWallet} from "@atomiqlabs/sdk";
 import {NETWORK, TEST_NETWORK, Transaction} from "@scure/btc-signer";
 
-const bitcoinNetwork = FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? TEST_NETWORK : NETWORK;
+const bitcoinNetwork = FEConstants.bitcoinNetwork===BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK;
 
 const feeMultiplier = 1.25;
 

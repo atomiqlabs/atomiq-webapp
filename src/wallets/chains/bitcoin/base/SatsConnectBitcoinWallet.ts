@@ -13,7 +13,7 @@ import {BitcoinNetwork, CoinselectAddressTypes} from "@atomiqlabs/sdk";
 import {BTC_NETWORK} from "@scure/btc-signer/utils";
 import {Transaction, Address as AddressParser} from "@scure/btc-signer";
 
-const network = FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? BitcoinNetworkType.Testnet : BitcoinNetworkType.Mainnet;
+const network = FEConstants.bitcoinNetwork===BitcoinNetwork.MAINNET ? BitcoinNetworkType.Mainnet : FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET4 ? "Testnet4" : BitcoinNetworkType.Testnet;
 
 function identifyAddressType(address: string, network: BTC_NETWORK): CoinselectAddressTypes {
     switch(AddressParser(network).decode(address).type) {
@@ -59,7 +59,7 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
                     },
                     payload: {
                         network: {
-                            type: network
+                            type: network as any
                         },
                     },
                 });
@@ -90,7 +90,7 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
                 purposes: [AddressPurpose.Payment],
                 message: "Connect your Bitcoin wallet to atomiq.exchange",
                 network: {
-                    type: network
+                    type: network as any
                 },
             },
             onFinish: (_result: GetAddressResponse) => {
@@ -142,7 +142,7 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         await signTransaction({
             payload: {
                 network: {
-                    type: network
+                    type: network as any
                 },
                 message: "Send a swap transaction",
                 psbtBase64: Buffer.from(psbt.toPSBT(0)).toString("base64"),
@@ -194,7 +194,7 @@ export class SatsConnectBitcoinWallet extends BitcoinWallet {
         await signTransaction({
             payload: {
                 network: {
-                    type: network
+                    type: network as any
                 },
                 message: "Send a swap transaction",
                 psbtBase64: Buffer.from(psbt.toPSBT(0)).toString("base64"),

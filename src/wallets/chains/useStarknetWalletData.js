@@ -95,7 +95,7 @@ export function useStarknetWalletData() {
         console.log("useStarknetWalletContext(): changeWallet()");
         return _disconnect().then(() => _connect());
     }, []);
-    return useMemo(() => [{
+    return useMemo(() => !FEConstants.allowedChains.has("STARKNET") ? [null] : [{
             chain: {
                 name: "Starknet",
                 icon: "/icons/chains/STARKNET.svg"
@@ -106,6 +106,7 @@ export function useStarknetWalletData() {
                 instance: starknetSigner,
                 address: starknetSigner.getAddress()
             },
+            id: "STARKNET",
             connect: _connect,
             disconnect: _disconnect,
             changeWallet,

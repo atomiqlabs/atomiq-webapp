@@ -4,7 +4,7 @@ import { SwapsContext } from "../../swaps/context/SwapsContext";
 import { useWithAwait } from "../../utils/hooks/useWithAwait";
 export function usePricing(amount, currency) {
     const { swapper } = useContext(SwapsContext);
-    const [value] = useWithAwait((amount, currency, swapper) => {
+    const [value] = useWithAwait(() => {
         if (swapper == null || currency == null || amount == null || amount === "")
             return Promise.resolve(null);
         try {

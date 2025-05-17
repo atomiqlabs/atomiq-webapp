@@ -3,8 +3,7 @@ import {SwapsContext} from "../context/SwapsContext";
 import {LNURLPay, LNURLWithdraw, Swapper, SwapType, TokenAmount} from "@atomiqlabs/sdk";
 import {useWithAwait} from "../../utils/hooks/useWithAwait";
 
-
-export function useAddressData(addressString: string): [{
+export type AddressDataResult = {
     address: string,
     type: string,
     swapType: SwapType,
@@ -12,16 +11,19 @@ export function useAddressData(addressString: string): [{
     min?: TokenAmount,
     max?: TokenAmount,
     amount?: TokenAmount
-}, boolean, Error] {
+};
+
+export function useAddressData(addressString: string, callback?: (result: AddressDataResult, error: Error) => void): [AddressDataResult, boolean, Error] {
     const {swapper} = useContext(SwapsContext);
 
     const [result, loading, error] = useWithAwait(
-        (swapper: Swapper<any>, address: string) => {
-            if(swapper==null) return Promise.resolve(null);
-            return swapper.Utils.parseAddress(address)
+        () => {
+            if(swapper==null || addressString==null) return null;
+            return swapper.Utils.parseAddress(addressString)
         },
         [swapper, addressString],
-        true
+        true,
+        callback
     );
 
     return [result, loading, error];

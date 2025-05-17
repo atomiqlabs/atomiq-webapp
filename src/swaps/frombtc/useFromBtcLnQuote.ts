@@ -78,8 +78,10 @@ export function useFromBtcLnQuote(
     useEffect(() => {
         if(isQuoteExpired || isFailed || isSuccess) {
             if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
+        } else if(!isCreated) {
+            if(setAmountLockRef.current!=null) setAmountLockRef.current(true);
         }
-    }, [isQuoteExpired, isFailed, isSuccess]);
+    }, [isQuoteExpired, isFailed, isSuccess, isCreated]);
 
     const executionSteps: SingleStep[] = [
         {icon: ic_check_circle_outline, text: "Lightning payment received", type: "success"},

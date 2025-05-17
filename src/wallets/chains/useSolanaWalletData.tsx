@@ -77,6 +77,7 @@ export function useSolanaWalletData(): [ChainWalletData<SolanaSigner>] {
     }, [setVisible]);
 
     return useMemo(() => {
+        if(!FEConstants.allowedChains.has("SOLANA")) return [null];
         const solanaFees = new SolanaFees(
             connection,
             1000000, 2, 100,
@@ -97,6 +98,7 @@ export function useSolanaWalletData(): [ChainWalletData<SolanaSigner>] {
                 instance: solanaSigner,
                 address: wallet.adapter?.publicKey?.toBase58()
             },
+            id: "SOLANA",
             disconnect,
             connect,
             changeWallet: connect,

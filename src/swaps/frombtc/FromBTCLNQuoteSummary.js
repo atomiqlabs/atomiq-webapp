@@ -34,7 +34,7 @@ export function FromBTCLNQuoteSummary(props) {
     }, []);
     const { waitForPayment, onCommit, onClaim, paymentWaiting, committing, claiming, paymentError, commitError, claimError, isQuoteExpired, isQuoteExpiredClaim, isFailed, isCreated, isClaimCommittable, isClaimClaimable, isClaimable, isSuccess, executionSteps } = useFromBtcLnQuote(props.quote, props.setAmountLock);
     useEffect(() => {
-        if (props.quote != null && props.quote.isInitiated()) {
+        if (props.quote != null && props.quote.isInitiated() && props.quote.state === FromBTCLNSwapState.PR_CREATED) {
             waitForPayment();
         }
     }, [props.quote]);

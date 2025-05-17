@@ -15,7 +15,8 @@ export type ChainWalletData<T> = {
         icon: string,
         address?: string,
         instance: T
-    }
+    },
+    id: string,
     disconnect: () => Promise<void> | void,
     connect: () => Promise<void> | void,
     changeWallet?: () => Promise<void> | void,
@@ -29,12 +30,15 @@ function WrappedChainDataProvider(props: {children: React.ReactNode}) {
     const [lightningChain] = useLightningWalletData();
 
     return (
-        <ChainDataContext.Provider value={useMemo(() => ({
-            BITCOIN: bitcoinChain,
-            LIGHTNING: lightningChain,
-            SOLANA: solanaChain,
-            STARKNET: starknetChain
-        }), [bitcoinChain, lightningChain, solanaChain, starknetChain])}>
+        <ChainDataContext.Provider value={useMemo(() => {
+            const res: any = {
+                BITCOIN: bitcoinChain,
+                LIGHTNING: lightningChain
+            };
+            if(solanaChain!=null) res.SOLANA = solanaChain;
+            if(starknetChain!=null) res.STARKNET = starknetChain;
+            return res;
+        }, [bitcoinChain, lightningChain, solanaChain, starknetChain])}>
             {bitcoinModal}
             {props.children}
         </ChainDataContext.Provider>

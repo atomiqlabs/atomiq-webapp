@@ -58,7 +58,11 @@ export function useFromBtcLnQuote(quote, setAmountLock) {
             if (setAmountLockRef.current != null)
                 setAmountLockRef.current(false);
         }
-    }, [isQuoteExpired, isFailed, isSuccess]);
+        else if (!isCreated) {
+            if (setAmountLockRef.current != null)
+                setAmountLockRef.current(true);
+        }
+    }, [isQuoteExpired, isFailed, isSuccess, isCreated]);
     const executionSteps = [
         { icon: ic_check_circle_outline, text: "Lightning payment received", type: "success" },
         { icon: ic_swap_horizontal_circle_outline, text: "Send claim transaction", type: "disabled" }

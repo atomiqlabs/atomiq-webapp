@@ -59,6 +59,8 @@ export function useSolanaWalletData() {
         setVisible(true);
     }, [setVisible]);
     return useMemo(() => {
+        if (!FEConstants.allowedChains.has("SOLANA"))
+            return [null];
         const solanaFees = new SolanaFees(connection, 1000000, 2, 100, "auto", "high", () => 50000n
         //, {
         //    address: jitoPubkey,
@@ -76,6 +78,7 @@ export function useSolanaWalletData() {
                     instance: solanaSigner,
                     address: wallet.adapter?.publicKey?.toBase58()
                 },
+                id: "SOLANA",
                 disconnect,
                 connect,
                 changeWallet: connect,

@@ -6,7 +6,7 @@ import {useWithAwait} from "../../utils/hooks/useWithAwait";
 export function usePricing(amount: string, currency: Token<any>): number {
     const {swapper} = useContext(SwapsContext);
 
-    const [value] = useWithAwait<[string, Token, Swapper<any>], number>((amount: string, currency: Token<any>, swapper: Swapper<any>) => {
+    const [value] = useWithAwait<number>(() => {
         if(swapper==null || currency==null || amount==null || amount==="") return Promise.resolve(null);
         try {
             const rawAmount = fromHumanReadableString(amount, currency);

@@ -1,7 +1,7 @@
 import { FEConstants } from "../../../../FEConstants";
 import { BitcoinNetwork, MempoolBitcoinWallet } from "@atomiqlabs/sdk";
 import { NETWORK, TEST_NETWORK } from "@scure/btc-signer";
-const bitcoinNetwork = FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? TEST_NETWORK : NETWORK;
+const bitcoinNetwork = FEConstants.bitcoinNetwork === BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK;
 const feeMultiplier = 1.25;
 export class BitcoinWallet extends MempoolBitcoinWallet {
     constructor(wasAutomaticallyInitiated) {

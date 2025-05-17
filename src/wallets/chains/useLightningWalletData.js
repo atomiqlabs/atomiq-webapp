@@ -19,6 +19,7 @@ export function useLightningWalletData() {
                 icon: "/wallets/WebLN.png",
                 instance: wallet
             },
+            id: "LIGHTNING",
             connect: isWebLNInstalled ? connect : null,
             disconnect: wallet != null ? disconnect : null,
         }], [wallet, isWebLNInstalled, connect, disconnect]);

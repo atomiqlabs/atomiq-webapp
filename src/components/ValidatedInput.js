@@ -6,8 +6,10 @@ import BigNumber from "bignumber.js";
 import { copy } from 'react-icons-kit/fa/copy';
 import { exclamationTriangle } from 'react-icons-kit/fa/exclamationTriangle';
 import Icon from "react-icons-kit";
-const numberValidator = (value, props) => {
-    if (value !== "") {
+export function numberValidator(props, allowEmpty) {
+    return (value) => {
+        if (allowEmpty && value === "")
+            return null;
         try {
             const number = new BigNumber(value);
             if (props.min != null) {
@@ -24,16 +26,7 @@ const numberValidator = (value, props) => {
         catch (e) {
             return "Not a number";
         }
-    }
-};
-function bnEqual(a, b) {
-    if (a == null && b == null)
-        return true;
-    if (a != null && b == null)
-        return false;
-    if (a == null && b != null)
-        return false;
-    return a.eq(b);
+    };
 }
 function ValidatedInput(props) {
     const [state, setState] = React.useState({
@@ -47,11 +40,6 @@ function ValidatedInput(props) {
     const inputTextAreaRef = useRef(null);
     const changeValueHandler = useCallback((forcedChange, value) => {
         const obj = {};
-        if (props.type === "number") {
-            obj.validated = numberValidator(value, props);
-            if (obj.validated == null && value !== "")
-                value = new BigNumber(value).toString(10);
-        }
         if (obj.validated == null)
             if (props.onValidate != null) {
                 obj.validated = props.onValidate(value);
@@ -60,20 +48,15 @@ function ValidatedInput(props) {
         setState(obj);
         if (props.onChange != null)
             props.onChange(value, forcedChange);
-        if (props.onValidatedInput != null)
-            props.onValidatedInput(obj.validated == null ? value : null, forcedChange);
-    }, [props.min, props.max, props.onValidate, props.onChange, props.onValidatedInput]);
+        // if(props.onValidatedInput!=null) props.onValidatedInput(obj.validated == null ? value : null, forcedChange);
+    }, [props.onValidate, props.onChange]);
     const refObj = useMemo(() => {
         return {
             validate: () => {
                 let validated = null;
-                if (props.type === "number") {
-                    validated = numberValidator(valueRef.current, props);
+                if (props.onValidate != null) {
+                    validated = props.onValidate(valueRef.current);
                 }
-                if (validated == null)
-                    if (props.onValidate != null) {
-                        validated = props.onValidate(valueRef.current);
-                    }
                 setState(initial => {
                     return { ...initial, validated };
                 });
@@ -82,24 +65,13 @@ function ValidatedInput(props) {
             getValue: () => {
                 return valueRef.current;
             },
-            setValue: changeValueHandler.bind(true),
+            setValue: changeValueHandler.bind(null, true),
             input: props.type === "textarea" ? inputTextAreaRef : inputRef
         };
-    }, [props.type, props.min, props.max, changeValueHandler]);
-    const minMaxRef = useRef(null);
+    }, [props.type, changeValueHandler]);
     useEffect(() => {
-        if (minMaxRef.current != null && bnEqual(minMaxRef.current.min, props.min) && bnEqual(minMaxRef.current.max, props.max))
-            return;
-        const isValid = refObj.validate();
-        if (props.onValidatedInput != null)
-            props.onValidatedInput(isValid ? value : null);
-        minMaxRef.current = { min: props.min, max: props.max };
-    }, [props.min, props.max]);
-    useEffect(() => {
-        const isValid = refObj.validate();
-        if (props.onValidatedInput != null)
-            props.onValidatedInput(isValid ? value : null);
-    }, [value, props.onValidate]);
+        refObj.validate();
+    }, [props.onValidate]);
     if (props.inputRef != null) {
         props.inputRef.current = refObj;
     }

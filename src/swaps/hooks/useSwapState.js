@@ -18,7 +18,7 @@ function getStateToString(swapType, state) {
     }
 }
 export function useSwapState(quote) {
-    const [state, setState] = useState(null);
+    const [state, setState] = useState(quote?.getState());
     const [isInitiated, setInitiated] = useState(null);
     const [quoteTimeRemaining, setQuoteTimeRemaining] = useState();
     const [initialQuoteTimeout, setInitialQuoteTimeout] = useState();

@@ -105,7 +105,7 @@ export function useStarknetWalletData(): [ChainWalletData<StarknetSigner>] {
         return _disconnect().then(() => _connect());
     }, []);
 
-    return useMemo(() => [{
+    return useMemo(() => !FEConstants.allowedChains.has("STARKNET") ? [null] : [{
         chain: {
             name: "Starknet",
             icon: "/icons/chains/STARKNET.svg"
@@ -116,6 +116,7 @@ export function useStarknetWalletData(): [ChainWalletData<StarknetSigner>] {
             instance: starknetSigner,
             address: starknetSigner.getAddress()
         },
+        id: "STARKNET",
         connect: _connect,
         disconnect: _disconnect,
         changeWallet,

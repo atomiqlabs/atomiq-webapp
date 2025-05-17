@@ -15,5 +15,5 @@ type WalletTypes = {
 export type ChainIdentifiers = "BITCOIN" | "LIGHTNING" | "SOLANA" | "STARKNET";
 
 export const ChainDataContext: React.Context<{
-    [chain in ChainIdentifiers]: ChainWalletData<WalletTypes[chain]>
+    [chain in ChainIdentifiers]?: ChainWalletData<WalletTypes[chain]>
 }> = createContext(undefined);

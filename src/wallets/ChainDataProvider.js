@@ -10,12 +10,17 @@ function WrappedChainDataProvider(props) {
     const [starknetChain] = useStarknetWalletData();
     const [solanaChain] = useSolanaWalletData();
     const [lightningChain] = useLightningWalletData();
-    return (_jsxs(ChainDataContext.Provider, { value: useMemo(() => ({
-            BITCOIN: bitcoinChain,
-            LIGHTNING: lightningChain,
-            SOLANA: solanaChain,
-            STARKNET: starknetChain
-        }), [bitcoinChain, lightningChain, solanaChain, starknetChain]), children: [bitcoinModal, props.children] }));
+    return (_jsxs(ChainDataContext.Provider, { value: useMemo(() => {
+            const res = {
+                BITCOIN: bitcoinChain,
+                LIGHTNING: lightningChain
+            };
+            if (solanaChain != null)
+                res.SOLANA = solanaChain;
+            if (starknetChain != null)
+                res.STARKNET = starknetChain;
+            return res;
+        }, [bitcoinChain, lightningChain, solanaChain, starknetChain]), children: [bitcoinModal, props.children] }));
 }
 export function ChainDataProvider(props) {
     return (_jsx(SolanaWalletWrapper, { children: _jsx(WrappedChainDataProvider, { children: props.children }) }));

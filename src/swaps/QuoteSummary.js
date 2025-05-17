@@ -9,22 +9,21 @@ import { FEConstants } from "../FEConstants";
 import { SpvVaultFromBTCQuoteSummary } from "./frombtc/SpvVaultFromBTCQuoteSummary";
 import { useWithAwait } from "../utils/hooks/useWithAwait";
 import { ChainDataContext } from "../wallets/context/ChainDataContext";
-import { getChainIdentifierForCurrency } from "../wallets/hooks/useChainForCurrency";
-import { toTokenIdentifier } from "../tokens/Tokens";
+import { getChainIdentifierForCurrency, toTokenIdentifier } from "../tokens/Tokens";
 export function QuoteSummary(props) {
     const chainsData = useContext(ChainDataContext);
-    const [notEnoughForGas] = useWithAwait(async (swap, chainsData) => {
-        if (swap == null || swap.isInitiated())
+    const [notEnoughForGas] = useWithAwait(async () => {
+        if (props.quote == null || props.quote.isInitiated())
             return;
         let result;
         let address;
-        if (swap instanceof IToBTCSwap) {
-            result = await swap.hasEnoughForTxFees();
-            address = swap._getInitiator();
+        if (props.quote instanceof IToBTCSwap) {
+            result = await props.quote.hasEnoughForTxFees();
+            address = props.quote._getInitiator();
         }
-        else if (swap instanceof IFromBTCSwap) {
-            result = await swap.hasEnoughForTxFees();
-            address = swap._getInitiator();
+        else if (props.quote instanceof IFromBTCSwap) {
+            result = await props.quote.hasEnoughForTxFees();
+            address = props.quote._getInitiator();
         }
         else {
             return;

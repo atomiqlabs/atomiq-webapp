@@ -8,7 +8,7 @@ export function useExistingSwap(swapId: string): [ISwap, boolean] {
     const {swapper} = useContext(SwapsContext);
 
     const [loading, swap] = useWithAwait(
-        (swapper: Swapper<any>, swapId: string) => {
+        () => {
             if(swapper==null || swapId==null) return Promise.resolve<ISwap>(null);
             return swapper.getSwapById(swapId);
         },

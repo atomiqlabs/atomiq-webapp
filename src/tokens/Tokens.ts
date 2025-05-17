@@ -61,6 +61,7 @@ export function includesToken(tokenList: Token[], token: Token): boolean {
 }
 
 export function toTokenIdentifier(token: Token): string {
+    if(token==null) return null;
     if(isBtcToken(token)) {
         return token.lightning ? "LIGHTNING" : "BITCOIN";
     } else if(isSCToken(token)) {
@@ -69,6 +70,7 @@ export function toTokenIdentifier(token: Token): string {
 }
 
 export function fromTokenIdentifier(identifier: string): Token {
+    if(identifier==null) return null;
     switch(identifier) {
         case "LIGHTNING":
             return Tokens.BITCOIN.BTCLN;
@@ -79,6 +81,19 @@ export function fromTokenIdentifier(identifier: string): Token {
             return null;
         default:
             const [chainId, address] = identifier.split(":");
-            return TokenResolver[chainId]?.[address];
+            return TokenResolver[chainId]?.getToken(address);
+    }
+}
+
+export function getChainIdentifierForCurrency(token: Token): string {
+    if(token==null) return null;
+    if(isBtcToken(token)) {
+        if(token.lightning) {
+            return "LIGHTNING";
+        } else {
+            return "BITCOIN";
+        }
+    } else {
+        return token.chainId;
     }
 }

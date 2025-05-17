@@ -31,7 +31,7 @@ export function useAmountConstraints(inCurrency, outCurrency) {
         };
     }, [swapper]);
     return useMemo(() => {
-        if (swapper == null)
+        if (swapper == null || inCurrency == null || outCurrency == null)
             return {
                 input: toBigNumbers(defaultConstraints, inCurrency),
                 output: toBigNumbers(defaultConstraints, outCurrency)

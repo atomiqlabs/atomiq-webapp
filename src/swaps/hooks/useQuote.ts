@@ -1,12 +1,12 @@
-import {useContext} from "react";
+import {useContext, useMemo, useRef} from "react";
 import {
     BitcoinNetwork, fromHumanReadableString,
-    isBtcToken,
+    isBtcToken, isLNURLWithdraw,
     isSCToken,
     ISwap,
     LNURLPay,
-    LNURLWithdraw,
-    Swapper,
+    LNURLWithdraw, SpvFromBTCSwap,
+    Swapper, SwapType,
     Token
 } from "@atomiqlabs/sdk";
 import {SwapsContext} from "../context/SwapsContext";
@@ -15,13 +15,12 @@ import {useChainForCurrency} from "../../wallets/hooks/useChainForCurrency";
 import {Address, NETWORK, TEST_NETWORK} from "@scure/btc-signer";
 import {FEConstants} from "../../FEConstants";
 import * as randomBytes from "randombytes";
-import BigNumber from "bignumber.js";
-import {fromHumanReadable} from "../../tokens/Tokens";
+import {toTokenIdentifier} from "../../tokens/Tokens";
 
 const btcFeeMaxOffset = 3;
 const btcFeeMaxMultiple = 1.5;
 
-const RANDOM_BTC_ADDRESS = Address(FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? TEST_NETWORK : NETWORK).encode({
+const RANDOM_BTC_ADDRESS = Address(FEConstants.bitcoinNetwork === BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK).encode({
     type: "wsh",
     hash: randomBytes(32)
 });
@@ -36,41 +35,82 @@ function getRandomAddress(swapper: Swapper<any>, token: Token): string {
 }
 
 export function useQuote(
-    amount: BigNumber,
+    amount: string,
     exactIn: boolean,
     inToken: Token<any>,
     outToken: Token<any>,
     address: string | LNURLWithdraw | LNURLPay,
     gasDropAmount?: bigint,
-    btcFeeRate?: number
-): [() => void, ISwap, boolean, any] {
+    btcFeeRate?: number,
+    pause?: boolean
+): [() => void, ISwap, boolean, boolean, any] {
     const {swapper} = useContext(SwapsContext);
 
     const inputChain = useChainForCurrency(inToken);
-    const inputAddress = inputChain?.wallet?.address ?? (isBtcToken(inToken) && inToken.lightning ? address : null);
+    let inputAddress: string | LNURLWithdraw = inputChain?.wallet?.address;
+    if(inToken!=null && isBtcToken(inToken) && inToken.lightning && isLNURLWithdraw(address)) {
+        inputAddress = address;
+        address = null
+    }
 
-    const [quote, loading, error, refresh] = useWithAwait(
-        async (
-            swapper: Swapper<any>, amount: BigNumber, exactIn: boolean,
-            inToken: Token, outToken: Token,
-            inputAddress: string | LNURLWithdraw | LNURLPay, outputAddress: string | LNURLWithdraw | LNURLPay,
-            gasDropAmount: bigint, btcFeeRate: number
-        ) => {
-            console.log("useQuote(): amount: "+amount+" exactIn: "+exactIn+" inToken: "+inToken?.ticker+" outToken: "+outToken?.ticker+" inputAddr: "+inputAddress+" outputAddr: "+outputAddress+" gasDropAmount: "+gasDropAmount+" btcFeeRate: "+btcFeeRate)
-            if(swapper==null || inToken==null || outToken==null || amount==null) return null;
-            const rawAmount = fromHumanReadable(amount, exactIn ? inToken : outToken);
-            return await swapper.create(
+    const outputChain = useChainForCurrency(outToken);
+    address ??= outputChain?.wallet?.address;
+
+    const [swapType, swapInfo] = useMemo(() => {
+        if(swapper!=null && inToken!=null && outToken!=null) try {
+            const swapType = swapper?.getSwapType(inToken, outToken);
+            return [swapType, swapper.SwapTypeInfo[swapType]];
+        } catch (e) {}
+        return [null, null];
+    }, [swapper, inToken, outToken]);
+
+    const [result, loading, error, refresh] = useWithAwait(
+        () => {
+            console.log("useQuote(): amount: "+amount+" exactIn: "+exactIn+" inToken: "+inToken?.ticker+" outToken: "+outToken?.ticker+" inputAddr: "+inputAddress+" outputAddr: "+address+" gasDropAmount: "+gasDropAmount+" btcFeeRate: "+btcFeeRate+" pause: "+pause)
+            if(swapper==null || inToken==null || outToken==null || amount==null || pause) return null;
+            const outAddress = address as any ?? getRandomAddress(swapper, outToken);
+            if(outAddress==null) return null;
+            const inAddress = inputAddress as any ?? getRandomAddress(swapper, inToken);
+            const rawAmount = fromHumanReadableString(amount, exactIn ? inToken : outToken);
+            return swapper.create(
                 inToken, outToken, rawAmount, exactIn,
-                inputAddress as any ?? getRandomAddress(swapper, inToken),
-                outputAddress as any ?? getRandomAddress(swapper, outToken),
+                inAddress,
+                outAddress,
                 {
                     gasAmount: gasDropAmount,
-                    maxAllowedNetworkFeeRate: btcFeeRate==null ? null : btcFeeMaxOffset + (btcFeeRate * btcFeeMaxMultiple)
+                    maxAllowedNetworkFeeRate: btcFeeRate==null ? null : btcFeeMaxOffset + (btcFeeRate * btcFeeMaxMultiple),
+                    unsafeZeroWatchtowerFee: swapType===SwapType.SPV_VAULT_FROM_BTC
                 }
-            );
+            ).then(quote => {return {quote, random: address==null}});
         },
-        [swapper, amount, exactIn, inToken, outToken, inputAddress, address, gasDropAmount, btcFeeRate]
+        [swapper, amount, exactIn, toTokenIdentifier(inToken), toTokenIdentifier(outToken), inputAddress, address, gasDropAmount, swapType===SwapType.SPV_VAULT_FROM_BTC ? btcFeeRate : null],
+        false,
+        null,
+        (manual, currDeps, prevDeps, prevValue) => {
+            if(manual) return true;
+            const onlyFeeRateChanged = currDeps.every((val, index) => index===8 ? true : prevDeps[index]===val);
+            if(onlyFeeRateChanged) {
+                const oldFeeRate: number = prevDeps[8];
+                const newFeeRate: number = currDeps[8];
+                if(oldFeeRate===newFeeRate) return false;
+                if(newFeeRate==null) return false;
+                if(prevValue!=null && prevValue.quote instanceof SpvFromBTCSwap) {
+                    if(prevValue.quote.minimumBtcFeeRate <= btcFeeMaxOffset + (newFeeRate * btcFeeMaxMultiple)) return false;
+                }
+            }
+            return true;
+        },
+        true
     );
 
-    return [refresh, quote, loading, error];
+    const latestUnpausedRefreshRef = useRef<Function>();
+    useMemo(() => {
+        if(pause) {
+            latestUnpausedRefreshRef.current = refresh;
+        } else {
+            if(latestUnpausedRefreshRef.current!==refresh) refresh();
+        }
+    }, [refresh, pause]);
+
+    return [refresh, result?.quote, result?.random, loading, error];
 }

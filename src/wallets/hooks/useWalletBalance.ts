@@ -18,7 +18,7 @@ export function useWalletBalance(
     pause?: boolean,
     minBtcFeeRate?: number
 ): {
-    balance: TokenAmount
+    balance: TokenAmount,
     feeRate?: number
 } {
     const {swapper} = useContext(SwapsContext);
@@ -30,6 +30,7 @@ export function useWalletBalance(
         balance: TokenAmount
         feeRate?: number
     }>(null);
+    console.log("Max spendable: ", maxSpendable?.balance);
 
     useEffect(() => {
         setMaxSpendable(null);

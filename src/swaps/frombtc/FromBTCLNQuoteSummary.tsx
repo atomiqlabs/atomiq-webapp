@@ -63,7 +63,7 @@ export function FromBTCLNQuoteSummary(props: {
     } = useFromBtcLnQuote(props.quote, props.setAmountLock);
 
     useEffect(() => {
-        if(props.quote!=null && props.quote.isInitiated()) {
+        if(props.quote!=null && props.quote.isInitiated() && props.quote.state===FromBTCLNSwapState.PR_CREATED) {
             waitForPayment();
         }
     }, [props.quote]);

@@ -3,7 +3,7 @@ import { BitcoinWallet } from "./BitcoinWallet";
 import { FEConstants } from "../../../../FEConstants";
 import { BitcoinNetwork } from "@atomiqlabs/sdk";
 import { Transaction, Address as AddressParser } from "@scure/btc-signer";
-const network = FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET ? BitcoinNetworkType.Testnet : BitcoinNetworkType.Mainnet;
+const network = FEConstants.bitcoinNetwork === BitcoinNetwork.MAINNET ? BitcoinNetworkType.Mainnet : FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET4 ? "Testnet4" : BitcoinNetworkType.Testnet;
 function identifyAddressType(address, network) {
     switch (AddressParser(network).decode(address).type) {
         case "pkh":

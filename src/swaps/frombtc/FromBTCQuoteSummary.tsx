@@ -77,7 +77,7 @@ export function FromBTCQuoteSummary(props: {
             throw e;
         });
 
-        payBitcoin();
+        if(bitcoinChainData.wallet!=null) payBitcoin();
         return commitTxId;
     }, [props.quote, smartChainWallet, payBitcoin]);
 
@@ -276,7 +276,7 @@ export function FromBTCQuoteSummary(props: {
             {isCommited ? (
                 <>
                     <div className="mb-3 tab-accent">
-                        {smartChainWallet != null ? (
+                        {bitcoinChainData.wallet != null ? (
                             <>
                                 <ErrorAlert className="mb-2" title="Sending BTC failed" error={payError}/>
 

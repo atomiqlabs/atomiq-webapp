@@ -64,8 +64,8 @@ function WrappedApp() {
 
             const swapper = Factory.newSwapper({
                 chains: {
-                    SOLANA: chainsData.SOLANA.swapperOptions,
-                    STARKNET: chainsData.STARKNET.swapperOptions
+                    SOLANA: chainsData.SOLANA?.swapperOptions,
+                    STARKNET: chainsData.STARKNET?.swapperOptions
                 },
                 intermediaryUrl: useLp,
                 getRequestTimeout: 15000,
@@ -115,7 +115,7 @@ function WrappedApp() {
                         <div className="d-flex flex-row" style={{fontSize: "1.5rem"}}>
                             <img src="/icons/atomiq-flask.png" className="logo-img"/>
                             <b>atomiq</b><span style={{fontWeight: 300}}>.exchange</span>
-                            {FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET ? <Badge className="ms-2 d-flex align-items-center" bg="danger">DEVNET</Badge> : ""}
+                            {FEConstants.bitcoinNetwork!==BitcoinNetwork.MAINNET ? <Badge className="ms-2 d-flex align-items-center" bg="danger">DEVNET</Badge> : ""}
                         </div>
                     </Navbar.Brand>
 

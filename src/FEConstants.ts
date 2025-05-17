@@ -17,7 +17,7 @@ const starknetRpcUrl: string = process.env.REACT_APP_STARKNET_RPC_URL;
 const starknetChain: "SEPOLIA" | "MAIN" = process.env.REACT_APP_STARKNET_NETWORK as ("SEPOLIA" | "MAIN"); //SEPOLIA or MAIN
 const starknetBlockExplorer: string = process.env.REACT_APP_STARKNET_BLOCK_EXPLORER;
 
-const bitcoinNetwork: "TESTNET" | "MAINNET" = process.env.REACT_APP_BITCOIN_NETWORK as ("TESTNET" | "MAINNET"); //SEPOLIA or MAIN
+const bitcoinNetwork: "TESTNET" | "MAINNET" | "TESTNET4" = process.env.REACT_APP_BITCOIN_NETWORK as ("TESTNET" | "MAINNET" | "TESTNET4");
 
 const mempoolApi = new MempoolApi(
     bitcoinNetwork==="MAINNET" ?
@@ -26,8 +26,12 @@ const mempoolApi = new MempoolApi(
             "https://mempool.fra.mempool.space/api/",
             "https://mempool.va1.mempool.space/api/",
             "https://mempool.tk7.mempool.space/api/"
-        ] :
-        [
+        ] : bitcoinNetwork==="TESTNET4" ? [
+            "https://mempool.space/testnet4/api/",
+            "https://mempool.fra.mempool.space/testnet4/api/",
+            "https://mempool.va1.mempool.space/testnet4/api/",
+            "https://mempool.tk7.mempool.space/testnet4/api/"
+        ] : [
             "https://mempool.space/testnet/api/",
             "https://mempool.fra.mempool.space/testnet/api/",
             "https://mempool.va1.mempool.space/testnet/api/",
@@ -72,7 +76,7 @@ export const FEConstants = {
     solanaRpcUrl,
     starknetChainId: starknetChain==null ? null : (starknetChain==="MAIN" ? constants.StarknetChainId.SN_MAIN : constants.StarknetChainId.SN_SEPOLIA),
     starknetRpc: starknetRpcUrl==null ? null : new RpcProvider({nodeUrl: starknetRpcUrl}),
-    bitcoinNetwork: bitcoinNetwork==="TESTNET" ? BitcoinNetwork.TESTNET : BitcoinNetwork.MAINNET,
+    bitcoinNetwork: bitcoinNetwork==="TESTNET" ? BitcoinNetwork.TESTNET : bitcoinNetwork==="TESTNET4" ? BitcoinNetwork.TESTNET4 : BitcoinNetwork.MAINNET,
     url: null,
     satsPerBitcoin: new BigNumber(100000000),
     USDollar: new Intl.NumberFormat('en-US', {

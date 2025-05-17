@@ -122,7 +122,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
     const isCreated = state===SpvFromBTCSwapState.CREATED ||
         (state===SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && sendLoading);
     const isSending = state === SpvFromBTCSwapState.CREATED && sendLoading;
-    const isBroadcasting = state === SpvFromBTCSwapState.SIGNED || state === SpvFromBTCSwapState.POSTED;
+    const isBroadcasting = state === SpvFromBTCSwapState.SIGNED || state === SpvFromBTCSwapState.POSTED || (state === SpvFromBTCSwapState.BROADCASTED && txData == null);
     const isReceived = state === SpvFromBTCSwapState.BROADCASTED && txData != null;
     const isClaimable = state === SpvFromBTCSwapState.BTC_TX_CONFIRMED && !claimLoading;
     const isClaiming = state === SpvFromBTCSwapState.BTC_TX_CONFIRMED && claimLoading;
@@ -213,8 +213,8 @@ export function SpvVaultFromBTCQuoteSummary(props: {
 
                     {waitPaymentError!=null ? (
                         <>
-                            <ErrorAlert className="mb-3" title="Wait payment error" error={waitPaymentError}/>
-                            <Button onClick={onWaitForPayment} variant="secondary">
+                            <ErrorAlert className="my-3 width-fill" title="Wait payment error" error={waitPaymentError}/>
+                            <Button onClick={onWaitForPayment} className="width-fill" variant="secondary">
                                 Retry
                             </Button>
                         </>

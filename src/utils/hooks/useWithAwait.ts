@@ -1,51 +1,113 @@
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useCallback, useMemo, useRef, useState} from "react";
 
-export function useWithAwait<Args extends any[], Result>(
-    executor: (...args: Args) => Promise<Result>,
-    args: Args,
-    parallel: boolean = true
+type AwaitLatestProcessedState<Result> = {
+    sequence: number,
+    value?: Result,
+    error?: any
+};
+
+export function useWithAwait<Result>(
+    executor: () => Promise<Result>  | Result,
+    dependencies: any[],
+    parallel: boolean = true,
+    callback?: (result: Result, error: any) => void,
+    transitionValidator?: (manual: boolean, currDeps: any[], prevDeps: any[], prevValue: Result, prevError: any) => boolean,
+    verbose?: boolean
 ): [Result, boolean, any, () => void] {
 
-    const [loading, setLoading] = useState<boolean>(false);
-    const [success, setSuccess] = useState<Result>(null);
-    const [error, setError] = useState<any>(null);
+    const [latestProcessed, setLatestProcessed] = useState<AwaitLatestProcessedState<Result>>({sequence: 0, value: null, error: null});
+    const latestProcessedRef = useRef<AwaitLatestProcessedState<Result> & {lastDeps: any[]}>({sequence: 0, value: null, error: null, lastDeps: dependencies});
     const sequence = useRef<number>(0);
-    const currentPromise = useRef<Promise<void>>(Promise.resolve());
+    const currentPromise = useRef<Promise<void>>(null);
 
-    const refresh = useCallback(() => {
+    const runAction = useCallback<(manual: boolean) => [Result, number, any]>(((manual: boolean) => {
+        if(verbose) console.log("useWithAwait(): runAction(): ", dependencies);
+
         sequence.current++;
         const currSequence = sequence.current;
-        setLoading(true);
-        setSuccess(null);
-        setError(null);
 
-        const execute = async () => {
+        const execute = () => {
+            currentPromise.current = null;
+            let promise: Promise<Result> | Result = null;
             try {
-                const result = await executor(...args);
-                if(currSequence!==sequence.current) return;
-                setLoading(false);
-                setSuccess(result);
-            } catch (err) {
-                if(currSequence!==sequence.current) return;
-                setLoading(false);
-                setError(err);
+                promise = executor();
+            } catch (e) {
+                console.error(e);
+                latestProcessedRef.current = {sequence: -1, error: e, lastDeps: dependencies};
+                if(callback!=null) callback(null, e);
+                return [null as Result, -1, e];
+            }
+
+            if(!(promise instanceof Promise)) {
+                if(verbose) console.log("useWithAwait(): Sync: "+currSequence);
+                latestProcessedRef.current = {sequence: -1, value: promise as Result, lastDeps: dependencies};
+                if(callback!=null) callback(promise, null);
+                return [promise as Result, -1, null];
+            } else {
+                if(verbose) console.log("useWithAwait(): Async: "+currSequence);
+                currentPromise.current = promise.then(val => {
+                    currentPromise.current = null;
+                    latestProcessedRef.current = {sequence: currSequence, value: val, lastDeps: dependencies};
+                    if(verbose) console.log("useWithAwait(): Async success "+currSequence+"/"+sequence.current);
+                    if(currSequence!==sequence.current) return;
+                    if(callback!=null) callback(val, null);
+                    setLatestProcessed(latestProcessedRef.current);
+                }).catch(err => {
+                    currentPromise.current = null;
+                    console.error(err);
+                    latestProcessedRef.current = {sequence: currSequence, error: err, lastDeps: dependencies};
+                    if(verbose) console.log("useWithAwait(): Async failed "+currSequence+"/"+sequence.current);
+                    if(currSequence!==sequence.current) return;
+                    if(callback!=null) callback(null, err);
+                    setLatestProcessed(latestProcessedRef.current);
+                });
+
+                return [null as Result, currSequence, null];
             }
         }
 
-        if(parallel) {
-            execute();
+        if(currentPromise.current==null || parallel) {
+            if(verbose) console.log("useWithAwait(): Execute immediately: "+currSequence);
+            if(
+                transitionValidator==null ||
+                transitionValidator(manual, dependencies, latestProcessedRef.current.lastDeps, latestProcessedRef.current.value, latestProcessedRef.current.error)
+            ) {
+                return execute();
+            } else {
+                return [latestProcessedRef.current.value, latestProcessedRef.current.sequence, latestProcessedRef.current.error];
+            }
         } else {
+            if(verbose) console.log("useWithAwait(): Execute deferred: "+currSequence);
             const _exec = () => {
                 if(currSequence!==sequence.current) return;
-                currentPromise.current = execute();
+                if(
+                    transitionValidator==null ||
+                    transitionValidator(manual, dependencies, latestProcessedRef.current.lastDeps, latestProcessedRef.current.value, latestProcessedRef.current.error)
+                ) {
+                    const [value, processedSeq, error] = execute();
+                    if(processedSeq===-1) setLatestProcessed(latestProcessedRef.current = {sequence: currSequence, value, error, lastDeps: dependencies});
+                } else {
+                    latestProcessedRef.current.sequence = currSequence;
+                    setLatestProcessed(latestProcessedRef.current);
+                }
             };
             currentPromise.current.then(_exec, _exec);
+            return [null as Result, currSequence, null];
         }
-    }, args);
+    }) as (manual: boolean) => [Result, number, any], dependencies);
 
-    useEffect(() => {
-        refresh();
-    }, [refresh]);
+    const [refreshCount, setRefreshCount] = useState<number>(0);
+    const lastRefreshCountRef = useRef<number>(0);
 
-    return [success, loading, error, refresh];
+    const [_success, _loadingSequence, _error] = useMemo(() => {
+        const val = runAction(refreshCount!==lastRefreshCountRef.current);
+        lastRefreshCountRef.current = refreshCount;
+        return val;
+    }, [runAction, refreshCount]);
+    const refresh = useCallback(() => setRefreshCount(val => val+1), []);
+
+    if(verbose) console.log("useWithAwait(): Latest loaded: "+latestProcessed.sequence+" Loading sequence: "+_loadingSequence);
+
+    if(latestProcessed.sequence===_loadingSequence) return [latestProcessed.value, false, latestProcessed.error, refresh];
+    return [_success, _loadingSequence!==-1, _error, refresh];
 }

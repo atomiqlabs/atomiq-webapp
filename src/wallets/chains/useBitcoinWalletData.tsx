@@ -152,6 +152,7 @@ export function useBitcoinWalletData(): [ChainWalletData<BitcoinWallet>, JSX.Ele
             instance: bitcoinWallet,
             address: bitcoinWallet.getReceiveAddress()
         },
+        id: "BITCOIN",
         connect: usableWallets.length>0 || installableWallets.length>0 ? connect : null,
         disconnect: bitcoinWallet!=null ? disconnect : null,
         changeWallet: bitcoinWallet!=null && usableWallets.length>1 ? connect : null

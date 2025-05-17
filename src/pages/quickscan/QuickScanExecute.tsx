@@ -1,7 +1,7 @@
-import ValidatedInput from "../../components/ValidatedInput";
+import ValidatedInput, {numberValidator} from "../../components/ValidatedInput";
 import {CurrencyDropdown} from "../../tokens/CurrencyDropdown";
 import * as React from "react";
-import {useContext, useEffect, useMemo, useState} from "react";
+import {useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {FeeSummaryScreen} from "../../fees/FeeSummaryScreen";
 import {Badge, Button, Form, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
 import {
@@ -25,7 +25,7 @@ import {ScrollAnchor} from "../../components/ScrollAnchor";
 import {useLocalStorage} from "../../utils/hooks/useLocalStorage";
 import {ErrorAlert} from "../../components/ErrorAlert";
 import {Tokens} from "../../FEConstants";
-import {useBigNumberState} from "../../utils/hooks/useBigNumberState";
+import {useStateWithOverride} from "../../utils/hooks/useStateWithOverride";
 
 export function QuickScanExecute() {
     const {swapper} = useContext(SwapsContext);
@@ -41,7 +41,6 @@ export function QuickScanExecute() {
     }, [propAddress]);
 
     const [isLocked, setLocked] = useState<boolean>(false);
-    const [validatedAmount, setValidatedAmount] = useBigNumberState(null);
     const [selectedCurrency, setSelectedCurrency] = useState<SCToken>(null);
     const [isCurrencyPreselected, setCurrencyPreselected] = useState<boolean>(false);
 
@@ -63,18 +62,23 @@ export function QuickScanExecute() {
     const outToken = addressResult?.swapType==null ? null :
         addressResult.swapType===SwapType.TO_BTCLN ? Tokens.BITCOIN.BTCLN :
         addressResult.swapType===SwapType.TO_BTC ? Tokens.BITCOIN.BTC : selectedCurrency;
+    const [amount, setAmount] = useStateWithOverride(null, addressResult?.amount?.amount);
 
-    const exactIn = addressResult?.swapType===SwapType.TO_BTC || addressResult?.swapType===SwapType.TO_BTCLN;
+    const exactIn = addressResult?.swapType===SwapType.FROM_BTCLN || addressResult?.swapType===SwapType.FROM_BTC  || addressResult?.swapType===SwapType.SPV_VAULT_FROM_BTC;
     const btcToken = (exactIn ? inToken : outToken) ?? Tokens.BITCOIN.BTC;
 
     const {input: inputLimit, output: outputLimit} = useAmountConstraints(inToken, outToken);
     const btcConstraints = exactIn ? inputLimit : outputLimit;
-    const amountConstraints = {
+    const amountConstraints = useMemo(() => {return {
         min: BigNumber.max(btcConstraints?.min ?? 0, new BigNumber(addressResult?.min?.amount) ?? 0),
         max: BigNumber.min(btcConstraints?.max ?? Infinity, new BigNumber(addressResult?.max?.amount) ?? Infinity)
-    };
+    }}, [btcConstraints, addressResult]);
+    const amountValidator = useCallback(numberValidator(amountConstraints, true), [amountConstraints]);
+    const validatedAmount = useMemo(() => {
+        if(amountValidator(amount)==null) return amount==="" ? null : new BigNumber(amount).toString(10);
+    }, [amount]);
 
-    const [refresh, quote, quoteLoading, quoteError] = useQuote(validatedAmount, exactIn, inToken, outToken, addressResult?.address);
+    const [refresh, quote, _, quoteLoading, quoteError] = useQuote(validatedAmount, exactIn, inToken, outToken, addressResult?.lnurl ?? addressResult?.address);
 
     const selectableCurrencies = useMemo(() => {
         if(swapper==null) return smartChainTokenArray;
@@ -122,14 +126,17 @@ export function QuickScanExecute() {
                                     step={new BigNumber(10).pow(new BigNumber(-btcToken.decimals))}
                                     min={amountConstraints.min}
                                     max={amountConstraints.max}
+                                    onValidate={amountValidator}
                                     disabled={
                                         addressResult?.amount!=null ||
                                         isLocked
                                     }
                                     size={"lg"}
                                     defaultValue={addressResult?.type!=="LNURL" ? null : !exactIn ? amountConstraints.min.toString(10) : amountConstraints.max.toString(10)}
-                                    value={addressResult?.amount?.amount ?? null}
-                                    onValidatedInput={setValidatedAmount}
+                                    value={amount}
+                                    onChange={(val) => {
+                                        setAmount(val);
+                                    }}
                                     placeholder={"Input amount"}
                                 />
 
@@ -169,7 +176,7 @@ export function QuickScanExecute() {
 
                         {quoteError ? (
                             <>
-                                <ErrorAlert className="mt-3 mb-0" title="Quoting error" error={quoteError}/>
+                                <ErrorAlert className="my-3" title="Quoting error" error={quoteError}/>
                                 <Button onClick={refresh} variant="secondary">Retry</Button>
                             </>
                         ) : ""}
