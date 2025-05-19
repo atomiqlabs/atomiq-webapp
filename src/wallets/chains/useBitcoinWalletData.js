@@ -2,7 +2,6 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CloseButton, ListGroup, Modal } from "react-bootstrap";
 import * as React from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { useLocalStorage } from "../../utils/hooks/useLocalStorage";
 import { useStateRef } from "../../utils/hooks/useStateRef";
 import { ExtensionBitcoinWallet } from './bitcoin/base/ExtensionBitcoinWallet';
@@ -14,41 +13,43 @@ function BitcoinWalletModal(props) {
                             return (_jsxs(ListGroup.Item, { action: true, href: e.installUrl, target: "_blank", className: "d-flex flex-row bg-transparent text-white border-0", children: [_jsx("img", { width: 20, height: 20, src: e.iconUrl, className: "me-2" }), _jsxs("span", { children: ["Install ", e.name] })] }, e.name));
                         })] }) })] }));
 }
-export function useBitcoinWalletData() {
+export function useBitcoinWalletData(connectedOtherChainWallets) {
     const [bitcoinWallet, setBitcoinWallet] = React.useState(undefined);
     const [usableWallets, setUsableWallets] = useState([]);
     const [installableWallets, setInstallableWallets] = useState([]);
     const [autoConnect, setAutoConnect] = useLocalStorage("btc-wallet-autoconnect", true);
     const bitcoinWalletRef = useStateRef(bitcoinWallet);
-    const prevConnectedWalletRef = useRef();
-    const wallet = useWallet();
+    const prevConnectedWalletRef = useRef({});
     useEffect(() => {
-        if (wallet.wallet != null && wallet.publicKey == null)
-            return;
-        console.log("BitcoinWalletProvider(): Solana wallet changed: ", wallet.wallet?.adapter?.name);
-        if (prevConnectedWalletRef.current != null && wallet.wallet == null) {
-            setAutoConnect(true);
-            if (bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
-                disconnect(true);
+        for (let chainName in connectedOtherChainWallets) {
+            const oldWalletName = prevConnectedWalletRef.current[chainName];
+            const newWalletName = connectedOtherChainWallets[chainName];
+            if (prevConnectedWalletRef.current[chainName] == connectedOtherChainWallets[chainName])
+                continue;
+            const activeWallet = ExtensionBitcoinWallet.loadState();
+            if (oldWalletName != null && newWalletName == null && activeWallet?.name === oldWalletName) {
+                setAutoConnect(true);
+                if (bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
+                    disconnect(true);
+            }
+            prevConnectedWalletRef.current[chainName] = newWalletName;
+            if (newWalletName == null)
+                continue;
+            if (!autoConnect)
+                continue;
+            if (usableWallets == null)
+                continue;
+            if (activeWallet == null) {
+                const bitcoinWalletType = usableWallets.find(walletType => walletType.name === newWalletName);
+                console.log("useBitcoinWalletData(): useEffect(autoconnect): found matching bitcoin wallet: ", bitcoinWalletType);
+                if (bitcoinWalletType != null)
+                    bitcoinWalletType.use({ multichainConnected: true }).then(wallet => setBitcoinWallet(wallet)).catch(e => {
+                        console.error(e);
+                    });
+                return;
+            }
         }
-        prevConnectedWalletRef.current = wallet.wallet?.adapter?.name;
-        if (wallet.wallet == null)
-            return;
-        if (!autoConnect)
-            return;
-        const activeWallet = ExtensionBitcoinWallet.loadState();
-        console.log("BitcoinWalletProvider(): Current active wallet: ", activeWallet);
-        if (usableWallets == null)
-            return;
-        if (activeWallet == null) {
-            const bitcoinWalletType = usableWallets.find(walletType => walletType.name === wallet.wallet.adapter.name);
-            console.log("BitcoinWalletProvider(): Found matching bitcoin wallet: ", bitcoinWalletType);
-            if (bitcoinWalletType != null)
-                bitcoinWalletType.use({ multichainConnected: true }).then(wallet => setBitcoinWallet(wallet)).catch(e => {
-                    console.error(e);
-                });
-        }
-    }, [wallet.publicKey, usableWallets]);
+    }, [connectedOtherChainWallets, usableWallets]);
     useEffect(() => {
         getInstalledBitcoinWallets().then(resp => {
             setUsableWallets(resp.installed);
@@ -61,12 +62,11 @@ export function useBitcoinWalletData() {
         }).catch(e => console.error(e));
     }, []);
     useEffect(() => {
-        console.log("BitcoinWalletProvider(): Bitcoin wallet changed: ", bitcoinWallet);
         if (bitcoinWallet == null)
             return;
         let listener;
         bitcoinWallet.onWalletChanged(listener = (newWallet) => {
-            console.log("BitcoinWalletProvider(): New bitcoin wallet set: ", newWallet);
+            console.log("useBitcoinWalletData(): useEffect(walletChangeListener): New bitcoin wallet set: ", newWallet);
             if (newWallet == null) {
                 ExtensionBitcoinWallet.clearState();
                 setBitcoinWallet(undefined);

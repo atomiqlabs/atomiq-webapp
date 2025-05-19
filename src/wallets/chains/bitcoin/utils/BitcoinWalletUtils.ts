@@ -3,6 +3,7 @@ import { PhantomBitcoinWallet } from "../PhantomBitcoinWallet";
 import {XverseBitcoinWallet} from "../XverseBitcoinWallet";
 import {UnisatBitcoinWallet} from "../UnisatBitcoinWallet";
 import {MagicEdenBitcoinWallet} from "../MagicEdenBitcoinWallet";
+import {KeplrBitcoinWallet} from "../KeplrBitcoinWallet";
 
 export type BitcoinWalletType = {
     iconUrl: string,
@@ -33,6 +34,13 @@ const bitcoinWalletList: BitcoinWalletType[] = [
         installUrl: UnisatBitcoinWallet.installUrl,
         detect: UnisatBitcoinWallet.isInstalled,
         use: UnisatBitcoinWallet.init
+    },
+    {
+        iconUrl: KeplrBitcoinWallet.iconUrl,
+        name: KeplrBitcoinWallet.walletName,
+        installUrl: KeplrBitcoinWallet.installUrl,
+        detect: KeplrBitcoinWallet.isInstalled,
+        use: KeplrBitcoinWallet.init
     },
     {
         iconUrl: MagicEdenBitcoinWallet.iconUrl,
@@ -80,18 +88,4 @@ export async function getInstalledBitcoinWallets(): Promise<{
         installable: installableBitcoinWallets,
         active
     }
-}
-
-export async function getBitcoinWalletAsPartOfMultichainWallet(smartchainWalletName: string): Promise<ExtensionBitcoinWallet> {
-    const activeWallet = ExtensionBitcoinWallet.loadState();
-    if(activeWallet!=null) {
-        console.log("Active wallet not null");
-        return null;
-    }
-
-    const walletType = bitcoinWalletList.find(e => e.name===smartchainWalletName);
-    if(walletType==null) return null;
-    if(!await walletType.detect()) return null;
-
-    return await walletType.use();
 }

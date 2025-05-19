@@ -6,10 +6,15 @@ import { useLightningWalletData } from "./chains/useLightningWalletData";
 import { ChainDataContext } from "./context/ChainDataContext";
 import { useMemo } from "react";
 function WrappedChainDataProvider(props) {
-    const [bitcoinChain, bitcoinModal] = useBitcoinWalletData();
     const [starknetChain] = useStarknetWalletData();
     const [solanaChain] = useSolanaWalletData();
     const [lightningChain] = useLightningWalletData();
+    const [bitcoinChain, bitcoinModal] = useBitcoinWalletData(useMemo(() => {
+        return {
+            STARKNET: starknetChain.wallet?.name,
+            SOLANA: solanaChain.wallet?.name
+        };
+    }, [starknetChain.wallet, solanaChain.wallet]));
     return (_jsxs(ChainDataContext.Provider, { value: useMemo(() => {
             const res = {
                 BITCOIN: bitcoinChain,

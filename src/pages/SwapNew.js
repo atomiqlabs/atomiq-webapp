@@ -57,7 +57,6 @@ export function SwapNew(props) {
             return null;
         try {
             const addressParseResult = swapper.Utils.parseAddressSync(val);
-            console.log("Address parsing result: ", addressParseResult);
             if (addressParseResult == null)
                 return "Invalid address";
         }
@@ -130,9 +129,7 @@ export function SwapNew(props) {
     //Url defined amount & swap type
     useEffect(() => {
         const tokenIn = fromTokenIdentifier(params.get("tokenIn"));
-        console.log("Raw tokenOut; ", params.get("tokenOut"));
         const tokenOut = fromTokenIdentifier(params.get("tokenOut"));
-        console.log("Parsed tokenOut; ", tokenOut);
         if (tokenIn != null)
             setInputToken(tokenIn);
         if (tokenOut != null)
@@ -237,7 +234,6 @@ export function SwapNew(props) {
             addressRef.current.setValue(existingSwap.getOutputAddress());
         if (!noSetAmounts)
             if (existingSwap.exactIn) {
-                console.log("Setting input value from existing swap: ", existingSwap.getInput().amount);
                 inputRef.current.setValue(existingSwap.getInput().amount);
             }
             else {
@@ -315,7 +311,6 @@ export function SwapNew(props) {
                                                         setExactIn(true);
                                                         inputRef.current.setValue(maxSpendable?.balance?.amount);
                                                     }, children: _jsx("small", { className: "font-smallest", style: { marginBottom: "-2px" }, children: "MAX" }) })] })) : (_jsx("small", { children: _jsx(ConnectedWalletAnchor, { noText: false, currency: inputToken }) }))] }), _jsx(ValidatedInput, { disabled: locked || amountsLocked || webLnForOutput, inputRef: inputRef, className: "flex-fill", type: "number", value: inputAmount, size: "lg", textStart: !exactIn && quoteLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, onChange: (value, forcedChange) => {
-                                        console.log("SwapNew: ValidatedInput(inputAmount): onChange: ", value);
                                         setAmount(value);
                                         setExactIn(true);
                                         if (!forcedChange)
@@ -349,7 +344,6 @@ export function SwapNew(props) {
                                             if (getChainIdentifierForCurrency(newOutputToken) !== getChainIdentifierForCurrency(outputToken))
                                                 addressRef.current.setValue("");
                                         }, value: inputToken, className: "round-right text-white bg-black bg-opacity-10" })) })] }), _jsx("div", { className: "d-flex justify-content-center swap-direction-wrapper", children: _jsx(Button, { onClick: changeDirection, size: "lg", className: "px-0 swap-direction-btn", children: _jsx(Icon, { size: 22, icon: arrows_vertical, style: { marginTop: "-8px" } }) }) }), _jsxs(Card, { className: "tab-accent-p3 pt-2", children: [_jsxs("div", { className: "d-flex flex-row", children: [_jsx("small", { className: "text-light text-opacity-75 me-auto", children: "You receive" }), _jsx("small", { children: _jsx(ConnectedWalletAnchor, { noText: false, currency: outputToken }) })] }), _jsx("div", { className: "d-flex flex-row", children: _jsx(ValidatedInput, { disabled: locked || amountsLocked, inputRef: outputRef, className: "flex-fill strip-group-text", type: "number", value: outputAmount, size: "lg", textStart: exactIn && quoteLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, onChange: (val, forcedChange) => {
-                                            console.log("SwapNew: ValidatedInput(outputAmount): onChange: ", val);
                                             setAmount(val);
                                             setExactIn(false);
                                             if (webLnForOutput)
@@ -365,7 +359,6 @@ export function SwapNew(props) {
                                                 if (getChainIdentifierForCurrency(val) !== getChainIdentifierForCurrency(outputToken))
                                                     addressRef.current.setValue("");
                                                 const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
-                                                console.log("Supported counter tokens: ", supportedCounterTokens);
                                                 setOutputToken(val);
                                                 if (includesToken(supportedCounterTokens, inputToken))
                                                     return;
@@ -388,7 +381,6 @@ export function SwapNew(props) {
                                             setGasDropChecked(val);
                                             leaveExistingSwap();
                                         }, placeholder: (_jsx("span", { children: _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "fee-tooltip-gas-drop", children: _jsxs("span", { children: ["Swap some amount of BTC to ", gasDropTokenAmount?.token.ticker, " (gas token on the destination chain), so that you can transact on ", gasDropTokenAmount?.token.chainId] }) }), children: _jsxs("span", { className: "dottedUnderline", children: ["Request gas drop of ", gasDropTokenAmount?._amount.toString(10), " ", gasDropTokenAmount?.token.ticker] }) }) })), value: gasDropChecked, onValidate: () => null, disabled: locked }) }), _jsxs("div", { className: "flex-column " + (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet ? "d-none" : "d-flex"), children: [_jsx(ValidatedInput, { type: "text", className: "flex-fill mt-3 " + (webLnForOutput && (addressData?.address == null) ? "d-none" : ""), onChange: (val, forcedChange) => {
-                                                console.log("Address: ", val);
                                                 setAddress(val);
                                                 if (!forcedChange)
                                                     leaveExistingSwap(true);

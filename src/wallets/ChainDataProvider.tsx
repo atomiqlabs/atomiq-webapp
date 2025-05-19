@@ -24,10 +24,15 @@ export type ChainWalletData<T> = {
 };
 
 function WrappedChainDataProvider(props: {children: React.ReactNode}) {
-    const [bitcoinChain, bitcoinModal] = useBitcoinWalletData();
     const [starknetChain] = useStarknetWalletData();
     const [solanaChain] = useSolanaWalletData();
     const [lightningChain] = useLightningWalletData();
+    const [bitcoinChain, bitcoinModal] = useBitcoinWalletData(useMemo(() => {
+        return {
+            STARKNET: starknetChain.wallet?.name,
+            SOLANA: solanaChain.wallet?.name
+        };
+    }, [starknetChain.wallet, solanaChain.wallet]));
 
     return (
         <ChainDataContext.Provider value={useMemo(() => {

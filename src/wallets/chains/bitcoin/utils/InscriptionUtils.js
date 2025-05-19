@@ -35,7 +35,7 @@ export async function traverseToConfirmedOrdinalInputs(utxo, satsOffset = 0, sat
         const inputSatRange = intersectionEnd - intersectionStart;
         if (inputSatRange === 0)
             continue;
-        console.log("Start: " + intersectionStart + " End: " + intersectionEnd);
+        // console.log("Start: "+intersectionStart+" End: "+intersectionEnd);
         confirmedInputs.push(...await traverseToConfirmedOrdinalInputs({ txId: input.txid, vout: input.vout, value: input.prevout.value }, inputSatOffset, inputSatRange));
     }
     return confirmedInputs;
@@ -59,12 +59,12 @@ export async function filterInscriptionUtxos(utxos) {
         if (!utxo.confirmed) {
             try {
                 const ancestorUtxos = await traverseToConfirmedOrdinalInputs(utxo);
-                console.log("PhantomBitcoinWallet: filterInscriptionUtxos(): Fetched ancestors of unconfirmed utxo " + utxo.txId + ":" + utxo.vout + ", array: ", ancestorUtxos);
+                console.log("InscriptionUtils: filterInscriptionUtxos(): Fetched ancestors of unconfirmed utxo " + utxo.txId + ":" + utxo.vout + ", array: ", ancestorUtxos);
                 ancestorUtxos.forEach(val => ancestorMap.set(val.txId + ":" + val.vout, utxo.txId + ":" + utxo.vout));
             }
             catch (e) {
                 console.error(e);
-                console.log("PhantomBitcoinWallet: filterInscriptionUtxos(): Failed to traverse ancestors of unconfirmed utxo " + utxo.txId + ":" + utxo.vout + ", adding to unspendable UTXOs");
+                console.log("InscriptionUtils: filterInscriptionUtxos(): Failed to traverse ancestors of unconfirmed utxo " + utxo.txId + ":" + utxo.vout + ", adding to unspendable UTXOs");
                 utxosWithAssetSet.add(utxo.txId + ":" + utxo.vout);
             }
         }
@@ -81,7 +81,7 @@ export async function filterInscriptionUtxos(utxos) {
         throw new Error("Failed to filter out inscription utxos");
     const res = await resp.json();
     res.forEach(utxoWithAsset => utxosWithAssetSet.add(ancestorMap.get(utxoWithAsset)));
-    console.log("PhantomBitcoinWallet: filterInscriptionUtxos(): Removing utxos from pool: ", Array.from(utxosWithAssetSet));
+    console.log("InscriptionUtils: filterInscriptionUtxos(): Removing utxos from pool: ", Array.from(utxosWithAssetSet));
     return utxos.filter(utxo => !utxosWithAssetSet.has(utxo.txId + ":" + utxo.vout));
 }
 /**
@@ -104,6 +104,6 @@ export async function filterInscriptionUtxosOnlyConfirmed(utxos) {
         throw new Error("Failed to filter out inscription utxos");
     const res = await resp.json();
     const utxosWithAssetSet = new Set(res);
-    console.log("PhantomBitcoinWallet: filterInscriptionUtxos(): Removing utxos from pool: ", Array.from(utxosWithAssetSet));
+    console.log("InscriptionUtils: filterInscriptionUtxos(): Removing utxos from pool: ", Array.from(utxosWithAssetSet));
     return utxos.filter(utxo => !utxosWithAssetSet.has(utxo.txId + ":" + utxo.vout));
 }

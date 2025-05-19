@@ -37,7 +37,6 @@ export function useAmountConstraints(inCurrency, outCurrency) {
                 output: toBigNumbers(defaultConstraints, outCurrency)
             };
         const res = swapper.getSwapLimits(inCurrency, outCurrency);
-        console.log("useAmountConstraints: output", res);
         return {
             input: toBigNumbers({ min: res.input.min?.rawAmount, max: res.input.max?.rawAmount }, inCurrency),
             output: toBigNumbers({ min: res.output.min?.rawAmount, max: res.output.max?.rawAmount }, outCurrency)

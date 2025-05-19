@@ -71,7 +71,6 @@ export function SpvVaultFromBTCQuoteSummary(props: {
                     setTxData(null);
                     return;
                 }
-                console.log("BTC tx eta: ", txEtaMs);
                 setTxData({
                     txId,
                     confirmations,

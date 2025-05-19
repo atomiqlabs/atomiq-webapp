@@ -8,7 +8,6 @@ export function useWalletBalance(currency, swapType, swapChainId, requestGasDrop
     const chain = useChainForCurrency(currency);
     const pauseRef = useStateRef(pause);
     const [maxSpendable, setMaxSpendable] = useState(null);
-    console.log("Max spendable: ", maxSpendable?.balance);
     useEffect(() => {
         setMaxSpendable(null);
         if (currency == null || (isBtcToken(currency) && currency.lightning))

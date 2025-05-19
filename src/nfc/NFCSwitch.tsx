@@ -17,11 +17,9 @@ export function NFCSwitch() {
     }, []);
 
     const nfcSet = (val: boolean, target: any) => {
-        console.log("NFC set: ", val);
         if(val===true) {
             const reader = new NFCReader();
             reader.start(true).then(resp => {
-                console.log("start response: ", resp);
                 if(resp===NFCStartResult.OK) {
                     setNfcEnabled(true);
                     target.checked = true;
@@ -33,7 +31,6 @@ export function NFCSwitch() {
             setNfcEnabled(false);
             target.checked = false;
             NFCReader.userDisable();
-            console.log("Set nfc disabled: ", val);
         }
     };
 

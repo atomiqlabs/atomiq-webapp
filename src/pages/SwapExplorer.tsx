@@ -65,7 +65,6 @@ export function SwapExplorer(props: {}) {
     const additionalData = useMemo(() => {
         const additionalData: any = {};
         if(search!=null) additionalData.search = search;
-        console.log(additionalData);
         return additionalData;
     }, [search])
 

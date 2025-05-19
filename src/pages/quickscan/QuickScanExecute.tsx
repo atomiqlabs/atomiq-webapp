@@ -47,7 +47,6 @@ export function QuickScanExecute() {
     useEffect(() => {
         const propToken = params.get("token");
         const propChainId = params.get("chainId");
-        console.log("Prop token: ", propToken);
         if(propToken!=null && propChainId!=null) {
             setSelectedCurrency(Tokens[propChainId][propToken]);
             setCurrencyPreselected(true);

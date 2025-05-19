@@ -85,8 +85,7 @@ export function useQuote(
         [swapper, amount, exactIn, toTokenIdentifier(inToken), toTokenIdentifier(outToken), inputAddress, address, gasDropAmount],
         false,
         null,
-        pause,
-        true
+        pause
     );
 
 

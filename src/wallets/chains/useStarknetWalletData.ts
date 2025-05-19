@@ -83,15 +83,12 @@ export function useStarknetWalletData(): [ChainWalletData<StarknetSigner>] {
     }, []);
 
     const _connect: () => Promise<void> = useCallback(async () => {
-        console.log("useStarknetWalletContext(): connect()");
         const swo = await connect({ modalMode: 'alwaysAsk', modalTheme: 'dark' });
-        console.log("useStarknetWalletContext(): connect() wallet connection: ", swo);
         setStarknetAutoConnect(swo?.id);
         setWallet(swo);
     }, []);
 
     const _disconnect: () => Promise<void> = useCallback(async () => {
-        console.log("useStarknetWalletContext(): disconnect()");
         await disconnect({clearLastWallet: true}).catch(e => console.error("useStarknetWalletContext: error while disconnect", e));
         Object.keys(window.localStorage).forEach(val => {
             if(val.startsWith("gsw-last-")) window.localStorage.removeItem(val);
@@ -101,7 +98,6 @@ export function useStarknetWalletData(): [ChainWalletData<StarknetSigner>] {
     }, []);
 
     const changeWallet: () => Promise<void> = useCallback(() => {
-        console.log("useStarknetWalletContext(): changeWallet()");
         return _disconnect().then(() => _connect());
     }, []);
 

@@ -80,7 +80,6 @@ export function SwapNew(props: {
         if(swapper==null) return null;
         try {
             const addressParseResult = swapper.Utils.parseAddressSync(val);
-            console.log("Address parsing result: ", addressParseResult);
             if(addressParseResult==null) return "Invalid address";
         } catch (e) {
             console.log("Address parsing error: ", e);
@@ -151,9 +150,7 @@ export function SwapNew(props: {
     //Url defined amount & swap type
     useEffect(() => {
         const tokenIn = fromTokenIdentifier(params.get("tokenIn"));
-        console.log("Raw tokenOut; ", params.get("tokenOut"));
         const tokenOut = fromTokenIdentifier(params.get("tokenOut"));
-        console.log("Parsed tokenOut; ", tokenOut);
         if(tokenIn!=null) setInputToken(tokenIn);
         if(tokenOut!=null) setOutputToken(tokenOut);
         const exactIn = params.get("exactIn");
@@ -260,7 +257,6 @@ export function SwapNew(props: {
         setOutputToken(existingSwap.getOutput().token);
         if(!noSetAddress) addressRef.current.setValue(existingSwap.getOutputAddress());
         if(!noSetAmounts) if(existingSwap.exactIn) {
-            console.log("Setting input value from existing swap: ", existingSwap.getInput().amount);
             inputRef.current.setValue(existingSwap.getInput().amount);
         } else {
             outputRef.current.setValue(existingSwap.getOutput().amount);
@@ -382,7 +378,6 @@ export function SwapNew(props: {
                             size={"lg"}
                             textStart={!exactIn && quoteLoading ? (<Spinner size="sm" className="text-white"/>) : null}
                             onChange={(value, forcedChange) => {
-                                console.log("SwapNew: ValidatedInput(inputAmount): onChange: ", value);
                                 setAmount(value);
                                 setExactIn(true);
                                 if(!forcedChange) leaveExistingSwap(false, true);
@@ -457,7 +452,6 @@ export function SwapNew(props: {
                                     <Spinner size="sm" className="text-white"/>
                                 ) : null}
                                 onChange={(val, forcedChange) => {
-                                    console.log("SwapNew: ValidatedInput(outputAmount): onChange: ", val);
                                     setAmount(val);
                                     setExactIn(false);
                                     if (webLnForOutput) addressRef.current.setValue("");
@@ -481,7 +475,6 @@ export function SwapNew(props: {
                                             if(val===outputToken) return;
                                             if(getChainIdentifierForCurrency(val)!==getChainIdentifierForCurrency(outputToken)) addressRef.current.setValue("");
                                             const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
-                                            console.log("Supported counter tokens: ", supportedCounterTokens);
                                             setOutputToken(val);
                                             if(includesToken(supportedCounterTokens, inputToken)) return;
                                             if(includesToken(supportedCounterTokens, outputToken)) {
@@ -531,7 +524,6 @@ export function SwapNew(props: {
                                 type={"text"}
                                 className={"flex-fill mt-3 " + (webLnForOutput && (addressData?.address == null) ? "d-none" : "")}
                                 onChange={(val, forcedChange) => {
-                                    console.log("Address: ", val);
                                     setAddress(val);
                                     if(!forcedChange) leaveExistingSwap(true)
                                 }}

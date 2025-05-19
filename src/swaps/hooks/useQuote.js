@@ -54,6 +54,6 @@ export function useQuote(amount, exactIn, inToken, outToken, address, gasDropAmo
             maxAllowedNetworkFeeRate: btcFeeRate == null ? null : btcFeeMaxOffset + (btcFeeRate * btcFeeMaxMultiple),
             unsafeZeroWatchtowerFee: swapType === SwapType.SPV_VAULT_FROM_BTC
         }).then(quote => { return { quote, random: address == null }; });
-    }, [swapper, amount, exactIn, toTokenIdentifier(inToken), toTokenIdentifier(outToken), inputAddress, address, gasDropAmount], false, null, pause, true);
+    }, [swapper, amount, exactIn, toTokenIdentifier(inToken), toTokenIdentifier(outToken), inputAddress, address, gasDropAmount], false, null, pause);
     return [refresh, result?.quote, result?.random, loading, error];
 }

@@ -31,10 +31,8 @@ export class NFCReader {
     constructor() {
         try {
             this.ndef = new (window as any).NDEFReader();
-            this.ndef.onreadingerror = (event) => {
-                console.log(
-                    "Error! Cannot read data from the NFC tag. Try a different one?",
-                );
+            this.ndef.onreadingerror = () => {
+                console.error("Failed to read NFC tag!");
             };
             this.ndef.onreading = (event) => {
                 if(event.message==null) return;

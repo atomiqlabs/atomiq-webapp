@@ -29,7 +29,6 @@ export function SingleColumnTable(props) {
         });
     }, [props.getPage]);
     const renderFunc = () => {
-        console.log("Table re-render: ", [state.page, props.getPage]);
         const maybePromise = props.getPage(state.page, itemsPerPage);
         if (maybePromise instanceof Promise) {
             setState((val) => {

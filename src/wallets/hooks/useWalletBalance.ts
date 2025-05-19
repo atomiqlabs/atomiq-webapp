@@ -30,7 +30,6 @@ export function useWalletBalance(
         balance: TokenAmount
         feeRate?: number
     }>(null);
-    console.log("Max spendable: ", maxSpendable?.balance);
 
     useEffect(() => {
         setMaxSpendable(null);

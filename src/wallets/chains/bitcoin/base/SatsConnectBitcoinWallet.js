@@ -31,11 +31,9 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
         for (let i = 0; i < 10; i++) {
             try {
                 await getCapabilities({
-                    onFinish(response) {
-                        console.log("Capabilities: ", response);
-                    },
+                    onFinish() { },
                     onCancel() {
-                        console.log("User cancelled!");
+                        console.error("User cancelled!");
                     },
                     payload: {
                         network: {
@@ -79,7 +77,7 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
         if (result == null)
             throw new Error("Xverse bitcoin wallet not found");
         const accounts = result.addresses;
-        console.log("Loaded wallet accounts: ", accounts);
+        console.log(walletName + "BitcoinWallet: Loaded wallet accounts: ", accounts);
         const paymentAccounts = accounts.filter(e => e.purpose === AddressPurpose.Payment);
         if (paymentAccounts.length === 0)
             throw new Error("No valid payment account found");
@@ -122,7 +120,7 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
                     }]
             },
             onFinish: (resp) => {
-                console.log("TX signed: ", resp);
+                console.log(this.getName() + "BitcoinWallet: transaction signed: ", resp);
                 txId = resp.txId;
                 psbtBase64 = resp.psbtBase64;
             },
@@ -138,7 +136,6 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
             const txHex = Buffer.from(psbt.extract()).toString("hex");
             txId = await super._sendTransaction(txHex);
         }
-        console.log("signTransaction returned!");
         return txId;
     }
     getName() {
@@ -167,7 +164,7 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
                     }]
             },
             onFinish: (resp) => {
-                console.log("TX signed: ", resp);
+                console.log(this.getName() + "BitcoinWallet: transaction signed: ", resp);
                 psbtBase64 = resp.psbtBase64;
             },
             onCancel: () => { cancelled = true; }
