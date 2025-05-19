@@ -1,6 +1,15 @@
-import {useEffect, useRef, useState} from "react";
-import {Alert, Button, ProgressBar, Spinner} from "react-bootstrap";
-import {FromBTCLNSwap, FromBTCLNSwapState} from "sollightning-sdk";
+import * as React from "react";
+import {useContext, useEffect} from "react";
+import {Alert, Button, Spinner} from "react-bootstrap";
+import {FromBTCLNSwap, FromBTCLNSwapState} from "@atomiqlabs/sdk";
+import {SwapsContext} from "../../../context/SwapsContext";
+import {ButtonWithSigner} from "../../ButtonWithSigner";
+import {useSwapState} from "../../../utils/useSwapState";
+import {SwapExpiryProgressBar} from "../../SwapExpiryProgressBar";
+
+import {StepByStep} from "../../StepByStep";
+import {ErrorAlert} from "../../ErrorAlert";
+import {useFromBtcLnQuote} from "../../../utils/useFromBtcLnQuote";
 
 export function LNURLWithdrawQuoteSummary(props: {
     quote: FromBTCLNSwap<any>,
@@ -8,107 +17,127 @@ export function LNURLWithdrawQuoteSummary(props: {
     setAmountLock: (isLocked: boolean) => void,
     type?: "payment" | "swap",
     autoContinue?: boolean,
-    notEnoughForGas: boolean
+    notEnoughForGas: bigint
 }) {
+    const {getSigner} = useContext(SwapsContext);
+    const signer = getSigner(props.quote);
 
-    const [quoteTimeRemaining, setQuoteTimeRemaining] = useState<number>();
-    const [initialQuoteTimeout, setInitialQuoteTimeout] = useState<number>();
-    const expiryTime = useRef<number>();
+    const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote);
 
-    const [loading, setLoading] = useState<boolean>();
-    const [success, setSuccess] = useState<boolean>();
-    const [error, setError] = useState<string>();
+    const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
+
+    const {
+        waitForPayment, onCommit, onClaim,
+        paymentWaiting, committing, claiming,
+        paymentError, commitError, claimError,
+
+        isQuoteExpired,
+        isQuoteExpiredClaim,
+        isFailed,
+        isCreated,
+        isClaimCommittable,
+        isClaimClaimable,
+        isClaimable,
+        isSuccess,
+
+        executionSteps
+    } = useFromBtcLnQuote(props.quote, props.setAmountLock);
 
     useEffect(() => {
-
-        if(props.quote==null) return () => {};
-
-        setSuccess(null);
-        setError(null);
-
-        let interval;
-        interval = setInterval(() => {
-            let dt = expiryTime.current-Date.now();
-            if(dt<=0) {
-                clearInterval(interval);
-                dt = 0;
-            }
-            setQuoteTimeRemaining(Math.floor(dt/1000));
-        }, 500);
-
-        expiryTime.current = Date.now()+(30*1000);
-
-        const dt = Math.floor((expiryTime.current-Date.now())/1000);
-        setInitialQuoteTimeout(dt);
-        setQuoteTimeRemaining(dt);
-
-        if(props.quote.getState()===FromBTCLNSwapState.PR_CREATED) {
-            if(props.autoContinue) onContinue(true);
+        if(state===FromBTCLNSwapState.PR_CREATED) {
+            if(props.autoContinue) waitForPayment();
         }
-
-        return () => {
-            clearInterval(interval);
-        };
-
-    }, [props.quote]);
-
-    const onContinue = async (skipChecks?: boolean) => {
-        if (!props.quote.prPosted) {
-            setLoading(true);
-            try {
-                if(props.setAmountLock) props.setAmountLock(true);
-                await props.quote.waitForPayment(null, 1);
-                await props.quote.commitAndClaim(null, skipChecks);
-                setSuccess(true);
-            } catch (e) {
-                setSuccess(false);
-                setError(e.toString());
-            }
-            if(props.setAmountLock) props.setAmountLock(false);
-            setLoading(false);
+        if(state===FromBTCLNSwapState.PR_PAID) {
+            onCommit(true).then(() => {
+                if(!canClaimInOneShot) onClaim(true)
+            });
         }
-    };
+    }, [state, onCommit]);
 
     return (
         <>
-            <div className={success===null && !loading ? "d-flex flex-column mb-3 tab-accent" : "d-none"}>
-                {quoteTimeRemaining===0 ? (
-                    <label>Quote expired!</label>
-                ) : (
-                    <label>Quote expires in {quoteTimeRemaining} seconds</label>
-                )}
-                <ProgressBar animated now={quoteTimeRemaining} max={initialQuoteTimeout} min={0}/>
-            </div>
+            {isInitiated ? <StepByStep steps={executionSteps}/> : ""}
 
-            {success===null ? (
-                quoteTimeRemaining===0 && !loading ? (
-                    <Button onClick={props.refreshQuote} variant="secondary">
-                        New quote
-                    </Button>
-                ) : (
-                    <Button onClick={() => onContinue()} disabled={loading} size="lg">
-                        {loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
-                        Claim
-                    </Button>
-                )
-            ) : (
-                success ? (
-                    <Alert variant="success" className="mb-0">
-                        <strong>Swap successful</strong>
-                        <label>Swap was concluded successfully</label>
-                    </Alert>
+            <SwapExpiryProgressBar
+                expired={isQuoteExpired}
+                timeRemaining={quoteTimeRemaining} totalTime={totalQuoteTime}
+                show={(
+                    isClaimable ||
+                    isQuoteExpiredClaim
+                ) && !committing && !claiming && signer!==undefined}
+            />
+
+            {(
+                isCreated ||
+                isClaimable
+            ) ? (
+                signer===undefined ? (
+                    <ButtonWithSigner chainId={props.quote.chainIdentifier} signer={signer} size="lg"/>
                 ) : (
                     <>
-                        <Alert variant="danger" className="mb-3">
-                            <strong>Swap failed</strong>
-                            <label>{error}</label>
-                        </Alert>
-                        <Button onClick={props.refreshQuote} variant="secondary">
-                            New quote
-                        </Button>
+                        <ErrorAlert
+                            className="mb-3"
+                            title={"Swap "+((canClaimInOneShot || claimError!=null) ? "claim" : "claim initialization")+" error"}
+                            error={claimError ?? commitError ?? paymentError}
+                        />
+
+                        <ButtonWithSigner
+                            signer={signer}
+                            chainId={props.quote?.chainIdentifier}
+                            onClick={() => isClaimable ? onCommit() : waitForPayment()}
+                            disabled={committing || paymentWaiting || (!canClaimInOneShot && isClaimClaimable)}
+                            size={canClaimInOneShot ? "lg" : isClaimClaimable ? "sm" : "lg"}
+                        >
+                            {committing || paymentWaiting ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
+                            {canClaimInOneShot ?
+                                "Claim" :
+                                isClaimClaimable ?
+                                    "1. Initialized" :
+                                    committing ?
+                                        "1. Initializing..." :
+                                        "1. Initialize swap"
+                            }
+                        </ButtonWithSigner>
+                        {!canClaimInOneShot ? (
+                            <ButtonWithSigner
+                                signer={signer}
+                                chainId={props.quote?.chainIdentifier}
+                                onClick={() => onClaim()}
+                                disabled={claiming || !isClaimClaimable}
+                                size={isClaimClaimable ? "lg" : "sm"}
+                                className="mt-2"
+                            >
+                                {claiming ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
+                                {claiming ? "2. Claiming funds..." : "2. Finish swap (claim funds)"}
+                            </ButtonWithSigner>
+                        ) : ""}
                     </>
                 )
-            )}
+            ) : ""}
+
+            {isSuccess ? (
+                <Alert variant="success" className="mb-0">
+                    <strong>Swap successful</strong>
+                    <label>Swap was executed successfully</label>
+                </Alert>
+            ) : ""}
+
+            {isFailed ? (
+                <Alert variant="danger" className="mb-0">
+                    <strong>Swap failed</strong>
+                    <label>Swap HTLC expired, your lightning payment will be refunded shortly!</label>
+                </Alert>
+            ) : ""}
+
+            {(
+                isQuoteExpired ||
+                isFailed ||
+                (isSuccess && props.type!=="payment")
+            ) ? (
+                <Button onClick={props.refreshQuote} variant="secondary">
+                    New quote
+                </Button>
+            ) : ""}
 
         </>
     )

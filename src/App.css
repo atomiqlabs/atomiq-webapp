@@ -78,8 +78,9 @@
 }
 
 .quickscan-summary-panel {
-  max-width: 400px;
+  max-width: 450px;
   min-width: 370px;
+  width: calc(100% - 2rem);
 }
 
 .swap-panel {
@@ -97,11 +98,21 @@
 .font-small {
   font-size: 0.875em;
 }
+.font-smallest {
+  font-size: 0.75rem;
+}
+
+.font-default {
+  font-size: 1rem;
+}
+.font-small-accordion {
+  font-size: 1.5rem;
+}
 
 .swap-direction-wrapper {
   margin-top: -12px;
   margin-bottom: -12px;
-  z-index: 100;
+  z-index: 1;
 }
 
 .swap-direction-btn {
@@ -144,4 +155,14 @@
 .text-decoration-dotted {
   text-decoration-style: dotted;
   text-decoration-line: underline;
+}
+
+.centered-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.font-monospace {
+  font-family: monospace;
 }

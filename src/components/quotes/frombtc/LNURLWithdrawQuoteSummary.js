@@ -1,58 +1,41 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useEffect, useRef, useState } from "react";
-import { Alert, Button, ProgressBar, Spinner } from "react-bootstrap";
-import { FromBTCLNSwapState } from "sollightning-sdk";
+import { useContext, useEffect } from "react";
+import { Alert, Button, Spinner } from "react-bootstrap";
+import { FromBTCLNSwapState } from "@atomiqlabs/sdk";
+import { SwapsContext } from "../../../context/SwapsContext";
+import { ButtonWithSigner } from "../../ButtonWithSigner";
+import { useSwapState } from "../../../utils/useSwapState";
+import { SwapExpiryProgressBar } from "../../SwapExpiryProgressBar";
+import { StepByStep } from "../../StepByStep";
+import { ErrorAlert } from "../../ErrorAlert";
+import { useFromBtcLnQuote } from "../../../utils/useFromBtcLnQuote";
 export function LNURLWithdrawQuoteSummary(props) {
-    const [quoteTimeRemaining, setQuoteTimeRemaining] = useState();
-    const [initialQuoteTimeout, setInitialQuoteTimeout] = useState();
-    const expiryTime = useRef();
-    const [loading, setLoading] = useState();
-    const [success, setSuccess] = useState();
-    const [error, setError] = useState();
+    const { getSigner } = useContext(SwapsContext);
+    const signer = getSigner(props.quote);
+    const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
+    const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
+    const { waitForPayment, onCommit, onClaim, paymentWaiting, committing, claiming, paymentError, commitError, claimError, isQuoteExpired, isQuoteExpiredClaim, isFailed, isCreated, isClaimCommittable, isClaimClaimable, isClaimable, isSuccess, executionSteps } = useFromBtcLnQuote(props.quote, props.setAmountLock);
     useEffect(() => {
-        if (props.quote == null)
-            return () => { };
-        setSuccess(null);
-        setError(null);
-        let interval;
-        interval = setInterval(() => {
-            let dt = expiryTime.current - Date.now();
-            if (dt <= 0) {
-                clearInterval(interval);
-                dt = 0;
-            }
-            setQuoteTimeRemaining(Math.floor(dt / 1000));
-        }, 500);
-        expiryTime.current = Date.now() + (30 * 1000);
-        const dt = Math.floor((expiryTime.current - Date.now()) / 1000);
-        setInitialQuoteTimeout(dt);
-        setQuoteTimeRemaining(dt);
-        if (props.quote.getState() === FromBTCLNSwapState.PR_CREATED) {
+        if (state === FromBTCLNSwapState.PR_CREATED) {
             if (props.autoContinue)
-                onContinue(true);
+                waitForPayment();
         }
-        return () => {
-            clearInterval(interval);
-        };
-    }, [props.quote]);
-    const onContinue = async (skipChecks) => {
-        if (!props.quote.prPosted) {
-            setLoading(true);
-            try {
-                if (props.setAmountLock)
-                    props.setAmountLock(true);
-                await props.quote.waitForPayment(null, 1);
-                await props.quote.commitAndClaim(null, skipChecks);
-                setSuccess(true);
-            }
-            catch (e) {
-                setSuccess(false);
-                setError(e.toString());
-            }
-            if (props.setAmountLock)
-                props.setAmountLock(false);
-            setLoading(false);
+        if (state === FromBTCLNSwapState.PR_PAID) {
+            onCommit(true).then(() => {
+                if (!canClaimInOneShot)
+                    onClaim(true);
+            });
         }
-    };
-    return (_jsxs(_Fragment, { children: [_jsxs("div", Object.assign({ className: success === null && !loading ? "d-flex flex-column mb-3 tab-accent" : "d-none" }, { children: [quoteTimeRemaining === 0 ? (_jsx("label", { children: "Quote expired!" })) : (_jsxs("label", { children: ["Quote expires in ", quoteTimeRemaining, " seconds"] })), _jsx(ProgressBar, { animated: true, now: quoteTimeRemaining, max: initialQuoteTimeout, min: 0 })] })), success === null ? (quoteTimeRemaining === 0 && !loading ? (_jsx(Button, Object.assign({ onClick: props.refreshQuote, variant: "secondary" }, { children: "New quote" }))) : (_jsxs(Button, Object.assign({ onClick: () => onContinue(), disabled: loading, size: "lg" }, { children: [loading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Claim"] })))) : (success ? (_jsxs(Alert, Object.assign({ variant: "success", className: "mb-0" }, { children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was concluded successfully" })] }))) : (_jsxs(_Fragment, { children: [_jsxs(Alert, Object.assign({ variant: "danger", className: "mb-3" }, { children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: error })] })), _jsx(Button, Object.assign({ onClick: props.refreshQuote, variant: "secondary" }, { children: "New quote" }))] })))] }));
+    }, [state, onCommit]);
+    return (_jsxs(_Fragment, { children: [isInitiated ? _jsx(StepByStep, { steps: executionSteps }) : "", _jsx(SwapExpiryProgressBar, { expired: isQuoteExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: (isClaimable ||
+                    isQuoteExpiredClaim) && !committing && !claiming && signer !== undefined }), (isCreated ||
+                isClaimable) ? (signer === undefined ? (_jsx(ButtonWithSigner, { chainId: props.quote.chainIdentifier, signer: signer, size: "lg" })) : (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: "Swap " + ((canClaimInOneShot || claimError != null) ? "claim" : "claim initialization") + " error", error: claimError ?? commitError ?? paymentError }), _jsxs(ButtonWithSigner, { signer: signer, chainId: props.quote?.chainIdentifier, onClick: () => isClaimable ? onCommit() : waitForPayment(), disabled: committing || paymentWaiting || (!canClaimInOneShot && isClaimClaimable), size: canClaimInOneShot ? "lg" : isClaimClaimable ? "sm" : "lg", children: [committing || paymentWaiting ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", canClaimInOneShot ?
+                                "Claim" :
+                                isClaimClaimable ?
+                                    "1. Initialized" :
+                                    committing ?
+                                        "1. Initializing..." :
+                                        "1. Initialize swap"] }), !canClaimInOneShot ? (_jsxs(ButtonWithSigner, { signer: signer, chainId: props.quote?.chainIdentifier, onClick: () => onClaim(), disabled: claiming || !isClaimClaimable, size: isClaimClaimable ? "lg" : "sm", className: "mt-2", children: [claiming ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", claiming ? "2. Claiming funds..." : "2. Finish swap (claim funds)"] })) : ""] }))) : "", isSuccess ? (_jsxs(Alert, { variant: "success", className: "mb-0", children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was executed successfully" })] })) : "", isFailed ? (_jsxs(Alert, { variant: "danger", className: "mb-0", children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Swap HTLC expired, your lightning payment will be refunded shortly!" })] })) : "", (isQuoteExpired ||
+                isFailed ||
+                (isSuccess && props.type !== "payment")) ? (_jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })) : ""] }));
 }

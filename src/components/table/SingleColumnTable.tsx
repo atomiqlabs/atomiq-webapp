@@ -1,11 +1,9 @@
-import {ButtonGroup, Card, ListGroup, Spinner, Table} from "react-bootstrap";
+import {ButtonGroup, Card, ListGroup, Spinner} from "react-bootstrap";
 import * as React from "react";
 import {MutableRefObject, useCallback, useEffect, useRef} from "react";
 import Button from "react-bootstrap/Button";
 
 import { Icon } from "react-icons-kit";
-import {caretUp} from 'react-icons-kit/fa/caretUp';
-import {caretDown} from 'react-icons-kit/fa/caretDown';
 import {angleRight} from 'react-icons-kit/fa/angleRight';
 import {angleLeft} from 'react-icons-kit/fa/angleLeft';
 import {angleDoubleRight} from 'react-icons-kit/fa/angleDoubleRight';
@@ -100,13 +98,13 @@ function SingleColumnTable<T>(props : {
     for(let i=0;i<itemsPerPage;i++) {
         const obj = state.pageData[i];
         if(obj!=null) tbody.push((
-            <ListGroup.Item className="bg-dark bg-opacity-25 border-light border-opacity-25 text-white">{props.column.renderer(obj)}</ListGroup.Item>
+            <ListGroup.Item className="bg-dark bg-opacity-25 border-light border-opacity-25 text-white" key={i.toString()}>{props.column.renderer(obj)}</ListGroup.Item>
         ));
     }
 
     if(tbody.length===0) {
         tbody.push((
-            <ListGroup.Item className="bg-dark bg-opacity-25 border-light border-opacity-25 text-white">
+            <ListGroup.Item key={"0"} className="bg-dark bg-opacity-25 border-light border-opacity-25 text-white">
                 <div className="d-flex align-items-center justify-content-center text-light text-opacity-75">
                     <Icon size={24} className="pb-1 me-2" icon={ic_not_interested}/>
                     <h4 className="my-3">No data</h4>

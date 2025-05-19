@@ -10,7 +10,7 @@ $primary: $atomiq-magenta;
 $secondary: #F2F5F9;
 $danger: #F25151;
 $success: #2BDD72;
-$warning: #B2B2B2;
+$warning: $atomiq-purple;
 $dark: #141414;
 $btn-border-radius-lg: 0.25rem;
 $body-color: #272D33;
@@ -192,7 +192,7 @@ code {
 }
 
 .tab-bg {
-  background: rgba(255,255,255,0.2);
+  background: #00000026;
 }
 
 .background-gradient {
@@ -276,6 +276,23 @@ code {
 
 .accordion-button {
   font-size: 1.5rem;
+}
+
+.fee-accordion-header {
+  @extend .accordion-header;
+}
+
+.fee-accordion-button {
+  @extend .accordion-button;
+}
+
+.fee-accordion-header > .accordion-button {
+  font-size: 1rem;
+  @extend .p-2;
+}
+
+.fee-accordion-header > .accordion-button::after {
+  margin-left: 0px;
 }
 
 .faq-number {
@@ -393,6 +410,10 @@ code {
   width: 300px;
 }
 
+.min-width-400px {
+  min-width: 400px;
+}
+
 .bg-atomiq-orange {
   background: $atomiq-orange !important;
 }
@@ -403,4 +424,17 @@ code {
 
 .hover-opacity-75:hover{
   opacity: 1;
+}
+
+.loading-glow {
+  animation: glow 0.5s ease-in-out alternate infinite;
+}
+
+@keyframes glow {
+  from {
+    opacity: 0.65
+  }
+  to {
+    opacity: 1
+  }
 }
