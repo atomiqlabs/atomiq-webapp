@@ -80,7 +80,7 @@ export function CurrencyDropdown(props: {
             </Dropdown.Toggle>
 
             <Dropdown.Menu>
-                <Nav variant="underline" className="mx-3 mb-2" activeKey={chainId} onSelect={(val) => setChainId(val)}>
+                <Nav variant="underline" className="mx-3 mb-2 d-flex flex-nowrap overflow-auto" style={{maxWidth: "80vw"}} activeKey={chainId} onSelect={(val) => setChainId(val)}>
                     {chains.map(val => {
                         return (
                             <Nav.Item>
