@@ -6,18 +6,19 @@ import {
     Placeholder,
     Row,
 } from "react-bootstrap";
-import {bitcoinTokenArray} from "../utils/Currencies";
+import {bitcoinTokenArray} from "../tokens/Tokens";
 import {useContext, useEffect, useState} from "react";
 import * as React from "react";
 import ValidatedInput from "../components/ValidatedInput";
 import {FEConstants, TokenResolver, Tokens} from "../FEConstants";
-import {SingleColumnStaticTable} from "../components/table/SingleColumnTable";
+import {SingleColumnStaticTable} from "../table/SingleColumnTable";
 import {getTimeDeltaText} from "../utils/Utils";
-import {SwapsContext} from "../context/SwapsContext";
-import {TokenIcon} from "../components/TokenIcon";
-import {ButtonWithSigner} from "../components/ButtonWithSigner";
+import {SwapsContext} from "../swaps/context/SwapsContext";
+import {TokenIcon} from "../tokens/TokenIcon";
+import {ButtonWithWallet} from "../wallets/ButtonWithWallet";
 import {ErrorAlert} from "../components/ErrorAlert";
 import {toHumanReadableString} from "@atomiqlabs/sdk";
+import {ChainDataContext} from "../wallets/context/ChainDataContext";
 
 type AffiliatePayout = {
     timestamp: number,
@@ -31,7 +32,7 @@ type AffiliatePayout = {
 const chain = "SOLANA";
 
 export function Affiliate() {
-    const {swapper, chains} = useContext(SwapsContext);
+    const {swapper} = useContext(SwapsContext);
 
     const [data, setData] = useState<{
         stats: {
@@ -53,13 +54,18 @@ export function Affiliate() {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<any>();
 
+    const currencySpec = data?.token==null ? null : TokenResolver[chain].getToken(data.token);
+
+    const chains = useContext(ChainDataContext);
+    const solanaWallet = chains?.[chain]?.wallet;
+
     useEffect(() => {
-        if(swapper==null || chains==null || chains[chain]==null || chains[chain].random) {
+        if(swapper==null || solanaWallet==null) {
             setData(null);
             return;
         }
 
-        const address: string = chains[chain].signer.getAddress();
+        const address: string = solanaWallet.instance.getAddress();
         if(address!=null) {
             setLoading(true);
             setError(null);
@@ -80,9 +86,7 @@ export function Affiliate() {
                 setError(e);
             });
         }
-    }, [swapper, chains]);
-
-    const currencySpec = data?.token==null ? null : TokenResolver[chain].getToken(data.token);
+    }, [swapper, solanaWallet]);
 
     return (
         <>
@@ -100,7 +104,7 @@ export function Affiliate() {
                         in {currencySpec?.ticker} every day.
                     </p>
                     {data==null ? (
-                        <ButtonWithSigner className="mb-3" chainId={chain} signer={undefined}/>
+                        <ButtonWithWallet className="mb-3" chainId={chain}/>
                     ) : (
                         <>
                             <p>

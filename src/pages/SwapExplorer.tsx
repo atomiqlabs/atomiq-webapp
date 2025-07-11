@@ -2,14 +2,14 @@ import * as React from "react";
 import {Badge, Button, Card, Col, OverlayTrigger, Placeholder, Row, Tooltip} from "react-bootstrap";
 import {FEConstants, TokenResolver, Tokens} from "../FEConstants";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {SingleColumnBackendTable} from "../components/table/SingleColumnTable";
+import {SingleColumnBackendTable} from "../table/SingleColumnBackendTable";
 import Icon from "react-icons-kit";
 import {ic_arrow_forward} from 'react-icons-kit/md/ic_arrow_forward';
 import {ic_arrow_downward} from 'react-icons-kit/md/ic_arrow_downward';
 import ValidatedInput, {ValidatedInputRef} from "../components/ValidatedInput";
 import {ChainSwapType, toHumanReadableString, Token} from "@atomiqlabs/sdk";
 import {getTimeDeltaText} from "../utils/Utils";
-import {TokenIcon} from "../components/TokenIcon";
+import {TokenIcon} from "../tokens/TokenIcon";
 
 const timeframes = ["24h", "7d", "30d"];
 
@@ -65,7 +65,6 @@ export function SwapExplorer(props: {}) {
     const additionalData = useMemo(() => {
         const additionalData: any = {};
         if(search!=null) additionalData.search = search;
-        console.log(additionalData);
         return additionalData;
     }, [search])
 
@@ -145,7 +144,7 @@ export function SwapExplorer(props: {}) {
 
                     type: "LN" | "CHAIN",
                     direction: "ToBTC" | "FromBTC",
-                    kind: ChainSwapType,
+                    kind: ChainSwapType | -1,
                     nonce: string,
 
                     lpWallet: string,
@@ -255,11 +254,10 @@ export function SwapExplorer(props: {}) {
                                                 )}
                                             </Col>
                                             <Col xl={6} md={2} xs={6}>
-                                                {row.type==="CHAIN" ? (
-                                                    <Badge bg="warning" className="width-fill">On-chain</Badge>
-                                                ) : (
-                                                    <Badge bg="dark" className="width-fill">Lightning</Badge>
-                                                )}
+                                                <Badge bg={row.type === "LN" ? "dark" : row.kind === -1 ? "info" : "warning"} className="width-fill">
+                                                    {row.type === "LN" ? "Lightning" : "On-chain"}
+                                                    <img src={"/icons/chains/" + chainId + ".svg"} className="ms-1" style={{width: "18px", marginTop: "-8px", marginBottom: "-4px"}}/>
+                                                </Badge>
                                             </Col>
                                             <Col xl={0} lg={2} md={1} xs={0}>
                                             </Col>

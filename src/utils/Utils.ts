@@ -1,6 +1,3 @@
-import {ISwap} from "@atomiqlabs/sdk";
-import BigNumber from "bignumber.js";
-
 export function getDeltaTextHours(delta: number): string {
     let deltaSeconds = Math.floor(delta/1000);
     if(deltaSeconds<60) {
@@ -87,33 +84,6 @@ export function elementInViewport(el): boolean {
         (top + height) <= (window.pageYOffset + window.innerHeight) &&
         (left + width) <= (window.pageXOffset + window.innerWidth)
     );
-}
-
-//Workaround to variable returned PPM fee due to referral programme
-// export function getFeePPM(swap: ISwap<any>): BN {
-//     if(swap instanceof IToBTCSwap) {
-//         const fee = swap.getSwapFee().amountInDstToken;
-//         const feeWithoutBaseFee = fee.sub(swap.pricingInfo.satsBaseFee);
-//         return feeWithoutBaseFee.mul(new BN(1000000)).div(swap.getOutAmount());
-//     } else if(swap instanceof IFromBTCSwap) {
-//         const fee = swap.getFee().amountInSrcToken;
-//         const feeWithoutBaseFee = fee.sub(swap.pricingInfo.satsBaseFee);
-//         return feeWithoutBaseFee.mul(new BN(1000000)).div(swap.getInAmountWithoutFee());
-//     }
-// }
-export function getFeePct(swap: ISwap<any>, digits: number): bigint {
-    const feeOriginal = swap.getRealSwapFeePercentagePPM();
-    // console.log("Fee PPM: ", feeOriginal.toString(10));
-    const feePPM = feeOriginal + (9n * (10n ** (3n-BigInt(digits))));
-    // console.log("Fee PPM: ", feePPM.toString(10));
-    return feePPM / (10n ** (4n-BigInt(digits))) * (10n ** (4n-BigInt(digits)));
-}
-
-export function bnEqual(a: BigNumber, b: BigNumber) {
-    if(a==null && b==null) return true;
-    if(a!=null && b==null) return false;
-    if(a==null && b!=null) return false;
-    return a.eq(b);
 }
 
 export function capitalizeFirstLetter(txt: string) {

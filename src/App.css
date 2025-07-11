@@ -150,7 +150,11 @@
   margin-top: -0.5rem !important;
 }
 
-.dottedUnderline { border-bottom: 1px dotted; }
+.dottedUnderline {
+  text-decoration-style: dotted;
+  text-decoration-line: underline;
+  text-underline-offset: 4px;
+}
 
 .text-decoration-dotted {
   text-decoration-style: dotted;

@@ -1,4 +1,4 @@
-import {SwapTopbar} from "../components/SwapTopbar";
+import {SwapTopbar} from "./SwapTopbar";
 import {Badge, Button, Col, Row} from "react-bootstrap";
 import {
     IFromBTCSwap,
@@ -9,10 +9,10 @@ import {
 } from "@atomiqlabs/sdk";
 import * as React from "react";
 import {useContext, useEffect, useState} from "react";
-import {SwapsContext} from "../context/SwapsContext";
+import {SwapsContext} from "../swaps/context/SwapsContext";
 import {useNavigate} from "react-router-dom";
-import {TokenIcon} from "../components/TokenIcon";
-import {SingleColumnStaticTable} from "../components/table/SingleColumnTable";
+import {TokenIcon} from "../tokens/TokenIcon";
+import {SingleColumnStaticTable} from "../table/SingleColumnTable";
 import {FEConstants} from "../FEConstants";
 import {getTimeDeltaText} from "../utils/Utils";
 import Icon from "react-icons-kit";
@@ -33,7 +33,7 @@ function HistoryEntry(props: {
     const txIdInput = props.swap.getInputTxId();
     const txIdOutput = props.swap.getOutputTxId();
 
-    const inputAddress = props.swap.getInputAddress();
+    const inputAddress = props.swap instanceof IToBTCSwap ? props.swap._getInitiator() : "";
     const outputAddress = props.swap.getOutputAddress();
 
     const refundable = props.swap.getDirection()===SwapDirection.TO_BTC && (props.swap as IToBTCSwap).isRefundable();
@@ -41,7 +41,7 @@ function HistoryEntry(props: {
 
     const navigateToSwap = (event) => {
         event.preventDefault();
-        navigate("/?swapId="+props.swap.getIdentifierHashString());
+        navigate("/?swapId="+props.swap.getId());
     }
 
     const badge = props.swap.isSuccessful() ? (
@@ -116,7 +116,7 @@ function HistoryEntry(props: {
                 <div className="d-none d-md-block mb-1">
                     {badge}
                 </div>
-                <Button variant={claimable || refundable ? "primary" : "secondary"} size="sm" href={"/?swapId="+props.swap.getIdentifierHashString()} className="width-fill" onClick={navigateToSwap}>
+                <Button variant={claimable || refundable ? "primary" : "secondary"} size="sm" href={"/?swapId="+props.swap.getId()} className="width-fill" onClick={navigateToSwap}>
                     {refundable ? "Refund" : claimable ? "Claim" : "View"}
                 </Button>
             </Col>
@@ -138,8 +138,8 @@ export function History() {
                 swap.getType()!==SwapType.TRUSTED_FROM_BTC &&
                 swap.getType()!==SwapType.TRUSTED_FROM_BTCLN
             ).sort((a, b) => {
-                const _a = a.isActionable();
-                const _b = b.isActionable();
+                const _a = a.requiresAction();
+                const _b = b.requiresAction();
                 if(_a===_b) return b.createdAt - a.createdAt;
                 if(_a) return -1;
                 if(_b) return 1;
