@@ -44,7 +44,7 @@ export function useFromBtcLnQuote(
                 await quote.commitAndClaim(smartChainWallet.instance, null, skipChecks).then(txs => txs[0]);
             } else {
                 await quote.commit(smartChainWallet.instance, null, skipChecks);
-                if(quote.chainIdentifier==="STARKNET" && smartChainWallet.name==="Argent") await timeoutPromise(5000);
+                if(quote.chainIdentifier==="STARKNET") await timeoutPromise(5000);
             }
         },
         [quote, smartChainWallet]
