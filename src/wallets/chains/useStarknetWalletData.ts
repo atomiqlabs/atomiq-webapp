@@ -39,7 +39,7 @@ export function useStarknetWalletData(): [ChainWalletData<StarknetSigner>] {
             setStarknetWalletData(null);
             return;
         }
-        const walletAccount = new WalletAccount(FEConstants.starknetRpc, swo as any);
+        const walletAccount = await WalletAccount.connect(FEConstants.starknetRpc, swo);
         const chainId = await wallet.requestChainId(walletAccount.walletProvider);
         console.log("useStarknetWalletContext(): connected wallet chainId: ", chainId);
         if(chainId!=null && FEConstants.starknetChainId!==chainId) {
@@ -119,7 +119,7 @@ export function useStarknetWalletData(): [ChainWalletData<StarknetSigner>] {
         swapperOptions: {
             rpcUrl: FEConstants.starknetRpc,
             chainId: FEConstants.starknetChainId,
-            fees: new StarknetFees(FEConstants.starknetRpc, "STRK")
+            fees: new StarknetFees(FEConstants.starknetRpc)
         }
     }], [starknetWalletData, starknetSigner, _connect, _disconnect, changeWallet]);
 }
