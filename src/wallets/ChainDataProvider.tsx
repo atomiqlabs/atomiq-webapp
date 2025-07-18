@@ -4,6 +4,7 @@ import {useStarknetWalletData} from "./chains/useStarknetWalletData";
 import {useLightningWalletData} from "./chains/useLightningWalletData";
 import { ChainDataContext } from "./context/ChainDataContext";
 import {useMemo} from "react";
+import {EVMWalletWrapper, useEVMWalletData} from "./chains/useEVMWalletData";
 
 export type ChainWalletData<T> = {
     chain: {
@@ -26,13 +27,14 @@ export type ChainWalletData<T> = {
 function WrappedChainDataProvider(props: {children: React.ReactNode}) {
     const [starknetChain] = useStarknetWalletData();
     const [solanaChain] = useSolanaWalletData();
+    const [citreaChain] = useEVMWalletData();
     const [lightningChain] = useLightningWalletData();
     const [bitcoinChain, bitcoinModal] = useBitcoinWalletData(useMemo(() => {
         return {
-            STARKNET: starknetChain.wallet?.name,
-            SOLANA: solanaChain.wallet?.name
+            STARKNET: starknetChain?.wallet?.name,
+            SOLANA: solanaChain?.wallet?.name
         };
-    }, [starknetChain.wallet, solanaChain.wallet]));
+    }, [starknetChain?.wallet, solanaChain?.wallet]));
 
     return (
         <ChainDataContext.Provider value={useMemo(() => {
@@ -42,8 +44,9 @@ function WrappedChainDataProvider(props: {children: React.ReactNode}) {
             };
             if(solanaChain!=null) res.SOLANA = solanaChain;
             if(starknetChain!=null) res.STARKNET = starknetChain;
+            if(citreaChain!=null) res.CITREA = citreaChain;
             return res;
-        }, [bitcoinChain, lightningChain, solanaChain, starknetChain])}>
+        }, [bitcoinChain, lightningChain, solanaChain, starknetChain, citreaChain])}>
             {bitcoinModal}
             {props.children}
         </ChainDataContext.Provider>
@@ -52,10 +55,12 @@ function WrappedChainDataProvider(props: {children: React.ReactNode}) {
 
 export function ChainDataProvider(props: {children: React.ReactNode}) {
     return (
-        <SolanaWalletWrapper>
-            <WrappedChainDataProvider>
-                {props.children}
-            </WrappedChainDataProvider>
-        </SolanaWalletWrapper>
+        <EVMWalletWrapper>
+            <SolanaWalletWrapper>
+                <WrappedChainDataProvider>
+                    {props.children}
+                </WrappedChainDataProvider>
+            </SolanaWalletWrapper>
+        </EVMWalletWrapper>
     );
 }

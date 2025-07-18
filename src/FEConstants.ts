@@ -4,6 +4,8 @@ import {constants, RpcProvider} from "starknet";
 import {BitcoinNetwork, MempoolApi, MempoolBitcoinRpc, SwapperFactory} from "@atomiqlabs/sdk";
 import {SolanaInitializer, SolanaInitializerType} from "@atomiqlabs/chain-solana";
 import {StarknetInitializer, StarknetInitializerType} from "@atomiqlabs/chain-starknet";
+import {JsonRpcProvider} from "ethers";
+import {CitreaInitializer, CitreaInitializerType} from "@atomiqlabs/chain-evm";
 
 const solanaRpcUrl: string = process.env.REACT_APP_SOLANA_RPC_URL;
 const solanaChain: "DEVNET" | "MAINNET" = process.env.REACT_APP_SOLANA_NETWORK as ("DEVNET" | "MAINNET"); //DEVNET or MAINNET
@@ -16,6 +18,10 @@ const affiliateUrl: string = process.env.REACT_APP_AFFILIATE_URL;
 const starknetRpcUrl: string = process.env.REACT_APP_STARKNET_RPC_URL;
 const starknetChain: "SEPOLIA" | "MAIN" = process.env.REACT_APP_STARKNET_NETWORK as ("SEPOLIA" | "MAIN"); //SEPOLIA or MAIN
 const starknetBlockExplorer: string = process.env.REACT_APP_STARKNET_BLOCK_EXPLORER;
+
+const citreaRpcUrl: string = process.env.REACT_APP_CITREA_RPC_URL;
+const citreaChain: "TESTNET4" | "MAINNET" = process.env.REACT_APP_CITREA_NETWORK as ("TESTNET4" | "MAINNET");
+const citreaBlockExplorer: string = process.env.REACT_APP_CITREA_BLOCK_EXPLORER;
 
 const bitcoinNetwork: "TESTNET" | "MAINNET" | "TESTNET4" = process.env.REACT_APP_BITCOIN_NETWORK as ("TESTNET" | "MAINNET" | "TESTNET4");
 
@@ -44,7 +50,7 @@ const mempoolApi = new MempoolApi(
 
 const bitcoinRpc = new MempoolBitcoinRpc(mempoolApi);
 
-export const Factory = new SwapperFactory<readonly [SolanaInitializerType, StarknetInitializerType]>([SolanaInitializer, StarknetInitializer] as const);
+export const Factory = new SwapperFactory<readonly [SolanaInitializerType, StarknetInitializerType, CitreaInitializerType]>([SolanaInitializer, StarknetInitializer, CitreaInitializer] as const);
 
 console.log("Factory: ", Factory);
 
@@ -55,7 +61,8 @@ export const FEConstants = {
     btcBlockExplorer,
     blockExplorers: {
         SOLANA: solBlockExplorer,
-        STARKNET: starknetBlockExplorer
+        STARKNET: starknetBlockExplorer,
+        CITREA: citreaBlockExplorer
     },
     scBalances: {
         "SOLANA:So11111111111111111111111111111111111111112": {
@@ -75,13 +82,16 @@ export const FEConstants = {
     bitcoinRpc,
     allowedChains: new Set<string>([
         solanaRpcUrl!=null ? "SOLANA" : undefined,
-        starknetRpcUrl!=null ? "STARKNET" : undefined
+        starknetRpcUrl!=null ? "STARKNET" : undefined,
+        citreaRpcUrl!=null ? "CITREA": undefined
     ]),
     statsUrl,
     solanaChain: solanaChain==="MAINNET" ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet,
     solanaRpcUrl,
     starknetChainId: starknetChain==null ? null : (starknetChain==="MAIN" ? constants.StarknetChainId.SN_MAIN : constants.StarknetChainId.SN_SEPOLIA),
     starknetRpc: starknetRpcUrl==null ? null : new RpcProvider({nodeUrl: starknetRpcUrl}),
+    citreaChainType: citreaChain,
+    citreaRpc: citreaRpcUrl==null ? null : new JsonRpcProvider(citreaRpcUrl),
     bitcoinNetwork: bitcoinNetwork==="TESTNET" ? BitcoinNetwork.TESTNET : bitcoinNetwork==="TESTNET4" ? BitcoinNetwork.TESTNET4 : BitcoinNetwork.MAINNET,
     url: null,
     satsPerBitcoin: new BigNumber(100000000),

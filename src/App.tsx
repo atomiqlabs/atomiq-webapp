@@ -65,7 +65,8 @@ function WrappedApp() {
             const swapper = Factory.newSwapper({
                 chains: {
                     SOLANA: chainsData.SOLANA?.swapperOptions,
-                    STARKNET: chainsData.STARKNET?.swapperOptions
+                    STARKNET: chainsData.STARKNET?.swapperOptions,
+                    CITREA: chainsData.CITREA?.swapperOptions
                 },
                 intermediaryUrl: useLp,
                 getRequestTimeout: 15000,
