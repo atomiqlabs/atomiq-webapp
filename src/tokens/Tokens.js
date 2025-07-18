@@ -10,7 +10,8 @@ export const TokenIcons = {
     BTC: "/icons/crypto/BTC.svg",
     BTCLN: "/icons/crypto/BTC.svg",
     ETH: "/icons/crypto/ETH.png",
-    STRK: "/icons/crypto/STRK.png"
+    STRK: "/icons/crypto/STRK.png",
+    CBTC: "/icons/crypto/BTC.svg",
 };
 export const bitcoinTokenArray = [
     Tokens.BITCOIN.BTC,
