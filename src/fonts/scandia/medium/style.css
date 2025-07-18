@@ -1,9 +1,11 @@
 @font-face {
-    font-family: 'Scandia';
-    src: local('Scandia Medium'), local('Scandia-Medium'),
-        url('Scandia-Medium.woff2') format('woff2'),
-        url('Scandia-Medium.woff') format('woff'),
-        url('Scandia-Medium.ttf') format('truetype');
-    font-weight: 500;
-    font-style: normal;
-  }
+  font-family: "Scandia";
+  src:
+    local("Scandia Medium"),
+    local("Scandia-Medium"),
+    url("Scandia-Medium.woff2") format("woff2"),
+    url("Scandia-Medium.woff") format("woff"),
+    url("Scandia-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}

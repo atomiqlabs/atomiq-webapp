@@ -49,14 +49,16 @@
     "@types/jest": "^29.4.0",
     "@types/node": "^18.11.18",
     "@types/react": "^18.0.27",
-    "@types/react-dom": "^18.0.10"
+    "@types/react-dom": "^18.0.10",
+    "prettier": "^3.6.2"
   },
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build --stats",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",
-    "analyze": "webpack-bundle-analyzer build/bundle-stats.json"
+    "analyze": "webpack-bundle-analyzer build/bundle-stats.json",
+    "format": "prettier --write ."
   },
   "eslintConfig": {
     "extends": [

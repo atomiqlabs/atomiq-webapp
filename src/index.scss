@@ -7,14 +7,14 @@ $atomiq-purple: #944afc;
 $atomiq-orange: #fc9626;
 
 $primary: $atomiq-magenta;
-$secondary: #F2F5F9;
-$danger: #F25151;
-$success: #2BDD72;
+$secondary: #f2f5f9;
+$danger: #f25151;
+$success: #2bdd72;
 $warning: $atomiq-purple;
 $dark: #141414;
 $btn-border-radius-lg: 0.25rem;
-$body-color: #272D33;
-$info: #006CFF;
+$body-color: #272d33;
+$info: #006cff;
 
 //$form-invalid-border-color: #ffdb00;
 //$form-invalid-color: #ffdb00;
@@ -47,8 +47,8 @@ $font-weight-bold: 600;
 $badge-font-weight: 500;
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-  monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 @import url("./fonts/scandia/light/style.css");
@@ -140,7 +140,7 @@ code {
 //}
 
 .grayed-out {
-  color: #B2B2B2;
+  color: #b2b2b2;
 }
 
 a {
@@ -157,8 +157,8 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 .collapsed .hide-on-collapse {
@@ -169,22 +169,27 @@ code {
   background: #{$secondary};
 }
 
-.hopa-table thead, tbody, tfoot, tr, td, th {
+.hopa-table thead,
+tbody,
+tfoot,
+tr,
+td,
+th {
   border-color: #{$secondary};
   height: 41px;
 }
 
-.hopa-table th, td {
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+.hopa-table th,
+td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .my-n1 {
   margin-top: -0.25rem !important;
   margin-bottom: -0.25rem !important;
 }
-
 
 .text-overflow-ellipsis {
   -ms-text-overflow: ellipsis;
@@ -197,7 +202,38 @@ code {
 
 .background-gradient {
   background: #d147a6;
-  background: linear-gradient(135deg,#fc9626,#d147a6 50%,#944afc);
+  background: linear-gradient(135deg, #fc9626, #d147a6 50%, #944afc);
+}
+
+.background {
+  background: #180931;
+
+  &:after {
+    content: "";
+    width: 70%;
+    height: 100%;
+    left: 0;
+    right: 0;
+    bottom: -70%;
+    background: linear-gradient(135deg, #8d54e9, #c75f91 50%, #ee9943);
+    opacity: 0.5;
+    filter: blur(519.22px);
+    position: absolute;
+  }
+
+  &:before {
+    content: "";
+    width: 40%;
+    height: 100%;
+    right: 0;
+    top: -30%;
+    left: -20%;
+    position: absolute;
+    background: linear-gradient(150deg, #000000 0%, transparent 100%);
+    opacity: 0.5;
+    filter: blur(519.22px);
+    transform: rotate(150deg);
+  }
 }
 
 .card {
@@ -229,17 +265,17 @@ code {
 }
 
 .form-control {
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
   color: #fff;
 }
 
 .form-control:focus {
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
   color: #fff;
 }
 
 .form-control::placeholder {
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .form-control:disabled {
@@ -257,7 +293,7 @@ code {
 }
 
 .bg-transparent {
-  background: rgba(0,0,0,0)
+  background: rgba(0, 0, 0, 0);
 }
 
 .alert strong {
@@ -388,7 +424,7 @@ code {
 }
 
 .width-fill {
-  width: 100%
+  width: 100%;
 }
 
 .single-line-ellipsis {
@@ -422,7 +458,7 @@ code {
   opacity: 0.75;
 }
 
-.hover-opacity-75:hover{
+.hover-opacity-75:hover {
   opacity: 1;
 }
 
@@ -432,9 +468,9 @@ code {
 
 @keyframes glow {
   from {
-    opacity: 0.65
+    opacity: 0.65;
   }
   to {
-    opacity: 1
+    opacity: 1;
   }
 }

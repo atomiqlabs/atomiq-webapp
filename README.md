@@ -3,9 +3,12 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Installation
+
 Install node modules with `npm install`
 
 **NOTE:** If it fails try it with --force param `npm install --force`
+
+Make sure to copy the `.env.example` file to `.env` before starting the project. You'll need to fill in the appropriate values based on the environment (e.g. RPC URLs, network names, explorer URLs).
 
 ## Available Scripts
 

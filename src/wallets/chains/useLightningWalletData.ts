@@ -1,31 +1,39 @@
-import {useCallback, useMemo, useState} from "react";
-import {requestProvider, WebLNProvider} from "webln";
-import {ChainWalletData} from "../ChainDataProvider";
+import { useCallback, useMemo, useState } from "react";
+import { requestProvider, WebLNProvider } from "webln";
+import { ChainWalletData } from "../ChainDataProvider";
 
 export function useLightningWalletData(): [ChainWalletData<WebLNProvider>] {
-    const isWebLNInstalled = (window as any)?.webln!=null;
-    const [wallet, setWallet] = useState<WebLNProvider>();
+  const isWebLNInstalled = (window as any)?.webln != null;
+  const [wallet, setWallet] = useState<WebLNProvider>();
 
-    const connect = useCallback(async () => {
-        setWallet(await requestProvider());
-    }, []);
+  const connect = useCallback(async () => {
+    setWallet(await requestProvider());
+  }, []);
 
-    const disconnect = useCallback(() => {
-        setWallet(null)
-    }, []);
+  const disconnect = useCallback(() => {
+    setWallet(null);
+  }, []);
 
-    return useMemo(() => [{
+  return useMemo(
+    () => [
+      {
         chain: {
-            name: "Lightning",
-            icon: "/icons/chains/LIGHTNING.svg"
+          name: "Lightning",
+          icon: "/icons/chains/LIGHTNING.svg",
         },
-        wallet: wallet==null ? null : {
-            name: "WebLN",
-            icon: "/wallets/WebLN.png",
-            instance: wallet
-        },
+        wallet:
+          wallet == null
+            ? null
+            : {
+                name: "WebLN",
+                icon: "/wallets/WebLN.png",
+                instance: wallet,
+              },
         id: "LIGHTNING",
         connect: isWebLNInstalled ? connect : null,
-        disconnect: wallet!=null ? disconnect : null,
-    }], [wallet, isWebLNInstalled, connect, disconnect]);
+        disconnect: wallet != null ? disconnect : null,
+      },
+    ],
+    [wallet, isWebLNInstalled, connect, disconnect],
+  );
 }
