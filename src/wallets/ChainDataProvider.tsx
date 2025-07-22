@@ -30,18 +30,13 @@ function WrappedChainDataProvider(props: { children: React.ReactNode }) {
   const [starknetChain] = useStarknetWalletData();
   const [solanaChain] = useSolanaWalletData();
   const [lightningChain] = useLightningWalletData();
-
-  if (!starknetChain?.wallet || !solanaChain?.wallet) {
-    return <div>Loading wallets...</div>;
-  }
-
   const [bitcoinChain, bitcoinModal] = useBitcoinWalletData(
     useMemo(() => {
       return {
-        STARKNET: starknetChain.wallet.name,
-        SOLANA: solanaChain.wallet.name,
+        STARKNET: starknetChain.wallet?.name,
+        SOLANA: solanaChain.wallet?.name,
       };
-    }, [starknetChain.wallet.name, solanaChain.wallet.name]),
+    }, [starknetChain.wallet, solanaChain.wallet]),
   );
 
   return (

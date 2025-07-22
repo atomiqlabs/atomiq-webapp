@@ -19,6 +19,7 @@ import {
   Spinner,
   Tooltip,
 } from "react-bootstrap";
+import { MainNavigation } from "./components/layout/MainNavigation";
 import { FAQ } from "./pages/FAQ";
 import { About } from "./pages/About";
 import { info } from "react-icons-kit/fa/info";
@@ -36,6 +37,7 @@ import { WalletConnectionsSummary } from "./wallets/WalletConnectionsSummary";
 import { NFCSwitch } from "./nfc/NFCSwitch";
 import { ChainDataContext } from "./wallets/context/ChainDataContext";
 import { ChainDataProvider } from "./wallets/ChainDataProvider";
+import { SocialFooter } from "./components/layout/SocialFooter";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -112,90 +114,9 @@ function WrappedApp() {
     if (!noWalletPaths.has(pathName) && swapper == null) loadSwapper();
   }, [pathName]);
 
-  const navTabs = (
-    <>
-      <Nav.Link
-        href="/"
-        onClick={navigateHref}
-        className="d-flex flex-row align-items-center"
-      >
-        <Icon icon={exchange} className="d-flex me-1" />
-        <span>Swap</span>
-      </Nav.Link>
-      <Nav.Link
-        href="/about"
-        onClick={navigateHref}
-        className="d-flex flex-row align-items-center"
-      >
-        <Icon icon={info} className="d-flex me-1" />
-        <span>About</span>
-      </Nav.Link>
-      <Nav.Link
-        href="/faq"
-        onClick={navigateHref}
-        className="d-flex flex-row align-items-center"
-      >
-        <Icon icon={question} className="d-flex me-1" />
-        <span>FAQ</span>
-      </Nav.Link>
-      <NFCSwitch />
-    </>
-  );
-
   return (
     <>
-      <Navbar
-        collapseOnSelect
-        expand="lg "
-        bg="dark"
-        variant="dark"
-        className="bg-dark bg-opacity-50"
-        style={{ zIndex: 1000, minHeight: "64px" }}
-      >
-        <Container className="max-width-100">
-          <Navbar.Brand href="/" className="d-flex flex-column">
-            <div className="d-flex flex-row" style={{ fontSize: "1.5rem" }}>
-              <img src="/icons/atomiq-flask.png" className="logo-img" />
-              <b>atomiq</b>
-              <span style={{ fontWeight: 300 }}>.exchange</span>
-              {FEConstants.bitcoinNetwork !== BitcoinNetwork.MAINNET ? (
-                <Badge className="ms-2 d-flex align-items-center" bg="danger">
-                  DEVNET
-                </Badge>
-              ) : (
-                ""
-              )}
-            </div>
-          </Navbar.Brand>
-
-          <div className="d-flex flex-column">
-            <Navbar.Toggle aria-controls="basic-navbar-nav" className="ms-3" />
-          </div>
-
-          <Navbar.Collapse role="" id="basic-navbar-nav">
-            <Nav
-              className={
-                "d-flex d-lg-none me-auto text-start border-top border-dark-subtle my-2 " +
-                (swapper == null ? "" : "border-bottom")
-              }
-            >
-              {navTabs}
-            </Nav>
-            <Nav
-              className="d-none d-lg-flex me-auto text-start"
-              navbarScroll
-              style={{ maxHeight: "100px" }}
-            >
-              {navTabs}
-            </Nav>
-            <Nav className="ms-auto">
-              <div className="pt-2 ms-auto" style={{ height: "3rem" }}>
-                <WalletConnectionsSummary />
-              </div>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
+      <MainNavigation />
 
       <SwapsContext.Provider value={{ swapper }}>
         <div className="d-flex flex-grow-1 flex-column">
@@ -249,80 +170,7 @@ function WrappedApp() {
           </Routes>
         </div>
       </SwapsContext.Provider>
-
-      <Row
-        className="mt-auto bg-dark bg-opacity-50 g-0 p-2"
-        style={{ zIndex: 1000 }}
-      >
-        <Col className="d-flex flex-row">
-          <a
-            href="https://t.me/+_MQNtlBXQ2Q1MGEy"
-            target="_blank"
-            className="mx-2 hover-opacity-75 d-flex align-items-center"
-          >
-            <img className="social-icon" src="/icons/socials/telegram.png" />
-          </a>
-          <a
-            href="https://twitter.com/atomiqlabs"
-            target="_blank"
-            className="mx-2 hover-opacity-75 d-flex align-items-center"
-          >
-            <img className="social-icon" src="/icons/socials/twitter.png" />
-          </a>
-          <a
-            href="https://github.com/atomiqlabs"
-            target="_blank"
-            className="mx-2 hover-opacity-75 d-flex align-items-center"
-          >
-            <img className="social-icon" src="/icons/socials/github.png" />
-          </a>
-          <a
-            href="https://docs.atomiq.exchange/"
-            target="_blank"
-            className="mx-2 hover-opacity-75 d-flex align-items-center"
-          >
-            <img className="social-icon" src="/icons/socials/gitbook.png" />
-          </a>
-        </Col>
-
-        {affiliateLink != null && affiliateLink !== "" ? (
-          <Col xs={"auto"} className="d-flex justify-content-center">
-            <OverlayTrigger
-              overlay={
-                <Tooltip id="referral-tooltip">
-                  <span>
-                    Swap fee reduced to 0.2%, thanks to being referred to
-                    atomiq.exchange!
-                  </span>
-                </Tooltip>
-              }
-            >
-              <div className="font-small text-white opacity-75 d-flex align-items-center ">
-                <Icon icon={heart} className="d-flex align-items-center me-1" />
-                <span className="text-decoration-dotted">
-                  Using referral link
-                </span>
-              </div>
-            </OverlayTrigger>
-          </Col>
-        ) : (
-          ""
-        )}
-
-        <Col className="d-flex justify-content-end">
-          <a
-            href="https://t.me/atomiq_support"
-            target="_blank"
-            className="ms-auto d-flex flex-row align-items-center text-white text-decoration-none hover-opacity-75 font-small"
-          >
-            <img
-              className="social-icon me-1"
-              src="/icons/socials/telegram.png"
-            />
-            Talk to support
-          </a>
-        </Col>
-      </Row>
+      <SocialFooter affiliateLink={affiliateLink} />
     </>
   );
 }

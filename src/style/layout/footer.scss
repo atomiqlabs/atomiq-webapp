@@ -1,0 +1,11 @@
+.social-footer {
+  @apply absolute right-8 bottom-10 flex flex-col gap-2;
+
+  &__link {
+    @apply p-3 opacity-50 hover:opacity-100 transition;
+  }
+
+  &__icon {
+    @apply w-5 h-5;
+  }
+}

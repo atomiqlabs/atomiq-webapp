@@ -1,0 +1,73 @@
+.main-navigation {
+  @apply text-white z-20 grid gap-2;
+
+  grid-template-columns: 200px 1fr 200px;
+
+  &__logo {
+    @apply h-[27px];
+  }
+
+  & &__nav .main-navigation__nav__item {
+    & {
+      @apply px-3 py-3 flex gap-2 border-solid border-b-2 border-transparent hover:border-pinkSlate;
+    }
+
+    &.is-active {
+      @apply border-pink;
+    }
+
+    &__text {
+      @apply text-base;
+    }
+  }
+
+  &__nav {
+    @apply gap-4;
+  }
+
+  // TODO probably create custom component
+  .navbar-nav .main-navigation__more {
+    & {
+      @apply flex items-center active:text-white;
+    }
+
+    &.show .main-navigation__more__icon {
+      rotate: 180deg;
+    }
+
+    &__label {
+      @apply flex gap-2;
+    }
+
+    &__icon {
+      @apply transition-all duration-100;
+    }
+
+    .dropdown-toggle {
+      @apply pl-3 pr-2 rounded;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      &:after {
+        @apply hidden;
+      }
+    }
+  }
+  .navbar-brand {
+    @apply mr-0;
+  }
+
+  .nav-link {
+    @apply text-white hover:text-white;
+  }
+
+  .navbar-collapse {
+    @apply flex justify-center gap-5;
+  }
+}
+
+.navbar {
+  --bs-navbar-active-color: #fff;
+}
