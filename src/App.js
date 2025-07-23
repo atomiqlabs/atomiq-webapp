@@ -1,42 +1,41 @@
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
-import "./App.css";
-import { useContext, useEffect, useRef, useState } from "react";
-import { QuickScan } from "./pages/quickscan/QuickScan";
-import { QuickScanExecute } from "./pages/quickscan/QuickScanExecute";
-import { Factory, FEConstants } from "./FEConstants";
-import { smartChainTokenArray } from "./tokens/Tokens";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { SwapsContext } from "./swaps/context/SwapsContext";
-import { History } from "./pages/History";
-import { Spinner, } from "react-bootstrap";
-import { MainNavigation } from "./components/layout/MainNavigation";
-import { FAQ } from "./pages/FAQ";
-import { About } from "./pages/About";
-import { SwapForGas } from "./pages/SwapForGas";
-import { SwapExplorer } from "./pages/SwapExplorer";
-import { Affiliate } from "./pages/Affiliate";
-import { SwapNew } from "./pages/SwapNew";
-import { useAnchorNavigate } from "./utils/hooks/useAnchorNavigate";
-import { ErrorAlert } from "./components/ErrorAlert";
-import { ChainDataContext } from "./wallets/context/ChainDataContext";
-import { ChainDataProvider } from "./wallets/ChainDataProvider";
-import { SocialFooter } from "./components/layout/SocialFooter";
-require("@solana/wallet-adapter-react-ui/styles.css");
-const noWalletPaths = new Set(["/about", "/faq", "/46jh456f45f"]);
+import './App.css';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { QuickScan } from './pages/quickscan/QuickScan';
+import { QuickScanExecute } from './pages/quickscan/QuickScanExecute';
+import { Factory, FEConstants } from './FEConstants';
+import { smartChainTokenArray } from './tokens/Tokens';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { SwapsContext } from './swaps/context/SwapsContext';
+import { History } from './pages/History';
+import { Spinner, } from 'react-bootstrap';
+import { MainNavigation } from './components/layout/MainNavigation';
+import { FAQ } from './pages/FAQ';
+import { About } from './pages/About';
+import { SwapForGas } from './pages/SwapForGas';
+import { SwapExplorer } from './pages/SwapExplorer';
+import { Affiliate } from './pages/Affiliate';
+import { SwapNew } from './pages/SwapNew';
+import { useAnchorNavigate } from './utils/hooks/useAnchorNavigate';
+import { ErrorAlert } from './components/ErrorAlert';
+import { ChainDataContext } from './wallets/context/ChainDataContext';
+import { ChainDataProvider } from './wallets/ChainDataProvider';
+import { SocialFooter } from './components/layout/SocialFooter';
+require('@solana/wallet-adapter-react-ui/styles.css');
+const noWalletPaths = new Set(['/about', '/faq', '/46jh456f45f']);
 function WrappedApp() {
     const navigateHref = useAnchorNavigate();
     const [swapper, setSwapper] = useState();
     const [swapperLoadingError, setSwapperLoadingError] = useState();
     const [swapperLoading, setSwapperLoading] = useState(false);
     // @ts-ignore
-    const pathName = window.location.pathname.split("?")[0];
+    const pathName = window.location.pathname.split('?')[0];
     const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.has("affiliate")) {
-        window.localStorage.setItem("atomiq-affiliate", searchParams.get("affiliate"));
+    if (searchParams.has('affiliate')) {
+        window.localStorage.setItem('atomiq-affiliate', searchParams.get('affiliate'));
     }
-    const affiliateLink = searchParams.get("affiliate") ||
-        window.localStorage.getItem("atomiq-affiliate");
-    const useLp = searchParams.get("UNSAFE_LP_URL") ?? FEConstants.defaultLp;
+    const affiliateLink = searchParams.get('affiliate') || window.localStorage.getItem('atomiq-affiliate');
+    const useLp = searchParams.get('UNSAFE_LP_URL') ?? FEConstants.defaultLp;
     const abortController = useRef();
     const chainsData = useContext(ChainDataContext);
     const loadSwapper = async () => {
@@ -46,7 +45,7 @@ function WrappedApp() {
             abortController.current.abort();
         abortController.current = new AbortController();
         try {
-            console.log("init start");
+            console.log('init start');
             const swapper = Factory.newSwapper({
                 chains: {
                     SOLANA: chainsData.SOLANA?.swapperOptions,
@@ -63,11 +62,11 @@ function WrappedApp() {
                 mempoolApi: FEConstants.mempoolApi,
                 defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
             });
-            console.log("Swapper: ", swapper);
+            console.log('Swapper: ', swapper);
             await swapper.init();
             if (abortController.current.signal.aborted)
                 return;
-            console.log("Swapper initialized!");
+            console.log('Swapper initialized!');
             setSwapper(swapper);
             setSwapperLoading(false);
             return swapper;
@@ -81,7 +80,7 @@ function WrappedApp() {
         if (!noWalletPaths.has(pathName) && swapper == null)
             loadSwapper();
     }, [pathName]);
-    return (_jsxs(_Fragment, { children: [_jsx(MainNavigation, {}), _jsx(SwapsContext.Provider, { value: { swapper }, children: _jsxs("div", { className: "d-flex flex-grow-1 flex-column", children: [!noWalletPaths.has(pathName) && swapper == null ? (_jsx("div", { className: "no-wallet-overlay d-flex align-items-center", children: _jsx("div", { className: "mt-auto height-50 d-flex justify-content-center align-items-center flex-fill", children: _jsx("div", { className: "text-white text-center", children: swapperLoading ? (_jsx(_Fragment, { children: swapperLoadingError == null ? (_jsxs(_Fragment, { children: [_jsx(Spinner, {}), _jsx("h4", { children: "Connecting to atomiq network..." })] })) : (_jsx(_Fragment, { children: _jsx(ErrorAlert, { className: "d-flex flex-column align-items-center justify-content-center", title: "atomiq network connection error", error: swapperLoadingError }) })) })) : ("") }) }) })) : (""), _jsx(Routes, { children: _jsxs(Route, { path: "/", children: [_jsx(Route, { index: true, element: _jsx(SwapNew, { supportedCurrencies: smartChainTokenArray }) }), _jsxs(Route, { path: "scan", children: [_jsx(Route, { index: true, element: _jsx(QuickScan, {}) }), _jsx(Route, { path: "2", element: _jsx(QuickScanExecute, {}) })] }), _jsx(Route, { path: "history", element: _jsx(History, {}) }), _jsx(Route, { path: "gas", element: _jsx(SwapForGas, {}) }), _jsx(Route, { path: "faq", element: _jsx(FAQ, {}) }), _jsx(Route, { path: "about", element: _jsx(About, {}) }), _jsx(Route, { path: "46jh456f45f", element: _jsx(SwapExplorer, {}) }), _jsx(Route, { path: "referral", element: _jsx(Affiliate, {}) })] }) })] }) }), _jsx(SocialFooter, { affiliateLink: affiliateLink })] }));
+    return (_jsxs(_Fragment, { children: [_jsx(MainNavigation, {}), _jsx(SwapsContext.Provider, { value: { swapper }, children: _jsxs("div", { className: "d-flex flex-grow-1 flex-column mt-5", children: [!noWalletPaths.has(pathName) && swapper == null ? (_jsx("div", { className: "no-wallet-overlay d-flex align-items-center", children: _jsx("div", { className: "mt-auto height-50 d-flex justify-content-center align-items-center flex-fill", children: _jsx("div", { className: "text-white text-center", children: swapperLoading ? (_jsx(_Fragment, { children: swapperLoadingError == null ? (_jsxs(_Fragment, { children: [_jsx(Spinner, {}), _jsx("h4", { children: "Connecting to atomiq network..." })] })) : (_jsx(_Fragment, { children: _jsx(ErrorAlert, { className: "d-flex flex-column align-items-center justify-content-center", title: "atomiq network connection error", error: swapperLoadingError }) })) })) : ('') }) }) })) : (''), _jsx(Routes, { children: _jsxs(Route, { path: "/", children: [_jsx(Route, { index: true, element: _jsx(SwapNew, { supportedCurrencies: smartChainTokenArray }) }), _jsxs(Route, { path: "scan", children: [_jsx(Route, { index: true, element: _jsx(QuickScan, {}) }), _jsx(Route, { path: "2", element: _jsx(QuickScanExecute, {}) })] }), _jsx(Route, { path: "history", element: _jsx(History, {}) }), _jsx(Route, { path: "gas", element: _jsx(SwapForGas, {}) }), _jsx(Route, { path: "faq", element: _jsx(FAQ, {}) }), _jsx(Route, { path: "about", element: _jsx(About, {}) }), _jsx(Route, { path: "46jh456f45f", element: _jsx(SwapExplorer, {}) }), _jsx(Route, { path: "referral", element: _jsx(Affiliate, {}) })] }) })] }) }), _jsx(SocialFooter, { affiliateLink: affiliateLink })] }));
 }
 function App() {
     return (_jsx("div", { className: "App d-flex flex-column", children: _jsx(ChainDataProvider, { children: _jsx(BrowserRouter, { children: _jsx(WrappedApp, {}) }) }) }));

@@ -33,23 +33,26 @@ export function SocialFooter({ affiliateLink }: SocialFooterProps) {
   return (
     <div className="social-footer">
       {socialLink.map(({ link, image, title }) => (
-        <a key={link} href={link} target="_blank" className="social-footer__link">
-          <img className="social-footer__icon" src={`/icons/socials/${image}`} alt={title} />
-        </a>
+        <OverlayTrigger placement="left" overlay={<Tooltip id="referral-tooltip">{title}</Tooltip>}>
+          <a key={link} href={link} target="_blank" className="social-footer__link">
+            <img className="social-footer__icon" src={`/icons/socials/${image}`} alt={title} />
+          </a>
+        </OverlayTrigger>
       ))}
 
       {/* TODO not tested*/}
       {affiliateLink != null && affiliateLink !== '' ? (
         <OverlayTrigger
+          placement="left"
           overlay={
             <Tooltip id="referral-tooltip">
               <span>Swap fee reduced to 0.2%, thanks to being referred to atomiq.exchange!</span>
             </Tooltip>
           }
         >
-          <div className="font-small text-white opacity-75 d-flex align-items-center ">
-            <Icon icon={heart} className="d-flex align-items-center me-1" />
+          <div className="social-footer__link gap-2 d-flex is-info">
             <span className="text-decoration-dotted">Using referral link</span>
+            <Icon icon={heart} className="social-footer__icon" />
           </div>
         </OverlayTrigger>
       ) : (

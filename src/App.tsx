@@ -1,13 +1,13 @@
-import "./App.css";
-import { useContext, useEffect, useRef, useState } from "react";
-import { QuickScan } from "./pages/quickscan/QuickScan";
-import { QuickScanExecute } from "./pages/quickscan/QuickScanExecute";
-import { Factory, FEConstants } from "./FEConstants";
-import { smartChainTokenArray } from "./tokens/Tokens";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { SwapsContext } from "./swaps/context/SwapsContext";
-import { BitcoinNetwork, Swapper } from "@atomiqlabs/sdk";
-import { History } from "./pages/History";
+import './App.css';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { QuickScan } from './pages/quickscan/QuickScan';
+import { QuickScanExecute } from './pages/quickscan/QuickScanExecute';
+import { Factory, FEConstants } from './FEConstants';
+import { smartChainTokenArray } from './tokens/Tokens';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { SwapsContext } from './swaps/context/SwapsContext';
+import { BitcoinNetwork, Swapper } from '@atomiqlabs/sdk';
+import { History } from './pages/History';
 import {
   Badge,
   Col,
@@ -18,30 +18,30 @@ import {
   Row,
   Spinner,
   Tooltip,
-} from "react-bootstrap";
-import { MainNavigation } from "./components/layout/MainNavigation";
-import { FAQ } from "./pages/FAQ";
-import { About } from "./pages/About";
-import { info } from "react-icons-kit/fa/info";
-import { question } from "react-icons-kit/fa/question";
-import { exchange } from "react-icons-kit/fa/exchange";
-import Icon from "react-icons-kit";
-import { SwapForGas } from "./pages/SwapForGas";
-import { SwapExplorer } from "./pages/SwapExplorer";
-import { Affiliate } from "./pages/Affiliate";
-import { heart } from "react-icons-kit/fa/heart";
-import { SwapNew } from "./pages/SwapNew";
-import { useAnchorNavigate } from "./utils/hooks/useAnchorNavigate";
-import { ErrorAlert } from "./components/ErrorAlert";
-import { WalletConnectionsSummary } from "./wallets/WalletConnectionsSummary";
-import { NFCSwitch } from "./nfc/NFCSwitch";
-import { ChainDataContext } from "./wallets/context/ChainDataContext";
-import { ChainDataProvider } from "./wallets/ChainDataProvider";
-import { SocialFooter } from "./components/layout/SocialFooter";
+} from 'react-bootstrap';
+import { MainNavigation } from './components/layout/MainNavigation';
+import { FAQ } from './pages/FAQ';
+import { About } from './pages/About';
+import { info } from 'react-icons-kit/fa/info';
+import { question } from 'react-icons-kit/fa/question';
+import { exchange } from 'react-icons-kit/fa/exchange';
+import Icon from 'react-icons-kit';
+import { SwapForGas } from './pages/SwapForGas';
+import { SwapExplorer } from './pages/SwapExplorer';
+import { Affiliate } from './pages/Affiliate';
+import { heart } from 'react-icons-kit/fa/heart';
+import { SwapNew } from './pages/SwapNew';
+import { useAnchorNavigate } from './utils/hooks/useAnchorNavigate';
+import { ErrorAlert } from './components/ErrorAlert';
+import { WalletConnectionsSummary } from './wallets/WalletConnectionsSummary';
+import { NFCSwitch } from './nfc/NFCSwitch';
+import { ChainDataContext } from './wallets/context/ChainDataContext';
+import { ChainDataProvider } from './wallets/ChainDataProvider';
+import { SocialFooter } from './components/layout/SocialFooter';
 
-require("@solana/wallet-adapter-react-ui/styles.css");
+require('@solana/wallet-adapter-react-ui/styles.css');
 
-const noWalletPaths = new Set(["/about", "/faq", "/46jh456f45f"]);
+const noWalletPaths = new Set(['/about', '/faq', '/46jh456f45f']);
 
 function WrappedApp() {
   const navigateHref = useAnchorNavigate();
@@ -51,19 +51,15 @@ function WrappedApp() {
   const [swapperLoading, setSwapperLoading] = useState<boolean>(false);
 
   // @ts-ignore
-  const pathName = window.location.pathname.split("?")[0];
+  const pathName = window.location.pathname.split('?')[0];
 
   const searchParams = new URLSearchParams(window.location.search);
-  if (searchParams.has("affiliate")) {
-    window.localStorage.setItem(
-      "atomiq-affiliate",
-      searchParams.get("affiliate"),
-    );
+  if (searchParams.has('affiliate')) {
+    window.localStorage.setItem('atomiq-affiliate', searchParams.get('affiliate'));
   }
   const affiliateLink =
-    searchParams.get("affiliate") ||
-    window.localStorage.getItem("atomiq-affiliate");
-  const useLp = searchParams.get("UNSAFE_LP_URL") ?? FEConstants.defaultLp;
+    searchParams.get('affiliate') || window.localStorage.getItem('atomiq-affiliate');
+  const useLp = searchParams.get('UNSAFE_LP_URL') ?? FEConstants.defaultLp;
 
   const abortController = useRef<AbortController>();
 
@@ -74,7 +70,7 @@ function WrappedApp() {
     if (abortController.current != null) abortController.current.abort();
     abortController.current = new AbortController();
     try {
-      console.log("init start");
+      console.log('init start');
 
       const swapper = Factory.newSwapper({
         chains: {
@@ -93,12 +89,12 @@ function WrappedApp() {
         defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
       });
 
-      console.log("Swapper: ", swapper);
+      console.log('Swapper: ', swapper);
 
       await swapper.init();
       if (abortController.current.signal.aborted) return;
 
-      console.log("Swapper initialized!");
+      console.log('Swapper initialized!');
 
       setSwapper(swapper);
       setSwapperLoading(false);
@@ -119,7 +115,7 @@ function WrappedApp() {
       <MainNavigation />
 
       <SwapsContext.Provider value={{ swapper }}>
-        <div className="d-flex flex-grow-1 flex-column">
+        <div className="d-flex flex-grow-1 flex-column mt-5">
           {!noWalletPaths.has(pathName) && swapper == null ? (
             <div className="no-wallet-overlay d-flex align-items-center">
               <div className="mt-auto height-50 d-flex justify-content-center align-items-center flex-fill">
@@ -142,20 +138,17 @@ function WrappedApp() {
                       )}
                     </>
                   ) : (
-                    ""
+                    ''
                   )}
                 </div>
               </div>
             </div>
           ) : (
-            ""
+            ''
           )}
           <Routes>
             <Route path="/">
-              <Route
-                index
-                element={<SwapNew supportedCurrencies={smartChainTokenArray} />}
-              ></Route>
+              <Route index element={<SwapNew supportedCurrencies={smartChainTokenArray} />}></Route>
               <Route path="scan">
                 <Route index element={<QuickScan />} />
                 <Route path="2" element={<QuickScanExecute />} />
