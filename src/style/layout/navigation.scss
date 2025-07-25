@@ -58,8 +58,9 @@
 
     &__icon {
       @media (max-width: 992px) {
-        @apply p-[14px] rounded-full;
+        @apply justify-center items-center w-12 h-12 rounded-full;
         background-color: rgba(255, 255, 255, 0.1);
+        display: flex !important; // because somehow for some reason there is inline style
       }
     }
 
@@ -93,6 +94,11 @@
 
     &__close {
       @apply p-[10px] opacity-50 hover:opacity-100 transition-all cursor-pointer;
+
+      i {
+        @apply items-center justify-center;
+        display: flex !important; // because somehow for some reason there is inline style
+      }
     }
   }
 

@@ -78,7 +78,9 @@ export function MainNavigation() {
           >
             <Nav className="main-navigation__nav">
               <div className="main-navigation__nav__mobile-header">
-                <img src="/main_logo.png" className="main-navigation__nav__logo" alt="logo" />
+                <Nav.Link href="/">
+                  <img src="/main_logo.png" className="main-navigation__nav__logo" alt="logo" />
+                </Nav.Link>
                 <div className="main-navigation__nav__close" onClick={() => setIsOpen(false)}>
                   <Icon size={20} icon={close} />
                 </div>
