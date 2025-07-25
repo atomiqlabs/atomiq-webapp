@@ -2,9 +2,27 @@
   @apply text-white z-20 grid gap-2;
 
   grid-template-columns: 200px 1fr 200px;
+  grid-template-areas: 'logo nav wallet';
+
+  @media (max-width: 992px) {
+    @apply flex;
+  }
 
   &__logo {
     @apply h-[27px];
+    grid-area: logo;
+
+    &.is-desktop {
+      @media (max-width: 992px) {
+        @apply hidden;
+      }
+    }
+
+    &.is-mobile {
+      @media (min-width: 993px) {
+        @apply hidden;
+      }
+    }
   }
 
   & &__nav .main-navigation__nav__item {
@@ -12,17 +30,82 @@
       @apply px-3 py-3 flex gap-2 border-solid border-b-2 border-transparent hover:border-pinkSlate;
     }
 
+    @media (max-width: 992px) {
+      @apply px-3 py-[12px] border-0 items-center opacity-75 hover:opacity-100 transition-all;
+    }
+
     &.is-active {
       @apply border-pink;
+
+      @media (max-width: 992px) {
+        @apply opacity-100;
+      }
+    }
+
+    &.is-mobile {
+      @media (min-width: 993px) {
+        @apply hidden;
+      }
     }
 
     &__text {
       @apply text-base;
+
+      @media (max-width: 992px) {
+        @apply text-lg font-medium;
+      }
+    }
+
+    &__icon {
+      @media (max-width: 992px) {
+        @apply p-[14px] rounded-full;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    &:nth-child(5) {
+      @apply border-t mt-4 pt-[28px] border-solid px-0 mx-3;
+
+      border-color: rgba(255, 255, 255, 0.1);
     }
   }
 
   &__nav {
     @apply gap-4;
+    grid-area: navigation;
+
+    @media (max-width: 992px) {
+      @apply gap-0;
+    }
+
+    &__mobile-header {
+      & {
+        @apply flex items-center justify-between px-3 py-[12px] mb-[12px];
+      }
+      @media (min-width: 993px) {
+        @apply hidden;
+      }
+    }
+
+    &__logo {
+      @apply h-[28px];
+    }
+
+    &__close {
+      @apply p-[10px] opacity-50 hover:opacity-100 transition-all cursor-pointer;
+    }
+  }
+
+  &__wallet {
+    grid-area: wallet;
+  }
+
+  &__network {
+    @apply flex;
+
+    @media (max-width: 992px) {
+      @apply hidden;
+    }
   }
 
   // TODO probably create custom component
@@ -54,7 +137,14 @@
         @apply hidden;
       }
     }
+
+    @media (max-width: 992px) {
+      .dropdown-toggle {
+        @apply hidden;
+      }
+    }
   }
+
   .navbar-brand {
     @apply mr-0;
   }
@@ -64,8 +154,49 @@
   }
 
   .navbar-collapse {
-    @apply flex justify-center gap-5;
+    @media (min-width: 993px) {
+      @apply flex justify-center gap-5;
+    }
   }
+  .navbar-toggler {
+    @apply mr-auto;
+
+    .navbar-toggler-icon {
+      filter: invert(1);
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &__collapse {
+    @apply fixed top-0 left-0 h-screen bg-[#180931] z-50 w-[250px];
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+
+    &.show {
+      transform: translateX(0);
+    }
+    @media (max-width: 992px) {
+      height: 100vh !important;
+    }
+
+    @media (min-width: 993px) {
+      @apply static h-auto transform-none transition-none;
+      width: auto;
+      background-color: transparent;
+    }
+  }
+
+  .collapse:not(.show) {
+    @apply block;
+  }
+}
+
+.main-navigation__overlay {
+  @apply fixed top-0 left-0 w-full h-full z-40;
+
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
 }
 
 .navbar {
