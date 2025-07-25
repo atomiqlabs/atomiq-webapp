@@ -47,17 +47,23 @@ $font-weight-bold: 600;
 $badge-font-weight: 500;
 
 code {
-  font-family:
-    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 // Fonts
-@import url("../fonts/scandia/light/style.css");
-@import url("../fonts/scandia/regular/style.css");
-@import url("../fonts/scandia/medium/style.css");
+//// TODO OLD font, to be sure.. Remove later
+@import url('../fonts/scandia/light/style.css');
+@import url('../fonts/scandia/regular/style.css');
+@import url('../fonts/scandia/medium/style.css');
+
+//// new WorkSans font
+@import url('../fonts/WorkSans/style.css');
+
+//// TODO idk what is this
 //@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
 // Bootstrap
-@import "../../node_modules/bootstrap/scss/bootstrap";
+@import '../../node_modules/bootstrap/scss/bootstrap';
 
 .btn-primary {
   color: white;
@@ -151,7 +157,7 @@ a {
 
 body {
   margin: 0;
-  font-family: Scandia, sans-serif;
+  font-family: WorkSans, sans-serif;
   font-style: normal;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
@@ -159,8 +165,7 @@ body {
 }
 
 code {
-  font-family:
-    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 .collapsed .hide-on-collapse {
@@ -213,7 +218,7 @@ td {
   position: relative;
 
   &:after {
-    content: "";
+    content: '';
     width: 70%;
     height: 100%;
     left: 0;
@@ -227,7 +232,7 @@ td {
   }
 
   &:before {
-    content: "";
+    content: '';
     width: 40%;
     height: 100%;
     right: 0;
