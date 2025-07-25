@@ -207,6 +207,7 @@ td {
   background: #00000026;
 }
 
+// TODO remove later
 .background-gradient {
   background: #d147a6;
   background: linear-gradient(135deg, #fc9626, #d147a6 50%, #944afc);
@@ -219,12 +220,12 @@ td {
 
   &:after {
     content: '';
-    width: 70%;
+    width: 100%;
     height: 100%;
     left: 0;
     right: 0;
-    bottom: -70%;
-    background: linear-gradient(135deg, #8d54e9, #c75f91 50%, #ee9943);
+    bottom: -80%;
+    background: linear-gradient(0, #8d54e9, #c75f91 90%, #ee9943);
     opacity: 0.5;
     filter: blur(519.22px);
     position: absolute;
