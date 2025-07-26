@@ -13,6 +13,7 @@ import { question } from 'react-icons-kit/fa/question';
 import { close } from 'react-icons-kit/fa/close';
 import { useLocation } from 'react-router-dom';
 import { SocialFooter } from './SocialFooter';
+import { BaseButton } from '../BaseButton';
 
 // TODO Icons
 const navItems = [
@@ -71,8 +72,17 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={() => setIsOpen(!isOpen)} />
           <div className="main-navigation__wallet">
-            TODO Wallet
-            <WalletConnectionsSummary />
+            {/*TODO Wallet probably in custom component*/}
+            {/*TODO but first make button component*/}
+            <BaseButton
+              className="main-navigation__wallet__button"
+              variant="transparent"
+              icon={<Icon size={20} icon={close} />}
+              onClick={() => console.log('tuk')}
+            >
+              Connect Wallet
+            </BaseButton>
+            {/*<WalletConnectionsSummary />*/}
           </div>
           <Navbar.Collapse
             ref={collapseRef}
@@ -123,28 +133,10 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
                   </NavDropdown.Item>
                 ))}
               </NavDropdown>
-              {/* TODO What NFC */}
+              {/* TODO What NFC what is this */}
               <NFCSwitch />
               <SocialFooter affiliateLink={affiliateLink} />
             </Nav>
-            {/*TODO not sure what is this*/}
-            {/*<Nav*/}
-            {/*  className="d-none d-lg-flex me-auto text-start"*/}
-            {/*  navbarScroll*/}
-            {/*  style={{ maxHeight: "100px" }}*/}
-            {/*>*/}
-            {/*  {navItems.map((item) => (*/}
-            {/*    <Nav.Link*/}
-            {/*      key={item.link}*/}
-            {/*      href={item.link}*/}
-            {/*      className="d-flex flex-row align-items-center"*/}
-            {/*    >*/}
-            {/*      <Icon icon={item.icon} className="d-flex me-1" />*/}
-            {/*      <span>{item.title}</span>*/}
-            {/*    </Nav.Link>*/}
-            {/*  ))}*/}
-            {/*  <NFCSwitch />*/}
-            {/*</Nav>*/}
           </Navbar.Collapse>
         </Navbar>
       </div>

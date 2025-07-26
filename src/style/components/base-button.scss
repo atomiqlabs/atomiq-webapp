@@ -1,0 +1,41 @@
+.base-button {
+  @apply font-bold px-6;
+
+  &:has(.base-button__icon) {
+    @apply pl-4;
+  }
+
+  &--small {
+    @apply h-12;
+  }
+
+  &--large {
+    @apply h-16;
+  }
+
+  &--transparent {
+    @apply text-white font-medium;
+    background-color: rgba(255, 255, 255, 0.1);
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+
+      .base-button__content {
+        @apply opacity-100;
+      }
+    }
+
+    .base-button__content {
+      @apply opacity-75;
+    }
+  }
+
+  &__icon {
+    @apply inline-flex items-center mr-2;
+
+    i {
+      @apply items-center justify-center;
+      display: flex !important;
+    }
+  }
+}

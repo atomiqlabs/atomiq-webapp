@@ -40,7 +40,6 @@ export function SocialFooter({ affiliateLink }: SocialFooterProps) {
         </OverlayTrigger>
       ))}
 
-      {/* TODO not tested*/}
       {affiliateLink != null && affiliateLink !== '' ? (
         <OverlayTrigger
           placement="left"
