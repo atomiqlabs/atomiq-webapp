@@ -112,7 +112,7 @@ function WrappedApp() {
 
   return (
     <>
-      <MainNavigation />
+      <MainNavigation affiliateLink={affiliateLink} />
 
       <SwapsContext.Provider value={{ swapper }}>
         <div className="d-flex flex-grow-1 flex-column mt-5">

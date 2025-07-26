@@ -12,6 +12,7 @@ import { angleDown } from 'react-icons-kit/fa/angleDown';
 import { question } from 'react-icons-kit/fa/question';
 import { close } from 'react-icons-kit/fa/close';
 import { useLocation } from 'react-router-dom';
+import { SocialFooter } from './SocialFooter';
 
 // TODO Icons
 const navItems = [
@@ -22,7 +23,11 @@ const navItems = [
   { link: '/more-daco', icon: question, title: 'FAQs' },
 ];
 
-export function MainNavigation() {
+interface MainNavigationProps {
+  affiliateLink?: string;
+}
+
+export function MainNavigation({ affiliateLink }: MainNavigationProps) {
   const location = useLocation();
   const [isOpen, setIsOpen] = React.useState(false);
   const collapseRef = React.useRef<HTMLDivElement>(null);
@@ -118,7 +123,9 @@ export function MainNavigation() {
                   </NavDropdown.Item>
                 ))}
               </NavDropdown>
+              {/* TODO What NFC */}
               <NFCSwitch />
+              <SocialFooter affiliateLink={affiliateLink} />
             </Nav>
             {/*TODO not sure what is this*/}
             {/*<Nav*/}

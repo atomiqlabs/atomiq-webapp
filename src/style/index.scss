@@ -471,6 +471,12 @@ td {
   animation: glow 0.5s ease-in-out alternate infinite;
 }
 
+.App > .social-footer {
+  @media (max-width: 992px) {
+    @apply hidden;
+  }
+}
+
 @keyframes glow {
   from {
     opacity: 0.65;

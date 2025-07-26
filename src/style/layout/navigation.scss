@@ -31,7 +31,7 @@
     }
 
     @media (max-width: 992px) {
-      @apply px-3 py-[12px] border-0 items-center opacity-75 hover:opacity-100 transition-all;
+      @apply px-3 py-[12px] border-0 items-center opacity-75 hover:opacity-100 transition-all text-left;
     }
 
     &.is-active {
@@ -76,7 +76,7 @@
     grid-area: navigation;
 
     @media (max-width: 992px) {
-      @apply gap-0;
+      @apply gap-0 h-full;
     }
 
     &__mobile-header {
@@ -175,7 +175,7 @@
   }
 
   &__collapse {
-    @apply fixed top-0 left-0 h-screen bg-[#180931] z-50 w-[250px];
+    @apply fixed top-0 left-0 h-screen bg-[#180931] z-50 w-[321px] max-w-full;
     transform: translateX(-100%);
     transition: transform 0.3s ease-in-out;
 
@@ -195,6 +195,14 @@
 
   .collapse:not(.show) {
     @apply block;
+  }
+
+  .social-footer {
+    @apply flex-row gap-[9px] justify-center items-center static mt-auto mb-[12px] mx-3;
+
+    @media (min-width: 993px) {
+      @apply hidden;
+    }
   }
 }
 
