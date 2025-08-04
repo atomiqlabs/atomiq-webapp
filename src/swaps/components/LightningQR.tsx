@@ -7,7 +7,7 @@ import {clipboard} from "react-icons-kit/fa/clipboard";
 import {externalLink} from 'react-icons-kit/fa/externalLink';
 import * as React from "react";
 import {useCallback, useContext, useEffect, useRef, useState} from "react";
-import {FromBTCLNSwap, LnForGasSwap} from "@atomiqlabs/sdk";
+import {FromBTCLNAutoSwap, FromBTCLNSwap, LnForGasSwap, SwapType} from "@atomiqlabs/sdk";
 import {ErrorAlert} from "../../components/ErrorAlert";
 import {ChainDataContext} from "../../wallets/context/ChainDataContext";
 import {useAsync} from "../../utils/hooks/useAsync";
@@ -17,7 +17,7 @@ import {NFCStartResult} from "../../nfc/NFCReader";
 
 
 export function LightningQR(props: {
-    quote: FromBTCLNSwap | LnForGasSwap,
+    quote: FromBTCLNSwap | FromBTCLNAutoSwap | LnForGasSwap,
     payInstantly: boolean,
     setAutoClaim?: (val: boolean) => void,
     autoClaim?: boolean,

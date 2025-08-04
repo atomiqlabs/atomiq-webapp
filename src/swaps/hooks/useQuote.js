@@ -52,7 +52,8 @@ export function useQuote(amount, exactIn, inToken, outToken, address, gasDropAmo
         return swapper.swap(inToken, outToken, rawAmount, exactIn, inAddress, outAddress, {
             gasAmount: gasDropAmount,
             maxAllowedNetworkFeeRate: btcFeeRate == null ? null : btcFeeMaxOffset + (btcFeeRate * btcFeeMaxMultiple),
-            unsafeZeroWatchtowerFee: swapType === SwapType.SPV_VAULT_FROM_BTC
+            unsafeZeroWatchtowerFee: swapType === SwapType.SPV_VAULT_FROM_BTC,
+            unsafeSkipLnNodeCheck: true
         }).then(quote => { return { quote, random: address == null }; });
     }, [swapper, amount, exactIn, toTokenIdentifier(inToken), toTokenIdentifier(outToken), inputAddress, address, gasDropAmount], false, null, pause);
     return [refresh, result?.quote, result?.random, loading, error];
