@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useEffect} from "react";
 import {Alert, Button, Spinner} from "react-bootstrap";
-import {FromBTCLNSwap, FromBTCLNSwapState} from "@atomiqlabs/sdk";
+import {FromBTCLNAutoSwap, FromBTCLNSwap, FromBTCLNSwapState, ISwap, SwapType} from "@atomiqlabs/sdk";
 import {ButtonWithWallet} from "../../wallets/ButtonWithWallet";
 import {useSwapState} from "../hooks/useSwapState";
 import {SwapExpiryProgressBar} from "../components/SwapExpiryProgressBar";
@@ -12,7 +12,7 @@ import {useFromBtcLnQuote} from "./useFromBtcLnQuote";
 import {useSmartChainWallet} from "../../wallets/hooks/useSmartChainWallet";
 
 export function LNURLWithdrawQuoteSummary(props: {
-    quote: FromBTCLNSwap<any>,
+    quote: FromBTCLNSwap<any> | FromBTCLNAutoSwap<any>,
     refreshQuote: () => void,
     setAmountLock: (isLocked: boolean) => void,
     type?: "payment" | "swap",
@@ -21,9 +21,7 @@ export function LNURLWithdrawQuoteSummary(props: {
 }) {
     const smartChainWallet = useSmartChainWallet(props.quote, true);
 
-    const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote);
-
-    const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
+    const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote as ISwap);
 
     const {
         waitForPayment, onCommit, onClaim,
@@ -38,20 +36,22 @@ export function LNURLWithdrawQuoteSummary(props: {
         isClaimClaimable,
         isClaimable,
         isSuccess,
+        isWaitingForWatchtowerClaim,
 
-        executionSteps
+        executionSteps,
+        canClaimInOneShot
     } = useFromBtcLnQuote(props.quote, props.setAmountLock);
 
     useEffect(() => {
         if(state===FromBTCLNSwapState.PR_CREATED) {
             if(props.autoContinue) waitForPayment();
         }
-        if(state===FromBTCLNSwapState.PR_PAID) {
+        if(state===FromBTCLNSwapState.PR_PAID && props.quote?.getType()===SwapType.FROM_BTCLN) {
             onCommit(true).then(() => {
                 if(!canClaimInOneShot) onClaim()
             });
         }
-    }, [state, onCommit]);
+    }, [state, onCommit, props.quote]);
 
     return (
         <>
@@ -61,7 +61,7 @@ export function LNURLWithdrawQuoteSummary(props: {
                 expired={isQuoteExpired}
                 timeRemaining={quoteTimeRemaining} totalTime={totalQuoteTime}
                 show={(
-                    isClaimable ||
+                    (isClaimable && !isWaitingForWatchtowerClaim) ||
                     isQuoteExpiredClaim
                 ) && !committing && !claiming && smartChainWallet!==undefined}
             />
@@ -83,7 +83,7 @@ export function LNURLWithdrawQuoteSummary(props: {
                         <ButtonWithWallet
                             requiredWalletAddress={props.quote._getInitiator()}
                             chainId={props.quote?.chainIdentifier}
-                            onClick={() => isClaimable ? onCommit() : waitForPayment()}
+                            onClick={() => isClaimable ? (props.quote?.getType()===SwapType.FROM_BTCLN ? onCommit() : onClaim()) : waitForPayment()}
                             disabled={committing || paymentWaiting || (!canClaimInOneShot && isClaimClaimable)}
                             size={canClaimInOneShot ? "lg" : isClaimClaimable ? "sm" : "lg"}
                         >

@@ -83,6 +83,7 @@ export function QuoteSummary(props: {
             />;
             break;
         case SwapType.FROM_BTCLN:
+        case SwapType.FROM_BTCLN_AUTO:
             const _quote = props.quote as FromBTCLNSwap;
             if(_quote.lnurl!=null && props.type!=="swap") {
                 swapElement = <LNURLWithdrawQuoteSummary
