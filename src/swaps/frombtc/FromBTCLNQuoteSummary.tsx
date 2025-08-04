@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useCallback, useContext, useEffect, useRef, useState} from "react";
 import {Alert, Button, Spinner} from "react-bootstrap";
-import {FromBTCLNSwap, FromBTCLNSwapState} from "@atomiqlabs/sdk";
+import {FromBTCLNAutoSwap, FromBTCLNSwap, FromBTCLNSwapState, ISwap, SwapType} from "@atomiqlabs/sdk";
 import {ButtonWithWallet} from "../../wallets/ButtonWithWallet";
 import {useSwapState} from "../hooks/useSwapState";
 import {ScrollAnchor} from "../../components/ScrollAnchor";
@@ -25,7 +25,7 @@ Steps:
  */
 
 export function FromBTCLNQuoteSummary(props: {
-    quote: FromBTCLNSwap,
+    quote: FromBTCLNSwap | FromBTCLNAutoSwap,
     refreshQuote: () => void,
     setAmountLock: (isLocked: boolean) => void,
     type?: "payment" | "swap",
@@ -35,8 +35,7 @@ export function FromBTCLNQuoteSummary(props: {
     const lightningWallet = useContext(ChainDataContext).LIGHTNING?.wallet;
     const smartChainWallet = useSmartChainWallet(props.quote, true);
 
-    const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
-    const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote);
+    const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(props.quote as ISwap);
     const [autoClaim, setAutoClaim] = useLocalStorage("crossLightning-autoClaim", false);
     const [initClicked, setInitClicked] = useState<boolean>(false);
 
@@ -58,8 +57,10 @@ export function FromBTCLNQuoteSummary(props: {
         isClaimClaimable,
         isClaimable,
         isSuccess,
+        isWaitingForWatchtowerClaim,
 
-        executionSteps
+        executionSteps,
+        canClaimInOneShot
     } = useFromBtcLnQuote(props.quote, props.setAmountLock);
 
     useEffect(() => {
@@ -69,6 +70,7 @@ export function FromBTCLNQuoteSummary(props: {
     }, [props.quote]);
 
     useEffect(() => {
+        if(props.quote.getType()===SwapType.FROM_BTCLN_AUTO) return;
         if(state===FromBTCLNSwapState.PR_PAID) {
             if(autoClaim || lightningWallet!=null) onCommit(true).then(() => {
                 if(!canClaimInOneShot) onClaim()
@@ -111,7 +113,7 @@ export function FromBTCLNQuoteSummary(props: {
                     <LightningQR
                         quote={props.quote}
                         payInstantly={initClicked}
-                        setAutoClaim={setAutoClaim}
+                        setAutoClaim={props.quote?.getType()===SwapType.FROM_BTCLN_AUTO ? null : setAutoClaim}
                         autoClaim={autoClaim}
                         onHyperlink={onHyperlink}
                     />
@@ -128,7 +130,14 @@ export function FromBTCLNQuoteSummary(props: {
                 </>
             ) : ""}
 
-            {isClaimable ? (
+            {isClaimable && isWaitingForWatchtowerClaim ? (
+                <div className="d-flex flex-column align-items-center tab-accent">
+                    <Spinner/>
+                    <small className="mt-2">Lightning network payment received, waiting for claim by watchtowers...</small>
+                </div>
+            ) : ""}
+
+            {isClaimable && !isWaitingForWatchtowerClaim ? (
                 <>
                     <div className="mb-3 tab-accent">
                         <label>Lightning network payment received</label>
@@ -149,11 +158,11 @@ export function FromBTCLNQuoteSummary(props: {
                     <ButtonWithWallet
                         requiredWalletAddress={props.quote._getInitiator()}
                         chainId={props.quote?.chainIdentifier}
-                        onClick={() => onCommit()}
-                        disabled={committing || (!canClaimInOneShot && !isClaimCommittable)}
+                        onClick={() => props.quote?.getType()===SwapType.FROM_BTCLN ? onCommit() : onClaim()}
+                        disabled={committing || claiming || (!canClaimInOneShot && !isClaimCommittable)}
                         size={canClaimInOneShot ? "lg" : isClaimCommittable ? "lg" : "sm"}
                     >
-                        {committing ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
+                        {committing || claiming ? <Spinner animation="border" size="sm" className="mr-2"/> : ""}
                         {canClaimInOneShot ?
                             "Finish swap (claim funds)" :
                             !isClaimCommittable ?

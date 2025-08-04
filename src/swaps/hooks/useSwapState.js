@@ -1,4 +1,4 @@
-import { FromBTCLNSwapState, FromBTCSwapState, LnForGasSwapState, OnchainForGasSwapState, SpvFromBTCSwapState, SwapType, ToBTCSwapState } from "@atomiqlabs/sdk";
+import { FromBTCLNAutoSwapState, FromBTCLNSwapState, FromBTCSwapState, LnForGasSwapState, OnchainForGasSwapState, SpvFromBTCSwapState, SwapType, ToBTCSwapState } from "@atomiqlabs/sdk";
 import { useEffect, useRef, useState } from "react";
 function getStateToString(swapType, state) {
     switch (swapType) {
@@ -7,6 +7,8 @@ function getStateToString(swapType, state) {
             return ToBTCSwapState[state];
         case SwapType.FROM_BTCLN:
             return FromBTCLNSwapState[state];
+        case SwapType.FROM_BTCLN_AUTO:
+            return FromBTCLNAutoSwapState[state];
         case SwapType.FROM_BTC:
             return FromBTCSwapState[state];
         case SwapType.SPV_VAULT_FROM_BTC:
@@ -39,6 +41,7 @@ export function useSwapState(quote) {
             setQuoteTimeRemaining(Math.max(Math.floor(dt / 1000), 0));
         }, 500);
         const checkExpiry = (state) => {
+            let initialExpiryTime = expiryTime.current;
             expiryTime.current = quote.getQuoteExpiry();
             if (quote.getType() === SwapType.FROM_BTCLN) {
                 if (state === FromBTCLNSwapState.PR_CREATED) {
@@ -48,11 +51,18 @@ export function useSwapState(quote) {
                     expiryTime.current = quote.getHtlcTimeoutTime();
                 }
             }
+            if (quote.getType() === SwapType.FROM_BTCLN_AUTO) {
+                if (state === FromBTCLNAutoSwapState.CLAIM_COMMITED) {
+                    expiryTime.current = quote.getHtlcTimeoutTime();
+                }
+            }
             if (quote.getType() === SwapType.FROM_BTC) {
                 if (state >= FromBTCSwapState.CLAIM_COMMITED) {
                     expiryTime.current = quote.getTimeoutTime();
                 }
             }
+            if (initialExpiryTime === expiryTime.current)
+                return;
             const dt = Math.floor((expiryTime.current - Date.now()) / 1000);
             setInitialQuoteTimeout(Math.max(dt, 1));
             setQuoteTimeRemaining(dt);
