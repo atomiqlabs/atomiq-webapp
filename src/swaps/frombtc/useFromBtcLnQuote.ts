@@ -1,5 +1,5 @@
-import {FromBTCLNSwap, FromBTCLNSwapState} from "@atomiqlabs/sdk";
-import {useEffect} from "react";
+import {FromBTCLNAutoSwap, FromBTCLNSwap, FromBTCLNSwapState, ISwap, SwapType} from "@atomiqlabs/sdk";
+import {useEffect, useMemo, useState} from "react";
 import {useSwapState} from "../hooks/useSwapState";
 import {useStateRef} from "../../utils/hooks/useStateRef";
 import {useAbortSignalRef} from "../../utils/hooks/useAbortSignal";
@@ -19,13 +19,13 @@ import {timeoutPromise} from "../../utils/Utils";
 import {useSmartChainWallet} from "../../wallets/hooks/useSmartChainWallet";
 
 export function useFromBtcLnQuote(
-    quote: FromBTCLNSwap<any>,
+    quote: FromBTCLNSwap<any> | FromBTCLNAutoSwap<any>,
     setAmountLock: (isLocked: boolean) => void,
 ) {
     const smartChainWallet = useSmartChainWallet(quote, true);
-    const canClaimInOneShot = quote?.canCommitAndClaimInOneShot();
+    const canClaimInOneShot = quote?.getType()===SwapType.FROM_BTCLN_AUTO || (quote as FromBTCLNSwap)?.canCommitAndClaimInOneShot();
 
-    const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(quote);
+    const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(quote as ISwap);
 
     const setAmountLockRef = useStateRef(setAmountLock);
     const abortSignalRef = useAbortSignalRef([quote]);
@@ -40,10 +40,12 @@ export function useFromBtcLnQuote(
 
     const [onCommit, committing, commitSuccess, commitError] = useAsync(
         async (skipChecks?: boolean) => {
+            if(quote.getType()===SwapType.FROM_BTCLN_AUTO) return;
+            const _quote = quote as FromBTCLNSwap;
             if(canClaimInOneShot) {
-                await quote.commitAndClaim(smartChainWallet.instance, null, skipChecks).then(txs => txs[0]);
+                await _quote.commitAndClaim(smartChainWallet.instance, null, skipChecks).then(txs => txs[0]);
             } else {
-                await quote.commit(smartChainWallet.instance, null, skipChecks);
+                await _quote.commit(smartChainWallet.instance, null, skipChecks);
                 if(quote.chainIdentifier==="STARKNET") await timeoutPromise(5000);
             }
         },
@@ -58,22 +60,35 @@ export function useFromBtcLnQuote(
     const isQuoteExpired = state === FromBTCLNSwapState.QUOTE_EXPIRED ||
         (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !committing && !paymentWaiting);
 
-    const isQuoteExpiredClaim = isQuoteExpired && quote.signatureData!=null;
+    const isQuoteExpiredClaim = isQuoteExpired && quote.commitTxId!=null;
 
     const isFailed = state===FromBTCLNSwapState.FAILED ||
         state===FromBTCLNSwapState.EXPIRED;
 
     const isCreated = state===FromBTCLNSwapState.PR_CREATED ||
-        (state===FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && paymentWaiting);
+        (state===FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && paymentWaiting) ||
+        (state===FromBTCLNSwapState.PR_PAID && quote?.getType()===SwapType.FROM_BTCLN_AUTO);
 
-    const isClaimCommittable = state===FromBTCLNSwapState.PR_PAID ||
-        (state===FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && committing) || committing;
+    const isClaimCommittable = (state===FromBTCLNSwapState.PR_PAID && quote?.getType()!==SwapType.FROM_BTCLN_AUTO) || committing;
 
     const isClaimClaimable = state===FromBTCLNSwapState.CLAIM_COMMITED && !committing;
 
     const isClaimable = isClaimCommittable || isClaimClaimable;
 
     const isSuccess = state===FromBTCLNSwapState.CLAIM_CLAIMED;
+
+    const isAlreadyClaimable = useMemo(() => quote?.isClaimable(), [quote]);
+    const [isWaitingForWatchtowerClaim, setWaitingForWatchtowerClaim] = useState<boolean>(true);
+    useEffect(() => {
+        if(isClaimable && quote?.getType()===SwapType.FROM_BTCLN_AUTO) {
+            const timeout = setTimeout(() => {
+                setWaitingForWatchtowerClaim(false);
+            }, 60*1000);
+            return () => {
+                clearTimeout(timeout);
+            };
+        }
+    }, [isClaimClaimable, quote]);
 
     useEffect(() => {
         if(isQuoteExpired || isFailed || isSuccess) {
@@ -100,7 +115,7 @@ export function useFromBtcLnQuote(
     }
     if(isQuoteExpired && !isQuoteExpiredClaim) executionSteps[0] = {icon: ic_hourglass_disabled_outline, text: "Quote expired", type: "failed"};
 
-    if(canClaimInOneShot) {
+    if(canClaimInOneShot || quote?.getType()===SwapType.FROM_BTCLN_AUTO) {
         if(isQuoteExpiredClaim) {
             executionSteps[0] = {icon: ic_refresh, text: "Lightning payment reverted", type: "failed"};
             executionSteps[1] = {icon: ic_watch_later_outline, text: "Claim transaction expired", type: "failed"};
@@ -155,7 +170,9 @@ export function useFromBtcLnQuote(
         isClaimClaimable,
         isClaimable,
         isSuccess,
+        isWaitingForWatchtowerClaim: !isAlreadyClaimable && isWaitingForWatchtowerClaim,
 
-        executionSteps
+        executionSteps,
+        canClaimInOneShot
     }
 }

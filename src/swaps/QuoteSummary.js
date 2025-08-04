@@ -46,6 +46,7 @@ export function QuoteSummary(props) {
             swapElement = _jsx(FromBTCQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: props.quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: notEnoughForGas, balance: props.balance, feeRate: props.feeRate });
             break;
         case SwapType.FROM_BTCLN:
+        case SwapType.FROM_BTCLN_AUTO:
             const _quote = props.quote;
             if (_quote.lnurl != null && props.type !== "swap") {
                 swapElement = _jsx(LNURLWithdrawQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: _quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas });
