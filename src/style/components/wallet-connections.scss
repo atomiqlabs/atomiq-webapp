@@ -1,0 +1,88 @@
+.wallet-connections {
+  --bs-btn-active-bg: rgba(255, 255, 255, 0.2);
+  --bs-btn-active-border-color: rgba(255, 255, 255, 0.2);
+
+  @apply flex gap-[2px];
+
+  &__button {
+    & {
+      @apply rounded-[8px];
+    }
+    &.show {
+      @apply text-white;
+      backdrop-filter: blur(5px);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  &__dropdown {
+    --bs-dropdown-spacer: 8px;
+
+    @apply font-medium p-3 w-[264px] rounded-xl;
+
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  &__item {
+    &:not(&:last-of-type) {
+      @apply mb-3;
+    }
+
+    &__header {
+      @apply mb-[14px];
+
+      &__name {
+        @apply text-[14px] text-white ml-2;
+        color: rgba(255, 255, 255, 0.75);
+      }
+    }
+
+    &__button {
+      & {
+        @apply w-full justify-start;
+      }
+      &:hover {
+        .base-button__icon {
+          @apply opacity-100;
+        }
+      }
+
+      .base-button__icon {
+        @apply opacity-50 transition-none;
+      }
+    }
+  }
+  &__badge {
+    @apply text-white font-medium rounded-none;
+  }
+
+  & > .dropdown {
+    @apply transition-all;
+
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: var(--bs-border-radius);
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .wallet-connections__badge > span {
+      @apply px-3 py-[12px];
+      background-color: transparent !important; // to rewrite bootstrap component class
+    }
+
+    &:first-child {
+      @apply rounded-r-none;
+    }
+
+    &:last-child {
+      @apply rounded-l-none;
+    }
+  }
+  &__indicator {
+    @apply text-green;
+  }
+}

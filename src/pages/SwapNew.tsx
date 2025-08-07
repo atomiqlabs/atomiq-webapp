@@ -7,65 +7,48 @@ import {
   SwapType,
   Token,
   toTokenAmount,
-} from "@atomiqlabs/sdk";
-import * as React from "react";
-import {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { SwapsContext } from "../swaps/context/SwapsContext";
-import { useAddressData } from "../swaps/hooks/useAddressData";
-import ValidatedInput, {
-  numberValidator,
-  ValidatedInputRef,
-} from "../components/ValidatedInput";
-import { useAmountConstraints } from "../swaps/hooks/useAmountConstraints";
-import { useWalletBalance } from "../wallets/hooks/useWalletBalance";
-import { SwapTopbar } from "./SwapTopbar";
-import { QRScannerModal } from "../qr/QRScannerModal";
-import {
-  Alert,
-  Button,
-  Card,
-  OverlayTrigger,
-  Spinner,
-  Tooltip,
-} from "react-bootstrap";
+} from '@atomiqlabs/sdk';
+import * as React from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { SwapsContext } from '../swaps/context/SwapsContext';
+import { useAddressData } from '../swaps/hooks/useAddressData';
+import ValidatedInput, { numberValidator, ValidatedInputRef } from '../components/ValidatedInput';
+import { useAmountConstraints } from '../swaps/hooks/useAmountConstraints';
+import { useWalletBalance } from '../wallets/hooks/useWalletBalance';
+import { SwapTopbar } from './SwapTopbar';
+import { QRScannerModal } from '../qr/QRScannerModal';
+import { Alert, Button, Card, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import {
   fromTokenIdentifier,
   getChainIdentifierForCurrency,
   includesToken,
   smartChainTokenArray,
   toTokenIdentifier,
-} from "../tokens/Tokens";
-import { FEConstants, Tokens } from "../FEConstants";
-import BigNumber from "bignumber.js";
-import { CurrencyDropdown } from "../tokens/CurrencyDropdown";
-import { SimpleFeeSummaryScreen } from "../fees/SimpleFeeScreen";
-import { QuoteSummary } from "../swaps/QuoteSummary";
-import { ErrorAlert } from "../components/ErrorAlert";
-import { useQuote } from "../swaps/hooks/useQuote";
-import { usePricing } from "../tokens/hooks/usePricing";
-import { useLocation, useNavigate } from "react-router-dom";
+} from '../tokens/Tokens';
+import { FEConstants, Tokens } from '../FEConstants';
+import BigNumber from 'bignumber.js';
+import { CurrencyDropdown } from '../tokens/CurrencyDropdown';
+import { SimpleFeeSummaryScreen } from '../fees/SimpleFeeScreen';
+import { QuoteSummary } from '../swaps/QuoteSummary';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { useQuote } from '../swaps/hooks/useQuote';
+import { usePricing } from '../tokens/hooks/usePricing';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import Icon from "react-icons-kit";
-import { arrows_vertical } from "react-icons-kit/ikons/arrows_vertical";
-import { ic_qr_code_scanner } from "react-icons-kit/md/ic_qr_code_scanner";
-import { lock } from "react-icons-kit/fa/lock";
-import { ic_power_off_outline } from "react-icons-kit/md/ic_power_off_outline";
-import { useExistingSwap } from "../swaps/hooks/useExistingSwap";
-import { ConnectedWalletAnchor } from "../wallets/ConnectedWalletAnchor";
-import { useStateWithOverride } from "../utils/hooks/useStateWithOverride";
-import { useChainForCurrency } from "../wallets/hooks/useChainForCurrency";
-import { WebLNProvider } from "webln";
-import { useSupportedTokens } from "../swaps/hooks/useSupportedTokens";
-import { useDecimalNumberState } from "../utils/hooks/useDecimalNumberState";
-import { ChainDataContext } from "../wallets/context/ChainDataContext";
-import { ChainWalletData } from "../wallets/ChainDataProvider";
+import Icon from 'react-icons-kit';
+import { arrows_vertical } from 'react-icons-kit/ikons/arrows_vertical';
+import { ic_qr_code_scanner } from 'react-icons-kit/md/ic_qr_code_scanner';
+import { lock } from 'react-icons-kit/fa/lock';
+import { ic_power_off_outline } from 'react-icons-kit/md/ic_power_off_outline';
+import { useExistingSwap } from '../swaps/hooks/useExistingSwap';
+import { ConnectedWalletAnchor } from '../wallets/ConnectedWalletAnchor';
+import { useStateWithOverride } from '../utils/hooks/useStateWithOverride';
+import { useChainForCurrency } from '../wallets/hooks/useChainForCurrency';
+import { WebLNProvider } from 'webln';
+import { useSupportedTokens } from '../swaps/hooks/useSupportedTokens';
+import { useDecimalNumberState } from '../utils/hooks/useDecimalNumberState';
+import { ChainDataContext } from '../wallets/context/ChainDataContext';
+import { ChainWalletData } from '../wallets/ChainDataProvider';
 
 export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   const navigate = useNavigate();
@@ -76,7 +59,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   //Existing swap quote
   const { search } = useLocation();
   const params = new URLSearchParams(search);
-  const propSwapId = params.get("swapId");
+  const propSwapId = params.get('swapId');
   const [existingSwap, existingSwapLoading] = useExistingSwap(propSwapId);
 
   const [isUnlocked, setUnlocked] = useState<boolean>(false);
@@ -85,15 +68,16 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   //Tokens
   const [inputToken, setInputToken] = useStateWithOverride(
     Tokens.BITCOIN.BTC,
-    existingSwap?.getInput().token,
+    existingSwap?.getInput().token
   );
   const [outputToken, setOutputToken] = useStateWithOverride(
     smartChainTokenArray[0],
-    existingSwap?.getOutput().token,
+    existingSwap?.getOutput().token
   );
+
   const swapType = useMemo(
     () => swapper?.getSwapType(inputToken, outputToken),
-    [swapper, inputToken, outputToken],
+    [swapper, inputToken, outputToken]
   );
   const scCurrency = isSCToken(inputToken)
     ? inputToken
@@ -112,78 +96,62 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       if (swapper == null) return null;
       try {
         const addressParseResult = swapper.Utils.parseAddressSync(val);
-        if (addressParseResult == null) return "Invalid address";
+        if (addressParseResult == null) return 'Invalid address';
       } catch (e) {
-        console.log("Address parsing error: ", e);
+        console.log('Address parsing error: ', e);
         return e.message;
       }
       return null;
     },
-    [swapper],
+    [swapper]
   );
   const [address, setAddress] = useState<string>(null);
-  let [addressData, addressLoading, addressError] = useAddressData(
-    address,
-    (addressData) => {
-      if (addressData?.type == null) return;
-      let token: Token;
-      switch (addressData.type) {
-        case "BITCOIN":
-          token = swapper
-            .getSupportedTokens(false)
-            .find((val) => isBtcToken(val) && !val.lightning);
-          break;
-        case "LNURL":
-          if (addressData.lnurl.type === "withdraw") {
-            navigate("/scan/2?address=" + encodeURIComponent(address));
-            return;
-          }
-        case "LIGHTNING":
-          token = swapper
-            .getSupportedTokens(false)
-            .find((val) => isBtcToken(val) && val.lightning);
-          break;
-        default:
-          if (
-            isSCToken(outputToken) &&
-            outputToken.chainId === addressData.type
-          )
-            token = outputToken;
-          token = swapper
-            .getSupportedTokens(false)
-            .find((val) => isSCToken(val) && val.chainId === addressData.type);
-          break;
-      }
-      if (outputToken === token) return;
-      if (token == null) return "Address not supported for swaps!";
-      const counterTokens = swapper.getSwapCounterTokens(token, false);
-      if (counterTokens.length === 0) return "Address not supported for swaps!";
-      const outputChainData: ChainWalletData<any> =
-        chainsData[getChainIdentifierForCurrency(token)];
-      if (
-        outputChainData.wallet != null &&
-        outputChainData.wallet.address != null &&
-        outputChainData.wallet.address !== addressData.address
-      ) {
-        console.log(
-          "SwapNew(): Disconnecting wallet: " + outputChainData.wallet.name,
-        );
-        outputChainData.disconnect();
-      }
-      console.log(
-        "SwapNew(): Using token based on the address: " + outputToken.ticker,
-      );
-      setOutputToken(token);
-      if (!includesToken(counterTokens, inputToken)) {
-        if (includesToken(counterTokens, outputToken)) {
-          setInputToken(outputToken);
-          setExactIn(!exactIn);
-        } else {
-          setInputToken(counterTokens[0]);
+  let [addressData, addressLoading, addressError] = useAddressData(address, (addressData) => {
+    if (addressData?.type == null) return;
+    let token: Token;
+    switch (addressData.type) {
+      case 'BITCOIN':
+        token = swapper.getSupportedTokens(false).find((val) => isBtcToken(val) && !val.lightning);
+        break;
+      case 'LNURL':
+        if (addressData.lnurl.type === 'withdraw') {
+          navigate('/scan/2?address=' + encodeURIComponent(address));
+          return;
         }
+      case 'LIGHTNING':
+        token = swapper.getSupportedTokens(false).find((val) => isBtcToken(val) && val.lightning);
+        break;
+      default:
+        if (isSCToken(outputToken) && outputToken.chainId === addressData.type) token = outputToken;
+        token = swapper
+          .getSupportedTokens(false)
+          .find((val) => isSCToken(val) && val.chainId === addressData.type);
+        break;
+    }
+    if (outputToken === token) return;
+    if (token == null) return 'Address not supported for swaps!';
+    const counterTokens = swapper.getSwapCounterTokens(token, false);
+    if (counterTokens.length === 0) return 'Address not supported for swaps!';
+    const outputChainData: ChainWalletData<any> = chainsData[getChainIdentifierForCurrency(token)];
+    if (
+      outputChainData.wallet != null &&
+      outputChainData.wallet.address != null &&
+      outputChainData.wallet.address !== addressData.address
+    ) {
+      console.log('SwapNew(): Disconnecting wallet: ' + outputChainData.wallet.name);
+      outputChainData.disconnect();
+    }
+    console.log('SwapNew(): Using token based on the address: ' + outputToken.ticker);
+    setOutputToken(token);
+    if (!includesToken(counterTokens, inputToken)) {
+      if (includesToken(counterTokens, outputToken)) {
+        setInputToken(outputToken);
+        setExactIn(!exactIn);
+      } else {
+        setInputToken(counterTokens[0]);
       }
-    },
-  );
+    }
+  });
   if (outputChainData?.wallet?.address != null) {
     addressData = {
       address: outputChainData.wallet.address,
@@ -201,24 +169,23 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   const outputRef = useRef<ValidatedInputRef>();
   const [_amount, setAmount] = useDecimalNumberState();
   const amount = isFixedAmount ? addressData.amount.amount : _amount;
-  const [exactIn, setExactIn] = useStateWithOverride(
-    true,
-    isFixedAmount ? false : null,
+  const [exactIn, setExactIn] = useStateWithOverride(true, isFixedAmount ? false : null);
+  const { input: swapInputLimits, output: swapOutputLimits } = useAmountConstraints(
+    inputToken,
+    outputToken
   );
-  const { input: swapInputLimits, output: swapOutputLimits } =
-    useAmountConstraints(inputToken, outputToken);
 
   //Url defined amount & swap type
   useEffect(() => {
-    const tokenIn = fromTokenIdentifier(params.get("tokenIn"));
-    const tokenOut = fromTokenIdentifier(params.get("tokenOut"));
+    const tokenIn = fromTokenIdentifier(params.get('tokenIn'));
+    const tokenOut = fromTokenIdentifier(params.get('tokenOut'));
     if (tokenIn != null) setInputToken(tokenIn);
     if (tokenOut != null) setOutputToken(tokenOut);
-    const exactIn = params.get("exactIn");
-    const amount = params.get("amount");
+    const exactIn = params.get('exactIn');
+    const amount = params.get('amount');
     if (exactIn != null && amount != null) {
-      setExactIn(exactIn === "true");
-      if (exactIn === "true") {
+      setExactIn(exactIn === 'true');
+      if (exactIn === 'true') {
         inputRef.current.setValue(amount);
       } else {
         outputRef.current.setValue(amount);
@@ -231,7 +198,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
     false,
     existingSwap instanceof SpvFromBTCSwap
       ? existingSwap.getGasDropOutput().rawAmount > 0
-      : undefined,
+      : undefined
   );
   const gasDropTokenAmount = useMemo(() => {
     if (
@@ -240,43 +207,32 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       (existingSwap as SpvFromBTCSwap<any>).getGasDropOutput().rawAmount > 0
     )
       return (existingSwap as SpvFromBTCSwap<any>).getGasDropOutput?.();
-    if (
-      swapper != null &&
-      isSCToken(outputToken) &&
-      swapType === SwapType.SPV_VAULT_FROM_BTC
-    ) {
+    if (swapper != null && isSCToken(outputToken) && swapType === SwapType.SPV_VAULT_FROM_BTC) {
       const nativeToken = swapper.Utils.getNativeToken(outputToken.chainId);
       if (nativeToken.address === outputToken.address) return;
       return toTokenAmount(
         FEConstants.scBalances[toTokenIdentifier(nativeToken)]?.optimal,
         nativeToken,
-        swapper.prices,
+        swapper.prices
       );
     }
   }, [swapper, existingSwap, swapType, outputToken]);
 
   //Check native currency balance for gas drop
   useEffect(() => {
-    if (
-      addressData?.address == null ||
-      swapper == null ||
-      gasDropTokenAmount == null
-    )
-      return;
+    if (addressData?.address == null || swapper == null || gasDropTokenAmount == null) return;
     let cancelled = false;
 
-    swapper.Utils.getSpendableBalance(
-      addressData?.address,
-      gasDropTokenAmount.token,
-    ).then((value) => {
-      if (cancelled) return;
-      const requiredBalance =
-        FEConstants.scBalances[toTokenIdentifier(gasDropTokenAmount.token)]
-          ?.minimum;
-      if (value < requiredBalance) {
-        setGasDropChecked(true);
+    swapper.Utils.getSpendableBalance(addressData?.address, gasDropTokenAmount.token).then(
+      (value) => {
+        if (cancelled) return;
+        const requiredBalance =
+          FEConstants.scBalances[toTokenIdentifier(gasDropTokenAmount.token)]?.minimum;
+        if (value < requiredBalance) {
+          setGasDropChecked(true);
+        }
       }
-    });
+    );
     return () => {
       cancelled = true;
     };
@@ -290,51 +246,34 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
     scCurrency.chainId,
     gasDropTokenAmount != null && gasDropChecked,
     locked,
-    minBtcTxFee,
+    minBtcTxFee
   );
 
   const inputLimits = useMemo(() => {
     if (maxSpendable?.balance == null) return swapInputLimits;
     return {
       min: swapInputLimits.min,
-      max: BigNumber.min(
-        swapInputLimits.max,
-        new BigNumber(maxSpendable.balance.amount),
-      ),
+      max: BigNumber.min(swapInputLimits.max, new BigNumber(maxSpendable.balance.amount)),
     };
   }, [swapInputLimits, maxSpendable?.balance?.rawAmount]);
   const outputLimits = useMemo(() => {
-    if (addressData?.min == null && addressData?.max == null)
-      return swapOutputLimits;
+    if (addressData?.min == null && addressData?.max == null) return swapOutputLimits;
     return {
       min:
         addressData?.min?.amount == null
           ? swapOutputLimits.min
-          : BigNumber.max(
-              new BigNumber(addressData?.min?.amount),
-              swapOutputLimits.min,
-            ),
+          : BigNumber.max(new BigNumber(addressData?.min?.amount), swapOutputLimits.min),
       max:
         addressData?.max?.amount == null
           ? swapOutputLimits.max
-          : BigNumber.min(
-              new BigNumber(addressData?.max?.amount),
-              swapOutputLimits.max,
-            ),
+          : BigNumber.min(new BigNumber(addressData?.max?.amount), swapOutputLimits.max),
     };
   }, [swapOutputLimits, addressData?.min?.amount, addressData?.max?.amount]);
-  const inputAmountValidator = useCallback(numberValidator(inputLimits, true), [
-    inputLimits,
-  ]);
-  const outputAmountValidator = useCallback(
-    numberValidator(outputLimits, true),
-    [outputLimits],
-  );
+  const inputAmountValidator = useCallback(numberValidator(inputLimits, true), [inputLimits]);
+  const outputAmountValidator = useCallback(numberValidator(outputLimits, true), [outputLimits]);
   const validatedAmount = useMemo(() => {
-    if (
-      (exactIn ? inputAmountValidator : outputAmountValidator)(amount) == null
-    )
-      return amount === "" ? null : new BigNumber(amount).toString(10);
+    if ((exactIn ? inputAmountValidator : outputAmountValidator)(amount) == null)
+      return amount === '' ? null : new BigNumber(amount).toString(10);
   }, [inputAmountValidator, outputAmountValidator, amount, exactIn]);
 
   //Quote
@@ -346,7 +285,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
     addressData?.lnurl ?? addressData?.address,
     gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined,
     maxSpendable?.feeRate,
-    addressLoading,
+    addressLoading
   );
   useEffect(() => {
     if (
@@ -364,39 +303,38 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   }, [quote]);
 
   //Final output/input amounts, value and output address
-  const [outputAddress, inputAmount, outputAmount, isOutputWalletAddress] =
-    useMemo(() => {
-      if (existingSwap != null)
-        return [
-          existingSwap.getOutputAddress(),
-          existingSwap.getInput().amount,
-          existingSwap.getOutput().amount,
-          outputChainData?.wallet?.address === existingSwap.getOutputAddress(),
-        ];
-      let _address = outputChainData?.wallet?.address ?? address;
-      if (quote != null)
-        return [
-          randomQuote ? _address : quote.getOutputAddress(),
-          exactIn ? amount : quote.getInput().amount,
-          !exactIn ? amount : quote.getOutput().amount,
-          outputChainData?.wallet?.address === quote.getOutputAddress(),
-        ];
-      // if(isFixedAmount) return [_address, "", addressData.amount.amount, outputChainData?.wallet?.address!=null];
+  const [outputAddress, inputAmount, outputAmount, isOutputWalletAddress] = useMemo(() => {
+    if (existingSwap != null)
       return [
-        _address,
-        exactIn ? amount : "",
-        !exactIn ? amount : "",
-        outputChainData?.wallet?.address != null,
+        existingSwap.getOutputAddress(),
+        existingSwap.getInput().amount,
+        existingSwap.getOutput().amount,
+        outputChainData?.wallet?.address === existingSwap.getOutputAddress(),
       ];
-    }, [
-      exactIn,
-      amount,
-      existingSwap,
-      quote,
-      randomQuote,
-      address,
-      outputChainData?.wallet?.address,
-    ]);
+    let _address = outputChainData?.wallet?.address ?? address;
+    if (quote != null)
+      return [
+        randomQuote ? _address : quote.getOutputAddress(),
+        exactIn ? amount : quote.getInput().amount,
+        !exactIn ? amount : quote.getOutput().amount,
+        outputChainData?.wallet?.address === quote.getOutputAddress(),
+      ];
+    // if(isFixedAmount) return [_address, "", addressData.amount.amount, outputChainData?.wallet?.address!=null];
+    return [
+      _address,
+      exactIn ? amount : '',
+      !exactIn ? amount : '',
+      outputChainData?.wallet?.address != null,
+    ];
+  }, [
+    exactIn,
+    amount,
+    existingSwap,
+    quote,
+    randomQuote,
+    address,
+    outputChainData?.wallet?.address,
+  ]);
   const notEnoughBalance =
     quote != null &&
     maxSpendable?.balance != null &&
@@ -413,33 +351,26 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       if (existingSwap == null) return;
       setInputToken(existingSwap.getInput().token);
       setOutputToken(existingSwap.getOutput().token);
-      if (!noSetAddress)
-        addressRef.current.setValue(existingSwap.getOutputAddress());
+      if (!noSetAddress) addressRef.current.setValue(existingSwap.getOutputAddress());
       if (!noSetAmounts)
         if (existingSwap.exactIn) {
           inputRef.current.setValue(existingSwap.getInput().amount);
         } else {
           outputRef.current.setValue(existingSwap.getOutput().amount);
         }
-      navigate("/");
+      navigate('/');
     },
-    [existingSwap],
+    [existingSwap]
   );
 
   //Changes the direction of the swap, reverses input and output tokens
   const changeDirection = useCallback(() => {
     if (locked || swapper == null) return;
     leaveExistingSwap(true);
-    const allowedCounterTokens = swapper.getSwapCounterTokens(
-      inputToken,
-      false,
-    );
+    const allowedCounterTokens = swapper.getSwapCounterTokens(inputToken, false);
     if (allowedCounterTokens.length === 0) {
       setInputToken(outputToken);
-      const allowedCounterTokens = swapper.getSwapCounterTokens(
-        outputToken,
-        true,
-      );
+      const allowedCounterTokens = swapper.getSwapCounterTokens(outputToken, true);
       if (allowedCounterTokens.length === 0) return;
       setOutputToken(allowedCounterTokens[0]);
     } else {
@@ -451,20 +382,20 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       }
     }
     setExactIn((val) => !val);
-    addressRef.current.setValue("");
+    addressRef.current.setValue('');
   }, [inputToken, outputToken, leaveExistingSwap, swapper, locked]);
 
   const webLnForOutput =
     existingSwap == null &&
-    outputChainData?.chain?.name === "Lightning" &&
+    outputChainData?.chain?.name === 'Lightning' &&
     outputChainData?.wallet != null;
   useEffect(() => {
     if (!webLnForOutput) return;
     if (exactIn) {
-      inputRef.current.setValue("");
+      inputRef.current.setValue('');
       setExactIn(false);
     }
-    addressRef.current.setValue("");
+    addressRef.current.setValue('');
   }, [webLnForOutput]);
 
   //Don't lock output amounts when WebLN wallet is connected
@@ -475,19 +406,18 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       if (existingSwap == null) {
         if (val) {
           console.log(
-            "SwapNew: setAmountLock, locking swap and redirecting to swap: " +
-              quote.getId(),
+            'SwapNew: setAmountLock, locking swap and redirecting to swap: ' + quote.getId()
           );
           setUnlocked(false);
-          navigate("/?swapId=" + quote.getId());
+          navigate('/?swapId=' + quote.getId());
         } else {
-          navigate("/");
+          navigate('/');
         }
       } else {
         setUnlocked(!val);
       }
     },
-    [quote, existingSwap],
+    [quote, existingSwap]
   );
 
   //Show "Use external wallet" when amount is too high
@@ -500,13 +430,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       parsedAmount.gt(balance) &&
       (swapInputLimits?.max == null || parsedAmount.lte(swapInputLimits.max))
     );
-  }, [
-    swapper,
-    maxSpendable?.balance,
-    inputAmount,
-    swapInputLimits?.max,
-    swapType,
-  ]);
+  }, [swapper, maxSpendable?.balance, inputAmount, swapInputLimits?.max, swapType]);
 
   return (
     <>
@@ -514,7 +438,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
 
       <QRScannerModal
         onScanned={(data: string) => {
-          console.log("QR scanned: ", data);
+          console.log('QR scanned: ', data);
           addressRef.current.setValue(data);
           setQrScanning(false);
         }}
@@ -528,24 +452,19 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
 
           <Card className="d-flex flex-column tab-accent-p3 pt-2">
             <div className="d-flex flex-row">
-              <small className="text-light text-opacity-75 me-auto">
-                You pay
-              </small>
+              <small className="text-light text-opacity-75 me-auto">You pay</small>
 
               {maxSpendable != null ? (
                 <>
                   <div className="d-flex align-items-center">
-                    <ConnectedWalletAnchor
-                      noText={true}
-                      currency={inputToken}
-                    />
+                    <ConnectedWalletAnchor noText={true} currency={inputToken} />
                     <small className="me-2">
                       {maxSpendable?.balance?.amount} {inputToken.ticker}
                     </small>
                   </div>
                   <Button
                     variant="outline-light"
-                    style={{ marginBottom: "2px" }}
+                    style={{ marginBottom: '2px' }}
                     className="py-0 px-1"
                     disabled={locked || amountsLocked}
                     onClick={() => {
@@ -553,10 +472,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       inputRef.current.setValue(maxSpendable?.balance?.amount);
                     }}
                   >
-                    <small
-                      className="font-smallest"
-                      style={{ marginBottom: "-2px" }}
-                    >
+                    <small className="font-smallest" style={{ marginBottom: '-2px' }}>
                       MAX
                     </small>
                   </Button>
@@ -574,11 +490,9 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
               className="flex-fill"
               type="number"
               value={inputAmount}
-              size={"lg"}
+              size={'lg'}
               textStart={
-                !exactIn && quoteLoading ? (
-                  <Spinner size="sm" className="text-white" />
-                ) : null
+                !exactIn && quoteLoading ? <Spinner size="sm" className="text-white" /> : null
               }
               onChange={(value, forcedChange) => {
                 setAmount(value);
@@ -587,19 +501,13 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
               }}
               inputId="amount-input"
               inputClassName="font-weight-500"
-              floatingLabel={
-                inputValue == null
-                  ? null
-                  : FEConstants.USDollar.format(inputValue)
-              }
+              floatingLabel={inputValue == null ? null : FEConstants.USDollar.format(inputValue)}
               expectingFloatingLabel={true}
               step={
                 inputToken == null
-                  ? new BigNumber("0.00000001")
+                  ? new BigNumber('0.00000001')
                   : new BigNumber(10).pow(
-                      new BigNumber(
-                        -(inputToken.displayDecimals ?? inputToken.decimals),
-                      ),
+                      new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals))
                     )
               }
               min={inputLimits?.min}
@@ -621,7 +529,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
               }
               validated={
                 notEnoughBalance
-                  ? "Not enough balance"
+                  ? 'Not enough balance'
                   : (!exactIn && quote != null) || existingSwap != null
                     ? null
                     : undefined
@@ -632,13 +540,9 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                   onSelect={(val) => {
                     if (locked) return;
                     leaveExistingSwap();
-                    const supportedCounterTokens = swapper.getSwapCounterTokens(
-                      val,
-                      true,
-                    );
+                    const supportedCounterTokens = swapper.getSwapCounterTokens(val, true);
                     setInputToken(val);
-                    if (includesToken(supportedCounterTokens, outputToken))
-                      return;
+                    if (includesToken(supportedCounterTokens, outputToken)) return;
                     let newOutputToken: Token;
                     if (includesToken(supportedCounterTokens, inputToken)) {
                       newOutputToken = inputToken;
@@ -646,9 +550,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                     } else {
                       if (isSCToken(outputToken))
                         newOutputToken = supportedCounterTokens.find(
-                          (val) =>
-                            isSCToken(val) &&
-                            val.chainId === outputToken.chainId,
+                          (val) => isSCToken(val) && val.chainId === outputToken.chainId
                         );
                       newOutputToken ??= supportedCounterTokens[0];
                       if (newOutputToken == null) {
@@ -661,7 +563,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       getChainIdentifierForCurrency(newOutputToken) !==
                       getChainIdentifierForCurrency(outputToken)
                     )
-                      addressRef.current.setValue("");
+                      addressRef.current.setValue('');
                   }}
                   value={inputToken}
                   className="round-right text-white bg-black bg-opacity-10"
@@ -670,23 +572,13 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
             />
           </Card>
           <div className="d-flex justify-content-center swap-direction-wrapper">
-            <Button
-              onClick={changeDirection}
-              size="lg"
-              className="px-0 swap-direction-btn"
-            >
-              <Icon
-                size={22}
-                icon={arrows_vertical}
-                style={{ marginTop: "-8px" }}
-              />
+            <Button onClick={changeDirection} size="lg" className="px-0 swap-direction-btn">
+              <Icon size={22} icon={arrows_vertical} style={{ marginTop: '-8px' }} />
             </Button>
           </div>
           <Card className="tab-accent-p3 pt-2">
             <div className="d-flex flex-row">
-              <small className="text-light text-opacity-75 me-auto">
-                You receive
-              </small>
+              <small className="text-light text-opacity-75 me-auto">You receive</small>
 
               <small>
                 <ConnectedWalletAnchor noText={false} currency={outputToken} />
@@ -699,45 +591,33 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 className="flex-fill strip-group-text"
                 type="number"
                 value={outputAmount}
-                size={"lg"}
+                size={'lg'}
                 textStart={
-                  exactIn && quoteLoading ? (
-                    <Spinner size="sm" className="text-white" />
-                  ) : null
+                  exactIn && quoteLoading ? <Spinner size="sm" className="text-white" /> : null
                 }
                 onChange={(val, forcedChange) => {
                   setAmount(val);
                   setExactIn(false);
-                  if (webLnForOutput) addressRef.current.setValue("");
+                  if (webLnForOutput) addressRef.current.setValue('');
                   if (!forcedChange) leaveExistingSwap(webLnForOutput, true);
                 }}
                 inputId="amount-output"
                 inputClassName="font-weight-500"
                 floatingLabel={
-                  outputValue == null
-                    ? null
-                    : FEConstants.USDollar.format(outputValue)
+                  outputValue == null ? null : FEConstants.USDollar.format(outputValue)
                 }
                 expectingFloatingLabel={true}
                 step={
                   outputToken == null
-                    ? new BigNumber("0.00000001")
+                    ? new BigNumber('0.00000001')
                     : new BigNumber(10).pow(
-                        new BigNumber(
-                          -(
-                            outputToken.displayDecimals ?? outputToken.decimals
-                          ),
-                        ),
+                        new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals))
                       )
                 }
                 min={outputLimits?.min}
                 max={outputLimits?.max}
                 onValidate={outputAmountValidator}
-                validated={
-                  (exactIn && quote != null) || existingSwap != null
-                    ? null
-                    : undefined
-                }
+                validated={(exactIn && quote != null) || existingSwap != null ? null : undefined}
                 elementEnd={
                   <CurrencyDropdown
                     currencyList={outputTokens}
@@ -749,12 +629,10 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                         getChainIdentifierForCurrency(val) !==
                         getChainIdentifierForCurrency(outputToken)
                       )
-                        addressRef.current.setValue("");
-                      const supportedCounterTokens =
-                        swapper.getSwapCounterTokens(val, false);
+                        addressRef.current.setValue('');
+                      const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
                       setOutputToken(val);
-                      if (includesToken(supportedCounterTokens, inputToken))
-                        return;
+                      if (includesToken(supportedCounterTokens, inputToken)) return;
                       if (includesToken(supportedCounterTokens, outputToken)) {
                         setInputToken(outputToken);
                         setExactIn(!exactIn);
@@ -762,9 +640,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                         let token: Token;
                         if (isSCToken(inputToken))
                           token = supportedCounterTokens.find(
-                            (val) =>
-                              isSCToken(val) &&
-                              val.chainId === inputToken.chainId,
+                            (val) => isSCToken(val) && val.chainId === inputToken.chainId
                           );
                         token ??= supportedCounterTokens[0];
                         if (token == null) {
@@ -780,10 +656,10 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 }
               />
             </div>
-            <div className={gasDropTokenAmount != null ? "d-flex" : "d-none"}>
+            <div className={gasDropTokenAmount != null ? 'd-flex' : 'd-none'}>
               <ValidatedInput
-                type={"checkbox"}
-                className={"flex-fill mt-1"}
+                type={'checkbox'}
+                className={'flex-fill mt-1'}
                 onChange={(val: boolean) => {
                   setGasDropChecked(val);
                   leaveExistingSwap();
@@ -792,19 +668,17 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                   <span>
                     <OverlayTrigger
                       overlay={
-                        <Tooltip id={"fee-tooltip-gas-drop"}>
+                        <Tooltip id={'fee-tooltip-gas-drop'}>
                           <span>
-                            Swap some amount of BTC to{" "}
-                            {gasDropTokenAmount?.token.ticker} (gas token on the
-                            destination chain), so that you can transact on{" "}
+                            Swap some amount of BTC to {gasDropTokenAmount?.token.ticker} (gas token
+                            on the destination chain), so that you can transact on{' '}
                             {gasDropTokenAmount?.token.chainId}
                           </span>
                         </Tooltip>
                       }
                     >
                       <span className="dottedUnderline">
-                        Request gas drop of{" "}
-                        {gasDropTokenAmount?._amount.toString(10)}{" "}
+                        Request gas drop of {gasDropTokenAmount?._amount.toString(10)}{' '}
                         {gasDropTokenAmount?.token.ticker}
                       </span>
                     </OverlayTrigger>
@@ -817,20 +691,17 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
             </div>
             <div
               className={
-                "flex-column " +
-                (swapper == null ||
-                swapper?.SwapTypeInfo[swapType].requiresOutputWallet
-                  ? "d-none"
-                  : "d-flex")
+                'flex-column ' +
+                (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
+                  ? 'd-none'
+                  : 'd-flex')
               }
             >
               <ValidatedInput
-                type={"text"}
+                type={'text'}
                 className={
-                  "flex-fill mt-3 " +
-                  (webLnForOutput && addressData?.address == null
-                    ? "d-none"
-                    : "")
+                  'flex-fill mt-3 ' +
+                  (webLnForOutput && addressData?.address == null ? 'd-none' : '')
                 }
                 onChange={(val, forcedChange) => {
                   setAddress(val);
@@ -838,12 +709,10 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 }}
                 value={outputAddress}
                 inputRef={addressRef}
-                placeholder={"Destination wallet address"}
+                placeholder={'Destination wallet address'}
                 onValidate={addressValidator}
                 validated={
-                  isOutputWalletAddress || outputAddress !== address
-                    ? null
-                    : addressError?.message
+                  isOutputWalletAddress || outputAddress !== address ? null : addressError?.message
                 }
                 disabled={locked || outputChainData?.wallet != null}
                 feedbackEndElement={
@@ -860,11 +729,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                     </a>
                   ) : null
                 }
-                textStart={
-                  addressLoading ? (
-                    <Spinner size="sm" className="text-white" />
-                  ) : null
-                }
+                textStart={addressLoading ? <Spinner size="sm" className="text-white" /> : null}
                 textEnd={
                   locked ? null : outputChainData?.wallet != null ? (
                     <OverlayTrigger
@@ -878,7 +743,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       <a
                         href="#"
                         style={{
-                          marginTop: "-3px",
+                          marginTop: '-3px',
                         }}
                         onClick={(e) => {
                           e.preventDefault();
@@ -891,14 +756,12 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                   ) : (
                     <OverlayTrigger
                       placement="top"
-                      overlay={
-                        <Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>
-                      }
+                      overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
                     >
                       <a
                         href="#"
                         style={{
-                          marginTop: "-3px",
+                          marginTop: '-3px',
                         }}
                         onClick={(e) => {
                           e.preventDefault();
@@ -912,9 +775,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 }
                 successFeedback={
                   isOutputWalletAddress
-                    ? "Address fetched from your " +
-                      outputChainData?.wallet.name +
-                      " wallet!"
+                    ? 'Address fetched from your ' + outputChainData?.wallet.name + ' wallet!'
                     : null
                 }
               />
@@ -927,16 +788,10 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                         onClick={async (e) => {
                           e.preventDefault();
                           if (validatedAmount == null) return;
-                          const webln: WebLNProvider =
-                            outputChainData.wallet.instance;
+                          const webln: WebLNProvider = outputChainData.wallet.instance;
                           try {
                             const res = await webln.makeInvoice(
-                              Number(
-                                fromHumanReadableString(
-                                  validatedAmount,
-                                  Tokens.BITCOIN.BTCLN,
-                                ),
-                              ),
+                              Number(fromHumanReadableString(validatedAmount, Tokens.BITCOIN.BTCLN))
                             );
                             addressRef.current.setValue(res.paymentRequest);
                           } catch (e) {
@@ -948,15 +803,15 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       </a>
                     </div>
                   ) : (
-                    ""
+                    ''
                   )}
                 </>
               ) : (
-                ""
+                ''
               )}
 
               <Alert
-                variant={"success"}
+                variant={'success'}
                 className="mt-3 mb-0 text-center"
                 show={
                   !locked &&
@@ -967,8 +822,8 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 }
               >
                 <label>
-                  Only lightning invoices with pre-set amount are supported! Use
-                  lightning address/LNURL for variable amount.
+                  Only lightning invoices with pre-set amount are supported! Use lightning
+                  address/LNURL for variable amount.
                 </label>
               </Alert>
             </div>
@@ -979,7 +834,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
               Retry
             </Button>
           ) : (
-            ""
+            ''
           )}
 
           {quote != null || existingSwap != null ? (
@@ -987,13 +842,10 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
               <div className="mt-3">
                 <SimpleFeeSummaryScreen
                   swap={existingSwap ?? quote}
-                  btcFeeRate={
-                    inputToken.chain === "BTC" ? maxSpendable?.feeRate : null
-                  }
+                  btcFeeRate={inputToken.chain === 'BTC' ? maxSpendable?.feeRate : null}
                 />
               </div>
-              {!randomQuote ||
-              swapper.SwapTypeInfo[swapType].requiresOutputWallet ? (
+              {!randomQuote || swapper.SwapTypeInfo[swapType].requiresOutputWallet ? (
                 <div className="mt-3 d-flex flex-column text-white">
                   <QuoteSummary
                     type="swap"
@@ -1013,19 +865,19 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                     }}
                     setAmountLock={setAmountLock}
                     abortSwap={() => {
-                      inputRef.current.setValue("");
-                      outputRef.current.setValue("");
-                      navigate("/");
+                      inputRef.current.setValue('');
+                      outputRef.current.setValue('');
+                      navigate('/');
                     }}
                     feeRate={maxSpendable?.feeRate}
                   />
                 </div>
               ) : (
-                ""
+                ''
               )}
             </>
           ) : (
-            ""
+            ''
           )}
         </Card>
       </div>
@@ -1033,23 +885,23 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       <div className="text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3">
         <div
           className="cursor-pointer d-flex align-items-center justify-content-center"
-          onClick={() => navigate("/faq?tabOpen=6")}
+          onClick={() => navigate('/faq?tabOpen=6')}
         >
-          <Icon size={18} icon={lock} style={{ marginTop: "-0.5rem" }} />
+          <Icon size={18} icon={lock} style={{ marginTop: '-0.5rem' }} />
           <small>Audited by</small>
-          {scCurrency?.chainId === "STARKNET" ? (
+          {scCurrency?.chainId === 'STARKNET' ? (
             <img
               className="d-block ms-1"
               height={18}
               src="/csc-white-logo.png"
-              style={{ marginTop: "-0.075rem", opacity: 0.6 }}
+              style={{ marginTop: '-0.075rem', opacity: 0.6 }}
             />
           ) : (
             <img
               className="opacity-50 d-block ms-1"
               height={18}
               src="/ackee_blockchain.svg"
-              style={{ marginTop: "-0.125rem" }}
+              style={{ marginTop: '-0.125rem' }}
             />
           )}
         </div>

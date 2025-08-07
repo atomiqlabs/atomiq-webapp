@@ -33,7 +33,7 @@ import { heart } from 'react-icons-kit/fa/heart';
 import { SwapNew } from './pages/SwapNew';
 import { useAnchorNavigate } from './utils/hooks/useAnchorNavigate';
 import { ErrorAlert } from './components/ErrorAlert';
-import { WalletConnectionsSummary } from './wallets/WalletConnectionsSummary';
+import { WalletConnections } from './wallets/WalletConnections';
 import { NFCSwitch } from './nfc/NFCSwitch';
 import { ChainDataContext } from './wallets/context/ChainDataContext';
 import { ChainDataProvider } from './wallets/ChainDataProvider';
@@ -70,8 +70,6 @@ function WrappedApp() {
     if (abortController.current != null) abortController.current.abort();
     abortController.current = new AbortController();
     try {
-      console.log('init start');
-
       const swapper = Factory.newSwapper({
         chains: {
           SOLANA: chainsData.SOLANA?.swapperOptions,

@@ -4,7 +4,7 @@ import { Navbar, Container, Nav, Badge, NavDropdown } from 'react-bootstrap';
 import Icon from 'react-icons-kit';
 import { FEConstants } from '../../FEConstants';
 import { BitcoinNetwork, Swapper } from '@atomiqlabs/sdk';
-import { WalletConnectionsSummary } from '../../wallets/WalletConnectionsSummary';
+import { WalletConnections } from '../../wallets/WalletConnections';
 import { NFCSwitch } from '../../nfc/NFCSwitch';
 import { repeat } from 'react-icons-kit/fa/repeat';
 import { history } from 'react-icons-kit/fa/history';
@@ -62,7 +62,10 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
               <img src="/logo192.png" className="main-navigation__logo is-mobile" />
               {/*TODO not sure what is this*/}
               {FEConstants.bitcoinNetwork !== BitcoinNetwork.MAINNET ? (
-                <Badge className="main-navigation__network ms-2 align-items-center" bg="danger">
+                <Badge
+                  className="main-navigation__network ms-2 my-0 align-items-center font-smallest"
+                  bg="danger"
+                >
                   DEVNETO
                 </Badge>
               ) : (
@@ -72,17 +75,7 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={() => setIsOpen(!isOpen)} />
           <div className="main-navigation__wallet">
-            {/*TODO Wallet probably in custom component*/}
-            {/*TODO but first make button component*/}
-            <BaseButton
-              className="main-navigation__wallet__button"
-              variant="transparent"
-              icon={<Icon size={20} icon={close} />}
-              onClick={() => console.log('tuk')}
-            >
-              Connect Wallet
-            </BaseButton>
-            {/*<WalletConnectionsSummary />*/}
+            <WalletConnections />
           </div>
           <Navbar.Collapse
             ref={collapseRef}
@@ -133,8 +126,6 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
                   </NavDropdown.Item>
                 ))}
               </NavDropdown>
-              {/* TODO What NFC what is this */}
-              <NFCSwitch />
               <SocialFooter affiliateLink={affiliateLink} />
             </Nav>
           </Navbar.Collapse>

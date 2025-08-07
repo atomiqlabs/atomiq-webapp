@@ -6,39 +6,46 @@ interface BaseButtonProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
-  size?: 'small' | 'large';
-  variant?: 'primary' | 'secondary' | 'transparent';
+  size?: 'smaller' | 'small' | 'large';
+  variant?: 'primary' | 'secondary' | 'transparent' | 'clear';
   disabled?: boolean;
   isLoading?: boolean;
   loadingText?: string;
   icon?: React.ReactNode;
 }
 
-export function BaseButton({
-  children,
-  className,
-  onClick,
-  size = 'small',
-  variant = 'primary',
-  disabled = false,
-  isLoading = false,
-  loadingText = 'Loading...',
-  icon,
-}: BaseButtonProps) {
+export const BaseButton = React.forwardRef<HTMLButtonElement, BaseButtonProps>(function BaseButton(
+  {
+    children,
+    className,
+    onClick,
+    size = 'small',
+    variant = 'primary',
+    disabled = false,
+    isLoading = false,
+    loadingText = 'Loading...',
+    icon,
+  },
+  ref
+) {
   const btnClass = classNames(
     'base-button',
     {
+      'base-button--smaller': size === 'smaller',
       'base-button--small': size === 'small',
       'base-button--large': size === 'large',
       'base-button--primary': variant === 'primary',
       'base-button--secondary': variant === 'secondary',
       'base-button--transparent': variant === 'transparent',
+      'base-button--clear': variant === 'clear',
+      'base-button--icon-only': !children,
     },
     className
   );
 
   return (
     <Button
+      ref={ref}
       className={btnClass}
       onClick={onClick}
       variant={variant}
@@ -64,4 +71,4 @@ export function BaseButton({
       )}
     </Button>
   );
-}
+});

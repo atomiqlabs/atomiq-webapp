@@ -1,61 +1,47 @@
-import { Button, Dropdown } from "react-bootstrap";
-import * as React from "react";
-import { ic_brightness_1 } from "react-icons-kit/md/ic_brightness_1";
-import Icon from "react-icons-kit";
-import { Token } from "@atomiqlabs/sdk";
-import { ic_power_outline } from "react-icons-kit/md/ic_power_outline";
-import { useChainForCurrency } from "./hooks/useChainForCurrency";
+import { Button, Dropdown } from 'react-bootstrap';
+import * as React from 'react';
+import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
+import Icon from 'react-icons-kit';
+import { Token } from '@atomiqlabs/sdk';
+import { useChainForCurrency } from './hooks/useChainForCurrency';
+import { BaseButton } from '../components/BaseButton';
+import { close } from 'react-icons-kit/fa/close';
 
-const ConnectedWallet = React.forwardRef<any, any>(
-  ({ name, icon, onClick, noText }, ref) => (
-    <div
-      className={"d-flex flex-row align-items-center cursor-pointer"}
-      onClick={onClick}
-    >
-      <Icon
-        className="text-success d-flex align-items-center me-1"
-        icon={ic_brightness_1}
-        size={12}
-      />
-      <img width={16} height={16} src={icon} className="me-1" />
-      {!noText ? name : ""}
-    </div>
-  ),
-);
+const ConnectedWallet = React.forwardRef<any, any>(({ name, icon, onClick, noText }, ref) => (
+  <BaseButton
+    icon={<Icon size={12} icon={ic_brightness_1} className="wallet-connections__indicator" />}
+    variant="transparent"
+    className="w-100 justify-content-start"
+    size="smaller"
+    onClick={onClick}
+  >
+    {!noText ? name : ''}
+  </BaseButton>
+));
 
 export function ConnectedWalletAnchor(props: {
   className?: string;
   noText?: boolean;
   currency: Token;
 }) {
-  const { wallet, connect, disconnect, changeWallet, chain } =
-    useChainForCurrency(props.currency);
+  const { wallet, connect, disconnect, changeWallet, chain } = useChainForCurrency(props.currency);
 
   if (wallet == null && connect == null) return <></>;
 
   return (
     <>
       {wallet == null ? (
-        <Button
-          variant="outline-light"
-          style={{ marginBottom: "2px" }}
-          className="py-0 px-1"
+        <BaseButton
+          icon={<Icon size={20} icon={close} />}
           onClick={() => connect()}
+          variant="transparent"
+          size="smaller"
+          className="wallet-connections__item__button"
         >
-          <small
-            className="font-smallest d-flex"
-            style={{ marginBottom: "-2px" }}
-          >
-            <Icon
-              icon={ic_power_outline}
-              size={16}
-              style={{ marginTop: "-3px" }}
-            />
-            <span>{chain.name} wallet</span>
-          </small>
-        </Button>
+          Connect Wallet
+        </BaseButton>
       ) : (
-        <Dropdown align={{ md: "start" }}>
+        <Dropdown align={{ md: 'start' }}>
           <Dropdown.Toggle
             as={ConnectedWallet}
             id="dropdown-custom-components"
@@ -81,7 +67,7 @@ export function ConnectedWalletAnchor(props: {
                 Change wallet
               </Dropdown.Item>
             ) : (
-              ""
+              ''
             )}
           </Dropdown.Menu>
         </Dropdown>

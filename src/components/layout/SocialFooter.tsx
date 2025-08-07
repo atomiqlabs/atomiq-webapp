@@ -33,8 +33,12 @@ export function SocialFooter({ affiliateLink }: SocialFooterProps) {
   return (
     <div className="social-footer">
       {socialLink.map(({ link, image, title }) => (
-        <OverlayTrigger placement="left" overlay={<Tooltip id="referral-tooltip">{title}</Tooltip>}>
-          <a key={link} href={link} target="_blank" className="social-footer__link">
+        <OverlayTrigger
+          key={link}
+          placement="left"
+          overlay={<Tooltip id="referral-tooltip">{title}</Tooltip>}
+        >
+          <a href={link} target="_blank" className="social-footer__link">
             <img className="social-footer__icon" src={`/icons/socials/${image}`} alt={title} />
           </a>
         </OverlayTrigger>

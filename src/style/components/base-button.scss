@@ -1,12 +1,16 @@
 .base-button {
   @apply font-bold px-6;
 
-  &:has(.base-button__icon) {
+  &:has(.base-button__icon):not(.base-button--icon-only) {
     @apply pl-4;
   }
 
   &--small {
     @apply h-12;
+  }
+
+  &--smaller {
+    @apply h-9 text-[14px];
   }
 
   &--large {
@@ -30,12 +34,25 @@
     }
   }
 
+  &--clear {
+    @apply text-white font-medium;
+  }
+
   &__icon {
     @apply inline-flex items-center mr-2;
 
     i {
       @apply items-center justify-center;
       display: flex !important;
+    }
+  }
+
+  &--icon-only {
+    & {
+      @apply px-3 py-[12px];
+    }
+    .base-button__icon {
+      @apply m-0;
     }
   }
 }

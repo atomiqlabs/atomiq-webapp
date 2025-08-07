@@ -1,20 +1,20 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { useAnchorWallet, useConnection, useWallet, } from "@solana/wallet-adapter-react";
-import { SolanaFees, SolanaSigner } from "@atomiqlabs/chain-solana";
-import { useCallback, useMemo } from "react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { ConnectionProvider, WalletProvider, } from "@solana/wallet-adapter-react";
-import { LedgerWalletAdapter, PhantomWalletAdapter, TorusWalletAdapter, SolflareWalletAdapter, } from "@solana/wallet-adapter-wallets";
-import { FEConstants } from "../../FEConstants";
+import { useWalletModal } from '@solana/wallet-adapter-react-ui';
+import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { SolanaFees, SolanaSigner } from '@atomiqlabs/chain-solana';
+import { useCallback, useMemo } from 'react';
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
+import { LedgerWalletAdapter, PhantomWalletAdapter, TorusWalletAdapter, SolflareWalletAdapter, } from '@solana/wallet-adapter-wallets';
+import { FEConstants } from '../../FEConstants';
 const wallets = [
     new PhantomWalletAdapter(),
     new SolflareWalletAdapter({ network: FEConstants.solanaChain }),
     new TorusWalletAdapter(),
     new LedgerWalletAdapter(),
 ];
-const jitoPubkey = "DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL";
-const jitoEndpoint = "https://mainnet.block-engine.jito.wtf/api/v1/transactions";
+const jitoPubkey = 'DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL';
+const jitoEndpoint = 'https://mainnet.block-engine.jito.wtf/api/v1/transactions';
 const fetchWithTimeout = async (input, init) => {
     if (init == null)
         init = {};
@@ -22,12 +22,12 @@ const fetchWithTimeout = async (input, init) => {
     const abortController = new AbortController();
     const timeoutHandle = setTimeout(() => {
         timedOut = true;
-        abortController.abort("Timed out");
+        abortController.abort('Timed out');
     }, 15000);
     let originalSignal;
     if (init.signal != null) {
         originalSignal = init.signal;
-        init.signal.addEventListener("abort", (reason) => {
+        init.signal.addEventListener('abort', (reason) => {
             clearTimeout(timeoutHandle);
             abortController.abort(reason);
         });
@@ -37,11 +37,11 @@ const fetchWithTimeout = async (input, init) => {
         return await fetch(input, init);
     }
     catch (e) {
-        console.error("SolanaWalletProvider: fetchWithTimeout(" + typeof e + "): ", e);
-        if (e.name === "AbortError" &&
+        console.error('SolanaWalletProvider: fetchWithTimeout(' + typeof e + '): ', e);
+        if (e.name === 'AbortError' &&
             (originalSignal == null || !originalSignal.aborted) &&
             timedOut) {
-            throw new Error("Network request timed out");
+            throw new Error('Network request timed out');
         }
         else {
             throw e instanceof Error ? e : new Error(e);
@@ -49,7 +49,7 @@ const fetchWithTimeout = async (input, init) => {
     }
 };
 export function SolanaWalletWrapper(props) {
-    return (_jsx(ConnectionProvider, { endpoint: FEConstants.solanaRpcUrl ?? "http://example.com/", config: { fetch: fetchWithTimeout, commitment: "confirmed" }, children: _jsx(WalletProvider, { wallets: wallets, autoConnect: true, children: _jsx(WalletModalProvider, { children: props.children }) }) }));
+    return (_jsx(ConnectionProvider, { endpoint: FEConstants.solanaRpcUrl ?? 'http://example.com/', config: { fetch: fetchWithTimeout, commitment: 'confirmed' }, children: _jsx(WalletProvider, { wallets: wallets, autoConnect: true, children: _jsx(WalletModalProvider, { children: props.children }) }) }));
 }
 export function useSolanaWalletData() {
     const { setVisible } = useWalletModal();
@@ -61,14 +61,19 @@ export function useSolanaWalletData() {
         setVisible(true);
     }, [setVisible]);
     return useMemo(() => {
-        if (!FEConstants.allowedChains.has("SOLANA"))
+        if (!FEConstants.allowedChains.has('SOLANA'))
             return [null];
-        const solanaFees = new SolanaFees(connection, 1000000, 2, 100, "auto", "high", () => 50000n);
+        const solanaFees = new SolanaFees(connection, 1000000, 2, 100, 'auto', 'high', () => 50000n
+        //, {
+        //    address: jitoPubkey,
+        //    endpoint: jitoEndpoint
+        //}
+        );
         return [
             {
                 chain: {
-                    name: "Solana",
-                    icon: "/icons/chains/SOLANA.svg",
+                    name: 'Solana',
+                    icon: '/icons/chains/solana_v2.svg',
                 },
                 wallet: wallet == null
                     ? null
@@ -78,7 +83,7 @@ export function useSolanaWalletData() {
                         instance: solanaSigner,
                         address: wallet.adapter?.publicKey?.toBase58(),
                     },
-                id: "SOLANA",
+                id: 'SOLANA',
                 disconnect,
                 connect,
                 changeWallet: connect,

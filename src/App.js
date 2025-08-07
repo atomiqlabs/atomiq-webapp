@@ -45,7 +45,6 @@ function WrappedApp() {
             abortController.current.abort();
         abortController.current = new AbortController();
         try {
-            console.log('init start');
             const swapper = Factory.newSwapper({
                 chains: {
                     SOLANA: chainsData.SOLANA?.swapperOptions,
