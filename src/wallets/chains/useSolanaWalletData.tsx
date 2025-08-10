@@ -5,7 +5,6 @@ import { SolanaFees, SolanaSigner } from '@atomiqlabs/chain-solana';
 import { useCallback, useMemo } from 'react';
 
 import * as React from 'react';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import {
   LedgerWalletAdapter,
@@ -14,6 +13,7 @@ import {
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 import { FEConstants } from '../../FEConstants';
+import { CustomWalletModalProvider } from '../CustomSolanaWallet/CustomWalletModalProvider';
 
 const wallets = [
   new PhantomWalletAdapter(),
@@ -66,7 +66,7 @@ export function SolanaWalletWrapper(props: { children: any }) {
       config={{ fetch: fetchWithTimeout, commitment: 'confirmed' }}
     >
       <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>{props.children}</WalletModalProvider>
+        <CustomWalletModalProvider>{props.children}</CustomWalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
   );

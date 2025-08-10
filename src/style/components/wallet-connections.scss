@@ -56,7 +56,9 @@
     }
   }
   &__badge {
-    @apply text-white font-medium rounded-none;
+    @apply text-white font-medium rounded m-[12px];
+
+    background: #180931;
   }
 
   & > .dropdown {

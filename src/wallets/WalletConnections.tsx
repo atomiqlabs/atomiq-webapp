@@ -121,7 +121,7 @@ export function WalletConnections() {
       {walletsArr &&
         walletsArr.map((value) => <MultichainWalletDisplay key={value.name} wallet={value} />)}
 
-      {walletsArr.length < 3 ? (
+      {walletsArr.length < 2 ? (
         <Dropdown align="end">
           {walletsArr.length == 0 ? (
             <Dropdown.Toggle

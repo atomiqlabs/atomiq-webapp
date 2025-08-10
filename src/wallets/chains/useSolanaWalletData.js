@@ -3,10 +3,10 @@ import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { SolanaFees, SolanaSigner } from '@atomiqlabs/chain-solana';
 import { useCallback, useMemo } from 'react';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { LedgerWalletAdapter, PhantomWalletAdapter, TorusWalletAdapter, SolflareWalletAdapter, } from '@solana/wallet-adapter-wallets';
 import { FEConstants } from '../../FEConstants';
+import { CustomWalletModalProvider } from '../CustomSolanaWallet/CustomWalletModalProvider';
 const wallets = [
     new PhantomWalletAdapter(),
     new SolflareWalletAdapter({ network: FEConstants.solanaChain }),
@@ -49,7 +49,7 @@ const fetchWithTimeout = async (input, init) => {
     }
 };
 export function SolanaWalletWrapper(props) {
-    return (_jsx(ConnectionProvider, { endpoint: FEConstants.solanaRpcUrl ?? 'http://example.com/', config: { fetch: fetchWithTimeout, commitment: 'confirmed' }, children: _jsx(WalletProvider, { wallets: wallets, autoConnect: true, children: _jsx(WalletModalProvider, { children: props.children }) }) }));
+    return (_jsx(ConnectionProvider, { endpoint: FEConstants.solanaRpcUrl ?? 'http://example.com/', config: { fetch: fetchWithTimeout, commitment: 'confirmed' }, children: _jsx(WalletProvider, { wallets: wallets, autoConnect: true, children: _jsx(CustomWalletModalProvider, { children: props.children }) }) }));
 }
 export function useSolanaWalletData() {
     const { setVisible } = useWalletModal();
