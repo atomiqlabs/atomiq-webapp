@@ -1,7 +1,7 @@
 import {
     fromHumanReadableString,
     isBtcToken,
-    isSCToken,
+    isSCToken, isSwapWithGasDrop,
     SCToken,
     SpvFromBTCSwap,
     SwapType,
@@ -164,9 +164,9 @@ export function SwapNew(props: {
         existingSwap instanceof SpvFromBTCSwap ? existingSwap.getGasDropOutput().rawAmount>0 : undefined
     );
     const gasDropTokenAmount = useMemo(() => {
-        if(existingSwap!=null && existingSwap.getType()===SwapType.SPV_VAULT_FROM_BTC && (existingSwap as SpvFromBTCSwap<any>).getGasDropOutput().rawAmount>0)
-            return (existingSwap as SpvFromBTCSwap<any>).getGasDropOutput?.();
-        if(swapper!=null && isSCToken(outputToken) && swapType===SwapType.SPV_VAULT_FROM_BTC) {
+        if(isSwapWithGasDrop(existingSwap) && existingSwap.getGasDropOutput().rawAmount>0)
+            return existingSwap.getGasDropOutput();
+        if(swapper!=null && isSCToken(outputToken) && swapper.SwapTypeInfo[swapType].supportsGasDrop) {
             const nativeToken = swapper.Utils.getNativeToken(outputToken.chainId);
             if(nativeToken.address===outputToken.address) return;
             return toTokenAmount(FEConstants.scBalances[toTokenIdentifier(nativeToken)]?.optimal, nativeToken, swapper.prices);

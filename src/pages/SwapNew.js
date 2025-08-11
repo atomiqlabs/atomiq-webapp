@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { fromHumanReadableString, isBtcToken, isSCToken, SpvFromBTCSwap, SwapType, toTokenAmount } from "@atomiqlabs/sdk";
+import { fromHumanReadableString, isBtcToken, isSCToken, isSwapWithGasDrop, SpvFromBTCSwap, SwapType, toTokenAmount } from "@atomiqlabs/sdk";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SwapsContext } from "../swaps/context/SwapsContext";
 import { useAddressData } from "../swaps/hooks/useAddressData";
@@ -135,9 +135,9 @@ export function SwapNew(props) {
     //Gas drop
     const [gasDropChecked, setGasDropChecked] = useStateWithOverride(false, existingSwap instanceof SpvFromBTCSwap ? existingSwap.getGasDropOutput().rawAmount > 0 : undefined);
     const gasDropTokenAmount = useMemo(() => {
-        if (existingSwap != null && existingSwap.getType() === SwapType.SPV_VAULT_FROM_BTC && existingSwap.getGasDropOutput().rawAmount > 0)
-            return existingSwap.getGasDropOutput?.();
-        if (swapper != null && isSCToken(outputToken) && swapType === SwapType.SPV_VAULT_FROM_BTC) {
+        if (isSwapWithGasDrop(existingSwap) && existingSwap.getGasDropOutput().rawAmount > 0)
+            return existingSwap.getGasDropOutput();
+        if (swapper != null && isSCToken(outputToken) && swapper.SwapTypeInfo[swapType].supportsGasDrop) {
             const nativeToken = swapper.Utils.getNativeToken(outputToken.chainId);
             if (nativeToken.address === outputToken.address)
                 return;
