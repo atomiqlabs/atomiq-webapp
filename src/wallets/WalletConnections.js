@@ -12,7 +12,7 @@ import { Tokens } from '../FEConstants';
 function MultichainWalletDisplay(props) {
     const chains = Object.keys(props.wallet.chains).map((chain) => props.wallet.chains[chain]);
     const [show, setShow] = useState(false);
-    return (_jsxs(Dropdown, { align: "end", show: show, onToggle: (nextShow) => setShow(nextShow), children: [_jsx("div", { className: "wallet-connections__badge", children: _jsxs(Badge, { id: 'dropdown' + props.wallet.name, className: "p-0 bg-opacity-50 cursor-pointer align-items-center d-flex flex-row", onClick: () => setShow(true), children: [_jsx("img", { width: 24, height: 24, src: props.wallet.icon }), chains.map((value) => {
+    return (_jsxs(Dropdown, { align: "end", show: show, onToggle: (nextShow) => setShow(nextShow), children: [_jsx("div", { className: "wallet-connections__badge", onClick: () => setShow(true), children: _jsxs(Badge, { id: 'dropdown' + props.wallet.name, className: "p-0 bg-opacity-50 cursor-pointer align-items-center d-flex flex-row", children: [_jsx("img", { width: 24, height: 24, src: props.wallet.icon }), chains.map((value) => {
                             return (_jsx("img", { className: "mx-1", width: 18, height: 18, src: value.icon }, value.name));
                         })] }) }), _jsx(Dropdown.Menu, { popperConfig: { strategy: 'absolute' }, children: chains.map((value) => {
                     return (_jsxs(_Fragment, { children: [_jsx(Dropdown.Header, { children: value.name }), _jsx(Dropdown.Item, { onClick: () => value.disconnect(), children: "Disconnect" }), value.changeWallet != null ? (_jsx(Dropdown.Item, { onClick: () => value.changeWallet(), children: "Change wallet" })) : ('')] }));

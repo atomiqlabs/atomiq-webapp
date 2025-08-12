@@ -116,7 +116,7 @@ export const CustomWalletModal: FC<WalletModalProps> = ({ className = '', contai
       <div
         aria-labelledby="wallet-adapter-modal-title"
         aria-modal="true"
-        className={`wallet-adapter-modal ${fadeIn && 'wallet-adapter-modal-fade-in'} ${className}`}
+        className={`wallet-adapter-modal wallet-modal ${fadeIn && 'wallet-adapter-modal-fade-in'} ${className}`}
         ref={ref}
         role="dialog"
       >
@@ -129,7 +129,7 @@ export const CustomWalletModal: FC<WalletModalProps> = ({ className = '', contai
             </button>
             {listedWallets.length ? (
               <>
-                <h1 className="wallet-adapter-modal-title">Mew</h1>
+                <h1 className="wallet-adapter-modal-title">Select a Solana Wallet</h1>
                 <ul className="wallet-adapter-modal-list">
                   {listedWallets.map((wallet) => (
                     <CustomWalletListItem
@@ -138,21 +138,22 @@ export const CustomWalletModal: FC<WalletModalProps> = ({ className = '', contai
                       wallet={wallet}
                     />
                   ))}
-                  {collapsedWallets.length ? (
-                    <div>here more items</div>
-                  ) : // TODO collapsed more items
-                  // <Collapse expanded={expanded} id="wallet-adapter-modal-collapse">
-                  //   {/*{collapsedWallets.map((wallet) => (*/}
-                  //   {/*  <CustomWalletListItem*/}
-                  //   {/*    key={wallet.adapter.name}*/}
-                  //   {/*    handleClick={(event) => handleWalletClick(event, wallet.adapter.name)}*/}
-                  //   {/*    tabIndex={expanded ? 0 : -1}*/}
-                  //   {/*    wallet={wallet}*/}
-                  //   {/*  />*/}
-                  //   {/*))}*/}
-                  // </Collapse>
-                  null}
                 </ul>
+
+                {collapsedWallets.length ? (
+                  <div>here more items</div>
+                ) : // TODO collapsed more items
+                // <Collapse expanded={expanded} id="wallet-adapter-modal-collapse">
+                //   {/*{collapsedWallets.map((wallet) => (*/}
+                //   {/*  <CustomWalletListItem*/}
+                //   {/*    key={wallet.adapter.name}*/}
+                //   {/*    handleClick={(event) => handleWalletClick(event, wallet.adapter.name)}*/}
+                //   {/*    tabIndex={expanded ? 0 : -1}*/}
+                //   {/*    wallet={wallet}*/}
+                //   {/*  />*/}
+                //   {/*))}*/}
+                // </Collapse>
+                null}
                 {collapsedWallets.length ? (
                   <button
                     className="wallet-adapter-modal-list-more"

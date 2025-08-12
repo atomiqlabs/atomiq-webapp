@@ -10,10 +10,12 @@ export const CustomWalletListItem: FC<WalletListItemProps> = ({
 }) => {
   return (
     <li>
-      <button onClick={handleClick} tabIndex={tabIndex}>
-        <WalletIcon wallet={wallet} />
+      <button className="wallet-modal__item" onClick={handleClick} tabIndex={tabIndex}>
+        <WalletIcon className="wallet-modal__item__icon" wallet={wallet} />
         {wallet.adapter.name}
-        {wallet.readyState === WalletReadyState.Installed && <span>Detected</span>}
+        {wallet.readyState === WalletReadyState.Installed && (
+          <div className="wallet-modal__item__status">Installed</div>
+        )}
       </button>
     </li>
   );

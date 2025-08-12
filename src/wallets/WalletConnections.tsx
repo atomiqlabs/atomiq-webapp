@@ -38,11 +38,10 @@ function MultichainWalletDisplay(props: { wallet: MultichainWallet; className?: 
 
   return (
     <Dropdown align="end" show={show} onToggle={(nextShow) => setShow(nextShow)}>
-      <div className="wallet-connections__badge">
+      <div className="wallet-connections__badge" onClick={() => setShow(true)}>
         <Badge
           id={'dropdown' + props.wallet.name}
           className="p-0 bg-opacity-50 cursor-pointer align-items-center d-flex flex-row"
-          onClick={() => setShow(true)}
         >
           <img width={24} height={24} src={props.wallet.icon} />
           {chains.map((value) => {
