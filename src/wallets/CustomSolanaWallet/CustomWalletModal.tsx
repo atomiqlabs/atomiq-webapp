@@ -85,7 +85,9 @@ export const CustomWalletModal: FC<WalletModalProps> = ({ className = '', contai
 
   useLayoutEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' || event.key === 'Esc') {
+        event.stopPropagation();
+        event.preventDefault();
         hideModal();
       } else if (event.key === 'Tab') {
         handleTabKey(event);
@@ -99,12 +101,12 @@ export const CustomWalletModal: FC<WalletModalProps> = ({ className = '', contai
     // Prevent scrolling on mount
     document.body.style.overflow = 'hidden';
     // Listen for keydown events
-    window.addEventListener('keydown', handleKeyDown, false);
+    document.addEventListener('keydown', handleKeyDown, true);
 
     return () => {
       // Re-enable scrolling when component unmounts
       document.body.style.overflow = overflow;
-      window.removeEventListener('keydown', handleKeyDown, false);
+      document.removeEventListener('keydown', handleKeyDown, true);
     };
   }, [hideModal, handleTabKey]);
 
@@ -139,39 +141,18 @@ export const CustomWalletModal: FC<WalletModalProps> = ({ className = '', contai
                     />
                   ))}
                 </ul>
-
-                {collapsedWallets.length ? (
-                  <div>here more items</div>
-                ) : // TODO collapsed more items
-                // <Collapse expanded={expanded} id="wallet-adapter-modal-collapse">
-                //   {/*{collapsedWallets.map((wallet) => (*/}
-                //   {/*  <CustomWalletListItem*/}
-                //   {/*    key={wallet.adapter.name}*/}
-                //   {/*    handleClick={(event) => handleWalletClick(event, wallet.adapter.name)}*/}
-                //   {/*    tabIndex={expanded ? 0 : -1}*/}
-                //   {/*    wallet={wallet}*/}
-                //   {/*  />*/}
-                //   {/*))}*/}
-                // </Collapse>
-                null}
-                {collapsedWallets.length ? (
-                  <button
-                    className="wallet-adapter-modal-list-more"
-                    onClick={handleCollapseClick}
-                    tabIndex={0}
-                  >
-                    <span>{expanded ? 'Less ' : 'More '}options</span>
-                    <svg
-                      width="13"
-                      height="7"
-                      viewBox="0 0 13 7"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className={`${expanded ? 'wallet-adapter-modal-list-more-icon-rotate' : ''}`}
-                    >
-                      <path d="M0.71418 1.626L5.83323 6.26188C5.91574 6.33657 6.0181 6.39652 6.13327 6.43762C6.24844 6.47872 6.37371 6.5 6.50048 6.5C6.62725 6.5 6.75252 6.47872 6.8677 6.43762C6.98287 6.39652 7.08523 6.33657 7.16774 6.26188L12.2868 1.626C12.7753 1.1835 12.3703 0.5 11.6195 0.5H1.37997C0.629216 0.5 0.224175 1.1835 0.71418 1.626Z" />
-                    </svg>
-                  </button>
-                ) : null}
+                <ul className="wallet-adapter-modal-list">
+                  {collapsedWallets.length
+                    ? collapsedWallets.map((wallet) => (
+                        <CustomWalletListItem
+                          key={wallet.adapter.name}
+                          handleClick={(event) => handleWalletClick(event, wallet.adapter.name)}
+                          tabIndex={expanded ? 0 : -1}
+                          wallet={wallet}
+                        />
+                      ))
+                    : null}
+                </ul>
               </>
             ) : (
               <>

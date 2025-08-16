@@ -1,39 +1,31 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CloseButton, ListGroup, Modal } from "react-bootstrap";
-import * as React from "react";
-import { useLocalStorage } from "../../utils/hooks/useLocalStorage";
-import { useStateRef } from "../../utils/hooks/useStateRef";
-import { ExtensionBitcoinWallet } from "./bitcoin/base/ExtensionBitcoinWallet";
-import { getInstalledBitcoinWallets, } from "./bitcoin/utils/BitcoinWalletUtils";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Modal } from 'react-bootstrap';
+import * as React from 'react';
+import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { useStateRef } from '../../utils/hooks/useStateRef';
+import { ExtensionBitcoinWallet } from './bitcoin/base/ExtensionBitcoinWallet';
+import { getInstalledBitcoinWallets } from './bitcoin/utils/BitcoinWalletUtils';
 function BitcoinWalletModal(props) {
-    return (_jsxs(Modal, { contentClassName: "text-white bg-dark", size: "sm", centered: true, show: props.modalOpened, onHide: () => props.setModalOpened(false), dialogClassName: "min-width-400px", children: [_jsx(Modal.Header, { className: "border-0", children: _jsxs(Modal.Title, { id: "contained-modal-title-vcenter", className: "d-flex flex-grow-1", children: ["Select a Bitcoin wallet", _jsx(CloseButton, { className: "ms-auto", variant: "white", onClick: () => props.setModalOpened(false) })] }) }), _jsx(Modal.Body, { children: _jsxs(ListGroup, { variant: "flush", children: [props.usableWallets.map((e) => {
-                            return (_jsxs(ListGroup.Item, { action: true, onClick: () => props.connectWallet(e), className: "d-flex flex-row bg-transparent text-white border-0", children: [_jsx("img", { width: 20, height: 20, src: e.iconUrl, className: "me-2" }), _jsx("span", { children: e.name }), _jsx("small", { className: "ms-auto", children: "Installed" })] }, e.name));
-                        }), props.installableWallets.map((e) => {
-                            return (_jsxs(ListGroup.Item, { action: true, href: e.installUrl, target: "_blank", className: "d-flex flex-row bg-transparent text-white border-0", children: [_jsx("img", { width: 20, height: 20, src: e.iconUrl, className: "me-2" }), _jsxs("span", { children: ["Install ", e.name] })] }, e.name));
-                        })] }) })] }));
+    return (_jsx(Modal, { contentClassName: "wallet-adapter-modal-wrapper", size: "sm", centered: true, show: props.modalOpened, onHide: () => props.setModalOpened(false), dialogClassName: "wallet-modal", backdrop: false, children: _jsxs(Modal.Body, { children: [_jsx("button", { onClick: () => props.setModalOpened(false), className: "wallet-adapter-modal-button-close", children: _jsx("svg", { width: "14", height: "14", children: _jsx("path", { d: "M14 12.461 8.3 6.772l5.234-5.233L12.006 0 6.772 5.234 1.54 0 0 1.539l5.234 5.233L0 12.006l1.539 1.528L6.772 8.3l5.69 5.7L14 12.461z" }) }) }), _jsx("h1", { className: "wallet-adapter-modal-title", children: "Select a Bitcoin Wallet" }), _jsx("ul", { className: "wallet-adapter-modal-list", children: props.usableWallets.map((e) => (_jsx("li", { children: _jsxs("button", { className: "wallet-modal__item", onClick: () => props.connectWallet(e), children: [_jsx("img", { width: 20, height: 20, src: e.iconUrl }), e.name, _jsx("div", { className: "wallet-modal__item__status", children: "Installed" })] }, e.name) }))) }), _jsx("ul", { className: "wallet-adapter-modal-list", children: props.installableWallets.map((e) => (_jsx("li", { children: _jsxs("button", { className: "wallet-modal__item", onClick: () => props.connectWallet(e), children: [_jsx("img", { width: 20, height: 20, src: e.iconUrl }), "Install ", e.name] }, e.name) }))) })] }) }));
 }
 export function useBitcoinWalletData(connectedOtherChainWallets) {
     const [bitcoinWallet, setBitcoinWallet] = React.useState(undefined);
     const [usableWallets, setUsableWallets] = useState([]);
     const [installableWallets, setInstallableWallets] = useState([]);
-    const [autoConnect, setAutoConnect] = useLocalStorage("btc-wallet-autoconnect", true);
+    const [autoConnect, setAutoConnect] = useLocalStorage('btc-wallet-autoconnect', true);
     const bitcoinWalletRef = useStateRef(bitcoinWallet);
     const prevConnectedWalletRef = useRef({});
     useEffect(() => {
         for (let chainName in connectedOtherChainWallets) {
             const oldWalletName = prevConnectedWalletRef.current[chainName];
             const newWalletName = connectedOtherChainWallets[chainName];
-            if (prevConnectedWalletRef.current[chainName] ==
-                connectedOtherChainWallets[chainName])
+            if (prevConnectedWalletRef.current[chainName] == connectedOtherChainWallets[chainName])
                 continue;
             const activeWallet = ExtensionBitcoinWallet.loadState();
-            if (oldWalletName != null &&
-                newWalletName == null &&
-                activeWallet?.name === oldWalletName) {
+            if (oldWalletName != null && newWalletName == null && activeWallet?.name === oldWalletName) {
                 setAutoConnect(true);
-                if (bitcoinWalletRef.current != null &&
-                    bitcoinWalletRef.current.wasAutomaticallyInitiated)
+                if (bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
                     disconnect(true);
             }
             prevConnectedWalletRef.current[chainName] = newWalletName;
@@ -45,7 +37,7 @@ export function useBitcoinWalletData(connectedOtherChainWallets) {
                 continue;
             if (activeWallet == null) {
                 const bitcoinWalletType = usableWallets.find((walletType) => walletType.name === newWalletName);
-                console.log("useBitcoinWalletData(): useEffect(autoconnect): found matching bitcoin wallet: ", bitcoinWalletType);
+                console.log('useBitcoinWalletData(): useEffect(autoconnect): found matching bitcoin wallet: ', bitcoinWalletType);
                 if (bitcoinWalletType != null)
                     bitcoinWalletType
                         .use({ multichainConnected: true })
@@ -78,7 +70,7 @@ export function useBitcoinWalletData(connectedOtherChainWallets) {
             return;
         let listener;
         bitcoinWallet.onWalletChanged((listener = (newWallet) => {
-            console.log("useBitcoinWalletData(): useEffect(walletChangeListener): New bitcoin wallet set: ", newWallet);
+            console.log('useBitcoinWalletData(): useEffect(walletChangeListener): New bitcoin wallet set: ', newWallet);
             if (newWallet == null) {
                 ExtensionBitcoinWallet.clearState();
                 setBitcoinWallet(undefined);
@@ -124,8 +116,8 @@ export function useBitcoinWalletData(connectedOtherChainWallets) {
     return useMemo(() => [
         {
             chain: {
-                name: "Bitcoin",
-                icon: "/icons/chains/BITCOIN.svg",
+                name: 'Bitcoin',
+                icon: '/icons/chains/BITCOIN.svg',
             },
             wallet: bitcoinWallet == null
                 ? null
@@ -135,20 +127,11 @@ export function useBitcoinWalletData(connectedOtherChainWallets) {
                     instance: bitcoinWallet,
                     address: bitcoinWallet.getReceiveAddress(),
                 },
-            id: "BITCOIN",
-            connect: usableWallets.length > 0 || installableWallets.length > 0
-                ? connect
-                : null,
+            id: 'BITCOIN',
+            connect: usableWallets.length > 0 || installableWallets.length > 0 ? connect : null,
             disconnect: bitcoinWallet != null ? disconnect : null,
             changeWallet: bitcoinWallet != null && usableWallets.length > 1 ? connect : null,
         },
         modal,
-    ], [
-        bitcoinWallet,
-        usableWallets,
-        installableWallets,
-        connect,
-        disconnect,
-        modal,
-    ]);
+    ], [bitcoinWallet, usableWallets, installableWallets, connect, disconnect, modal]);
 }
