@@ -63,39 +63,36 @@ export function CurrencyDropdown(props: {
   }
 
   return (
-    <Dropdown autoClose="outside" show={show} onToggle={(val) => setShow(val)}>
+    <Dropdown
+      autoClose="outside"
+      show={show}
+      onToggle={(val) => setShow(val)}
+      className="currency-dropdown"
+    >
       <Dropdown.Toggle
-        variant="light"
         id="dropdown-basic"
-        size="lg"
-        className={'px-2 py-0 ' + props.className}
+        className={'currency-dropdown__toggle ' + props.className}
       >
-        <div className="d-flex flex-column">
-          <div className="d-flex flex-row align-items-center">
-            {props.value == null ? (
-              ''
-            ) : (
-              <TokenIcon tokenOrTicker={props.value} className="currency-icon" />
-            )}
+        <div className="currency-dropdown__token">
+          {props.value == null ? (
+            ''
+          ) : (
+            <TokenIcon tokenOrTicker={props.value} className="currency-dropdown__token__img" />
+          )}
+          <img
+            src={'/icons/chains/' + currencyChainId + '.svg'}
+            className="currency-dropdown__token__currency"
+          />
+        </div>
+        <div className="currency-dropdown__details">
+          <div className="currency-dropdown__currency">
             {props.value == null ? 'Select currency' : props.value.ticker}
           </div>
-          <div
-            className="font-smallest d-flex flex-row align-items-center justify-content-center"
-            style={{ marginTop: '-4px' }}
-          >
-            {currencyChainId != null ? (
-              <>
-                <img
-                  src={'/icons/chains/' + currencyChainId + '.svg'}
-                  className="currency-icon-small"
-                />
-                {capitalizeFirstLetter(currencyChainId)}
-              </>
-            ) : (
-              ''
-            )}
+          <div className="currency-dropdown__second">
+            on {currencyChainId != null ? capitalizeFirstLetter(currencyChainId) : ''}
           </div>
         </div>
+        <div className="currency-dropdown__dropdown icon icon-dropdown"></div>
       </Dropdown.Toggle>
 
       <Dropdown.Menu>

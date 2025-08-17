@@ -1,0 +1,44 @@
+.currency-dropdown {
+  &__toggle.dropdown-toggle {
+    @apply pl-[16px] py-[12px] border-none w-[211px] pr-6;
+
+    background-color: rgba(255, 255, 255, 0.1) !important;
+
+    &:after {
+      @apply hidden;
+    }
+  }
+
+  &__token {
+    & {
+      @apply mr-4 relative;
+    }
+    &__img {
+      @apply w-8 h-8 rounded-full;
+    }
+    &__currency {
+      @apply w-4 h-4 rounded absolute -right-1 -bottom-1;
+    }
+  }
+
+  &__details {
+    @apply flex flex-col items-start flex-1;
+
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  &__currency {
+    @apply font-bold;
+  }
+
+  &__second {
+    @apply opacity-50;
+
+    font-size: 14px;
+  }
+
+  &__dropdown {
+    font-size: 12px;
+  }
+}

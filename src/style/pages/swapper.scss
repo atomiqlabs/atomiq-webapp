@@ -1,0 +1,48 @@
+@use '../components/currency-dropdown';
+
+.swap-panel {
+  @apply text-white max-w-full w-[590px] relative;
+
+  &__card {
+    @apply py-3 px-[20px] rounded-xl;
+    background: rgba(255, 255, 255, 0.1);
+
+    &__header {
+      @apply flex flex-row items-center justify-between mb-[12px];
+    }
+
+    &__title {
+      @apply text-[14px] font-bold uppercase;
+    }
+
+    &__wallet {
+      @apply -mr-[16px];
+
+      .base-button {
+        @apply transition-all;
+
+        &:hover .base-button__content {
+          @apply opacity-100;
+        }
+
+        &__content {
+          @apply opacity-75;
+        }
+      }
+    }
+
+    &__body {
+      @apply flex justify-between gap-5;
+    }
+  }
+
+  &__toggle {
+    @apply m-auto flex justify-center h-2 relative -top-[18px];
+
+    &__button {
+      @apply h-[44px] w-[44px] p-0 flex items-center justify-center rounded-full bg-black;
+
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  }
+}
