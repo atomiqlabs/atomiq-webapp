@@ -11,6 +11,7 @@ interface BaseButtonProps {
   disabled?: boolean;
   isLoading?: boolean;
   loadingText?: string;
+  customIcon?: string;
   icon?: React.ReactNode;
 }
 
@@ -25,6 +26,7 @@ export const BaseButton = React.forwardRef<HTMLButtonElement, BaseButtonProps>(f
     isLoading = false,
     loadingText = 'Loading...',
     icon,
+    customIcon,
   },
   ref
 ) {
@@ -66,6 +68,7 @@ export const BaseButton = React.forwardRef<HTMLButtonElement, BaseButtonProps>(f
       ) : (
         <>
           {icon && <div className="base-button__icon">{icon}</div>}
+          {customIcon && <span className={`base-button__icon icon icon-${customIcon}`}></span>}
           <div className="base-button__content">{children}</div>
         </>
       )}

@@ -125,9 +125,9 @@ export function WalletConnections() {
           {walletsArr.length == 0 ? (
             <Dropdown.Toggle
               as={BaseButton}
-              className="wallet-connectionst__button"
+              className="wallet-connections__button"
               variant="transparent"
-              icon={<Icon size={20} icon={close} />}
+              customIcon="connect"
               bsPrefix="none"
             >
               Connect Wallet
@@ -135,7 +135,7 @@ export function WalletConnections() {
           ) : (
             <Dropdown.Toggle
               as={BaseButton}
-              className="wallet-connectionst__button"
+              className="wallet-connections__button"
               variant="clear"
               icon={<Icon size={20} icon={close} />}
               bsPrefix="none"

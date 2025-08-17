@@ -57,6 +57,17 @@
       }
     }
   }
+  &__button {
+    &:hover {
+      .base-button__icon {
+        @apply opacity-80;
+      }
+    }
+
+    .base-button__icon {
+      @apply opacity-50 transition-none;
+    }
+  }
   &__badge {
     @apply text-white font-medium rounded m-[12px];
 

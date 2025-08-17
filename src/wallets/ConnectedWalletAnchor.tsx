@@ -32,7 +32,7 @@ export function ConnectedWalletAnchor(props: {
     <>
       {wallet == null ? (
         <BaseButton
-          icon={<Icon size={20} icon={close} />}
+          customIcon="connect"
           onClick={() => connect()}
           variant="transparent"
           size="smaller"

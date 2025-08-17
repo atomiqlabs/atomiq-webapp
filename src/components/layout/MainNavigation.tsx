@@ -3,25 +3,20 @@ import classNames from 'classnames';
 import { Navbar, Container, Nav, Badge, NavDropdown } from 'react-bootstrap';
 import Icon from 'react-icons-kit';
 import { FEConstants } from '../../FEConstants';
-import { BitcoinNetwork, Swapper } from '@atomiqlabs/sdk';
+import { BitcoinNetwork } from '@atomiqlabs/sdk';
 import { WalletConnections } from '../../wallets/WalletConnections';
-import { NFCSwitch } from '../../nfc/NFCSwitch';
-import { repeat } from 'react-icons-kit/fa/repeat';
-import { history } from 'react-icons-kit/fa/history';
 import { angleDown } from 'react-icons-kit/fa/angleDown';
-import { question } from 'react-icons-kit/fa/question';
 import { close } from 'react-icons-kit/fa/close';
 import { useLocation } from 'react-router-dom';
 import { SocialFooter } from './SocialFooter';
-import { BaseButton } from '../BaseButton';
 
 // TODO Icons
 const navItems = [
-  { link: '/', icon: repeat, title: 'Swap' },
-  { link: '/about', icon: history, title: 'Swap History' },
-  { link: '/faq', icon: question, title: 'Explorer' },
-  { link: '/more', icon: question, title: 'About' },
-  { link: '/more-daco', icon: question, title: 'FAQs' },
+  { link: '/', icon: 'swap-nav', title: 'Swap' },
+  { link: '/about', icon: 'Swap-History', title: 'Swap History' },
+  { link: '/faq', icon: 'Explorer', title: 'Explorer' },
+  { link: '/more', icon: 'info', title: 'About' },
+  { link: '/more-daco', icon: 'quesitons', title: 'FAQs' },
 ];
 
 interface MainNavigationProps {
@@ -104,7 +99,11 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
                   })}
                 >
                   {/*TODO ADD count BADGE*/}
-                  <Icon size={20} icon={item.icon} className="main-navigation__nav__item__icon" />
+                  {item.icon && (
+                    <span
+                      className={`main-navigation__nav__item__icon icon icon-${item.icon}`}
+                    ></span>
+                  )}
                   <span className="main-navigation__nav__item__text">{item.title}</span>
                 </Nav.Link>
               ))}

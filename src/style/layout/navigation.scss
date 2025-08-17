@@ -29,19 +29,15 @@
 
   & &__nav .main-navigation__nav__item {
     & {
-      @apply px-3 py-3 flex gap-2 border-solid border-b-2 border-transparent hover:border-pinkSlate;
+      @apply px-3 py-3 flex gap-2 border-solid border-b-2 border-transparent hover:border-pinkSlate items-center opacity-75 hover:opacity-100;
     }
 
     @media (max-width: 992px) {
-      @apply px-3 py-[12px] border-0 items-center opacity-75 hover:opacity-100 transition-all text-left;
+      @apply px-3 py-[12px] border-0 opacity-75 hover:opacity-100 transition-all text-left;
     }
 
     &.is-active {
-      @apply border-pink;
-
-      @media (max-width: 992px) {
-        @apply opacity-100;
-      }
+      @apply border-pink opacity-100;
     }
 
     &.is-mobile {
@@ -59,6 +55,8 @@
     }
 
     &__icon {
+      font-size: 18px;
+
       @media (max-width: 992px) {
         @apply justify-center items-center w-12 h-12 rounded-full;
         background-color: rgba(255, 255, 255, 0.1);
@@ -135,9 +133,10 @@
     }
 
     .dropdown-toggle {
-      @apply pl-3 pr-2 rounded;
+      @apply pl-3 pr-2 rounded opacity-75;
 
       &:hover {
+        @apply opacity-100;
         background: rgba(255, 255, 255, 0.1);
       }
 

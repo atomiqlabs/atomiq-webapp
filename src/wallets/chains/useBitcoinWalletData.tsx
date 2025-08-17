@@ -42,7 +42,7 @@ function BitcoinWalletModal(props: {
                 onClick={() => props.connectWallet(e)}
                 key={e.name}
               >
-                <img width={20} height={20} src={e.iconUrl} />
+                <img width={20} height={20} src={e.iconUrl} className="wallet-modal__item__icon" />
                 {e.name}
                 <div className="wallet-modal__item__status">Installed</div>
               </button>
@@ -57,7 +57,7 @@ function BitcoinWalletModal(props: {
                 onClick={() => props.connectWallet(e)}
                 key={e.name}
               >
-                <img width={20} height={20} src={e.iconUrl} />
+                <img width={20} height={20} src={e.iconUrl} className="wallet-modal__item__icon" />
                 Install {e.name}
               </button>
             </li>
