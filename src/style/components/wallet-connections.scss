@@ -4,11 +4,11 @@
   --bs-btn-active-bg: rgba(255, 255, 255, 0.2);
   --bs-btn-active-border-color: rgba(255, 255, 255, 0.2);
 
-  @apply flex gap-[2px];
+  @apply flex gap-[2px] justify-end;
 
   &__button {
     & {
-      @apply rounded-[8px];
+      @apply rounded-[8px] w-full;
     }
     &.show {
       @apply text-white;
@@ -53,11 +53,14 @@
       }
 
       .base-button__icon {
-        @apply opacity-50 transition-none;
+        @apply opacity-50;
       }
     }
   }
   &__button {
+    &.is-full {
+      @apply w-full;
+    }
     &:hover {
       .base-button__icon {
         @apply opacity-80;
@@ -65,7 +68,7 @@
     }
 
     .base-button__icon {
-      @apply opacity-50 transition-none;
+      @apply opacity-50;
     }
   }
   &__badge {

@@ -6,9 +6,8 @@ import { useAddressData } from '../swaps/hooks/useAddressData';
 import ValidatedInput, { numberValidator } from '../components/ValidatedInput';
 import { useAmountConstraints } from '../swaps/hooks/useAmountConstraints';
 import { useWalletBalance } from '../wallets/hooks/useWalletBalance';
-import { SwapTopbar } from './SwapTopbar';
 import { QRScannerModal } from '../qr/QRScannerModal';
-import { Alert, Button, Card, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import { Alert, Button, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import { fromTokenIdentifier, getChainIdentifierForCurrency, includesToken, smartChainTokenArray, toTokenIdentifier, } from '../tokens/Tokens';
 import { FEConstants, Tokens } from '../FEConstants';
 import BigNumber from 'bignumber.js';
@@ -20,7 +19,6 @@ import { useQuote } from '../swaps/hooks/useQuote';
 import { usePricing } from '../tokens/hooks/usePricing';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from 'react-icons-kit';
-import { arrows_vertical } from 'react-icons-kit/ikons/arrows_vertical';
 import { ic_qr_code_scanner } from 'react-icons-kit/md/ic_qr_code_scanner';
 import { lock } from 'react-icons-kit/fa/lock';
 import { ic_power_off_outline } from 'react-icons-kit/md/ic_power_off_outline';
@@ -41,6 +39,7 @@ export function SwapNew(props) {
     const propSwapId = params.get('swapId');
     const [existingSwap, existingSwapLoading] = useExistingSwap(propSwapId);
     const [isUnlocked, setUnlocked] = useState(false);
+    const [reversed, setReversed] = useState(false);
     const locked = !isUnlocked && existingSwap != null;
     //Tokens
     const [inputToken, setInputToken] = useStateWithOverride(Tokens.BITCOIN.BTC, existingSwap?.getInput().token);
@@ -356,63 +355,62 @@ export function SwapNew(props) {
         return (parsedAmount.gt(balance) &&
             (swapInputLimits?.max == null || parsedAmount.lte(swapInputLimits.max)));
     }, [swapper, maxSpendable?.balance, inputAmount, swapInputLimits?.max, swapType]);
-    return (_jsxs(_Fragment, { children: [_jsx(SwapTopbar, { selected: 0, enabled: !locked }), _jsx(QRScannerModal, { onScanned: (data) => {
+    return (_jsxs(_Fragment, { children: [_jsx(QRScannerModal, { onScanned: (data) => {
                     console.log('QR scanned: ', data);
                     addressRef.current.setValue(data);
                     setQrScanning(false);
-                }, show: qrScanning, onHide: () => setQrScanning(false) }), _jsx("div", { className: "d-flex flex-column align-items-center text-white", children: _jsxs(Card, { className: "p-3 swap-panel tab-bg mx-3 mb-3 border-0", children: [_jsx(ErrorAlert, { title: "Quote error", error: quoteError }), _jsxs(Card, { className: "d-flex flex-column tab-accent-p3 pt-2", children: [_jsxs("div", { className: "d-flex flex-row", children: [_jsx("small", { className: "text-light text-opacity-75 me-auto", children: "You pay" }), maxSpendable != null ? (_jsxs(_Fragment, { children: [_jsxs("div", { className: "d-flex align-items-center", children: [_jsx(ConnectedWalletAnchor, { noText: true, currency: inputToken }), _jsxs("small", { className: "me-2", children: [maxSpendable?.balance?.amount, " ", inputToken.ticker] })] }), _jsx(Button, { variant: "outline-light", style: { marginBottom: '2px' }, className: "py-0 px-1", disabled: locked || amountsLocked, onClick: () => {
+                }, show: qrScanning, onHide: () => setQrScanning(false) }), _jsx("div", { className: "d-flex flex-column align-items-center text-white", children: _jsxs("div", { className: "swap-panel", children: [_jsx(ErrorAlert, { title: "Quote error", error: quoteError, className: "swap-panel__error" }), _jsxs("div", { className: "swap-panel__card", children: [_jsxs("div", { className: "swap-panel__card__header", children: [_jsx("div", { className: "swap-panel__card__title", children: "You pay" }), maxSpendable != null ? (_jsxs(_Fragment, { children: [_jsxs("div", { className: "swap-panel__card__wallet", children: [_jsx(ConnectedWalletAnchor, { noText: true, currency: inputToken, variantButton: "clear" }), _jsxs("small", { className: "me-2", children: [maxSpendable?.balance?.amount, " ", inputToken.ticker] })] }), _jsx(Button, { variant: "outline-light", style: { marginBottom: '2px' }, className: "py-0 px-1", disabled: locked || amountsLocked, onClick: () => {
                                                         setExactIn(true);
                                                         inputRef.current.setValue(maxSpendable?.balance?.amount);
-                                                    }, children: _jsx("small", { className: "font-smallest", style: { marginBottom: '-2px' }, children: "MAX" }) })] })) : (_jsx("small", { children: _jsx(ConnectedWalletAnchor, { noText: false, currency: inputToken }) }))] }), _jsx(ValidatedInput, { disabled: locked || amountsLocked || webLnForOutput, inputRef: inputRef, className: "flex-fill", type: "number", value: inputAmount, size: 'lg', textStart: !exactIn && quoteLoading ? _jsx(Spinner, { size: "sm", className: "text-white" }) : null, onChange: (value, forcedChange) => {
-                                        setAmount(value);
-                                        setExactIn(true);
-                                        if (!forcedChange)
-                                            leaveExistingSwap(false, true);
-                                    }, inputId: "amount-input", inputClassName: "font-weight-500", floatingLabel: inputValue == null ? null : FEConstants.USDollar.format(inputValue), expectingFloatingLabel: true, step: inputToken == null
-                                        ? new BigNumber('0.00000001')
-                                        : new BigNumber(10).pow(new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals))), min: inputLimits?.min, max: inputLimits?.max, onValidate: inputAmountValidator, feedbackEndElement: showUseExternalWallet ? (_jsx("a", { className: "ms-auto", href: "#", onClick: (event) => {
-                                            event.preventDefault();
-                                            inputChainData?.disconnect?.();
-                                        }, children: "Use external wallet" })) : null, validated: notEnoughBalance
-                                        ? 'Not enough balance'
-                                        : (!exactIn && quote != null) || existingSwap != null
-                                            ? null
-                                            : undefined, elementEnd: _jsx(CurrencyDropdown, { currencyList: inputTokens, onSelect: (val) => {
-                                            if (locked)
-                                                return;
-                                            leaveExistingSwap();
-                                            const supportedCounterTokens = swapper.getSwapCounterTokens(val, true);
-                                            setInputToken(val);
-                                            if (includesToken(supportedCounterTokens, outputToken))
-                                                return;
-                                            let newOutputToken;
-                                            if (includesToken(supportedCounterTokens, inputToken)) {
-                                                newOutputToken = inputToken;
-                                                setExactIn(!exactIn);
-                                            }
-                                            else {
-                                                if (isSCToken(outputToken))
-                                                    newOutputToken = supportedCounterTokens.find((val) => isSCToken(val) && val.chainId === outputToken.chainId);
-                                                newOutputToken ?? (newOutputToken = supportedCounterTokens[0]);
-                                                if (newOutputToken == null) {
-                                                    setInputToken(inputToken);
+                                                    }, children: _jsx("small", { className: "font-smallest", style: { marginBottom: '-2px' }, children: "MAX" }) })] })) : (_jsx("div", { className: "swap-panel__card__wallet", children: _jsx(ConnectedWalletAnchor, { noText: false, currency: inputToken, variantButton: "clear" }) }))] }), _jsxs("div", { className: "swap-panel__card__body", children: [_jsx(CurrencyDropdown, { currencyList: inputTokens, onSelect: (val) => {
+                                                if (locked)
                                                     return;
+                                                leaveExistingSwap();
+                                                const supportedCounterTokens = swapper.getSwapCounterTokens(val, true);
+                                                setInputToken(val);
+                                                if (includesToken(supportedCounterTokens, outputToken))
+                                                    return;
+                                                let newOutputToken;
+                                                if (includesToken(supportedCounterTokens, inputToken)) {
+                                                    newOutputToken = inputToken;
+                                                    setExactIn(!exactIn);
                                                 }
-                                            }
-                                            setOutputToken(newOutputToken);
-                                            if (getChainIdentifierForCurrency(newOutputToken) !==
-                                                getChainIdentifierForCurrency(outputToken))
-                                                addressRef.current.setValue('');
-                                        }, value: inputToken, className: "round-right text-white bg-black bg-opacity-10" }) })] }), _jsx("div", { className: "d-flex justify-content-center swap-direction-wrapper", children: _jsx(Button, { onClick: changeDirection, size: "lg", className: "px-0 swap-direction-btn", children: _jsx(Icon, { size: 22, icon: arrows_vertical, style: { marginTop: '-8px' } }) }) }), _jsxs(Card, { className: "tab-accent-p3 pt-2", children: [_jsxs("div", { className: "d-flex flex-row", children: [_jsx("small", { className: "text-light text-opacity-75 me-auto", children: "You receive" }), _jsx("small", { children: _jsx(ConnectedWalletAnchor, { noText: false, currency: outputToken }) })] }), _jsx("div", { className: "d-flex flex-row", children: _jsx(ValidatedInput, { disabled: locked || amountsLocked, inputRef: outputRef, className: "flex-fill strip-group-text", type: "number", value: outputAmount, size: 'lg', textStart: exactIn && quoteLoading ? _jsx(Spinner, { size: "sm", className: "text-white" }) : null, onChange: (val, forcedChange) => {
-                                            setAmount(val);
-                                            setExactIn(false);
-                                            if (webLnForOutput)
-                                                addressRef.current.setValue('');
-                                            if (!forcedChange)
-                                                leaveExistingSwap(webLnForOutput, true);
-                                        }, inputId: "amount-output", inputClassName: "font-weight-500", floatingLabel: outputValue == null ? null : FEConstants.USDollar.format(outputValue), expectingFloatingLabel: true, step: outputToken == null
-                                            ? new BigNumber('0.00000001')
-                                            : new BigNumber(10).pow(new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals))), min: outputLimits?.min, max: outputLimits?.max, onValidate: outputAmountValidator, validated: (exactIn && quote != null) || existingSwap != null ? null : undefined, elementEnd: _jsx(CurrencyDropdown, { currencyList: outputTokens, onSelect: (val) => {
+                                                else {
+                                                    if (isSCToken(outputToken))
+                                                        newOutputToken = supportedCounterTokens.find((val) => isSCToken(val) && val.chainId === outputToken.chainId);
+                                                    newOutputToken ?? (newOutputToken = supportedCounterTokens[0]);
+                                                    if (newOutputToken == null) {
+                                                        setInputToken(inputToken);
+                                                        return;
+                                                    }
+                                                }
+                                                setOutputToken(newOutputToken);
+                                                if (getChainIdentifierForCurrency(newOutputToken) !==
+                                                    getChainIdentifierForCurrency(outputToken))
+                                                    addressRef.current.setValue('');
+                                            }, value: inputToken, className: "round-right text-white bg-black bg-opacity-10" }), _jsx(ValidatedInput, { disabled: locked || amountsLocked || webLnForOutput, inputRef: inputRef, className: "swap-panel__input-wrapper", placeholder: '0.00', type: "number", value: inputAmount, size: 'lg', textStart: !exactIn && quoteLoading ? _jsx(Spinner, { size: "sm", className: "text-white" }) : null, onChange: (value, forcedChange) => {
+                                                setAmount(value);
+                                                setExactIn(true);
+                                                if (!forcedChange)
+                                                    leaveExistingSwap(false, true);
+                                            }, inputId: "amount-input", inputClassName: "swap-panel__input", floatingLabelClassName: "swap-panel__label", floatingLabel: FEConstants.USDollar.format(inputValue ?? 0), expectingFloatingLabel: true, step: inputToken == null
+                                                ? new BigNumber('0.00000001')
+                                                : new BigNumber(10).pow(new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals))), min: inputLimits?.min, max: inputLimits?.max, onValidate: inputAmountValidator, feedbackEndElement: showUseExternalWallet ? (_jsx("a", { className: "ms-auto", href: "#", onClick: (event) => {
+                                                    event.preventDefault();
+                                                    inputChainData?.disconnect?.();
+                                                }, children: "Use external wallet" })) : null, validated: notEnoughBalance
+                                                ? 'Not enough balance'
+                                                : (!exactIn && quote != null) || existingSwap != null
+                                                    ? null
+                                                    : undefined })] })] }), _jsx("div", { className: "swap-panel__toggle", children: _jsx(Button, { onClick: () => {
+                                    if (locked)
+                                        return;
+                                    setReversed((v) => !v);
+                                    changeDirection();
+                                }, size: "lg", className: "swap-panel__toggle__button", style: {
+                                    transition: 'transform 0.35s ease',
+                                    transform: reversed ? 'rotate(180deg)' : 'rotate(0deg)',
+                                }, children: _jsx("div", { className: "icon icon-swap" }) }) }), _jsxs("div", { className: "swap-panel__card", children: [_jsxs("div", { className: "swap-panel__card__header", children: [_jsx("div", { className: "swap-panel__card__title", children: "You receive" }), _jsx("div", { className: "swap-panel__card__wallet", children: _jsx(ConnectedWalletAnchor, { noText: false, currency: outputToken, variantButton: "clear" }) })] }), _jsxs("div", { className: "swap-panel__card__body", children: [_jsx(CurrencyDropdown, { currencyList: outputTokens, onSelect: (val) => {
                                                 if (locked)
                                                     return;
                                                 leaveExistingSwap();
@@ -440,7 +438,16 @@ export function SwapNew(props) {
                                                     }
                                                     setInputToken(token);
                                                 }
-                                            }, value: outputToken, className: "round-right text-white bg-black bg-opacity-10" }) }) }), _jsx("div", { className: gasDropTokenAmount != null ? 'd-flex' : 'd-none', children: _jsx(ValidatedInput, { type: 'checkbox', className: 'flex-fill mt-1', onChange: (val) => {
+                                            }, value: outputToken, className: "round-right text-white bg-black bg-opacity-10" }), _jsx(ValidatedInput, { disabled: locked || amountsLocked, inputRef: outputRef, className: "flex-fill strip-group-text", type: "number", value: outputAmount, size: 'lg', textStart: exactIn && quoteLoading ? _jsx(Spinner, { size: "sm", className: "text-white" }) : null, onChange: (val, forcedChange) => {
+                                                setAmount(val);
+                                                setExactIn(false);
+                                                if (webLnForOutput)
+                                                    addressRef.current.setValue('');
+                                                if (!forcedChange)
+                                                    leaveExistingSwap(webLnForOutput, true);
+                                            }, inputId: "amount-output", inputClassName: "swap-panel__input", floatingLabelClassName: "swap-panel__label", placeholder: '0.00', floatingLabel: FEConstants.USDollar.format(outputValue ?? 0), expectingFloatingLabel: true, step: outputToken == null
+                                                ? new BigNumber('0.00000001')
+                                                : new BigNumber(10).pow(new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals))), min: outputLimits?.min, max: outputLimits?.max, onValidate: outputAmountValidator, validated: (exactIn && quote != null) || existingSwap != null ? null : undefined })] }), _jsx("div", { className: gasDropTokenAmount != null ? 'd-flex' : 'd-none', children: _jsx(ValidatedInput, { type: 'checkbox', className: "swap-panel__input-wrapper", onChange: (val) => {
                                             setGasDropChecked(val);
                                             leaveExistingSwap();
                                         }, placeholder: _jsx("span", { children: _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: 'fee-tooltip-gas-drop', children: _jsxs("span", { children: ["Swap some amount of BTC to ", gasDropTokenAmount?.token.ticker, " (gas token on the destination chain), so that you can transact on", ' ', gasDropTokenAmount?.token.chainId] }) }), children: _jsxs("span", { className: "dottedUnderline", children: ["Request gas drop of ", gasDropTokenAmount?._amount.toString(10), ' ', gasDropTokenAmount?.token.ticker] }) }) }), value: gasDropChecked, onValidate: () => null, disabled: locked }) }), _jsxs("div", { className: 'flex-column ' +
@@ -498,5 +505,5 @@ export function SwapNew(props) {
                                             inputRef.current.setValue('');
                                             outputRef.current.setValue('');
                                             navigate('/');
-                                        }, feeRate: maxSpendable?.feeRate }) })) : ('')] })) : ('')] }) }), _jsx("div", { className: "text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3", children: _jsxs("div", { className: "cursor-pointer d-flex align-items-center justify-content-center", onClick: () => navigate('/faq?tabOpen=6'), children: [_jsx(Icon, { size: 18, icon: lock, style: { marginTop: '-0.5rem' } }), _jsx("small", { children: "Audited by" }), scCurrency?.chainId === 'STARKNET' ? (_jsx("img", { className: "d-block ms-1", height: 18, src: "/csc-white-logo.png", style: { marginTop: '-0.075rem', opacity: 0.6 } })) : (_jsx("img", { className: "opacity-50 d-block ms-1", height: 18, src: "/ackee_blockchain.svg", style: { marginTop: '-0.125rem' } }))] }) })] }));
+                                        }, feeRate: maxSpendable?.feeRate }) })) : ('')] })) : ('')] }) }), _jsx("div", { className: "mt-4 text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3", children: _jsxs("div", { className: "cursor-pointer d-flex align-items-center justify-content-center", onClick: () => navigate('/faq?tabOpen=6'), children: [_jsx(Icon, { size: 18, icon: lock, style: { marginTop: '-0.5rem' } }), _jsx("small", { children: "Audited by" }), scCurrency?.chainId === 'STARKNET' ? (_jsx("img", { className: "d-block ms-1", height: 18, src: "/csc-white-logo.png", style: { marginTop: '-0.075rem', opacity: 0.6 } })) : (_jsx("img", { className: "opacity-50 d-block ms-1", height: 18, src: "/ackee_blockchain.svg", style: { marginTop: '-0.125rem' } }))] }) })] }));
 }

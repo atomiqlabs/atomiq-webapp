@@ -2,12 +2,14 @@ import { Button, Spinner } from 'react-bootstrap';
 import * as React from 'react';
 import classNames from 'classnames';
 
+export type BaseButtonVariantProps = 'primary' | 'secondary' | 'transparent' | 'clear';
+
 interface BaseButtonProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
   size?: 'smaller' | 'small' | 'large';
-  variant?: 'primary' | 'secondary' | 'transparent' | 'clear';
+  variant?: BaseButtonVariantProps;
   disabled?: boolean;
   isLoading?: boolean;
   loadingText?: string;

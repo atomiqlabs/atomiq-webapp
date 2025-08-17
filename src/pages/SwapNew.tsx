@@ -63,6 +63,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   const [existingSwap, existingSwapLoading] = useExistingSwap(propSwapId);
 
   const [isUnlocked, setUnlocked] = useState<boolean>(false);
+  const [reversed, setReversed] = useState(false);
   const locked = !isUnlocked && existingSwap != null;
 
   //Tokens
@@ -434,7 +435,8 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
 
   return (
     <>
-      <SwapTopbar selected={0} enabled={!locked} />
+      {/* TODO remove, maybe it will be inspiration in the future */}
+      {/*<SwapTopbar selected={0} enabled={!locked} />*/}
 
       <QRScannerModal
         onScanned={(data: string) => {
@@ -447,17 +449,20 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       />
 
       <div className="d-flex flex-column align-items-center text-white">
-        <Card className="p-3 swap-panel tab-bg mx-3 mb-3 border-0">
-          <ErrorAlert title="Quote error" error={quoteError} />
-
-          <Card className="d-flex flex-column tab-accent-p3 pt-2">
-            <div className="d-flex flex-row">
-              <small className="text-light text-opacity-75 me-auto">You pay</small>
+        <div className="swap-panel">
+          <ErrorAlert title="Quote error" error={quoteError} className="swap-panel__error" />
+          <div className="swap-panel__card">
+            <div className="swap-panel__card__header">
+              <div className="swap-panel__card__title">You pay</div>
 
               {maxSpendable != null ? (
                 <>
-                  <div className="d-flex align-items-center">
-                    <ConnectedWalletAnchor noText={true} currency={inputToken} />
+                  <div className="swap-panel__card__wallet">
+                    <ConnectedWalletAnchor
+                      noText={true}
+                      currency={inputToken}
+                      variantButton="clear"
+                    />
                     <small className="me-2">
                       {maxSpendable?.balance?.amount} {inputToken.ticker}
                     </small>
@@ -478,113 +483,167 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                   </Button>
                 </>
               ) : (
-                <small>
-                  <ConnectedWalletAnchor noText={false} currency={inputToken} />
-                </small>
+                <div className="swap-panel__card__wallet">
+                  <ConnectedWalletAnchor
+                    noText={false}
+                    currency={inputToken}
+                    variantButton="clear"
+                  />
+                </div>
               )}
             </div>
-
-            <ValidatedInput
-              disabled={locked || amountsLocked || webLnForOutput}
-              inputRef={inputRef}
-              className="flex-fill"
-              type="number"
-              value={inputAmount}
-              size={'lg'}
-              textStart={
-                !exactIn && quoteLoading ? <Spinner size="sm" className="text-white" /> : null
-              }
-              onChange={(value, forcedChange) => {
-                setAmount(value);
-                setExactIn(true);
-                if (!forcedChange) leaveExistingSwap(false, true);
-              }}
-              inputId="amount-input"
-              inputClassName="font-weight-500"
-              floatingLabel={inputValue == null ? null : FEConstants.USDollar.format(inputValue)}
-              expectingFloatingLabel={true}
-              step={
-                inputToken == null
-                  ? new BigNumber('0.00000001')
-                  : new BigNumber(10).pow(
-                      new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals))
-                    )
-              }
-              min={inputLimits?.min}
-              max={inputLimits?.max}
-              onValidate={inputAmountValidator}
-              feedbackEndElement={
-                showUseExternalWallet ? (
-                  <a
-                    className="ms-auto"
-                    href="#"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      inputChainData?.disconnect?.();
-                    }}
-                  >
-                    Use external wallet
-                  </a>
-                ) : null
-              }
-              validated={
-                notEnoughBalance
-                  ? 'Not enough balance'
-                  : (!exactIn && quote != null) || existingSwap != null
-                    ? null
-                    : undefined
-              }
-              elementEnd={
-                <CurrencyDropdown
-                  currencyList={inputTokens}
-                  onSelect={(val) => {
-                    if (locked) return;
-                    leaveExistingSwap();
-                    const supportedCounterTokens = swapper.getSwapCounterTokens(val, true);
-                    setInputToken(val);
-                    if (includesToken(supportedCounterTokens, outputToken)) return;
-                    let newOutputToken: Token;
-                    if (includesToken(supportedCounterTokens, inputToken)) {
-                      newOutputToken = inputToken;
-                      setExactIn(!exactIn);
-                    } else {
-                      if (isSCToken(outputToken))
-                        newOutputToken = supportedCounterTokens.find(
-                          (val) => isSCToken(val) && val.chainId === outputToken.chainId
-                        );
-                      newOutputToken ??= supportedCounterTokens[0];
-                      if (newOutputToken == null) {
-                        setInputToken(inputToken);
-                        return;
-                      }
+            <div className="swap-panel__card__body">
+              <CurrencyDropdown
+                currencyList={inputTokens}
+                onSelect={(val) => {
+                  if (locked) return;
+                  leaveExistingSwap();
+                  const supportedCounterTokens = swapper.getSwapCounterTokens(val, true);
+                  setInputToken(val);
+                  if (includesToken(supportedCounterTokens, outputToken)) return;
+                  let newOutputToken: Token;
+                  if (includesToken(supportedCounterTokens, inputToken)) {
+                    newOutputToken = inputToken;
+                    setExactIn(!exactIn);
+                  } else {
+                    if (isSCToken(outputToken))
+                      newOutputToken = supportedCounterTokens.find(
+                        (val) => isSCToken(val) && val.chainId === outputToken.chainId
+                      );
+                    newOutputToken ??= supportedCounterTokens[0];
+                    if (newOutputToken == null) {
+                      setInputToken(inputToken);
+                      return;
                     }
-                    setOutputToken(newOutputToken);
-                    if (
-                      getChainIdentifierForCurrency(newOutputToken) !==
-                      getChainIdentifierForCurrency(outputToken)
-                    )
-                      addressRef.current.setValue('');
-                  }}
-                  value={inputToken}
-                  className="round-right text-white bg-black bg-opacity-10"
-                />
-              }
-            />
-          </Card>
-          <div className="d-flex justify-content-center swap-direction-wrapper">
-            <Button onClick={changeDirection} size="lg" className="px-0 swap-direction-btn">
-              <Icon size={22} icon={arrows_vertical} style={{ marginTop: '-8px' }} />
+                  }
+                  setOutputToken(newOutputToken);
+                  if (
+                    getChainIdentifierForCurrency(newOutputToken) !==
+                    getChainIdentifierForCurrency(outputToken)
+                  )
+                    addressRef.current.setValue('');
+                }}
+                value={inputToken}
+                className="round-right text-white bg-black bg-opacity-10"
+              />
+              <ValidatedInput
+                disabled={locked || amountsLocked || webLnForOutput}
+                inputRef={inputRef}
+                className="swap-panel__input-wrapper"
+                placeholder={'0.00'}
+                type="number"
+                value={inputAmount}
+                size={'lg'}
+                textStart={
+                  !exactIn && quoteLoading ? <Spinner size="sm" className="text-white" /> : null
+                }
+                onChange={(value, forcedChange) => {
+                  setAmount(value);
+                  setExactIn(true);
+                  if (!forcedChange) leaveExistingSwap(false, true);
+                }}
+                inputId="amount-input"
+                inputClassName="swap-panel__input"
+                floatingLabelClassName="swap-panel__label"
+                floatingLabel={FEConstants.USDollar.format(inputValue ?? 0)}
+                expectingFloatingLabel={true}
+                step={
+                  inputToken == null
+                    ? new BigNumber('0.00000001')
+                    : new BigNumber(10).pow(
+                        new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals))
+                      )
+                }
+                min={inputLimits?.min}
+                max={inputLimits?.max}
+                onValidate={inputAmountValidator}
+                feedbackEndElement={
+                  showUseExternalWallet ? (
+                    <a
+                      className="ms-auto"
+                      href="#"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        inputChainData?.disconnect?.();
+                      }}
+                    >
+                      Use external wallet
+                    </a>
+                  ) : null
+                }
+                validated={
+                  notEnoughBalance
+                    ? 'Not enough balance'
+                    : (!exactIn && quote != null) || existingSwap != null
+                      ? null
+                      : undefined
+                }
+              />
+            </div>
+          </div>
+          <div className="swap-panel__toggle">
+            <Button
+              onClick={() => {
+                if (locked) return;
+                setReversed((v) => !v);
+                changeDirection();
+              }}
+              size="lg"
+              className="swap-panel__toggle__button"
+              style={{
+                transition: 'transform 0.35s ease',
+                transform: reversed ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+            >
+              <div className="icon icon-swap"></div>
             </Button>
           </div>
-          <Card className="tab-accent-p3 pt-2">
-            <div className="d-flex flex-row">
-              <small className="text-light text-opacity-75 me-auto">You receive</small>
-
-              <small>
-                <ConnectedWalletAnchor noText={false} currency={outputToken} />
-              </small>
+          <div className="swap-panel__card">
+            <div className="swap-panel__card__header">
+              <div className="swap-panel__card__title">You receive</div>
+              <div className="swap-panel__card__wallet">
+                <ConnectedWalletAnchor
+                  noText={false}
+                  currency={outputToken}
+                  variantButton="clear"
+                />
+              </div>
             </div>
-            <div className="d-flex flex-row">
+            <div className="swap-panel__card__body">
+              <CurrencyDropdown
+                currencyList={outputTokens}
+                onSelect={(val) => {
+                  if (locked) return;
+                  leaveExistingSwap();
+                  if (val === outputToken) return;
+                  if (
+                    getChainIdentifierForCurrency(val) !==
+                    getChainIdentifierForCurrency(outputToken)
+                  )
+                    addressRef.current.setValue('');
+                  const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
+                  setOutputToken(val);
+                  if (includesToken(supportedCounterTokens, inputToken)) return;
+                  if (includesToken(supportedCounterTokens, outputToken)) {
+                    setInputToken(outputToken);
+                    setExactIn(!exactIn);
+                  } else {
+                    let token: Token;
+                    if (isSCToken(inputToken))
+                      token = supportedCounterTokens.find(
+                        (val) => isSCToken(val) && val.chainId === inputToken.chainId
+                      );
+                    token ??= supportedCounterTokens[0];
+                    if (token == null) {
+                      setOutputToken(outputToken);
+                      return;
+                    }
+                    setInputToken(token);
+                  }
+                }}
+                value={outputToken}
+                className="round-right text-white bg-black bg-opacity-10"
+              />
               <ValidatedInput
                 disabled={locked || amountsLocked}
                 inputRef={outputRef}
@@ -602,10 +661,10 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                   if (!forcedChange) leaveExistingSwap(webLnForOutput, true);
                 }}
                 inputId="amount-output"
-                inputClassName="font-weight-500"
-                floatingLabel={
-                  outputValue == null ? null : FEConstants.USDollar.format(outputValue)
-                }
+                inputClassName="swap-panel__input"
+                floatingLabelClassName="swap-panel__label"
+                placeholder={'0.00'}
+                floatingLabel={FEConstants.USDollar.format(outputValue ?? 0)}
                 expectingFloatingLabel={true}
                 step={
                   outputToken == null
@@ -618,48 +677,12 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 max={outputLimits?.max}
                 onValidate={outputAmountValidator}
                 validated={(exactIn && quote != null) || existingSwap != null ? null : undefined}
-                elementEnd={
-                  <CurrencyDropdown
-                    currencyList={outputTokens}
-                    onSelect={(val) => {
-                      if (locked) return;
-                      leaveExistingSwap();
-                      if (val === outputToken) return;
-                      if (
-                        getChainIdentifierForCurrency(val) !==
-                        getChainIdentifierForCurrency(outputToken)
-                      )
-                        addressRef.current.setValue('');
-                      const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
-                      setOutputToken(val);
-                      if (includesToken(supportedCounterTokens, inputToken)) return;
-                      if (includesToken(supportedCounterTokens, outputToken)) {
-                        setInputToken(outputToken);
-                        setExactIn(!exactIn);
-                      } else {
-                        let token: Token;
-                        if (isSCToken(inputToken))
-                          token = supportedCounterTokens.find(
-                            (val) => isSCToken(val) && val.chainId === inputToken.chainId
-                          );
-                        token ??= supportedCounterTokens[0];
-                        if (token == null) {
-                          setOutputToken(outputToken);
-                          return;
-                        }
-                        setInputToken(token);
-                      }
-                    }}
-                    value={outputToken}
-                    className="round-right text-white bg-black bg-opacity-10"
-                  />
-                }
               />
             </div>
             <div className={gasDropTokenAmount != null ? 'd-flex' : 'd-none'}>
               <ValidatedInput
                 type={'checkbox'}
-                className={'flex-fill mt-1'}
+                className="swap-panel__input-wrapper"
                 onChange={(val: boolean) => {
                   setGasDropChecked(val);
                   leaveExistingSwap();
@@ -827,8 +850,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 </label>
               </Alert>
             </div>
-          </Card>
-
+          </div>
           {quoteError != null ? (
             <Button variant="light" className="mt-3" onClick={refreshQuote}>
               Retry
@@ -836,7 +858,6 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
           ) : (
             ''
           )}
-
           {quote != null || existingSwap != null ? (
             <>
               <div className="mt-3">
@@ -879,10 +900,10 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
           ) : (
             ''
           )}
-        </Card>
+        </div>
       </div>
 
-      <div className="text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3">
+      <div className="mt-4 text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3">
         <div
           className="cursor-pointer d-flex align-items-center justify-content-center"
           onClick={() => navigate('/faq?tabOpen=6')}

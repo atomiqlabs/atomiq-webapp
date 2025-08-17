@@ -1,11 +1,10 @@
-import { Button, Dropdown } from 'react-bootstrap';
+import { Dropdown } from 'react-bootstrap';
 import * as React from 'react';
 import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
 import Icon from 'react-icons-kit';
 import { Token } from '@atomiqlabs/sdk';
 import { useChainForCurrency } from './hooks/useChainForCurrency';
-import { BaseButton } from '../components/BaseButton';
-import { close } from 'react-icons-kit/fa/close';
+import { BaseButton, BaseButtonVariantProps } from '../components/BaseButton';
 
 const ConnectedWallet = React.forwardRef<any, any>(({ name, icon, onClick, noText }, ref) => (
   <BaseButton
@@ -19,12 +18,18 @@ const ConnectedWallet = React.forwardRef<any, any>(({ name, icon, onClick, noTex
   </BaseButton>
 ));
 
-export function ConnectedWalletAnchor(props: {
+export function ConnectedWalletAnchor({
+  className,
+  noText,
+  currency,
+  variantButton = 'transparent',
+}: {
   className?: string;
   noText?: boolean;
   currency: Token;
+  variantButton?: BaseButtonVariantProps;
 }) {
-  const { wallet, connect, disconnect, changeWallet, chain } = useChainForCurrency(props.currency);
+  const { wallet, connect, disconnect, changeWallet, chain } = useChainForCurrency(currency);
 
   if (wallet == null && connect == null) return <></>;
 
@@ -34,7 +39,7 @@ export function ConnectedWalletAnchor(props: {
         <BaseButton
           customIcon="connect"
           onClick={() => connect()}
-          variant="transparent"
+          variant={variantButton}
           size="smaller"
           className="wallet-connections__item__button"
         >
@@ -45,10 +50,10 @@ export function ConnectedWalletAnchor(props: {
           <Dropdown.Toggle
             as={ConnectedWallet}
             id="dropdown-custom-components"
-            className={props.className}
+            className={className}
             name={wallet.name}
             icon={wallet.icon}
-            noText={props.noText}
+            noText={noText}
           >
             Custom toggle
           </Dropdown.Toggle>

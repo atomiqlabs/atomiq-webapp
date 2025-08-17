@@ -104,13 +104,13 @@ export function WalletConnections() {
     {
       name: 'Solana',
       code: 'solana',
-      icon: '/icons/chains/solana_v2.svg',
+      icon: '/icons/chains/solana.svg',
       token: solanaToken,
     },
     {
       name: 'Bitcoin',
       code: 'bitcoin',
-      icon: '/icons/chains/bitcoin_v2.svg',
+      icon: '/icons/chains/bitcoin.svg',
       token: bitcoinToken,
     },
   ];
@@ -125,7 +125,7 @@ export function WalletConnections() {
           {walletsArr.length == 0 ? (
             <Dropdown.Toggle
               as={BaseButton}
-              className="wallet-connections__button"
+              className="wallet-connections__button is-full"
               variant="transparent"
               customIcon="connect"
               bsPrefix="none"

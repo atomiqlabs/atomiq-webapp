@@ -106,7 +106,7 @@ export function useSolanaWalletData(): [ChainWalletData<SolanaSigner>] {
       {
         chain: {
           name: 'Solana',
-          icon: '/icons/chains/solana_v2.svg',
+          icon: '/icons/chains/solana.svg',
         },
         wallet:
           wallet == null

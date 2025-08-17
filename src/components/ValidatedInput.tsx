@@ -1,11 +1,11 @@
-import { Form, InputGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import * as React from "react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import BigNumber from "bignumber.js";
+import { Form, InputGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import * as React from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import BigNumber from 'bignumber.js';
 
-import { copy } from "react-icons-kit/fa/copy";
-import { exclamationTriangle } from "react-icons-kit/fa/exclamationTriangle";
-import Icon from "react-icons-kit";
+import { copy } from 'react-icons-kit/fa/copy';
+import { exclamationTriangle } from 'react-icons-kit/fa/exclamationTriangle';
+import Icon from 'react-icons-kit';
 
 export type ValidatedInputRef = {
   validate: () => boolean;
@@ -16,25 +16,20 @@ export type ValidatedInputRef = {
   };
 };
 
-export function numberValidator(
-  props: { min?: BigNumber; max?: BigNumber },
-  allowEmpty?: boolean,
-) {
+export function numberValidator(props: { min?: BigNumber; max?: BigNumber }, allowEmpty?: boolean) {
   return (value: string) => {
-    if (allowEmpty && value === "") return null;
+    if (allowEmpty && value === '') return null;
     try {
       const number = new BigNumber(value);
       if (props.min != null) {
-        if (number.comparedTo(props.min) < 0)
-          return "Must be at least " + props.min.toString(10);
+        if (number.comparedTo(props.min) < 0) return 'Must be at least ' + props.min.toString(10);
       }
       if (props.max != null) {
-        if (number.comparedTo(props.max) > 0)
-          return "Must be at most " + props.max.toString(10);
+        if (number.comparedTo(props.max) > 0) return 'Must be at most ' + props.max.toString(10);
       }
-      if (number.isNaN()) return "Not a number";
+      if (number.isNaN()) return 'Not a number';
     } catch (e) {
-      return "Not a number";
+      return 'Not a number';
     }
   };
 }
@@ -52,6 +47,8 @@ function ValidatedInput(props: {
   placeholder?: any;
   type?: string;
   label?: string | JSX.Element;
+  labelClassName?: string;
+  floatingLabelClassName?: string;
   floatingLabel?: string | JSX.Element;
   expectingFloatingLabel?: boolean;
   value?: any;
@@ -67,7 +64,7 @@ function ValidatedInput(props: {
 
   options?: { key: string; value: any }[];
 
-  size?: "sm" | "lg";
+  size?: 'sm' | 'lg';
 
   elementEnd?: string | JSX.Element;
   textEnd?: string | JSX.Element;
@@ -86,14 +83,14 @@ function ValidatedInput(props: {
     value: string;
     validated: string;
   }>({
-    value: "",
+    value: '',
     validated: null,
   });
 
   const value =
     props.value == null
-      ? state.value === ""
-        ? (props.defaultValue ?? "")
+      ? state.value === ''
+        ? (props.defaultValue ?? '')
         : state.value
       : props.value;
   const valueRef = useRef<any>(null);
@@ -114,7 +111,7 @@ function ValidatedInput(props: {
       if (props.onChange != null) props.onChange(value, forcedChange);
       // if(props.onValidatedInput!=null) props.onValidatedInput(obj.validated == null ? value : null, forcedChange);
     },
-    [props.onValidate, props.onChange],
+    [props.onValidate, props.onChange]
   );
 
   const refObj = useMemo(() => {
@@ -133,7 +130,7 @@ function ValidatedInput(props: {
         return valueRef.current;
       },
       setValue: changeValueHandler.bind(null, true),
-      input: props.type === "textarea" ? inputTextAreaRef : inputRef,
+      input: props.type === 'textarea' ? inputTextAreaRef : inputRef,
     };
   }, [props.type, changeValueHandler]);
 
@@ -146,20 +143,18 @@ function ValidatedInput(props: {
   }
 
   const inputClassName: string =
-    (props.inputClassName || "") +
-    " " +
+    (props.inputClassName || '') +
+    ' ' +
     (props.floatingLabel != null
-      ? "input-with-offset"
+      ? 'input-with-offset'
       : props.expectingFloatingLabel
-        ? "py-expect-floating-label"
-        : "");
+        ? 'py-expect-floating-label'
+        : '');
 
-  const isInvalid = !!(props.validated === undefined
-    ? state.validated
-    : props.validated);
+  const isInvalid = !!(props.validated === undefined ? state.validated : props.validated);
 
   const mainElement =
-    props.type === "select" ? (
+    props.type === 'select' ? (
       <Form.Select
         disabled={props.disabled}
         isInvalid={isInvalid}
@@ -172,7 +167,7 @@ function ValidatedInput(props: {
         className={inputClassName}
       >
         {props.options == null
-          ? ""
+          ? ''
           : props.options.map((e) => {
               return (
                 <option key={e.key} value={e.key}>
@@ -181,7 +176,7 @@ function ValidatedInput(props: {
               );
             })}
       </Form.Select>
-    ) : props.type === "textarea" ? (
+    ) : props.type === 'textarea' ? (
       <>
         <Form.Control
           readOnly={props.readOnly}
@@ -190,8 +185,8 @@ function ValidatedInput(props: {
           size={props.size}
           isInvalid={isInvalid}
           isValid={!!props.successFeedback}
-          type={props.type || "text"}
-          as={"textarea"}
+          type={props.type || 'text'}
+          as={'textarea'}
           placeholder={props.placeholder}
           defaultValue={props.defaultValue}
           id={props.inputId}
@@ -202,10 +197,7 @@ function ValidatedInput(props: {
         />
         {props.copyEnabled ? (
           <InputGroup.Text>
-            <OverlayTrigger
-              placement="top"
-              overlay={<Tooltip id="copy-tooltip">Copy</Tooltip>}
-            >
+            <OverlayTrigger placement="top" overlay={<Tooltip id="copy-tooltip">Copy</Tooltip>}>
               <a
                 href="#"
                 onClick={(e) => {
@@ -221,7 +213,7 @@ function ValidatedInput(props: {
             </OverlayTrigger>
           </InputGroup.Text>
         ) : (
-          ""
+          ''
         )}
       </>
     ) : (
@@ -233,7 +225,7 @@ function ValidatedInput(props: {
           size={props.size}
           isInvalid={isInvalid}
           isValid={!!props.successFeedback}
-          type={props.type || "text"}
+          type={props.type || 'text'}
           placeholder={props.placeholder}
           defaultValue={props.defaultValue}
           id={props.inputId}
@@ -247,10 +239,7 @@ function ValidatedInput(props: {
         />
         {props.copyEnabled ? (
           <InputGroup.Text>
-            <OverlayTrigger
-              placement="top"
-              overlay={<Tooltip id="copy-tooltip">Copy</Tooltip>}
-            >
+            <OverlayTrigger placement="top" overlay={<Tooltip id="copy-tooltip">Copy</Tooltip>}>
               <a
                 href="#"
                 className="d-flex align-items-center justify-content-center"
@@ -262,12 +251,12 @@ function ValidatedInput(props: {
                   navigator.clipboard.writeText(refObj.input.current.value);
                 }}
               >
-                <Icon style={{ marginTop: "-4px" }} icon={copy} />
+                <Icon style={{ marginTop: '-4px' }} icon={copy} />
               </a>
             </OverlayTrigger>
           </InputGroup.Text>
         ) : (
-          ""
+          ''
         )}
       </>
     );
@@ -280,72 +269,49 @@ function ValidatedInput(props: {
         if (props.onSubmit != null) props.onSubmit();
       }}
     >
-      <Form.Group
-        controlId={props.inputId == null ? "validationCustom01" : undefined}
-      >
-        {props.label ? <Form.Label>{props.label}</Form.Label> : ""}
-        <InputGroup
-          className={
-            "has-validation " +
-            (props.floatingLabel != null || props.expectingFloatingLabel
-              ? "form-floating"
-              : "")
-          }
-        >
-          {props.type === "checkbox" ? (
+      <Form.Group controlId={props.inputId == null ? 'validationCustom01' : undefined}>
+        {props.label ? <Form.Label className={props.labelClassName}>{props.label}</Form.Label> : ''}
+        <InputGroup className={'has-validation'}>
+          {props.type === 'checkbox' ? (
             <Form.Check
               disabled={props.disabled}
               ref={inputRef}
               isInvalid={isInvalid}
               isValid={!!props.successFeedback}
-              type={"checkbox"}
+              type={'checkbox'}
               readOnly={props.readOnly}
               label={props.placeholder}
               defaultValue={props.defaultValue}
               id={props.inputId}
-              onChange={(evnt: any) =>
-                changeValueHandler(false, evnt.target.checked)
-              }
+              onChange={(evnt: any) => changeValueHandler(false, evnt.target.checked)}
               checked={value}
             />
           ) : (
             <>
-              {props.elementStart || ""}
-              {props.textStart ? (
-                <InputGroup.Text>{props.textStart}</InputGroup.Text>
-              ) : (
-                ""
-              )}
+              {props.elementStart || ''}
+              {props.textStart ? <InputGroup.Text>{props.textStart}</InputGroup.Text> : ''}
               {mainElement}
               {props.floatingLabel == null ? (
-                ""
+                ''
               ) : (
-                <label>{props.floatingLabel}</label>
+                <label className={props.floatingLabelClassName}>{props.floatingLabel}</label>
               )}
-              {props.elementEnd || ""}
-              {props.textEnd ? (
-                <InputGroup.Text>{props.textEnd}</InputGroup.Text>
-              ) : (
-                ""
-              )}
+              {props.elementEnd || ''}
+              {props.textEnd ? <InputGroup.Text>{props.textEnd}</InputGroup.Text> : ''}
             </>
           )}
-          <Form.Control.Feedback
-            type={props.successFeedback ? "valid" : "invalid"}
-          >
+          <Form.Control.Feedback type={props.successFeedback ? 'valid' : 'invalid'}>
             <div className="d-flex align-items-center">
               {props.successFeedback == null ? (
                 <Icon className="mb-1 me-1" icon={exclamationTriangle} />
               ) : (
-                ""
+                ''
               )}
               <span>
                 {props.successFeedback ||
-                  (props.validated === undefined
-                    ? state.validated
-                    : props.validated)}
+                  (props.validated === undefined ? state.validated : props.validated)}
               </span>
-              {props.feedbackEndElement ?? ""}
+              {props.feedbackEndElement ?? ''}
             </div>
           </Form.Control.Feedback>
         </InputGroup>

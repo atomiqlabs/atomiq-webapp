@@ -46,16 +46,16 @@ export function WalletConnections() {
         {
             name: 'Solana',
             code: 'solana',
-            icon: '/icons/chains/solana_v2.svg',
+            icon: '/icons/chains/solana.svg',
             token: solanaToken,
         },
         {
             name: 'Bitcoin',
             code: 'bitcoin',
-            icon: '/icons/chains/bitcoin_v2.svg',
+            icon: '/icons/chains/bitcoin.svg',
             token: bitcoinToken,
         },
     ];
     return (_jsxs("div", { className: "wallet-connections", children: [walletsArr &&
-                walletsArr.map((value) => _jsx(MultichainWalletDisplay, { wallet: value }, value.name)), walletsArr.length < 2 ? (_jsxs(Dropdown, { align: "end", children: [walletsArr.length == 0 ? (_jsx(Dropdown.Toggle, { as: BaseButton, className: "wallet-connections__button", variant: "transparent", customIcon: "connect", bsPrefix: "none", children: "Connect Wallet" })) : (_jsx(Dropdown.Toggle, { as: BaseButton, className: "wallet-connections__button", variant: "clear", icon: _jsx(Icon, { size: 20, icon: close }), bsPrefix: "none" })), _jsx(Dropdown.Menu, { className: "wallet-connections__dropdown", children: connections.map((value) => (_jsxs("div", { className: "wallet-connections__item", children: [_jsxs("div", { className: "wallet-connections__item__header", children: [_jsx("img", { src: value.icon, alt: value.name, width: 24, height: 24 }), _jsx("span", { className: "wallet-connections__item__header__name", children: value.name })] }), _jsx(ConnectedWalletAnchor, { noText: false, currency: value.token })] }, value.code))) })] })) : null] }));
+                walletsArr.map((value) => _jsx(MultichainWalletDisplay, { wallet: value }, value.name)), walletsArr.length < 2 ? (_jsxs(Dropdown, { align: "end", children: [walletsArr.length == 0 ? (_jsx(Dropdown.Toggle, { as: BaseButton, className: "wallet-connections__button is-full", variant: "transparent", customIcon: "connect", bsPrefix: "none", children: "Connect Wallet" })) : (_jsx(Dropdown.Toggle, { as: BaseButton, className: "wallet-connections__button", variant: "clear", icon: _jsx(Icon, { size: 20, icon: close }), bsPrefix: "none" })), _jsx(Dropdown.Menu, { className: "wallet-connections__dropdown", children: connections.map((value) => (_jsxs("div", { className: "wallet-connections__item", children: [_jsxs("div", { className: "wallet-connections__item__header", children: [_jsx("img", { src: value.icon, alt: value.name, width: 24, height: 24 }), _jsx("span", { className: "wallet-connections__item__header__name", children: value.name })] }), _jsx(ConnectedWalletAnchor, { noText: false, currency: value.token })] }, value.code))) })] })) : null] }));
 }
