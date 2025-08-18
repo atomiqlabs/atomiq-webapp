@@ -14,7 +14,7 @@ export function useWithAwait<Result>(
     pause?: boolean
 ): [Result, boolean, any, () => void] {
 
-    const [latestProcessed, setLatestProcessed] = useState<AwaitLatestProcessedState<Result>>({sequence: 0, value: null, error: null});
+    const [latestProcessed, setLatestProcessed] = useState<AwaitLatestProcessedState<Result> & {lastDeps?: any[]}>({sequence: 0, value: null, error: null});
     const latestProcessedRef = useRef<AwaitLatestProcessedState<Result> & {lastDeps: any[]}>({sequence: 0, value: null, error: null, lastDeps: dependencies});
     const sequence = useRef<number>(0);
     const currentPromise = useRef<Promise<void>>(null);
