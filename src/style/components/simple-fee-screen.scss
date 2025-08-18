@@ -1,0 +1,38 @@
+.simple-fee-screen {
+  @apply rounded-xl;
+
+  background-color: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgb(255, 255, 255, 0.1);
+
+  .accordion-button {
+    @apply px-[20px] py-3 text-white;
+
+    font-size: 14px;
+
+    &:after {
+      display: none;
+    }
+
+    .icon-caret-down {
+      @apply transition-all;
+    }
+
+    &:not(.collapsed) {
+      .icon-caret-down {
+        rotate: 180deg;
+      }
+    }
+  }
+
+  &__fee {
+    @apply mr-3;
+  }
+
+  &__body {
+    @apply px-[20px] pt-0 pb-3 text-white;
+  }
+
+  .icon-receipt-fees {
+    @apply mr-2 opacity-50;
+  }
+}

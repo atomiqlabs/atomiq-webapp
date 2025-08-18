@@ -1,27 +1,21 @@
-import { ISwap, Token } from "@atomiqlabs/sdk";
-import * as React from "react";
-import {
-  Accordion,
-  Badge,
-  OverlayTrigger,
-  Spinner,
-  Tooltip,
-} from "react-bootstrap";
-import Icon from "react-icons-kit";
-import { ic_receipt_outline } from "react-icons-kit/md/ic_receipt_outline";
-import { TokenIcon } from "../tokens/TokenIcon";
-import { FeeDetails, useSwapFees } from "./hooks/useSwapFees";
+import { ISwap, Token } from '@atomiqlabs/sdk';
+import * as React from 'react';
+import { Accordion, Badge, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import Icon from 'react-icons-kit';
+import { ic_receipt_outline } from 'react-icons-kit/md/ic_receipt_outline';
+import { TokenIcon } from '../tokens/TokenIcon';
+import { FeeDetails, useSwapFees } from './hooks/useSwapFees';
 
 function FeePart(props: FeeDetails) {
   return (
-    <div className={"d-flex font-medium " + props.className}>
+    <div className={'d-flex font-medium ' + props.className}>
       <small className="d-flex align-items-center">
         {props.description == null ? (
           props.text
         ) : (
           <OverlayTrigger
             overlay={
-              <Tooltip id={"fee-tooltip-desc-" + props.text}>
+              <Tooltip id={'fee-tooltip-desc-' + props.text}>
                 <span>{props.description}</span>
               </Tooltip>
             }
@@ -30,28 +24,21 @@ function FeePart(props: FeeDetails) {
           </OverlayTrigger>
         )}
         {props.composition == null ? (
-          ""
+          ''
         ) : (
           <OverlayTrigger
             overlay={
-              <Tooltip id={"fee-tooltip-" + props.text}>
+              <Tooltip id={'fee-tooltip-' + props.text}>
                 <span>
-                  {(
-                    Math.round(props.composition.percentage.percentage * 10) /
-                    10
-                  ).toFixed(1)}
-                  % + {props.composition.base.amount}{" "}
-                  {props.composition.base.token.ticker}
+                  {(Math.round(props.composition.percentage.percentage * 10) / 10).toFixed(1)}% +{' '}
+                  {props.composition.base.amount} {props.composition.base.token.ticker}
                 </span>
               </Tooltip>
             }
           >
             <Badge bg="primary" className="ms-1 pill-round px-2" pill>
               <span className="text-decoration-dotted">
-                {(
-                  Math.round(props.composition.percentage.percentage * 10) / 10
-                ).toFixed(1)}
-                %
+                {(Math.round(props.composition.percentage.percentage * 10) / 10).toFixed(1)}%
               </span>
             </Badge>
           </OverlayTrigger>
@@ -61,17 +48,16 @@ function FeePart(props: FeeDetails) {
         <OverlayTrigger
           placement="left"
           overlay={
-            <Tooltip id={"fee-tooltip-" + props.text} className="font-default">
+            <Tooltip id={'fee-tooltip-' + props.text} className="font-default">
               {props.fee.amountInDstToken == null ? (
                 <span className="ms-auto d-flex align-items-center">
                   <TokenIcon
                     tokenOrTicker={props.fee.amountInSrcToken.token}
                     className="currency-icon-small"
-                    style={{ marginTop: "-2px" }}
+                    style={{ marginTop: '-2px' }}
                   />
                   <span>
-                    {props.fee.amountInSrcToken.amount}{" "}
-                    {props.fee.amountInSrcToken.token.ticker}
+                    {props.fee.amountInSrcToken.amount} {props.fee.amountInSrcToken.token.ticker}
                   </span>
                 </span>
               ) : (
@@ -80,11 +66,10 @@ function FeePart(props: FeeDetails) {
                     <TokenIcon
                       tokenOrTicker={props.fee.amountInSrcToken.token}
                       className="currency-icon-small"
-                      style={{ marginTop: "-1px" }}
+                      style={{ marginTop: '-1px' }}
                     />
                     <span>
-                      {props.fee.amountInSrcToken.amount}{" "}
-                      {props.fee.amountInSrcToken.token.ticker}
+                      {props.fee.amountInSrcToken.amount} {props.fee.amountInSrcToken.token.ticker}
                     </span>
                   </span>
                   <span className="d-flex align-items-center justify-content-center fw-bold">
@@ -96,8 +81,7 @@ function FeePart(props: FeeDetails) {
                       className="currency-icon-small"
                     />
                     <span>
-                      {props.fee.amountInDstToken.amount}{" "}
-                      {props.fee.amountInDstToken.token.ticker}
+                      {props.fee.amountInDstToken.amount} {props.fee.amountInDstToken.token.ticker}
                     </span>
                   </span>
                 </span>
@@ -125,31 +109,27 @@ export function SimpleFeeSummaryScreen(props: {
   const outputToken: Token = props.swap?.getOutput().token;
 
   return (
-    <Accordion>
+    <Accordion className="simple-fee-screen">
       <Accordion.Item eventKey="0" className="tab-accent-nop">
-        <Accordion.Header
-          className="font-bigger d-flex flex-row"
-          bsPrefix="fee-accordion-header"
-        >
+        <Accordion.Header className="font-bigger d-flex flex-row" bsPrefix="fee-accordion-header">
           <small className="me-auto">
-            1 {outputToken.ticker} ={" "}
+            1 {outputToken.ticker} ={' '}
             {props.swap
               .getPriceInfo()
-              .swapPrice.toFixed(
-                inputToken.displayDecimals ?? inputToken.decimals,
-              )}{" "}
+              .swapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals)}{' '}
             {inputToken.ticker}
           </small>
-          <Icon className="d-flex me-1" size={16} icon={ic_receipt_outline} />
-          <span className="me-2">
+          <div className="icon icon-receipt-fees"></div>
+          <span className="simple-fee-screen__fee">
             {totalUsdFee == null ? (
               <Spinner animation="border" size="sm" />
             ) : (
-              "$" + totalUsdFee.toFixed(2)
+              '$' + totalUsdFee.toFixed(2)
             )}
           </span>
+          <div className="icon icon-caret-down"></div>
         </Accordion.Header>
-        <Accordion.Body className="p-2">
+        <Accordion.Body className="simple-fee-screen__body">
           {fees.map((e, index) => (
             <FeePart key={index} {...e} />
           ))}

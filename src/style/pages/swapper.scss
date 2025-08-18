@@ -1,4 +1,5 @@
 @use '../components/currency-dropdown';
+@use '../components/simple-fee-screen';
 
 .swap-panel {
   @apply text-white max-w-full w-[590px] relative;
