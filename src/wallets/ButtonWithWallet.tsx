@@ -1,15 +1,16 @@
-import { Button } from "react-bootstrap";
-import { useContext } from "react";
-import { ChainDataContext } from "./context/ChainDataContext";
-import { ChainWalletData } from "./ChainDataProvider";
+import { Button } from 'react-bootstrap';
+import { useContext } from 'react';
+import { ChainDataContext } from './context/ChainDataContext';
+import { ChainWalletData } from './ChainDataProvider';
+import { BaseButton } from '../components/BaseButton';
 
 export function ButtonWithWallet(props: {
   chainId: string;
   requiredWalletAddress?: string;
   onClick?: () => void;
   disabled?: boolean;
-  size?: "lg" | "sm";
-  variant?: "primary" | "secondary" | "danger" | "warning" | "info";
+  size?: 'smaller' | 'small' | 'large' | 'lg' | 'sm' | 'md';
+  variant?: 'primary' | 'secondary' | 'danger' | 'warning' | 'info';
   children?: (JSX.Element | string) | (JSX.Element | string)[];
   className?: string;
 }) {
@@ -21,7 +22,7 @@ export function ButtonWithWallet(props: {
     requestedChain?.wallet?.address === props.requiredWalletAddress;
 
   return (
-    <Button
+    <BaseButton
       onClick={() => {
         if (requestedChain != null && !isWalletConnected) {
           requestedChain.connect();
@@ -29,25 +30,19 @@ export function ButtonWithWallet(props: {
           props.onClick();
         }
       }}
-      disabled={
-        (isWalletConnected && !isCorrectWalletConnected) || props.disabled
-      }
+      disabled={(isWalletConnected && !isCorrectWalletConnected) || props.disabled}
       size={props.size}
-      variant={
-        !isWalletConnected || !isCorrectWalletConnected
-          ? "warning"
-          : props.variant
-      }
+      variant="primary"
       className={props.className}
     >
       {!isWalletConnected
-        ? "Connect " +
+        ? 'Connect ' +
           props.chainId.charAt(0) +
           props.chainId.substring(1).toLowerCase() +
-          " wallet"
+          ' wallet'
         : !isCorrectWalletConnected
-          ? "Invalid wallet connected"
+          ? 'Invalid wallet connected'
           : props.children}
-    </Button>
+    </BaseButton>
   );
 }

@@ -1,25 +1,26 @@
-import * as React from "react";
-import { useEffect } from "react";
-import { Alert, Button, Spinner } from "react-bootstrap";
-import { LnForGasSwap, LnForGasSwapState } from "@atomiqlabs/sdk";
-import { useSwapState } from "../hooks/useSwapState";
-import { ScrollAnchor } from "../../components/ScrollAnchor";
-import { SwapExpiryProgressBar } from "../components/SwapExpiryProgressBar";
-import { useAsync } from "../../utils/hooks/useAsync";
-import { useAbortSignalRef } from "../../utils/hooks/useAbortSignal";
+import * as React from 'react';
+import { useEffect } from 'react';
+import { Alert, Button, Spinner } from 'react-bootstrap';
+import { LnForGasSwap, LnForGasSwapState } from '@atomiqlabs/sdk';
+import { useSwapState } from '../hooks/useSwapState';
+import { ScrollAnchor } from '../../components/ScrollAnchor';
+import { SwapExpiryProgressBar } from '../components/SwapExpiryProgressBar';
+import { useAsync } from '../../utils/hooks/useAsync';
+import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
 
-import { ic_refresh } from "react-icons-kit/md/ic_refresh";
-import { ic_flash_on_outline } from "react-icons-kit/md/ic_flash_on_outline";
-import { ic_hourglass_disabled_outline } from "react-icons-kit/md/ic_hourglass_disabled_outline";
-import { ic_watch_later_outline } from "react-icons-kit/md/ic_watch_later_outline";
-import { ic_check_circle_outline } from "react-icons-kit/md/ic_check_circle_outline";
-import { ic_swap_horizontal_circle_outline } from "react-icons-kit/md/ic_swap_horizontal_circle_outline";
-import { ic_verified_outline } from "react-icons-kit/md/ic_verified_outline";
-import { ic_hourglass_top_outline } from "react-icons-kit/md/ic_hourglass_top_outline";
-import { SingleStep, StepByStep } from "../../components/StepByStep";
-import { useStateRef } from "../../utils/hooks/useStateRef";
-import { LightningQR } from "../components/LightningQR";
-import { ErrorAlert } from "../../components/ErrorAlert";
+import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
+import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
+import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
+import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
+import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outline';
+import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
+import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
+import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
+import { SingleStep, StepByStep } from '../../components/StepByStep';
+import { useStateRef } from '../../utils/hooks/useStateRef';
+import { LightningQR } from '../components/LightningQR';
+import { ErrorAlert } from '../../components/ErrorAlert';
+import { BaseButton } from '../../components/BaseButton';
 
 /*
 Steps:
@@ -34,30 +35,25 @@ export function TrustedFromBTCLNQuoteSummary(props: {
   setAmountLock?: (isLocked: boolean) => void;
   abortSwap?: () => void;
 }) {
-  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } =
-    useSwapState(props.quote);
+  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
 
   const setAmountLockRef = useStateRef(props.setAmountLock);
 
   const abortSignalRef = useAbortSignalRef([props.quote]);
 
-  const [onCommit, paymentWaiting, paymentSuccess, paymentError] =
-    useAsync(() => {
-      if (setAmountLockRef.current != null) setAmountLockRef.current(true);
-      return props.quote
-        .waitForPayment(abortSignalRef.current, 2)
-        .then(() => true)
-        .catch((err) => {
-          if (setAmountLockRef.current != null) setAmountLockRef.current(false);
-          throw err;
-        });
-    }, [props.quote]);
+  const [onCommit, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
+    if (setAmountLockRef.current != null) setAmountLockRef.current(true);
+    return props.quote
+      .waitForPayment(abortSignalRef.current, 2)
+      .then(() => true)
+      .catch((err) => {
+        if (setAmountLockRef.current != null) setAmountLockRef.current(false);
+        throw err;
+      });
+  }, [props.quote]);
 
   useEffect(() => {
-    if (
-      props.quote != null &&
-      props.quote.getState() === LnForGasSwapState.PR_CREATED
-    ) {
+    if (props.quote != null && props.quote.getState() === LnForGasSwapState.PR_CREATED) {
       onCommit();
     }
   }, [props.quote]);
@@ -77,50 +73,50 @@ export function TrustedFromBTCLNQuoteSummary(props: {
   const executionSteps: SingleStep[] = [
     {
       icon: ic_check_circle_outline,
-      text: "Lightning payment received",
-      type: "success",
+      text: 'Lightning payment received',
+      type: 'success',
     },
     {
       icon: ic_swap_horizontal_circle_outline,
-      text: "Receive funds",
-      type: "disabled",
+      text: 'Receive funds',
+      type: 'disabled',
     },
   ];
   if (isPaid)
     executionSteps[1] = {
       icon: ic_hourglass_top_outline,
-      text: "Receiving funds",
-      type: "loading",
+      text: 'Receiving funds',
+      type: 'loading',
     };
   if (isCreated)
     executionSteps[0] = {
       icon: ic_flash_on_outline,
-      text: "Awaiting lightning payment",
-      type: "loading",
+      text: 'Awaiting lightning payment',
+      type: 'loading',
     };
   if (isQuoteExpired)
     executionSteps[0] = {
       icon: ic_hourglass_disabled_outline,
-      text: "Quote expired",
-      type: "failed",
+      text: 'Quote expired',
+      type: 'failed',
     };
   if (isFailed) {
     executionSteps[0] = {
       icon: ic_refresh,
-      text: "Lightning payment reverted",
-      type: "failed",
+      text: 'Lightning payment reverted',
+      type: 'failed',
     };
     executionSteps[1] = {
       icon: ic_watch_later_outline,
-      text: "Swap failed",
-      type: "failed",
+      text: 'Swap failed',
+      type: 'failed',
     };
   }
   if (isSuccess)
     executionSteps[1] = {
       icon: ic_verified_outline,
-      text: "Payout success",
-      type: "success",
+      text: 'Payout success',
+      type: 'success',
     };
 
   return (
@@ -129,11 +125,7 @@ export function TrustedFromBTCLNQuoteSummary(props: {
 
       {isCreated && !paymentWaiting ? (
         <>
-          <ErrorAlert
-            className="mb-3"
-            title="Swap initialization error"
-            error={paymentError}
-          />
+          <ErrorAlert className="mb-3" title="Swap initialization error" error={paymentError} />
 
           <Button
             variant="secondary"
@@ -145,15 +137,12 @@ export function TrustedFromBTCLNQuoteSummary(props: {
           </Button>
         </>
       ) : (
-        ""
+        ''
       )}
 
       {isCreated && paymentWaiting ? (
         <>
-          <LightningQR
-            quote={props.quote}
-            payInstantly={state === LnForGasSwapState.PR_CREATED}
-          />
+          <LightningQR quote={props.quote} payInstantly={state === LnForGasSwapState.PR_CREATED} />
 
           <SwapExpiryProgressBar
             timeRemaining={quoteTimeRemaining}
@@ -166,7 +155,7 @@ export function TrustedFromBTCLNQuoteSummary(props: {
           </Button>
         </>
       ) : (
-        ""
+        ''
       )}
 
       {isPaid ? (
@@ -179,7 +168,7 @@ export function TrustedFromBTCLNQuoteSummary(props: {
           </div>
         </>
       ) : (
-        ""
+        ''
       )}
 
       {isSuccess ? (
@@ -188,16 +177,14 @@ export function TrustedFromBTCLNQuoteSummary(props: {
           <label>Swap was executed successfully</label>
         </Alert>
       ) : (
-        ""
+        ''
       )}
 
       {isQuoteExpired || isFailed ? (
         <>
           <Alert variant="danger" className="mb-3" show={isFailed}>
             <strong>Swap failed</strong>
-            <label>
-              Swap failed, your lightning payment will be refunded shortly!
-            </label>
+            <label>Swap failed, your lightning payment will be refunded shortly!</label>
           </Alert>
 
           <SwapExpiryProgressBar
@@ -205,16 +192,16 @@ export function TrustedFromBTCLNQuoteSummary(props: {
             expired={true}
             timeRemaining={quoteTimeRemaining}
             totalTime={totalQuoteTime}
-            expiryText={"Swap expired!"}
+            expiryText={'Swap expired!'}
             quoteAlias="Swap"
           />
 
-          <Button onClick={props.refreshQuote} variant="secondary">
+          <BaseButton onClick={props.refreshQuote} variant="primary" size="large">
             New quote
-          </Button>
+          </BaseButton>
         </>
       ) : (
-        ""
+        ''
       )}
 
       <ScrollAnchor trigger={isInitiated}></ScrollAnchor>

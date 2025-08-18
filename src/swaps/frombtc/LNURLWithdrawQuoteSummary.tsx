@@ -1,28 +1,28 @@
-import * as React from "react";
-import { useEffect } from "react";
-import { Alert, Button, Spinner } from "react-bootstrap";
-import { FromBTCLNSwap, FromBTCLNSwapState } from "@atomiqlabs/sdk";
-import { ButtonWithWallet } from "../../wallets/ButtonWithWallet";
-import { useSwapState } from "../hooks/useSwapState";
-import { SwapExpiryProgressBar } from "../components/SwapExpiryProgressBar";
+import * as React from 'react';
+import { useEffect } from 'react';
+import { Alert, Button, Spinner } from 'react-bootstrap';
+import { FromBTCLNSwap, FromBTCLNSwapState } from '@atomiqlabs/sdk';
+import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
+import { useSwapState } from '../hooks/useSwapState';
+import { SwapExpiryProgressBar } from '../components/SwapExpiryProgressBar';
 
-import { StepByStep } from "../../components/StepByStep";
-import { ErrorAlert } from "../../components/ErrorAlert";
-import { useFromBtcLnQuote } from "./useFromBtcLnQuote";
-import { useSmartChainWallet } from "../../wallets/hooks/useSmartChainWallet";
+import { StepByStep } from '../../components/StepByStep';
+import { ErrorAlert } from '../../components/ErrorAlert';
+import { useFromBtcLnQuote } from './useFromBtcLnQuote';
+import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
+import { BaseButton } from '../../components/BaseButton';
 
 export function LNURLWithdrawQuoteSummary(props: {
   quote: FromBTCLNSwap<any>;
   refreshQuote: () => void;
   setAmountLock: (isLocked: boolean) => void;
-  type?: "payment" | "swap";
+  type?: 'payment' | 'swap';
   autoContinue?: boolean;
   notEnoughForGas: bigint;
 }) {
   const smartChainWallet = useSmartChainWallet(props.quote, true);
 
-  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } =
-    useSwapState(props.quote);
+  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
 
   const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
 
@@ -62,7 +62,7 @@ export function LNURLWithdrawQuoteSummary(props: {
 
   return (
     <>
-      {isInitiated ? <StepByStep steps={executionSteps} /> : ""}
+      {isInitiated ? <StepByStep steps={executionSteps} /> : ''}
 
       <SwapExpiryProgressBar
         expired={isQuoteExpired}
@@ -88,11 +88,9 @@ export function LNURLWithdrawQuoteSummary(props: {
             <ErrorAlert
               className="mb-3"
               title={
-                "Swap " +
-                (canClaimInOneShot || claimError != null
-                  ? "claim"
-                  : "claim initialization") +
-                " error"
+                'Swap ' +
+                (canClaimInOneShot || claimError != null ? 'claim' : 'claim initialization') +
+                ' error'
               }
               error={claimError ?? commitError ?? paymentError}
             />
@@ -101,25 +99,21 @@ export function LNURLWithdrawQuoteSummary(props: {
               requiredWalletAddress={props.quote._getInitiator()}
               chainId={props.quote?.chainIdentifier}
               onClick={() => (isClaimable ? onCommit() : waitForPayment())}
-              disabled={
-                committing ||
-                paymentWaiting ||
-                (!canClaimInOneShot && isClaimClaimable)
-              }
-              size={canClaimInOneShot ? "lg" : isClaimClaimable ? "sm" : "lg"}
+              disabled={committing || paymentWaiting || (!canClaimInOneShot && isClaimClaimable)}
+              size={canClaimInOneShot ? 'lg' : isClaimClaimable ? 'sm' : 'lg'}
             >
               {committing || paymentWaiting ? (
                 <Spinner animation="border" size="sm" className="mr-2" />
               ) : (
-                ""
+                ''
               )}
               {canClaimInOneShot
-                ? "Claim"
+                ? 'Claim'
                 : isClaimClaimable
-                  ? "1. Initialized"
+                  ? '1. Initialized'
                   : committing
-                    ? "1. Initializing..."
-                    : "1. Initialize swap"}
+                    ? '1. Initializing...'
+                    : '1. Initialize swap'}
             </ButtonWithWallet>
             {!canClaimInOneShot ? (
               <ButtonWithWallet
@@ -127,25 +121,19 @@ export function LNURLWithdrawQuoteSummary(props: {
                 chainId={props.quote?.chainIdentifier}
                 onClick={() => onClaim()}
                 disabled={claiming || !isClaimClaimable}
-                size={isClaimClaimable ? "lg" : "sm"}
+                size={isClaimClaimable ? 'lg' : 'sm'}
                 className="mt-2"
               >
-                {claiming ? (
-                  <Spinner animation="border" size="sm" className="mr-2" />
-                ) : (
-                  ""
-                )}
-                {claiming
-                  ? "2. Claiming funds..."
-                  : "2. Finish swap (claim funds)"}
+                {claiming ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
+                {claiming ? '2. Claiming funds...' : '2. Finish swap (claim funds)'}
               </ButtonWithWallet>
             ) : (
-              ""
+              ''
             )}
           </>
         )
       ) : (
-        ""
+        ''
       )}
 
       {isSuccess ? (
@@ -154,26 +142,24 @@ export function LNURLWithdrawQuoteSummary(props: {
           <label>Swap was executed successfully</label>
         </Alert>
       ) : (
-        ""
+        ''
       )}
 
       {isFailed ? (
         <Alert variant="danger" className="mb-0">
           <strong>Swap failed</strong>
-          <label>
-            Swap HTLC expired, your lightning payment will be refunded shortly!
-          </label>
+          <label>Swap HTLC expired, your lightning payment will be refunded shortly!</label>
         </Alert>
       ) : (
-        ""
+        ''
       )}
 
-      {isQuoteExpired || isFailed || (isSuccess && props.type !== "payment") ? (
-        <Button onClick={props.refreshQuote} variant="secondary">
+      {isQuoteExpired || isFailed || (isSuccess && props.type !== 'payment') ? (
+        <BaseButton onClick={props.refreshQuote} variant="primary" size="large">
           New quote
-        </Button>
+        </BaseButton>
       ) : (
-        ""
+        ''
       )}
     </>
   );

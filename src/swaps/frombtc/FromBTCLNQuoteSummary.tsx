@@ -1,21 +1,22 @@
-import * as React from "react";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { Alert, Button, Spinner } from "react-bootstrap";
-import { FromBTCLNSwap, FromBTCLNSwapState } from "@atomiqlabs/sdk";
-import { ButtonWithWallet } from "../../wallets/ButtonWithWallet";
-import { useSwapState } from "../hooks/useSwapState";
-import { ScrollAnchor } from "../../components/ScrollAnchor";
-import { LightningHyperlinkModal } from "../components/LightningHyperlinkModal";
-import { SwapExpiryProgressBar } from "../components/SwapExpiryProgressBar";
-import { SwapForGasAlert } from "../components/SwapForGasAlert";
+import * as React from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Alert, Button, Spinner } from 'react-bootstrap';
+import { FromBTCLNSwap, FromBTCLNSwapState } from '@atomiqlabs/sdk';
+import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
+import { useSwapState } from '../hooks/useSwapState';
+import { ScrollAnchor } from '../../components/ScrollAnchor';
+import { LightningHyperlinkModal } from '../components/LightningHyperlinkModal';
+import { SwapExpiryProgressBar } from '../components/SwapExpiryProgressBar';
+import { SwapForGasAlert } from '../components/SwapForGasAlert';
 
-import { StepByStep } from "../../components/StepByStep";
-import { useLocalStorage } from "../../utils/hooks/useLocalStorage";
-import { LightningQR } from "../components/LightningQR";
-import { ErrorAlert } from "../../components/ErrorAlert";
-import { useFromBtcLnQuote } from "./useFromBtcLnQuote";
-import { ChainDataContext } from "../../wallets/context/ChainDataContext";
-import { useSmartChainWallet } from "../../wallets/hooks/useSmartChainWallet";
+import { StepByStep } from '../../components/StepByStep';
+import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { LightningQR } from '../components/LightningQR';
+import { ErrorAlert } from '../../components/ErrorAlert';
+import { useFromBtcLnQuote } from './useFromBtcLnQuote';
+import { ChainDataContext } from '../../wallets/context/ChainDataContext';
+import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
+import { BaseButton } from '../../components/BaseButton';
 
 /*
 Steps:
@@ -28,7 +29,7 @@ export function FromBTCLNQuoteSummary(props: {
   quote: FromBTCLNSwap;
   refreshQuote: () => void;
   setAmountLock: (isLocked: boolean) => void;
-  type?: "payment" | "swap";
+  type?: 'payment' | 'swap';
   abortSwap?: () => void;
   notEnoughForGas: bigint;
 }) {
@@ -36,12 +37,8 @@ export function FromBTCLNQuoteSummary(props: {
   const smartChainWallet = useSmartChainWallet(props.quote, true);
 
   const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
-  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } =
-    useSwapState(props.quote);
-  const [autoClaim, setAutoClaim] = useLocalStorage(
-    "crossLightning-autoClaim",
-    false,
-  );
+  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
+  const [autoClaim, setAutoClaim] = useLocalStorage('crossLightning-autoClaim', false);
   const [initClicked, setInitClicked] = useState<boolean>(false);
 
   const openModalRef = useRef<() => void>(null);
@@ -93,12 +90,9 @@ export function FromBTCLNQuoteSummary(props: {
 
   return (
     <>
-      <LightningHyperlinkModal
-        openRef={openModalRef}
-        hyperlink={props.quote.getHyperlink()}
-      />
+      <LightningHyperlinkModal openRef={openModalRef} hyperlink={props.quote.getHyperlink()} />
 
-      {isInitiated ? <StepByStep steps={executionSteps} /> : ""}
+      {isInitiated ? <StepByStep steps={executionSteps} /> : ''}
 
       {isCreated && !paymentWaiting ? (
         smartChainWallet === undefined ? (
@@ -109,21 +103,11 @@ export function FromBTCLNQuoteSummary(props: {
           />
         ) : (
           <>
-            <ErrorAlert
-              className="mb-3"
-              title="Swap initialization error"
-              error={paymentError}
-            />
+            <ErrorAlert className="mb-3" title="Swap initialization error" error={paymentError} />
 
-            <SwapForGasAlert
-              notEnoughForGas={props.notEnoughForGas}
-              quote={props.quote}
-            />
+            <SwapForGasAlert notEnoughForGas={props.notEnoughForGas} quote={props.quote} />
 
-            <SwapExpiryProgressBar
-              timeRemaining={quoteTimeRemaining}
-              totalTime={totalQuoteTime}
-            />
+            <SwapExpiryProgressBar timeRemaining={quoteTimeRemaining} totalTime={totalQuoteTime} />
 
             <ButtonWithWallet
               requiredWalletAddress={props.quote._getInitiator()}
@@ -140,7 +124,7 @@ export function FromBTCLNQuoteSummary(props: {
           </>
         )
       ) : (
-        ""
+        ''
       )}
 
       {isCreated && paymentWaiting ? (
@@ -164,7 +148,7 @@ export function FromBTCLNQuoteSummary(props: {
           </Button>
         </>
       ) : (
-        ""
+        ''
       )}
 
       {isClaimable ? (
@@ -177,11 +161,9 @@ export function FromBTCLNQuoteSummary(props: {
           <ErrorAlert
             className="mb-3"
             title={
-              "Swap " +
-              (canClaimInOneShot || claimError != null
-                ? "claim"
-                : " claim initialization") +
-              " error"
+              'Swap ' +
+              (canClaimInOneShot || claimError != null ? 'claim' : ' claim initialization') +
+              ' error'
             }
             error={commitError ?? claimError}
           />
@@ -189,9 +171,7 @@ export function FromBTCLNQuoteSummary(props: {
           <SwapExpiryProgressBar
             timeRemaining={quoteTimeRemaining}
             totalTime={totalQuoteTime}
-            show={
-              state === FromBTCLNSwapState.PR_PAID && !claiming && !committing
-            }
+            show={state === FromBTCLNSwapState.PR_PAID && !claiming && !committing}
           />
 
           <ButtonWithWallet
@@ -199,20 +179,16 @@ export function FromBTCLNQuoteSummary(props: {
             chainId={props.quote?.chainIdentifier}
             onClick={() => onCommit()}
             disabled={committing || (!canClaimInOneShot && !isClaimCommittable)}
-            size={canClaimInOneShot ? "lg" : isClaimCommittable ? "lg" : "sm"}
+            size={canClaimInOneShot ? 'lg' : isClaimCommittable ? 'lg' : 'sm'}
           >
-            {committing ? (
-              <Spinner animation="border" size="sm" className="mr-2" />
-            ) : (
-              ""
-            )}
+            {committing ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
             {canClaimInOneShot
-              ? "Finish swap (claim funds)"
+              ? 'Finish swap (claim funds)'
               : !isClaimCommittable
-                ? "1. Initialized"
+                ? '1. Initialized'
                 : committing
-                  ? "1. Initializing..."
-                  : "1. Finish swap (initialize)"}
+                  ? '1. Initializing...'
+                  : '1. Finish swap (initialize)'}
           </ButtonWithWallet>
           {!canClaimInOneShot ? (
             <ButtonWithWallet
@@ -220,24 +196,18 @@ export function FromBTCLNQuoteSummary(props: {
               chainId={props.quote?.chainIdentifier}
               onClick={() => onClaim()}
               disabled={claiming || !isClaimClaimable}
-              size={isClaimClaimable ? "lg" : "sm"}
+              size={isClaimClaimable ? 'lg' : 'sm'}
               className="mt-2"
             >
-              {claiming ? (
-                <Spinner animation="border" size="sm" className="mr-2" />
-              ) : (
-                ""
-              )}
-              {claiming
-                ? "2. Claiming funds..."
-                : "2. Finish swap (claim funds)"}
+              {claiming ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
+              {claiming ? '2. Claiming funds...' : '2. Finish swap (claim funds)'}
             </ButtonWithWallet>
           ) : (
-            ""
+            ''
           )}
         </>
       ) : (
-        ""
+        ''
       )}
 
       {isSuccess ? (
@@ -246,17 +216,14 @@ export function FromBTCLNQuoteSummary(props: {
           <label>Swap was executed successfully</label>
         </Alert>
       ) : (
-        ""
+        ''
       )}
 
       {isQuoteExpired || isFailed || isSuccess ? (
         <>
           <Alert variant="danger" className="mb-3" show={isFailed}>
             <strong>Swap failed</strong>
-            <label>
-              Swap HTLC expired, your lightning payment will be refunded
-              shortly!
-            </label>
+            <label>Swap HTLC expired, your lightning payment will be refunded shortly!</label>
           </Alert>
 
           <SwapExpiryProgressBar
@@ -266,18 +233,18 @@ export function FromBTCLNQuoteSummary(props: {
             totalTime={totalQuoteTime}
             expiryText={
               isInitiated
-                ? "Swap expired! Your lightning payment should refund shortly."
-                : "Swap expired!"
+                ? 'Swap expired! Your lightning payment should refund shortly.'
+                : 'Swap expired!'
             }
             quoteAlias="Swap"
           />
 
-          <Button onClick={props.refreshQuote} variant="secondary">
+          <BaseButton onClick={props.refreshQuote} variant="primary" size="large">
             New quote
-          </Button>
+          </BaseButton>
         </>
       ) : (
-        ""
+        ''
       )}
 
       <ScrollAnchor trigger={isInitiated}></ScrollAnchor>

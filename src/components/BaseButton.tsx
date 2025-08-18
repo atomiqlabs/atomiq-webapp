@@ -8,7 +8,7 @@ interface BaseButtonProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
-  size?: 'smaller' | 'small' | 'large';
+  size?: 'smaller' | 'small' | 'large' | 'lg' | 'sm' | 'md';
   variant?: BaseButtonVariantProps;
   disabled?: boolean;
   isLoading?: boolean;
@@ -36,8 +36,8 @@ export const BaseButton = React.forwardRef<HTMLButtonElement, BaseButtonProps>(f
     'base-button',
     {
       'base-button--smaller': size === 'smaller',
-      'base-button--small': size === 'small',
-      'base-button--large': size === 'large',
+      'base-button--small': size === 'small' || size === 'sm',
+      'base-button--large': size === 'large' || size === 'lg',
       'base-button--primary': variant === 'primary',
       'base-button--secondary': variant === 'secondary',
       'base-button--transparent': variant === 'transparent',

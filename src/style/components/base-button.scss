@@ -5,6 +5,11 @@
     @apply pl-4;
   }
 
+  &--primary {
+    background: linear-gradient(90deg, #7a2ff3 0%, #a53ff7 100%);
+    @apply text-white border-0 text-[18px];
+  }
+
   &--small {
     @apply h-12;
   }
