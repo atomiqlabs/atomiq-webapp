@@ -4,8 +4,11 @@ import {constants, RpcProvider} from "starknet";
 import {BitcoinNetwork, MempoolApi, MempoolBitcoinRpc, SwapperFactory} from "@atomiqlabs/sdk";
 import {SolanaInitializer, SolanaInitializerType} from "@atomiqlabs/chain-solana";
 import {StarknetInitializer, StarknetInitializerType} from "@atomiqlabs/chain-starknet";
-import {JsonRpcProvider} from "ethers";
-import {CitreaInitializer, CitreaInitializerType} from "@atomiqlabs/chain-evm";
+import {
+    CitreaInitializer,
+    CitreaInitializerType, JsonRpcProviderWithRetries,
+    WebSocketProviderWithRetries
+} from "@atomiqlabs/chain-evm";
 
 const solanaRpcUrl: string = process.env.REACT_APP_SOLANA_RPC_URL;
 const solanaChain: "DEVNET" | "MAINNET" = process.env.REACT_APP_SOLANA_NETWORK as ("DEVNET" | "MAINNET"); //DEVNET or MAINNET
@@ -92,7 +95,11 @@ export const FEConstants = {
     starknetChainId: starknetChain==null ? null : (starknetChain==="MAIN" ? constants.StarknetChainId.SN_MAIN : constants.StarknetChainId.SN_SEPOLIA),
     starknetRpc: starknetRpcUrl==null ? null : new RpcProvider({nodeUrl: starknetRpcUrl}),
     citreaChainType: citreaChain,
-    citreaRpc: citreaRpcUrl==null ? null : new JsonRpcProvider(citreaRpcUrl),
+    citreaRpc: citreaRpcUrl==null ? null : (
+        citreaRpcUrl.startsWith("ws")
+            ? new WebSocketProviderWithRetries(citreaRpcUrl)
+            : new JsonRpcProviderWithRetries(citreaRpcUrl)
+    ),
     bitcoinNetwork: bitcoinNetwork==="TESTNET" ? BitcoinNetwork.TESTNET : bitcoinNetwork==="TESTNET4" ? BitcoinNetwork.TESTNET4 : BitcoinNetwork.MAINNET,
     url: null,
     satsPerBitcoin: new BigNumber(100000000),
