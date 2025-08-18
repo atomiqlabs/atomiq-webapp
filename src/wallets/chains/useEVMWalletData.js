@@ -72,7 +72,7 @@ export function useEVMWalletData() {
         if (connector == null)
             return;
         let cancelled = false;
-        const icon = connector.icon ?? connector.iconUrl;
+        const icon = connector.icon ?? connector.iconUrl ?? connector.rkDetails?.iconUrl;
         if (typeof (icon) === "string") {
             setIcon(icon);
         }
