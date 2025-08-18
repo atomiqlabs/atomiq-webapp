@@ -36,6 +36,11 @@ if(FEConstants.allowedChains.has("SOLANA")) {
     smartChainTokenArray.push(Tokens.SOLANA.BONK);
 }
 
+if(FEConstants.allowedChains.has("CITREA")) {
+    smartChainTokenArray.push(Tokens.CITREA.CBTC);
+    smartChainTokenArray.push(Tokens.CITREA.USDC);
+}
+
 if(FEConstants.allowedChains.has("STARKNET")) {
     smartChainTokenArray.push(Tokens.STARKNET.WBTC);
     smartChainTokenArray.push(Tokens.STARKNET.STRK);
@@ -43,10 +48,6 @@ if(FEConstants.allowedChains.has("STARKNET")) {
 }
 
 export const allTokens = [...bitcoinTokenArray, ...smartChainTokenArray];
-
-export const excludeChainTokens: {[swapType in SwapType]?: Set<string>} = {
-    [SwapType.TO_BTC]: new Set<string>([Tokens.STARKNET.STRK, Tokens.STARKNET.ETH].map(val => val.address))
-};
 
 export function toHumanReadable(amount: bigint, currencySpec: Token): BigNumber {
     if(amount==null) return null;

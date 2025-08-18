@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { isBtcToken, isSCToken, SwapType, toHumanReadableString } from "@atomiqlabs/sdk";
+import { isBtcToken, isSCToken, toHumanReadableString } from "@atomiqlabs/sdk";
 import { FEConstants, TokenResolver, Tokens } from "../FEConstants";
 export const TokenIcons = {
     WBTC: "/icons/crypto/WBTC.png",
@@ -24,15 +24,16 @@ if (FEConstants.allowedChains.has("SOLANA")) {
     smartChainTokenArray.push(Tokens.SOLANA.WBTC);
     smartChainTokenArray.push(Tokens.SOLANA.BONK);
 }
+if (FEConstants.allowedChains.has("CITREA")) {
+    smartChainTokenArray.push(Tokens.CITREA.CBTC);
+    smartChainTokenArray.push(Tokens.CITREA.USDC);
+}
 if (FEConstants.allowedChains.has("STARKNET")) {
     smartChainTokenArray.push(Tokens.STARKNET.WBTC);
     smartChainTokenArray.push(Tokens.STARKNET.STRK);
     smartChainTokenArray.push(Tokens.STARKNET.ETH);
 }
 export const allTokens = [...bitcoinTokenArray, ...smartChainTokenArray];
-export const excludeChainTokens = {
-    [SwapType.TO_BTC]: new Set([Tokens.STARKNET.STRK, Tokens.STARKNET.ETH].map(val => val.address))
-};
 export function toHumanReadable(amount, currencySpec) {
     if (amount == null)
         return null;
