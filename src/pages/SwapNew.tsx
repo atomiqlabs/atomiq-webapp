@@ -4,7 +4,8 @@ import {
     isSCToken,
     SCToken,
     SpvFromBTCSwap,
-    SwapType, Token,
+    SwapType,
+    Token,
     toTokenAmount
 } from "@atomiqlabs/sdk";
 import * as React from "react";
@@ -18,8 +19,11 @@ import {SwapTopbar} from "./SwapTopbar";
 import {QRScannerModal} from "../qr/QRScannerModal";
 import {Alert, Button, Card, OverlayTrigger, Spinner, Tooltip} from "react-bootstrap";
 import {
-    fromTokenIdentifier, getChainIdentifierForCurrency, includesToken,
-    smartChainTokenArray, toTokenIdentifier,
+    fromTokenIdentifier,
+    getChainIdentifierForCurrency,
+    includesToken,
+    smartChainTokenArray,
+    toTokenIdentifier,
 } from "../tokens/Tokens";
 import {FEConstants, Tokens} from "../FEConstants";
 import BigNumber from "bignumber.js";
@@ -76,17 +80,6 @@ export function SwapNew(props: {
 
     //Address
     const addressRef = useRef<ValidatedInputRef>();
-    const addressValidator = useCallback((val: string) => {
-        if(swapper==null) return null;
-        try {
-            const addressParseResult = swapper.Utils.parseAddressSync(val);
-            if(addressParseResult==null) return "Invalid address";
-        } catch (e) {
-            console.log("Address parsing error: ", e);
-            return e.message;
-        }
-        return null;
-    }, [swapper]);
     const [address, setAddress] = useState<string>(null);
     let [addressData, addressLoading, addressError] = useAddressData(address, (addressData) => {
         if(addressData?.type==null) return;
@@ -218,6 +211,23 @@ export function SwapNew(props: {
     const validatedAmount = useMemo(() => {
         if((exactIn ? inputAmountValidator : outputAmountValidator)(amount)==null) return amount==="" ? null : new BigNumber(amount).toString(10);
     }, [inputAmountValidator, outputAmountValidator, amount, exactIn]);
+
+    const addressValidator = useCallback((val: string) => {
+        if(swapper==null) return null;
+        try {
+            const addressParseResult = swapper.Utils.parseAddressSync(val);
+            if(addressParseResult==null) return "Invalid address";
+            if(addressParseResult.swapType===SwapType.TO_BTCLN && addressParseResult.amount!=null && outputLimits.max!=null) {
+                if(new BigNumber(addressParseResult.amount.amount).gt(new BigNumber(outputLimits.max))) {
+                    return "Invoice value too high!";
+                }
+            }
+        } catch (e) {
+            console.log("Address parsing error: ", e);
+            return e.message;
+        }
+        return null;
+    }, [swapper, outputLimits]);
 
     //Quote
     const [refreshQuote, quote, randomQuote, quoteLoading, quoteError] = useQuote(

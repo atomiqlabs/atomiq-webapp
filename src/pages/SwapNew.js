@@ -52,20 +52,6 @@ export function SwapNew(props) {
     const chainsData = useContext(ChainDataContext);
     //Address
     const addressRef = useRef();
-    const addressValidator = useCallback((val) => {
-        if (swapper == null)
-            return null;
-        try {
-            const addressParseResult = swapper.Utils.parseAddressSync(val);
-            if (addressParseResult == null)
-                return "Invalid address";
-        }
-        catch (e) {
-            console.log("Address parsing error: ", e);
-            return e.message;
-        }
-        return null;
-    }, [swapper]);
     const [address, setAddress] = useState(null);
     let [addressData, addressLoading, addressError] = useAddressData(address, (addressData) => {
         if (addressData?.type == null)
@@ -198,6 +184,25 @@ export function SwapNew(props) {
         if ((exactIn ? inputAmountValidator : outputAmountValidator)(amount) == null)
             return amount === "" ? null : new BigNumber(amount).toString(10);
     }, [inputAmountValidator, outputAmountValidator, amount, exactIn]);
+    const addressValidator = useCallback((val) => {
+        if (swapper == null)
+            return null;
+        try {
+            const addressParseResult = swapper.Utils.parseAddressSync(val);
+            if (addressParseResult == null)
+                return "Invalid address";
+            if (addressParseResult.swapType === SwapType.TO_BTCLN && addressParseResult.amount != null && outputLimits.max != null) {
+                if (new BigNumber(addressParseResult.amount.amount).gt(new BigNumber(outputLimits.max))) {
+                    return "Invoice value too high!";
+                }
+            }
+        }
+        catch (e) {
+            console.log("Address parsing error: ", e);
+            return e.message;
+        }
+        return null;
+    }, [swapper, outputLimits]);
     //Quote
     const [refreshQuote, quote, randomQuote, quoteLoading, quoteError] = useQuote(validatedAmount, exactIn, inputToken, outputToken, addressData?.lnurl ?? addressData?.address, gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined, maxSpendable?.feeRate, addressLoading);
     useEffect(() => {

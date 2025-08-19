@@ -123,7 +123,7 @@ function ValidatedInput(props : {
 
     useEffect(() => {
         refObj.validate();
-    }, [props.onValidate]);
+    }, [props.onValidate, props.value]);
 
     if(props.inputRef!=null) {
         props.inputRef.current = refObj;
