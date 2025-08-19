@@ -237,7 +237,7 @@ export function SwapNew(props: {
         validatedAmount, exactIn, inputToken, outputToken,
         addressData?.lnurl ?? addressData?.address,
         gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined, maxSpendable?.feeRate,
-        addressLoading
+        addressLoading || locked
     );
     useEffect(() => {
         if(quote==null || maxSpendable?.feeRate==null || swapType!==SwapType.SPV_VAULT_FROM_BTC || quote?.getType()!==SwapType.SPV_VAULT_FROM_BTC) return;

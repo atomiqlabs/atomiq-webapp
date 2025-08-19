@@ -207,7 +207,7 @@ export function SwapNew(props) {
         return null;
     }, [swapper, outputLimits]);
     //Quote
-    const [refreshQuote, quote, randomQuote, quoteLoading, quoteError] = useQuote(validatedAmount, exactIn, inputToken, outputToken, addressData?.lnurl ?? addressData?.address, gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined, maxSpendable?.feeRate, addressLoading);
+    const [refreshQuote, quote, randomQuote, quoteLoading, quoteError] = useQuote(validatedAmount, exactIn, inputToken, outputToken, addressData?.lnurl ?? addressData?.address, gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined, maxSpendable?.feeRate, addressLoading || locked);
     useEffect(() => {
         if (quote == null || maxSpendable?.feeRate == null || swapType !== SwapType.SPV_VAULT_FROM_BTC || quote?.getType() !== SwapType.SPV_VAULT_FROM_BTC)
             return;
