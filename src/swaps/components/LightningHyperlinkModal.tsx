@@ -7,10 +7,12 @@ import {
 import Icon from "react-icons-kit";
 import {info} from 'react-icons-kit/fa/info';
 import {useState} from "react";
+import {capitalizeFirstLetter} from "../../utils/Utils";
 
 export function LightningHyperlinkModal(props: {
     openRef: React.MutableRefObject<() => void>,
-    hyperlink: string
+    hyperlink: string,
+    chainId: string
 }) {
     const [openAppModalOpened, setOpenAppModalOpened] = useState<boolean>(false);
 
@@ -27,7 +29,7 @@ export function LightningHyperlinkModal(props: {
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <p>Please make sure that you return back to this dApp once you inititated a Lightning Network payment from your wallet app. <b>The Lightning Network payment will only succeed/confirm once you come back to the dApp and claim the funds on the Solana side!</b></p>
+                <p>Please make sure that you return back to this dApp once you inititated a Lightning Network payment from your wallet app. <b>The Lightning Network payment will only succeed/confirm once you come back to the dApp and claim the funds on the {capitalizeFirstLetter(props.chainId)} side!</b></p>
             </Modal.Body>
             <Modal.Footer className="border-0 d-flex">
                 <Button variant="primary" className="flex-grow-1" onClick={() => {

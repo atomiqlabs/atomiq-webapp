@@ -60,7 +60,9 @@ export function FromBTCLNQuoteSummary(props: {
         isWaitingForWatchtowerClaim,
 
         executionSteps,
-        canClaimInOneShot
+        canClaimInOneShot,
+
+        requiresDestinationWalletConnected
     } = useFromBtcLnQuote(props.quote, props.setAmountLock);
 
     useEffect(() => {
@@ -80,13 +82,13 @@ export function FromBTCLNQuoteSummary(props: {
 
     return (
         <>
-            <LightningHyperlinkModal openRef={openModalRef} hyperlink={props.quote.getHyperlink()}/>
+            <LightningHyperlinkModal openRef={openModalRef} hyperlink={props.quote.getHyperlink()} chainId={props.quote.chainIdentifier}/>
 
             {isInitiated ? <StepByStep steps={executionSteps}/> : ""}
 
             {isCreated && !paymentWaiting ? (
-                smartChainWallet===undefined ? (
-                    <ButtonWithWallet chainId={props.quote.chainIdentifier} requiredWalletAddress={props.quote._getInitiator()} size="lg"/>
+                requiresDestinationWalletConnected && smartChainWallet===undefined ? (
+                    <ButtonWithWallet requiresConnection={requiresDestinationWalletConnected} chainId={props.quote.chainIdentifier} requiredWalletAddress={props.quote._getInitiator()} size="lg"/>
                 ) : (
                     <>
                         <ErrorAlert className="mb-3" title="Swap initialization error" error={paymentError}/>
@@ -98,7 +100,7 @@ export function FromBTCLNQuoteSummary(props: {
                             totalTime={totalQuoteTime}
                         />
 
-                        <ButtonWithWallet requiredWalletAddress={props.quote._getInitiator()} chainId={props.quote?.chainIdentifier} onClick={() => {
+                        <ButtonWithWallet requiresConnection={requiresDestinationWalletConnected} requiredWalletAddress={props.quote._getInitiator()} chainId={props.quote?.chainIdentifier} onClick={() => {
                             setInitClicked(true);
                             waitForPayment();
                         }} disabled={!!props.notEnoughForGas} size="lg">
