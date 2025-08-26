@@ -1,4 +1,5 @@
 import {
+    BitcoinNetwork,
     fromHumanReadableString,
     isBtcToken,
     isSCToken,
@@ -50,6 +51,7 @@ import {useSupportedTokens} from "../swaps/hooks/useSupportedTokens";
 import {useDecimalNumberState} from "../utils/hooks/useDecimalNumberState";
 import {ChainDataContext} from "../wallets/context/ChainDataContext";
 import {ChainWalletData} from "../wallets/ChainDataProvider";
+import {ticket} from 'react-icons-kit/fa/ticket';
 
 
 export function SwapNew(props: {
@@ -660,6 +662,19 @@ export function SwapNew(props: {
                     ) : ""}
                 </Card>
             </div>
+
+            {FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET4 ? (
+                <div className="text-light mb-3 d-flex align-items-center justify-content-center">
+                    <Icon size={16} icon={ticket} style={{marginTop: "-0.5rem"}} className="me-1"/>
+                    <span>
+                        Faucets: <a href="https://faucet.testnet4.dev/" target="_blank">BTC</a>, <a href="https://lnbits-testnet4.atomiqlabs.org/" target="_blank">BTC-Lightning</a>, {scCurrency?.chainId==="CITREA" ? (
+                            <a href="https://citrea.xyz/faucet" target="_blank">cBTC</a>
+                        ) : scCurrency?.chainId==="STARKNET" ? (
+                            <a href="https://starknet-faucet.vercel.app/" target="_blank">STRK</a>
+                        ) : ""}
+                    </span>
+                </div>
+            ) : ""}
 
             <div className="text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3">
                 <div
