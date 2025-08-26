@@ -392,7 +392,7 @@ export function SwapNew(props) {
                                                 setAddress(val);
                                                 if (!forcedChange)
                                                     leaveExistingSwap(true);
-                                            }, value: outputAddress, inputRef: addressRef, placeholder: "Destination wallet address", onValidate: addressValidator, validated: isOutputWalletAddress || outputAddress !== address ? null : addressError?.message, disabled: locked || outputChainData?.wallet != null, feedbackEndElement: outputChainData?.wallet == null ? (_jsx("a", { className: "ms-auto", href: "#", onClick: (event) => {
+                                            }, value: outputAddress, inputRef: addressRef, placeholder: swapType === SwapType.TO_BTCLN ? "Lightning invoice, LNURL-pay link" : "Destination wallet address", onValidate: addressValidator, validated: isOutputWalletAddress || outputAddress !== address ? null : addressError?.message, disabled: locked || outputChainData?.wallet != null, feedbackEndElement: outputChainData?.wallet == null ? (_jsx("a", { className: "ms-auto", href: "#", onClick: (event) => {
                                                     event.preventDefault();
                                                     outputChainData.connect();
                                                 }, children: "Connect wallet" })) : null, textStart: addressLoading ? (_jsx(Spinner, { size: "sm", className: "text-white" })) : null, textEnd: locked ? null : (outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", style: {
