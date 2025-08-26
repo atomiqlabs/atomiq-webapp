@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { fromHumanReadableString, isBtcToken, isSCToken, isSwapWithGasDrop, SpvFromBTCSwap, SwapType, toTokenAmount } from "@atomiqlabs/sdk";
+import { BitcoinNetwork, fromHumanReadableString, isBtcToken, isSCToken, isSwapWithGasDrop, SpvFromBTCSwap, SwapType, toTokenAmount } from "@atomiqlabs/sdk";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SwapsContext } from "../swaps/context/SwapsContext";
 import { useAddressData } from "../swaps/hooks/useAddressData";
@@ -31,6 +31,7 @@ import { useChainForCurrency } from "../wallets/hooks/useChainForCurrency";
 import { useSupportedTokens } from "../swaps/hooks/useSupportedTokens";
 import { useDecimalNumberState } from "../utils/hooks/useDecimalNumberState";
 import { ChainDataContext } from "../wallets/context/ChainDataContext";
+import { ticket } from 'react-icons-kit/fa/ticket';
 export function SwapNew(props) {
     const navigate = useNavigate();
     const { swapper } = useContext(SwapsContext);
@@ -433,5 +434,5 @@ export function SwapNew(props) {
                                             inputRef.current.setValue("");
                                             outputRef.current.setValue("");
                                             navigate("/");
-                                        }, feeRate: maxSpendable?.feeRate }) })) : ""] })) : ""] }) }), _jsx("div", { className: "text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3", children: _jsxs("div", { className: "cursor-pointer d-flex align-items-center justify-content-center", onClick: () => navigate("/faq?tabOpen=6"), children: [_jsx(Icon, { size: 18, icon: lock, style: { marginTop: "-0.5rem" } }), _jsx("small", { children: "Audited by" }), scCurrency?.chainId !== "SOLANA" ? (_jsx("img", { className: "d-block ms-1", height: 18, src: "/csc-white-logo.png", style: { marginTop: "-0.075rem", opacity: 0.6 } })) : (_jsx("img", { className: "opacity-50 d-block ms-1", height: 18, src: "/ackee_blockchain.svg", style: { marginTop: "-0.125rem" } }))] }) })] }));
+                                        }, feeRate: maxSpendable?.feeRate }) })) : ""] })) : ""] }) }), FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET4 ? (_jsxs("div", { className: "text-light mb-3 d-flex align-items-center justify-content-center", children: [_jsx(Icon, { size: 16, icon: ticket, style: { marginTop: "-0.5rem" }, className: "me-1" }), _jsxs("span", { children: ["Faucets: ", _jsx("a", { href: "https://faucet.testnet4.dev/", target: "_blank", children: "BTC" }), ", ", _jsx("a", { href: "https://lnbits-testnet4.atomiqlabs.org/", target: "_blank", children: "BTC-Lightning" }), ", ", scCurrency?.chainId === "CITREA" ? (_jsx("a", { href: "https://citrea.xyz/faucet", target: "_blank", children: "cBTC" })) : scCurrency?.chainId === "STARKNET" ? (_jsx("a", { href: "https://starknet-faucet.vercel.app/", target: "_blank", children: "STRK" })) : ""] })] })) : "", _jsx("div", { className: "text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3", children: _jsxs("div", { className: "cursor-pointer d-flex align-items-center justify-content-center", onClick: () => navigate("/faq?tabOpen=6"), children: [_jsx(Icon, { size: 18, icon: lock, style: { marginTop: "-0.5rem" } }), _jsx("small", { children: "Audited by" }), scCurrency?.chainId !== "SOLANA" ? (_jsx("img", { className: "d-block ms-1", height: 18, src: "/csc-white-logo.png", style: { marginTop: "-0.075rem", opacity: 0.6 } })) : (_jsx("img", { className: "opacity-50 d-block ms-1", height: 18, src: "/ackee_blockchain.svg", style: { marginTop: "-0.125rem" } }))] }) })] }));
 }
