@@ -1,7 +1,8 @@
 import {
     fromHumanReadableString,
     isBtcToken,
-    isSCToken, isSwapWithGasDrop,
+    isSCToken,
+    isSwapWithGasDrop,
     SCToken,
     SpvFromBTCSwap,
     SwapType,
@@ -542,7 +543,7 @@ export function SwapNew(props: {
                                 }}
                                 value={outputAddress}
                                 inputRef={addressRef}
-                                placeholder={"Destination wallet address"}
+                                placeholder={swapType===SwapType.TO_BTCLN ? "Lightning invoice, LNURL-pay link" : "Destination wallet address"}
                                 onValidate={addressValidator}
                                 validated={isOutputWalletAddress || outputAddress!==address ? null : addressError?.message}
                                 disabled={locked || outputChainData?.wallet!=null}
