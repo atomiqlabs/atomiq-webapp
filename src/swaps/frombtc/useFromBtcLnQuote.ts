@@ -173,6 +173,8 @@ export function useFromBtcLnQuote(
         isWaitingForWatchtowerClaim: !isAlreadyClaimable && isWaitingForWatchtowerClaim,
 
         executionSteps,
-        canClaimInOneShot
+        canClaimInOneShot,
+
+        requiresDestinationWalletConnected: quote.getType()===SwapType.FROM_BTCLN
     }
 }
