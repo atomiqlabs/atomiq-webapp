@@ -5,7 +5,7 @@ import { ChainDataContext } from "./context/ChainDataContext";
 export function ButtonWithWallet(props) {
     const chainData = useContext(ChainDataContext);
     const requestedChain = chainData[props.chainId];
-    const isWalletConnected = !props.requiresConnection || requestedChain?.wallet != null;
+    const isWalletConnected = props.noRequireConnection || requestedChain?.wallet != null;
     const isCorrectWalletConnected = requestedChain?.wallet == null || props.requiredWalletAddress == null || requestedChain?.wallet?.address === props.requiredWalletAddress;
     return (_jsx(Button, { onClick: () => {
             if (requestedChain != null && !isWalletConnected) {
