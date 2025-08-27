@@ -88,7 +88,7 @@ export function FromBTCLNQuoteSummary(props: {
 
             {isCreated && !paymentWaiting ? (
                 requiresDestinationWalletConnected && smartChainWallet===undefined ? (
-                    <ButtonWithWallet requiresConnection={requiresDestinationWalletConnected} chainId={props.quote.chainIdentifier} requiredWalletAddress={props.quote._getInitiator()} size="lg"/>
+                    <ButtonWithWallet noRequireConnection={!requiresDestinationWalletConnected} chainId={props.quote.chainIdentifier} requiredWalletAddress={props.quote._getInitiator()} size="lg"/>
                 ) : (
                     <>
                         <ErrorAlert className="mb-3" title="Swap initialization error" error={paymentError}/>
@@ -100,7 +100,7 @@ export function FromBTCLNQuoteSummary(props: {
                             totalTime={totalQuoteTime}
                         />
 
-                        <ButtonWithWallet requiresConnection={requiresDestinationWalletConnected} requiredWalletAddress={props.quote._getInitiator()} chainId={props.quote?.chainIdentifier} onClick={() => {
+                        <ButtonWithWallet noRequireConnection={!requiresDestinationWalletConnected} requiredWalletAddress={props.quote._getInitiator()} chainId={props.quote?.chainIdentifier} onClick={() => {
                             setInitClicked(true);
                             waitForPayment();
                         }} disabled={!!props.notEnoughForGas} size="lg">

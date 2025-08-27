@@ -6,7 +6,7 @@ import { FEConstants } from "../../FEConstants";
 import {darkTheme, getDefaultConfig, RainbowKitProvider, useConnectModal} from "@rainbow-me/rainbowkit";
 import {useAccount, useDisconnect, useWalletClient, WagmiProvider} from "wagmi";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {EVMSigner} from "@atomiqlabs/chain-evm";
+import {EVMBrowserSigner, EVMSigner} from "@atomiqlabs/chain-evm";
 import {BrowserProvider, JsonRpcProvider} from "ethers";
 import '@rainbow-me/rainbowkit/styles.css';
 
@@ -77,7 +77,7 @@ export function useEVMWalletData(): [ChainWalletData<EVMSigner>] {
         const browserProvider = new BrowserProvider(walletClient as any);
         browserProvider.getSigner().then(signer => {
             if(cancelled) return;
-            setEvmSigner(new EVMSigner(signer, signer.address, true));
+            setEvmSigner(new EVMBrowserSigner(signer, signer.address));
         });
         return () => {
             cancelled = true;

@@ -4,7 +4,7 @@ import { FEConstants } from "../../FEConstants";
 import { darkTheme, getDefaultConfig, RainbowKitProvider, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount, useDisconnect, useWalletClient, WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { EVMSigner } from "@atomiqlabs/chain-evm";
+import { EVMBrowserSigner } from "@atomiqlabs/chain-evm";
 import { BrowserProvider } from "ethers";
 import '@rainbow-me/rainbowkit/styles.css';
 const citreaTestnetBlockscout = {
@@ -60,7 +60,7 @@ export function useEVMWalletData() {
         browserProvider.getSigner().then(signer => {
             if (cancelled)
                 return;
-            setEvmSigner(new EVMSigner(signer, signer.address, true));
+            setEvmSigner(new EVMBrowserSigner(signer, signer.address));
         });
         return () => {
             cancelled = true;
