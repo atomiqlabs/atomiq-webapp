@@ -183,6 +183,7 @@
     &.show {
       transform: translateX(0);
     }
+
     @media (max-width: 992px) {
       height: 100vh !important;
     }

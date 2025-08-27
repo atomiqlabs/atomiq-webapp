@@ -4,8 +4,6 @@ import * as React from 'react';
 import { ChainDataContext } from './context/ChainDataContext';
 import { ChainWalletData } from './ChainDataProvider';
 import { BaseButton } from '../components/BaseButton';
-import Icon from 'react-icons-kit';
-import { close } from 'react-icons-kit/fa/close';
 import { ConnectedWalletAnchor } from './ConnectedWalletAnchor';
 import { useStateWithOverride } from '../utils/hooks/useStateWithOverride';
 import { smartChainTokenArray } from '../tokens/Tokens';
@@ -37,33 +35,58 @@ function MultichainWalletDisplay(props: { wallet: MultichainWallet; className?: 
   const [show, setShow] = useState<boolean>(false);
 
   return (
-    <Dropdown align="end" show={show} onToggle={(nextShow) => setShow(nextShow)}>
-      <div className="wallet-connections__badge" onClick={() => setShow(true)}>
-        <Badge
-          id={'dropdown' + props.wallet.name}
-          className="p-0 bg-opacity-50 cursor-pointer align-items-center d-flex flex-row"
-        >
-          <img width={24} height={24} src={props.wallet.icon} />
-          {chains.map((value) => {
-            return (
-              <img className="mx-1" width={18} height={18} key={value.name} src={value.icon} />
-            );
-          })}
-          {/*  TODO add chevron down */}
-        </Badge>
+    <Dropdown align="end" show={show} onToggle={(isOpen) => setShow(isOpen)}>
+      <div
+        className="wallet-connections__trigger"
+        onClick={() => setShow((s) => !s)}
+        aria-expanded={show}
+        role="button"
+      >
+        <div className="wallet-connections__badge">
+          <Badge
+            id={'dropdown' + props.wallet.name}
+            className="p-0 bg-opacity-50 cursor-pointer align-items-center d-flex flex-row"
+          >
+            <img width={24} height={24} src={props.wallet.icon} />
+            {chains.map((value) => {
+              return (
+                <img className="mx-1" width={18} height={18} key={value.name} src={value.icon} />
+              );
+            })}
+          </Badge>
+        </div>
+        <div className="icon icon-dropdown"></div>
       </div>
 
-      <Dropdown.Menu popperConfig={{ strategy: 'absolute' }}>
+      <Dropdown.Menu
+        popperConfig={{ strategy: 'absolute' }}
+        className={'wallet-connections__dropdown'}
+      >
         {chains.map((value) => {
           return (
             <>
-              <Dropdown.Header>{value.name}</Dropdown.Header>
-              <Dropdown.Item onClick={() => value.disconnect()}>Disconnect</Dropdown.Item>
-              {value.changeWallet != null ? (
-                <Dropdown.Item onClick={() => value.changeWallet()}>Change wallet</Dropdown.Item>
-              ) : (
-                ''
-              )}
+              <Dropdown.Header>
+                <div className="sc-title">{props.wallet.name}</div>
+                <div className="sc-subtitle">
+                  <img width={24} height={24} src={value.icon} className="sc-icon" />
+                  <div className="sc-text">{value.name}</div>
+                  {/*  TODO add copy address*/}
+                </div>
+              </Dropdown.Header>
+              <div className="dropdown-list">
+                <Dropdown.Item onClick={() => value.disconnect()}>
+                  <div className="icon icon-disconnect"></div>
+                  Disconnect Wallet
+                </Dropdown.Item>
+                {value.changeWallet != null ? (
+                  <Dropdown.Item onClick={() => value.changeWallet()}>
+                    <div className="icon icon-change-wallet"></div>
+                    Change Wallet
+                  </Dropdown.Item>
+                ) : (
+                  ''
+                )}
+              </div>
             </>
           );
         })}
@@ -137,7 +160,7 @@ export function WalletConnections() {
               as={BaseButton}
               className="wallet-connections__button"
               variant="clear"
-              icon={<Icon size={20} icon={close} />}
+              customIcon="connect"
               bsPrefix="none"
             ></Dropdown.Toggle>
           )}

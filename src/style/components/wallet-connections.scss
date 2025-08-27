@@ -78,13 +78,25 @@
   }
 
   & > .dropdown {
-    @apply transition-all;
+    @apply transition-all flex flex-row items-center cursor-pointer;
 
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: var(--bs-border-radius);
+    border: 1px solid transparent;
+
+    &:not(:has(.base-button)).show {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background-color: rgba(255, 255, 255, 0.2);
+    }
 
     &:hover {
       background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .icon-dropdown {
+      @apply mr-3;
+
+      font-size: 12px;
     }
 
     .wallet-connections__badge > span {
@@ -98,9 +110,58 @@
 
     &:last-child {
       @apply rounded-l-none;
+
+      .base-button.show {
+        @apply rounded-l-none;
+      }
+    }
+
+    .dropdown-header {
+      @apply p-0 text-[14px] text-white;
+
+      .sc-title {
+        @apply font-bold uppercase tracking-wider;
+      }
+
+      .sc-subtitle {
+        @apply flex font-medium gap-2 pt-[16px] pb-[12px];
+
+        .sc-text {
+          @apply opacity-75;
+        }
+      }
+    }
+
+    .dropdown-list {
+      @apply flex flex-col gap-[2px] rounded-[6px] overflow-hidden;
+    }
+
+    .dropdown-item {
+      @apply text-white px-2 py-[10px] transition text-[14px] font-medium;
+
+      background-color: rgba(255, 255, 255, 0.05);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+
+        .icon {
+          @apply opacity-100;
+        }
+      }
+
+      .icon {
+        @apply mr-2 opacity-50;
+
+        font-size: 16px;
+      }
     }
   }
+
   &__indicator {
     @apply text-green;
+  }
+
+  &__trigger {
+    @apply flex items-center;
   }
 }
