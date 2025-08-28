@@ -7,6 +7,10 @@
     &:after {
       @apply hidden;
     }
+
+    &.show {
+      @apply relative z-50;
+    }
   }
 
   &__token {
@@ -40,5 +44,44 @@
 
   &__dropdown {
     font-size: 12px;
+  }
+
+  &__nav-link {
+    @apply py-[14px] w-[56px] transition-all;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .dropdown-menu {
+    & {
+      @apply text-white rounded mt-2 min-w-[384px];
+      background-color: #180931;
+      z-index: 1040; // Above .currency-dropdown__overlay (40)
+    }
+
+    &.show {
+      @apply flex;
+    }
+
+    .nav {
+      @apply py-3 flex flex-col;
+    }
+
+    .currency-icon-medium {
+      @apply w-6 h-6 rounded;
+    }
+
+    .dropdown-item {
+      @apply text-white;
+    }
+  }
+
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 40; // Below .currency-dropdown__toggle.show (z-50) and well below the Bootstrap dropdown (1000)
   }
 }

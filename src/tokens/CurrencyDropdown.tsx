@@ -64,9 +64,9 @@ export function CurrencyDropdown(props: {
 
   return (
     <Dropdown
-      autoClose="outside"
       show={show}
       onToggle={(val) => setShow(val)}
+      autoClose="outside"
       className="currency-dropdown"
     >
       <Dropdown.Toggle
@@ -94,33 +94,29 @@ export function CurrencyDropdown(props: {
         </div>
         <div className="currency-dropdown__dropdown icon icon-dropdown"></div>
       </Dropdown.Toggle>
+      {show && <div className="currency-dropdown__overlay" onClick={() => setShow(false)} />}
 
       <Dropdown.Menu>
-        <Nav
-          variant="underline"
-          className="mx-3 mb-2 d-flex flex-nowrap overflow-auto"
-          style={{ maxWidth: '80vw' }}
-          activeKey={chainId}
-          onSelect={(val) => setChainId(val)}
-        >
+        <Nav style={{ maxWidth: '80vw' }} activeKey={chainId} onSelect={(val) => setChainId(val)}>
           {chains.map((val) => {
             return (
               <Nav.Item key={val}>
-                <Nav.Link eventKey={val} className="py-0 d-flex align-items-center">
+                <Nav.Link eventKey={val} className="currency-dropdown__nav-link">
                   <img src={'/icons/chains/' + val + '.svg'} className="currency-icon-medium" />
-                  {capitalizeFirstLetter(val)}
                 </Nav.Link>
               </Nav.Item>
             );
           })}
         </Nav>
-        <CurrenciesEntry
-          currencies={currenciesByChainId[chainId]}
-          onSelect={(val) => {
-            setShow(false);
-            props.onSelect(val);
-          }}
-        />
+        <div className="currency-dropdown__items">
+          <CurrenciesEntry
+            currencies={currenciesByChainId[chainId]}
+            onSelect={(val) => {
+              setShow(false);
+              props.onSelect(val);
+            }}
+          />
+        </div>
       </Dropdown.Menu>
     </Dropdown>
   );
