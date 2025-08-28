@@ -624,7 +624,7 @@ export function SwapNew(props: {
                                     btcFeeRate={inputToken.chain === "BTC" ? maxSpendable?.feeRate : null}
                                 />
                             </div>
-                            {!randomQuote || swapper.SwapTypeInfo[swapType].requiresOutputWallet ? (
+                            {existingSwap!=null || !randomQuote || swapper.SwapTypeInfo[swapType].requiresOutputWallet ? (
                                 <div className="mt-3 d-flex flex-column text-white">
                                     <QuoteSummary
                                         type="swap"
