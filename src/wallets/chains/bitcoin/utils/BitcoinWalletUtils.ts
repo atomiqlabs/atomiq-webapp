@@ -93,7 +93,7 @@ export async function getInstalledBitcoinWallets(): Promise<{
 
     const activeWallet = ExtensionBitcoinWallet.loadState();
     if(activeWallet!=null) {
-        const walletType = bitcoinWalletList.find(e => e.name===activeWallet.name);
+        const walletType = installedBitcoinWallets.find(e => e.name===activeWallet.name);
         if(walletType!=null) {
             active = () => walletType.use(activeWallet.data);
         }
