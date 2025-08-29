@@ -4,13 +4,16 @@ import {XverseBitcoinWallet} from "../XverseBitcoinWallet";
 import {UnisatBitcoinWallet} from "../UnisatBitcoinWallet";
 import {MagicEdenBitcoinWallet} from "../MagicEdenBitcoinWallet";
 import {KeplrBitcoinWallet} from "../KeplrBitcoinWallet";
+import {OKXBitcoinWallet} from "../OKXBitcoinWallet";
+import {FEConstants} from "../../../../FEConstants";
 
 export type BitcoinWalletType = {
     iconUrl: string,
     name: string,
     installUrl: string,
     detect: () => Promise<boolean>,
-    use: (data?: any) => Promise<ExtensionBitcoinWallet>
+    use: (data?: any) => Promise<ExtensionBitcoinWallet>,
+    supportsCurrentBtcNetwork: boolean
 };
 
 const bitcoinWalletList: BitcoinWalletType[] = [
@@ -19,37 +22,50 @@ const bitcoinWalletList: BitcoinWalletType[] = [
         name: PhantomBitcoinWallet.walletName,
         installUrl: PhantomBitcoinWallet.installUrl,
         detect: PhantomBitcoinWallet.isInstalled,
-        use: PhantomBitcoinWallet.init
+        use: PhantomBitcoinWallet.init,
+        supportsCurrentBtcNetwork: PhantomBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork)
     },
     {
         iconUrl: XverseBitcoinWallet.iconUrl,
         name: XverseBitcoinWallet.walletName,
         installUrl: XverseBitcoinWallet.installUrl,
         detect: XverseBitcoinWallet.isInstalled,
-        use: XverseBitcoinWallet.init
+        use: XverseBitcoinWallet.init,
+        supportsCurrentBtcNetwork: XverseBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork)
     },
     {
         iconUrl: UnisatBitcoinWallet.iconUrl,
         name: UnisatBitcoinWallet.walletName,
         installUrl: UnisatBitcoinWallet.installUrl,
         detect: UnisatBitcoinWallet.isInstalled,
-        use: UnisatBitcoinWallet.init
+        use: UnisatBitcoinWallet.init,
+        supportsCurrentBtcNetwork: UnisatBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork)
     },
     {
         iconUrl: KeplrBitcoinWallet.iconUrl,
         name: KeplrBitcoinWallet.walletName,
         installUrl: KeplrBitcoinWallet.installUrl,
         detect: KeplrBitcoinWallet.isInstalled,
-        use: KeplrBitcoinWallet.init
+        use: KeplrBitcoinWallet.init,
+        supportsCurrentBtcNetwork: KeplrBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork)
     },
     {
         iconUrl: MagicEdenBitcoinWallet.iconUrl,
         name: MagicEdenBitcoinWallet.walletName,
         installUrl: MagicEdenBitcoinWallet.installUrl,
         detect: MagicEdenBitcoinWallet.isInstalled,
-        use: MagicEdenBitcoinWallet.init
+        use: MagicEdenBitcoinWallet.init,
+        supportsCurrentBtcNetwork: MagicEdenBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork)
+    },
+    {
+        iconUrl: OKXBitcoinWallet.iconUrl,
+        name: OKXBitcoinWallet.walletName,
+        installUrl: OKXBitcoinWallet.installUrl,
+        detect: OKXBitcoinWallet.isInstalled,
+        use: OKXBitcoinWallet.init,
+        supportsCurrentBtcNetwork: OKXBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork)
     }
-];
+].filter(val => val.supportsCurrentBtcNetwork);
 
 let installedBitcoinWallets: BitcoinWalletType[];
 let installableBitcoinWallets: BitcoinWalletType[];

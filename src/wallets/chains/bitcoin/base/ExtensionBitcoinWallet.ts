@@ -1,5 +1,5 @@
 import {FEConstants} from "../../../../FEConstants";
-import {BitcoinNetwork, CoinselectAddressTypes, BitcoinWallet} from "@atomiqlabs/sdk";
+import {BitcoinNetwork, BitcoinWallet, CoinselectAddressTypes} from "@atomiqlabs/sdk";
 import {NETWORK, TEST_NETWORK, Transaction} from "@scure/btc-signer";
 
 const bitcoinNetwork = FEConstants.bitcoinNetwork===BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK;
@@ -7,6 +7,8 @@ const bitcoinNetwork = FEConstants.bitcoinNetwork===BitcoinNetwork.MAINNET ? NET
 const feeMultiplier = 1.25;
 
 export abstract class ExtensionBitcoinWallet extends BitcoinWallet {
+
+    static readonly supportedNetwork: BitcoinNetwork[] = [BitcoinNetwork.MAINNET];
 
     readonly wasAutomaticallyInitiated: boolean;
 

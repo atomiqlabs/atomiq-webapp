@@ -1,8 +1,11 @@
 import {UnisatLikeBitcoinWallet} from "./base/UnisatLikeBitcoinWallet";
+import {BitcoinNetwork} from "@atomiqlabs/sdk";
 
 const getProvider = () => (window as any)?.keplr?.bitcoin;
 
 export class KeplrBitcoinWallet extends UnisatLikeBitcoinWallet {
+
+    static readonly supportedNetwork: BitcoinNetwork[] = [BitcoinNetwork.MAINNET, BitcoinNetwork.TESTNET];
 
     static installUrl: string = "https://www.keplr.app/get";
     static iconUrl: string = "wallets/btc/keplr.png";

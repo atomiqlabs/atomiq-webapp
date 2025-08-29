@@ -1,9 +1,22 @@
-import {CoinselectAddressTypes} from "@atomiqlabs/sdk";
+import {BitcoinNetwork, CoinselectAddressTypes} from "@atomiqlabs/sdk";
 import {BTC_NETWORK} from "@scure/btc-signer/utils";
 import {Transaction, Address as AddressParser} from "@scure/btc-signer";
 import * as EventEmitter from "events";
 import {BitcoinWalletNonSeparated} from "./BitcoinWalletNonSeparated";
 import {ExtensionBitcoinWallet} from "./ExtensionBitcoinWallet";
+import {FEConstants} from "../../../../FEConstants";
+
+const UnisatNetworks = {
+    [BitcoinNetwork.MAINNET]: "livenet",
+    [BitcoinNetwork.TESTNET]: "testnet",
+    [BitcoinNetwork.TESTNET4]: "testnet"
+};
+
+const UnisatChains = {
+    [BitcoinNetwork.MAINNET]: "BITCOIN_MAINNET",
+    [BitcoinNetwork.TESTNET]: "BITCOIN_TESTNET",
+    [BitcoinNetwork.TESTNET4]: "BITCOIN_TESTNET4"
+};
 
 type UnisatLikeWalletProvider = {
     requestAccounts: () => Promise<string[]>,
@@ -20,6 +33,10 @@ type UnisatLikeWalletProvider = {
             useTweakedSigner?: boolean
         }[]
     }) => Promise<string>,
+    getNetwork?: () => Promise<"livenet" | "testnet">,
+    switchNetwork?: (network: "livenet" | "testnet") => Promise<void>,
+    getChain?: () => Promise<{enum: string, name: string, network: "livenet" | "testnet"}>,
+    switchChain?: (network: string) => Promise<void>,
     on: (event: "accountsChanged", handler: (accounts: string[]) => void) => void,
     removeListener: (event: "accountsChanged", handler: (accounts: string[]) => void) => void,
 };
@@ -129,6 +146,25 @@ export abstract class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated 
             UnisatLikeBitcoinWallet.changeListeners[name].ignoreAccountChange = false;
             throw e;
         }
+
+        if(provider.getChain!=null) {
+            const currentChain = await provider.getChain();
+            console.log("UnisatLikeBitcoinWallet: init(): Detected current chain: ", currentChain);
+            const requiredChain = UnisatChains[FEConstants.bitcoinNetwork];
+            if(currentChain.enum!==requiredChain) {
+                await provider.switchChain(requiredChain);
+                addresses = await provider.getAccounts();
+            }
+        } else {
+            const currentNetwork = await provider.getNetwork();
+            console.log("UnisatLikeBitcoinWallet: init(): Detected current network: ", currentNetwork);
+            const requiredNetwork = UnisatNetworks[FEConstants.bitcoinNetwork];
+            if(currentNetwork!==requiredNetwork) {
+                await provider.switchNetwork(requiredNetwork);
+                addresses = await provider.getAccounts();
+            }
+        }
+
         UnisatLikeBitcoinWallet.changeListeners[name].ignoreAccountChange = false;
 
         console.log(name+"BitcoinWallet: init(): Loaded wallet accounts: ", addresses);

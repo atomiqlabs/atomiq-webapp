@@ -1,8 +1,15 @@
 import {UnisatLikeBitcoinWallet} from "./base/UnisatLikeBitcoinWallet";
+import {BitcoinNetwork} from "@atomiqlabs/sdk";
 
-const getProvider = () => (window as any)?.unisat;
+const getProvider = () => {
+    const provider = (window as any)?.unisat;
+    if(provider.isBitKeep || provider.isBitKeepChrome) return null;
+    return provider;
+}
 
 export class UnisatBitcoinWallet extends UnisatLikeBitcoinWallet {
+
+    static readonly supportedNetwork: BitcoinNetwork[] = [BitcoinNetwork.MAINNET, BitcoinNetwork.TESTNET, BitcoinNetwork.TESTNET4];
 
     static installUrl: string = "https://unisat.io/download";
     static iconUrl: string = "wallets/btc/unisat.png";
