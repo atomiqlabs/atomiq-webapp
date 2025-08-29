@@ -2,7 +2,7 @@ import { UnisatLikeBitcoinWallet } from "./base/UnisatLikeBitcoinWallet";
 import { BitcoinNetwork } from "@atomiqlabs/sdk";
 const getProvider = () => {
     const provider = window?.unisat;
-    if (provider.isBitKeep || provider.isBitKeepChrome)
+    if (provider?.isBitKeep || provider?.isBitKeepChrome)
         return null;
     return provider;
 };

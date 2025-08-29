@@ -3,7 +3,7 @@ import {BitcoinNetwork} from "@atomiqlabs/sdk";
 
 const getProvider = () => {
     const provider = (window as any)?.unisat;
-    if(provider.isBitKeep || provider.isBitKeepChrome) return null;
+    if(provider?.isBitKeep || provider?.isBitKeepChrome) return null;
     return provider;
 }
 
