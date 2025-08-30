@@ -5,7 +5,7 @@ import { useStarknetWalletData } from "./chains/useStarknetWalletData";
 import { useLightningWalletData } from "./chains/useLightningWalletData";
 import { ChainDataContext } from "./context/ChainDataContext";
 import { useMemo } from "react";
-import { EVMWalletWrapper, useEVMWalletData } from "./chains/useEVMWalletData";
+import { useEVMWalletData } from "./chains/useEVMWalletData";
 function WrappedChainDataProvider(props) {
     const [starknetChain] = useStarknetWalletData();
     const [solanaChain] = useSolanaWalletData();
@@ -32,5 +32,5 @@ function WrappedChainDataProvider(props) {
         }, [bitcoinChain, lightningChain, solanaChain, starknetChain, citreaChain]), children: [bitcoinModal, props.children] }));
 }
 export function ChainDataProvider(props) {
-    return (_jsx(EVMWalletWrapper, { children: _jsx(SolanaWalletWrapper, { children: _jsx(WrappedChainDataProvider, { children: props.children }) }) }));
+    return (_jsx(SolanaWalletWrapper, { children: _jsx(WrappedChainDataProvider, { children: props.children }) }));
 }

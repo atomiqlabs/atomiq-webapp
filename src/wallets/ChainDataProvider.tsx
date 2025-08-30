@@ -4,7 +4,7 @@ import {useStarknetWalletData} from "./chains/useStarknetWalletData";
 import {useLightningWalletData} from "./chains/useLightningWalletData";
 import { ChainDataContext } from "./context/ChainDataContext";
 import {useMemo} from "react";
-import {EVMWalletWrapper, useEVMWalletData} from "./chains/useEVMWalletData";
+import {useEVMWalletData} from "./chains/useEVMWalletData";
 
 export type ChainWalletData<T> = {
     chain: {
@@ -55,12 +55,10 @@ function WrappedChainDataProvider(props: {children: React.ReactNode}) {
 
 export function ChainDataProvider(props: {children: React.ReactNode}) {
     return (
-        <EVMWalletWrapper>
-            <SolanaWalletWrapper>
-                <WrappedChainDataProvider>
-                    {props.children}
-                </WrappedChainDataProvider>
-            </SolanaWalletWrapper>
-        </EVMWalletWrapper>
+        <SolanaWalletWrapper>
+            <WrappedChainDataProvider>
+                {props.children}
+            </WrappedChainDataProvider>
+        </SolanaWalletWrapper>
     );
 }
