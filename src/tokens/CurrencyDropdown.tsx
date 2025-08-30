@@ -7,6 +7,7 @@ import { capitalizeFirstLetter } from '../utils/Utils';
 import { toTokenIdentifier } from './Tokens';
 
 function CurrenciesEntry(props: { currencies: Token[]; onSelect: (currency: Token) => void }) {
+  console.log(props.currencies);
   return (
     <>
       {props.currencies != null
@@ -19,7 +20,8 @@ function CurrenciesEntry(props: { currencies: Token[]; onSelect: (currency: Toke
                 }}
               >
                 <TokenIcon tokenOrTicker={curr} className="currency-icon" />
-                {curr.name}
+                <div className="sc-ticker">{curr.ticker}</div>
+                <div className="sc-name">{curr.name}</div>
               </Dropdown.Item>
             );
           })
@@ -55,6 +57,20 @@ export function CurrencyDropdown(props: {
   }, [props.value]);
 
   const [show, setShow] = useState<boolean>();
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const displayedCurrencies = useMemo(() => {
+    const q = (searchQuery || '').trim().toLowerCase();
+    if (!q) {
+      return chainId && currenciesByChainId[chainId] ? currenciesByChainId[chainId] : [];
+    }
+    const list = props.currencyList ?? [];
+    return list.filter((c) => {
+      const t = (c as any).ticker ? String((c as any).ticker).toLowerCase() : '';
+      const n = (c as any).name ? String((c as any).name).toLowerCase() : '';
+      return t.includes(q) || n.includes(q);
+    });
+  }, [searchQuery, chainId, currenciesByChainId, props.currencyList]);
 
   let currencyChainId: string;
   if (props.value != null) {
@@ -109,8 +125,18 @@ export function CurrencyDropdown(props: {
           })}
         </Nav>
         <div className="currency-dropdown__items">
+          <div className="currency-dropdown__search">
+            <input
+              type="text"
+              className="currency-dropdown__search__input form-control"
+              placeholder="Search tokens..."
+              value={searchQuery ?? ''}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div className="icon icon-search"></div>
+          </div>
           <CurrenciesEntry
-            currencies={currenciesByChainId[chainId]}
+            currencies={displayedCurrencies}
             onSelect={(val) => {
               setShow(false);
               props.onSelect(val);

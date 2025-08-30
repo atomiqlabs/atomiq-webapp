@@ -6,11 +6,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { capitalizeFirstLetter } from '../utils/Utils';
 import { toTokenIdentifier } from './Tokens';
 function CurrenciesEntry(props) {
+    console.log(props.currencies);
     return (_jsx(_Fragment, { children: props.currencies != null
             ? props.currencies.map((curr) => {
                 return (_jsxs(Dropdown.Item, { onClick: () => {
                         props.onSelect(curr);
-                    }, children: [_jsx(TokenIcon, { tokenOrTicker: curr, className: "currency-icon" }), curr.name] }, toTokenIdentifier(curr)));
+                    }, children: [_jsx(TokenIcon, { tokenOrTicker: curr, className: "currency-icon" }), _jsx("div", { className: "sc-ticker", children: curr.ticker }), _jsx("div", { className: "sc-name", children: curr.name })] }, toTokenIdentifier(curr)));
             })
             : '' }));
 }
@@ -34,6 +35,19 @@ export function CurrencyDropdown(props) {
             setChainId(isSCToken(props.value) ? props.value.chainId : 'BITCOIN');
     }, [props.value]);
     const [show, setShow] = useState();
+    const [searchQuery, setSearchQuery] = useState('');
+    const displayedCurrencies = useMemo(() => {
+        const q = (searchQuery || '').trim().toLowerCase();
+        if (!q) {
+            return chainId && currenciesByChainId[chainId] ? currenciesByChainId[chainId] : [];
+        }
+        const list = props.currencyList ?? [];
+        return list.filter((c) => {
+            const t = c.ticker ? String(c.ticker).toLowerCase() : '';
+            const n = c.name ? String(c.name).toLowerCase() : '';
+            return t.includes(q) || n.includes(q);
+        });
+    }, [searchQuery, chainId, currenciesByChainId, props.currencyList]);
     let currencyChainId;
     if (props.value != null) {
         if (isSCToken(props.value))
@@ -43,8 +57,8 @@ export function CurrencyDropdown(props) {
     }
     return (_jsxs(Dropdown, { show: show, onToggle: (val) => setShow(val), autoClose: "outside", className: "currency-dropdown", children: [_jsxs(Dropdown.Toggle, { id: "dropdown-basic", className: 'currency-dropdown__toggle ' + props.className, children: [_jsxs("div", { className: "currency-dropdown__token", children: [props.value == null ? ('') : (_jsx(TokenIcon, { tokenOrTicker: props.value, className: "currency-dropdown__token__img" })), _jsx("img", { src: '/icons/chains/' + currencyChainId + '.svg', className: "currency-dropdown__token__currency" })] }), _jsxs("div", { className: "currency-dropdown__details", children: [_jsx("div", { className: "currency-dropdown__currency", children: props.value == null ? 'Select currency' : props.value.ticker }), _jsxs("div", { className: "currency-dropdown__second", children: ["on ", currencyChainId != null ? capitalizeFirstLetter(currencyChainId) : ''] })] }), _jsx("div", { className: "currency-dropdown__dropdown icon icon-dropdown" })] }), show && _jsx("div", { className: "currency-dropdown__overlay", onClick: () => setShow(false) }), _jsxs(Dropdown.Menu, { children: [_jsx(Nav, { style: { maxWidth: '80vw' }, activeKey: chainId, onSelect: (val) => setChainId(val), children: chains.map((val) => {
                             return (_jsx(Nav.Item, { children: _jsx(Nav.Link, { eventKey: val, className: "currency-dropdown__nav-link", children: _jsx("img", { src: '/icons/chains/' + val + '.svg', className: "currency-icon-medium" }) }) }, val));
-                        }) }), _jsx("div", { className: "currency-dropdown__items", children: _jsx(CurrenciesEntry, { currencies: currenciesByChainId[chainId], onSelect: (val) => {
-                                setShow(false);
-                                props.onSelect(val);
-                            } }) })] })] }));
+                        }) }), _jsxs("div", { className: "currency-dropdown__items", children: [_jsxs("div", { className: "currency-dropdown__search", children: [_jsx("input", { type: "text", className: "currency-dropdown__search__input form-control", placeholder: "Search tokens...", value: searchQuery ?? '', onChange: (e) => setSearchQuery(e.target.value) }), _jsx("div", { className: "icon icon-search" })] }), _jsx(CurrenciesEntry, { currencies: displayedCurrencies, onSelect: (val) => {
+                                    setShow(false);
+                                    props.onSelect(val);
+                                } })] })] })] }));
 }

@@ -37,9 +37,7 @@
   }
 
   &__second {
-    @apply opacity-50;
-
-    font-size: 14px;
+    @apply opacity-50 text-[14px];
   }
 
   &__dropdown {
@@ -52,13 +50,17 @@
     &:hover {
       background-color: rgba(255, 255, 255, 0.1);
     }
+
+    &.active {
+      border-right: 2px solid #eb568c;
+    }
   }
 
   .dropdown-menu {
     & {
-      @apply text-white rounded mt-2 min-w-[384px];
+      @apply text-white rounded mt-2 min-w-[384px] p-0 z-40;
       background-color: #180931;
-      z-index: 1040; // Above .currency-dropdown__overlay (40)
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     &.show {
@@ -67,6 +69,7 @@
 
     .nav {
       @apply py-3 flex flex-col;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .currency-icon-medium {
@@ -74,14 +77,50 @@
     }
 
     .dropdown-item {
-      @apply text-white;
+      @apply text-white p-2 rounded transition text-[14px];
+
+      .currency-icon {
+        @apply mr-3 w-8 h-8;
+      }
+
+      .sc-ticker {
+        @apply font-semibold;
+      }
+
+      .sc-name {
+        @apply ml-auto opacity-50;
+      }
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
     }
+  }
+
+  &__items {
+    @apply w-full p-3;
   }
 
   &__overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 40; // Below .currency-dropdown__toggle.show (z-50) and well below the Bootstrap dropdown (1000)
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    z-index: 40;
+  }
+
+  &__search {
+    & {
+      @apply relative mb-3;
+    }
+
+    .icon {
+      @apply top-[12px] left-[12px] opacity-50 absolute pointer-events-none text-[18px];
+    }
+
+    &__input {
+      @apply pl-[44px] text-[14px] h-[44px] border-0;
+      background: rgba(255, 255, 255, 0.05);
+    }
   }
 }
