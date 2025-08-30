@@ -104,9 +104,13 @@ export function useEVMWalletData() {
         disconnect();
         setShouldOpenWalletModal(true);
     }, [disconnect]);
-    const connect = useCallback(() => {
-        openConnectModal();
-    }, [openConnectModal]);
+    // useMemo(() => {
+    //     console.log("useEVMWalletData: useCallback(): connect function: ", openConnectModal);
+    // }, [openConnectModal]);
+    //
+    // const connect = useCallback(() => {
+    //     openConnectModal();
+    // }, [openConnectModal]);
     return useMemo(() => {
         if (!FEConstants.allowedChains.has("CITREA"))
             return [null];
@@ -123,12 +127,12 @@ export function useEVMWalletData() {
                 },
                 id: "CITREA",
                 disconnect: () => disconnect(),
-                connect,
+                connect: changeWallet,
                 changeWallet,
                 swapperOptions: {
                     rpcUrl: FEConstants.citreaRpc,
                     chainType: FEConstants.citreaChainType
                 }
             }];
-    }, [evmSigner, connect, connector, disconnect, icon]);
+    }, [evmSigner, connector, disconnect, icon]);
 }
