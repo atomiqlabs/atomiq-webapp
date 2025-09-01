@@ -102,7 +102,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
         if(state===SpvFromBTCSwapState.BTC_TX_CONFIRMED) {
             timer = setTimeout(() => {
                 setClaimable(true);
-            }, 60*1000);
+            }, 5*60*1000);
         }
 
         return () => {
@@ -256,7 +256,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
             {isFailed ? (
                 <Alert variant="danger" className="mb-3">
                     <strong>Swap failed</strong>
-                    <label>Swap transaction reverted, no funds were sent!</label>
+                    <label>Swap transaction reverted, no funds were sent! Please retry.</label>
                 </Alert>
             ) : ""}
 
