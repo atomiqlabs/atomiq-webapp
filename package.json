@@ -63,6 +63,7 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "set NODE_OPTIONS=--max-old-space-size=4096 && react-app-rewired build --stats",
+    "build-unix": "NODE_OPTIONS=--max-old-space-size=4096 react-app-rewired build --stats",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",
     "analyze": "webpack-bundle-analyzer build/bundle-stats.json"
