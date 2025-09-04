@@ -145,7 +145,9 @@ export class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated {
     }
     toBitcoinWalletAccounts() {
         return [{
-                pubkey: toSchnorrPubkey(this.account.publicKey), address: this.account.address, addressType: this.addressType
+                pubkey: this.addressType === "p2tr" ? toSchnorrPubkey(this.account.publicKey) : this.account.publicKey,
+                address: this.account.address,
+                addressType: this.addressType
             }];
     }
     async sendTransaction(address, amount, feeRate) {
