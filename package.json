@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@atomiqlabs/chain-evm": "^1.0.0-dev.70",
+    "@atomiqlabs/chain-evm": "^1.0.0-dev.79",
     "@atomiqlabs/chain-solana": "^10.0.0-dev.5",
     "@atomiqlabs/chain-starknet": "^4.0.0-dev.12",
     "@atomiqlabs/sdk": "^5.0.0-dev.2",
