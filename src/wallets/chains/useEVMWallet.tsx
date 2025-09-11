@@ -10,6 +10,31 @@ import {EVMBrowserSigner, EVMSigner} from "@atomiqlabs/chain-evm";
 import {BrowserProvider, JsonRpcProvider} from "ethers";
 import '@rainbow-me/rainbowkit/styles.css';
 
+const botanixTestnetBlockscout = {
+    name: "Routescan - Botanix Testnet",
+    url: "https://testnet.botanixscan.io/"
+};
+
+const botanixTestnetChain = {
+    blockExplorers: {
+        "Routescan": botanixTestnetBlockscout,
+        default: botanixTestnetBlockscout
+    },
+    blockTime: 5*1000,
+    id: 3636,
+    name: "Botanix Testnet",
+    nativeCurrency: {
+        name: "Bitcoin",
+        symbol: "BTC",
+        decimals: 18
+    },
+    rpcUrls: {
+        "Botanix public": {http: ["https://node.botanixlabs.dev"]},
+        default: {http: ["https://node.botanixlabs.dev"]}
+    },
+    testnet: true
+};
+
 const citreaTestnetBlockscout = {
     name: "Blockscout - Citrea Testnet",
     url: "https://explorer.testnet.citrea.xyz/"
@@ -35,10 +60,14 @@ const citreaTestnetChain = {
     testnet: true
 };
 
+const chains: any = [];
+if(FEConstants.citreaRpc!=null) chains.push(citreaTestnetChain);
+if(FEConstants.botanixRpc!=null) chains.push(botanixTestnetChain);
+
 const config = getDefaultConfig({
     appName: "atomiq.exchange",
     projectId: "2a38c0968b372694c0b2827a6e05b1f5",
-    chains: [citreaTestnetChain],
+    chains,
     ssr: false
 });
 const queryClient = new QueryClient();
@@ -62,7 +91,7 @@ export function EVMWalletWrapper(props: {
     )
 }
 
-export function useEVMWalletData(): [ChainWalletData<EVMSigner>] {
+function useEVMWallet(): Omit<ChainWalletData<EVMSigner>, "id" | "chain" | "swapperOptions"> {
     const { openConnectModal } = useConnectModal();
     const { disconnect } = useDisconnect();
 
@@ -86,7 +115,6 @@ export function useEVMWalletData(): [ChainWalletData<EVMSigner>] {
 
     const [icon, setIcon] = useState<string>();
     useEffect(() => {
-        console.log(connector);
         if(connector==null) return;
         let cancelled = false;
         const icon = connector.icon ?? connector.iconUrl ?? (connector.rkDetails as any)?.iconUrl;
@@ -123,35 +151,58 @@ export function useEVMWalletData(): [ChainWalletData<EVMSigner>] {
         setShouldOpenWalletModal(true);
     }, [disconnect]);
 
-    // useMemo(() => {
-    //     console.log("useEVMWalletData: useCallback(): connect function: ", openConnectModal);
-    // }, [openConnectModal]);
-    //
-    // const connect = useCallback(() => {
-    //     openConnectModal();
-    // }, [openConnectModal]);
-
     return useMemo(() => {
-        if(!FEConstants.allowedChains.has("CITREA")) return [null];
-        return [{
-            chain: {
-                name: "Citrea",
-                icon: "/icons/chains/CITREA.svg",
-            },
+        return {
             wallet: evmSigner==null ? null : {
                 name: connector?.name,
                 icon,
                 instance: evmSigner,
                 address: evmSigner.getAddress()
             },
-            id: "CITREA",
             disconnect: () => disconnect(),
             connect: changeWallet,
-            changeWallet,
+            changeWallet
+        }
+    }, [evmSigner, connector, disconnect, icon]);
+
+}
+
+export function useCitreaWallet(): [ChainWalletData<EVMSigner>] {
+    const base = useEVMWallet();
+
+    return useMemo(() => {
+        if(!FEConstants.allowedChains.has("CITREA")) return [null];
+        return [{
+            id: "CITREA",
+            chain: {
+                name: "Citrea",
+                icon: "/icons/chains/CITREA.svg",
+            },
             swapperOptions: {
                 rpcUrl: FEConstants.citreaRpc,
                 chainType: FEConstants.citreaChainType
-            }
+            },
+            ...base
         }]
-    }, [evmSigner, connector, disconnect, icon]);
+    }, [base]);
+}
+
+export function useBotanixWallet(): [ChainWalletData<EVMSigner>] {
+    const base = useEVMWallet();
+
+    return useMemo(() => {
+        if(!FEConstants.allowedChains.has("BOTANIX")) return [null];
+        return [{
+            id: "BOTANIX",
+            chain: {
+                name: "Botanix",
+                icon: "/icons/chains/BOTANIX.svg",
+            },
+            swapperOptions: {
+                rpcUrl: FEConstants.botanixRpc,
+                chainType: FEConstants.botanixChainType
+            },
+            ...base
+        }]
+    }, [base]);
 }

@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { BitcoinNetwork, fromHumanReadableString, isBtcToken, isSCToken, isSwapWithGasDrop, SpvFromBTCSwap, SwapType, toTokenAmount } from "@atomiqlabs/sdk";
+import { fromHumanReadableString, isBtcToken, isSCToken, isSwapWithGasDrop, SpvFromBTCSwap, SwapType, toTokenAmount } from "@atomiqlabs/sdk";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SwapsContext } from "../swaps/context/SwapsContext";
 import { useAddressData } from "../swaps/hooks/useAddressData";
@@ -31,7 +31,6 @@ import { useChainForCurrency } from "../wallets/hooks/useChainForCurrency";
 import { useSupportedTokens } from "../swaps/hooks/useSupportedTokens";
 import { useDecimalNumberState } from "../utils/hooks/useDecimalNumberState";
 import { ChainDataContext } from "../wallets/context/ChainDataContext";
-import { ticket } from 'react-icons-kit/fa/ticket';
 export function SwapNew(props) {
     const navigate = useNavigate();
     const { swapper } = useContext(SwapsContext);
@@ -202,7 +201,7 @@ export function SwapNew(props) {
             }
         }
         catch (e) {
-            console.log("Address parsing error: ", e);
+            console.log("SwapNew: addressValidator(): Address parsing error: ", e);
             return e.message;
         }
         return null;
@@ -313,7 +312,7 @@ export function SwapNew(props) {
         return parsedAmount.gt(balance) && (swapInputLimits?.max == null || parsedAmount.lte(swapInputLimits.max));
     }, [swapper, maxSpendable?.balance, inputAmount, swapInputLimits?.max, swapType]);
     return (_jsxs(_Fragment, { children: [_jsx(SwapTopbar, { selected: 0, enabled: !locked }), _jsx(QRScannerModal, { onScanned: (data) => {
-                    console.log("QR scanned: ", data);
+                    console.log("SwapNew: QRScannerModal: QR scanned: ", data);
                     addressRef.current.setValue(data);
                     setQrScanning(false);
                 }, show: qrScanning, onHide: () => setQrScanning(false) }), _jsx("div", { className: "d-flex flex-column align-items-center text-white", children: _jsxs(Card, { className: "p-3 swap-panel tab-bg mx-3 mb-3 border-0", children: [_jsx(ErrorAlert, { title: "Quote error", error: quoteError }), _jsxs(Card, { className: "d-flex flex-column tab-accent-p3 pt-2", children: [_jsxs("div", { className: "d-flex flex-row", children: [_jsx("small", { className: "text-light text-opacity-75 me-auto", children: "You pay" }), maxSpendable != null ? (_jsxs(_Fragment, { children: [_jsxs("div", { className: "d-flex align-items-center", children: [_jsx(ConnectedWalletAnchor, { noText: true, currency: inputToken }), _jsxs("small", { className: "me-2", children: [maxSpendable?.balance?.amount, " ", inputToken.ticker] })] }), _jsx(Button, { variant: "outline-light", style: { marginBottom: "2px" }, className: "py-0 px-1", disabled: locked || amountsLocked, onClick: () => {
@@ -434,5 +433,5 @@ export function SwapNew(props) {
                                             inputRef.current.setValue("");
                                             outputRef.current.setValue("");
                                             navigate("/");
-                                        }, feeRate: maxSpendable?.feeRate }) })) : ""] })) : ""] }) }), FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET4 ? (_jsxs("div", { className: "text-light mb-3 d-flex align-items-center justify-content-center", children: [_jsx(Icon, { size: 16, icon: ticket, style: { marginTop: "-0.5rem" }, className: "me-1" }), _jsxs("span", { children: ["Faucets: ", _jsx("a", { href: "https://faucet.testnet4.dev/", target: "_blank", children: "BTC" }), ", ", _jsx("a", { href: "https://lnbits-testnet4.atomiqlabs.org:12345/", target: "_blank", children: "BTC-Lightning" }), ", ", scCurrency?.chainId === "CITREA" ? (_jsx("a", { href: "https://citrea.xyz/faucet", target: "_blank", children: "cBTC" })) : scCurrency?.chainId === "STARKNET" ? (_jsx("a", { href: "https://starknet-faucet.vercel.app/", target: "_blank", children: "STRK" })) : ""] })] })) : "", _jsx("div", { className: "text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3", children: _jsxs("div", { className: "cursor-pointer d-flex align-items-center justify-content-center", onClick: () => navigate("/faq?tabOpen=6"), children: [_jsx(Icon, { size: 18, icon: lock, style: { marginTop: "-0.5rem" } }), _jsx("small", { children: "Audited by" }), scCurrency?.chainId !== "SOLANA" ? (_jsx("img", { className: "d-block ms-1", height: 18, src: "/csc-white-logo.png", style: { marginTop: "-0.075rem", opacity: 0.6 } })) : (_jsx("img", { className: "opacity-50 d-block ms-1", height: 18, src: "/ackee_blockchain.svg", style: { marginTop: "-0.125rem" } }))] }) })] }));
+                                        }, feeRate: maxSpendable?.feeRate }) })) : ""] })) : ""] }) }), _jsx("div", { className: "text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3", children: _jsxs("div", { className: "cursor-pointer d-flex align-items-center justify-content-center", onClick: () => navigate("/faq?tabOpen=6"), children: [_jsx(Icon, { size: 18, icon: lock, style: { marginTop: "-0.5rem" } }), _jsx("small", { children: "Audited by" }), scCurrency?.chainId !== "SOLANA" ? (_jsx("img", { className: "d-block ms-1", height: 18, src: "/csc-white-logo.png", style: { marginTop: "-0.075rem", opacity: 0.6 } })) : (_jsx("img", { className: "opacity-50 d-block ms-1", height: 18, src: "/ackee_blockchain.svg", style: { marginTop: "-0.125rem" } }))] }) })] }));
 }
