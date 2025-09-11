@@ -5,6 +5,8 @@ import {BitcoinNetwork, MempoolApi, MempoolBitcoinRpc, SwapperFactory} from "@at
 import {SolanaInitializer, SolanaInitializerType} from "@atomiqlabs/chain-solana";
 import {StarknetInitializer, StarknetInitializerType} from "@atomiqlabs/chain-starknet";
 import {
+    BotanixInitializer,
+    BotanixInitializerType,
     CitreaInitializer,
     CitreaInitializerType, JsonRpcProviderWithRetries,
     WebSocketProviderWithRetries
@@ -25,6 +27,10 @@ const starknetBlockExplorer: string = process.env.REACT_APP_STARKNET_BLOCK_EXPLO
 const citreaRpcUrl: string = process.env.REACT_APP_CITREA_RPC_URL;
 const citreaChain: "TESTNET4" | "MAINNET" = process.env.REACT_APP_CITREA_NETWORK as ("TESTNET4" | "MAINNET");
 const citreaBlockExplorer: string = process.env.REACT_APP_CITREA_BLOCK_EXPLORER;
+
+const botanixRpcUrl: string = process.env.REACT_APP_BOTANIX_RPC_URL;
+const botanixChain: "TESTNET" | "MAINNET" = process.env.REACT_APP_BOTANIX_NETWORK as ("TESTNET" | "MAINNET");
+const botanixBlockExplorer: string = process.env.REACT_APP_BOTANIX_BLOCK_EXPLORER;
 
 const bitcoinNetwork: "TESTNET" | "MAINNET" | "TESTNET4" = process.env.REACT_APP_BITCOIN_NETWORK as ("TESTNET" | "MAINNET" | "TESTNET4");
 
@@ -53,9 +59,11 @@ const mempoolApi = new MempoolApi(
 
 const bitcoinRpc = new MempoolBitcoinRpc(mempoolApi);
 
-export const Factory = new SwapperFactory<readonly [SolanaInitializerType, StarknetInitializerType, CitreaInitializerType]>([SolanaInitializer, StarknetInitializer, CitreaInitializer] as const);
-
-console.log("Factory: ", Factory);
+export const Factory = new SwapperFactory<
+    readonly [SolanaInitializerType, StarknetInitializerType, CitreaInitializerType, BotanixInitializerType]
+>(
+    [SolanaInitializer, StarknetInitializer, CitreaInitializer, BotanixInitializer] as const
+);
 
 export const Tokens = Factory.Tokens;
 export const TokenResolver = Factory.TokenResolver;
@@ -83,6 +91,10 @@ export const FEConstants = {
         "CITREA:0x0000000000000000000000000000000000000000": {
             optimal: 1000_0000000000n,
             minimum: 500_0000000000n
+        },
+        "BOTANIX:0x0000000000000000000000000000000000000000": {
+            optimal: 500_0000000000n,
+            minimum: 200_0000000000n
         }
     },
     mempoolApi,
@@ -90,7 +102,8 @@ export const FEConstants = {
     allowedChains: new Set<string>([
         solanaRpcUrl!=null ? "SOLANA" : undefined,
         starknetRpcUrl!=null ? "STARKNET" : undefined,
-        citreaRpcUrl!=null ? "CITREA": undefined
+        citreaRpcUrl!=null ? "CITREA": undefined,
+        botanixRpcUrl!=null ? "BOTANIX": undefined
     ]),
     statsUrl,
     solanaChain: solanaChain==="MAINNET" ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet,
@@ -102,6 +115,12 @@ export const FEConstants = {
         citreaRpcUrl.startsWith("ws")
             ? new WebSocketProviderWithRetries(citreaRpcUrl)
             : new JsonRpcProviderWithRetries(citreaRpcUrl)
+    ),
+    botanixChainType: botanixChain,
+    botanixRpc: botanixRpcUrl==null ? null : (
+        botanixRpcUrl.startsWith("ws")
+            ? new WebSocketProviderWithRetries(botanixRpcUrl)
+            : new JsonRpcProviderWithRetries(botanixRpcUrl)
     ),
     bitcoinNetwork: bitcoinNetwork==="TESTNET" ? BitcoinNetwork.TESTNET : bitcoinNetwork==="TESTNET4" ? BitcoinNetwork.TESTNET4 : BitcoinNetwork.MAINNET,
     url: null,

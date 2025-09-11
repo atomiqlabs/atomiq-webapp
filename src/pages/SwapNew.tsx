@@ -227,7 +227,7 @@ export function SwapNew(props: {
                 }
             }
         } catch (e) {
-            console.log("Address parsing error: ", e);
+            console.log("SwapNew: addressValidator(): Address parsing error: ", e);
             return e.message;
         }
         return null;
@@ -341,7 +341,7 @@ export function SwapNew(props: {
             <SwapTopbar selected={0} enabled={!locked}/>
 
             <QRScannerModal onScanned={(data: string) => {
-                console.log("QR scanned: ", data);
+                console.log("SwapNew: QRScannerModal: QR scanned: ", data);
                 addressRef.current.setValue(data);
                 setQrScanning(false);
             }} show={qrScanning} onHide={() => setQrScanning(false)}/>

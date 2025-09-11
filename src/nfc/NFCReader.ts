@@ -38,7 +38,7 @@ export class NFCReader {
                 if(event.message==null) return;
                 if(event.message.records==null) return;
                 if(event.message.records.length===0) return;
-                console.log("NFC scanned, message: ", event.message);
+                console.log("NFCReader: onreading: NFC scanned, message: ", event.message);
                 const filteredRecords = event.message.records.filter(record => record.recordType==="url" || record.recordType==="text");
                 if(filteredRecords.length===0) return;
                 if(this.callback!=null) this.callback(filteredRecords.map(e => Buffer.from(e.data.buffer).toString("ascii")));

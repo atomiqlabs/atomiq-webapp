@@ -2,10 +2,13 @@
   "name": "btc-bridge",
   "version": "0.1.0",
   "private": true,
+  "config": {
+    "legacy-peer-deps": true
+  },
   "dependencies": {
-    "@atomiqlabs/chain-evm": "^1.0.0-dev.79",
+    "@atomiqlabs/chain-evm": "^1.0.0-dev.82",
     "@atomiqlabs/chain-solana": "^10.0.0-dev.5",
-    "@atomiqlabs/chain-starknet": "^4.0.0-dev.12",
+    "@atomiqlabs/chain-starknet": "^4.0.0-dev.14",
     "@atomiqlabs/sdk": "^5.0.0-dev.2",
     "@coral-xyz/anchor": "0.29.0",
     "@rainbow-me/rainbowkit": "^2.2.8",
@@ -33,10 +36,10 @@
     "react-dom": "^18.2.0",
     "react-icons-kit": "^2.0.0",
     "react-router-dom": "^6.3.0",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
     "sass": "^1.57.1",
     "sats-connect": "1.4.1",
-    "starknet": "^7.6.2",
+    "starknet": "^8.5.3",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "typescript": "^5.9.2",
