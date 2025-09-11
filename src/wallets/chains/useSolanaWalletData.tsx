@@ -66,7 +66,10 @@ export function SolanaWalletWrapper(props: { children: any }) {
       config={{ fetch: fetchWithTimeout, commitment: 'confirmed' }}
     >
       <WalletProvider wallets={wallets} autoConnect>
-        <CustomWalletModalProvider>{props.children}</CustomWalletModalProvider>
+        <CustomWalletModalProvider>
+          {/*TODO Tento element moze ist pravdepodobne dopice*/}
+          {props.children}
+        </CustomWalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
   );

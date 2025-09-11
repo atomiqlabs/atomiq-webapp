@@ -120,7 +120,9 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
               >
                 {navItems.slice(3).map((item) => (
                   <NavDropdown.Item key={item.link} href={item.link}>
-                    <Icon size={16} icon={item.icon} className="me-2 main-navigation__item__icon" />
+                    <span
+                      className={`me-2 main-navigation__item__icon icon icon-${item.icon}`}
+                    ></span>
                     {item.title}
                   </NavDropdown.Item>
                 ))}

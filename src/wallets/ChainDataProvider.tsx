@@ -1,12 +1,9 @@
-import {
-  SolanaWalletWrapper,
-  useSolanaWalletData,
-} from "./chains/useSolanaWalletData";
-import { useBitcoinWalletData } from "./chains/useBitcoinWalletData";
-import { useStarknetWalletData } from "./chains/useStarknetWalletData";
-import { useLightningWalletData } from "./chains/useLightningWalletData";
-import { ChainDataContext } from "./context/ChainDataContext";
-import { useMemo } from "react";
+import { SolanaWalletWrapper, useSolanaWalletData } from './chains/useSolanaWalletData';
+import { useBitcoinWalletData } from './chains/useBitcoinWalletData';
+import { useStarknetWalletData } from './chains/useStarknetWalletData';
+import { useLightningWalletData } from './chains/useLightningWalletData';
+import { ChainDataContext } from './context/ChainDataContext';
+import { useMemo } from 'react';
 
 export type ChainWalletData<T> = {
   chain: {
@@ -19,9 +16,11 @@ export type ChainWalletData<T> = {
     address?: string;
     instance: T;
   };
+  wallets?: 'pole walletike'; // TODO
   id: string;
   disconnect: () => Promise<void> | void;
   connect: () => Promise<void> | void;
+  connectWallet?: () => Promise<void> | void; // maybe todo
   changeWallet?: () => Promise<void> | void;
   swapperOptions?: any;
 };
@@ -36,7 +35,7 @@ function WrappedChainDataProvider(props: { children: React.ReactNode }) {
         STARKNET: starknetChain.wallet?.name,
         SOLANA: solanaChain.wallet?.name,
       };
-    }, [starknetChain.wallet, solanaChain.wallet]),
+    }, [starknetChain.wallet, solanaChain.wallet])
   );
 
   return (

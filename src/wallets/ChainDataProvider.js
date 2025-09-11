@@ -1,10 +1,10 @@
 import { jsxs as _jsxs, jsx as _jsx } from "react/jsx-runtime";
-import { SolanaWalletWrapper, useSolanaWalletData, } from "./chains/useSolanaWalletData";
-import { useBitcoinWalletData } from "./chains/useBitcoinWalletData";
-import { useStarknetWalletData } from "./chains/useStarknetWalletData";
-import { useLightningWalletData } from "./chains/useLightningWalletData";
-import { ChainDataContext } from "./context/ChainDataContext";
-import { useMemo } from "react";
+import { SolanaWalletWrapper, useSolanaWalletData } from './chains/useSolanaWalletData';
+import { useBitcoinWalletData } from './chains/useBitcoinWalletData';
+import { useStarknetWalletData } from './chains/useStarknetWalletData';
+import { useLightningWalletData } from './chains/useLightningWalletData';
+import { ChainDataContext } from './context/ChainDataContext';
+import { useMemo } from 'react';
 function WrappedChainDataProvider(props) {
     const [starknetChain] = useStarknetWalletData();
     const [solanaChain] = useSolanaWalletData();

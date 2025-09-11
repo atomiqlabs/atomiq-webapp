@@ -15,7 +15,7 @@ export const CustomWalletListItem: FC<WalletListItemProps> = ({
         {wallet.readyState !== WalletReadyState.Installed ? 'Install ' : ''}
         {wallet.adapter.name}
         {wallet.readyState === WalletReadyState.Installed && (
-          <div className="wallet-modal__item__status">Installed</div>
+          <div className="wallet-modal__item__status">Installed TODO connect s argumentom</div>
         )}
       </button>
     </li>

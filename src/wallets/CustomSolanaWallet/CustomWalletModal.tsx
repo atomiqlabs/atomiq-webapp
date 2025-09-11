@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom';
 import { useWalletModal, WalletModalProps } from '@solana/wallet-adapter-react-ui';
 import { CustomWalletListItem } from './CustomWalletListItem';
 
+// TODO toto napasovat aj na BTC, alebo BTC napasovat na veci v tomto
 export const CustomWalletModal: FC<WalletModalProps> = ({ className = '', container = 'body' }) => {
   const ref = useRef<HTMLDivElement>(null);
   const { wallets, select } = useWallet();

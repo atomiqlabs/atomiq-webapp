@@ -36,7 +36,6 @@ import { usePricing } from '../tokens/hooks/usePricing';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import Icon from 'react-icons-kit';
-import { arrows_vertical } from 'react-icons-kit/ikons/arrows_vertical';
 import { ic_qr_code_scanner } from 'react-icons-kit/md/ic_qr_code_scanner';
 import { lock } from 'react-icons-kit/fa/lock';
 import { ic_power_off_outline } from 'react-icons-kit/md/ic_power_off_outline';
@@ -459,28 +458,26 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 <>
                   <div className="swap-panel__card__wallet">
                     <ConnectedWalletAnchor
-                      noText={true}
+                      noText={false}
                       currency={inputToken}
                       variantButton="clear"
                     />
-                    <small className="me-2">
-                      {maxSpendable?.balance?.amount} {inputToken.ticker}
-                    </small>
                   </div>
-                  <Button
-                    variant="outline-light"
-                    style={{ marginBottom: '2px' }}
-                    className="py-0 px-1"
-                    disabled={locked || amountsLocked}
-                    onClick={() => {
-                      setExactIn(true);
-                      inputRef.current.setValue(maxSpendable?.balance?.amount);
-                    }}
-                  >
-                    <small className="font-smallest" style={{ marginBottom: '-2px' }}>
-                      MAX
-                    </small>
-                  </Button>
+                  {/* TODO implement this */}
+                  {/*<Button*/}
+                  {/*  variant="outline-light"*/}
+                  {/*  style={{ marginBottom: '2px' }}*/}
+                  {/*  className="py-0 px-1"*/}
+                  {/*  disabled={locked || amountsLocked}*/}
+                  {/*  onClick={() => {*/}
+                  {/*    setExactIn(true);*/}
+                  {/*    inputRef.current.setValue(maxSpendable?.balance?.amount);*/}
+                  {/*  }}*/}
+                  {/*>*/}
+                  {/*  <small className="font-smallest" style={{ marginBottom: '-2px' }}>*/}
+                  {/*    MAX*/}
+                  {/*  </small>*/}
+                  {/*</Button>*/}
                 </>
               ) : (
                 <div className="swap-panel__card__wallet">

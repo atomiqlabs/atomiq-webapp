@@ -5,6 +5,7 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { CustomWalletListItem } from './CustomWalletListItem';
+// TODO toto napasovat aj na BTC, alebo BTC napasovat na veci v tomto
 export const CustomWalletModal = ({ className = '', container = 'body' }) => {
     const ref = useRef(null);
     const { wallets, select } = useWallet();
