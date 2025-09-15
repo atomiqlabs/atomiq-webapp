@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@atomiqlabs/chain-solana": "^11.0.0",
-    "@atomiqlabs/chain-starknet": "^5.1.0",
+    "@atomiqlabs/chain-starknet": "^5.1.4",
     "@atomiqlabs/sdk": "^6.0.0",
     "@coral-xyz/anchor": "0.29.0",
     "@scure/btc-signer": "1.6.0",
