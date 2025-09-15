@@ -97,8 +97,11 @@ export function SwapNew(props: {
                 token = swapper.getSupportedTokens(false).find(val => isBtcToken(val) && val.lightning);
                 break;
             default:
-                if(isSCToken(outputToken) && outputToken.chainId===addressData.type) token = outputToken;
-                token = swapper.getSupportedTokens(false).find(val => isSCToken(val) && val.chainId===addressData.type);
+                if(isSCToken(outputToken) && outputToken.chainId===addressData.type) {
+                    token = outputToken;
+                } else {
+                    token = swapper.getSupportedTokens(false).find(val => isSCToken(val) && val.chainId===addressData.type);
+                }
                 break;
         }
         if(outputToken===token) return;
@@ -110,7 +113,7 @@ export function SwapNew(props: {
             console.log("SwapNew(): Disconnecting wallet: "+outputChainData.wallet.name);
             outputChainData.disconnect();
         }
-        console.log("SwapNew(): Using token based on the address: "+outputToken.ticker);
+        console.log("SwapNew(): Using token based on the address: "+token.ticker);
         setOutputToken(token);
         if(!includesToken(counterTokens, inputToken)) {
             if(includesToken(counterTokens, outputToken)) {

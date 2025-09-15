@@ -18,6 +18,8 @@ export function useWithAwait<Result>(
     const latestProcessedRef = useRef<AwaitLatestProcessedState<Result> & {lastDeps: any[]}>({sequence: 0, value: null, error: null, lastDeps: dependencies});
     const sequence = useRef<number>(0);
     const currentPromise = useRef<Promise<void>>(null);
+    const currentCallback = useRef<(result: Result, error: any) => void>(null);
+    currentCallback.current = callback;
 
     const depsRef = useRef<any[]>();
     useMemo(() => {
@@ -37,27 +39,27 @@ export function useWithAwait<Result>(
             } catch (e) {
                 console.error(e);
                 latestProcessedRef.current = {sequence: -1, error: e, lastDeps: dependencies};
-                if(callback!=null) callback(null, e);
+                if(currentCallback.current!=null) currentCallback.current(null, e);
                 return [null as Result, -1, e];
             }
 
             if(!(promise instanceof Promise)) {
                 latestProcessedRef.current = {sequence: -1, value: promise as Result, lastDeps: dependencies};
-                if(callback!=null) callback(promise, null);
+                if(currentCallback.current!=null) currentCallback.current(promise, null);
                 return [promise as Result, -1, null];
             } else {
                 currentPromise.current = promise.then(val => {
                     currentPromise.current = null;
                     latestProcessedRef.current = {sequence: currSequence, value: val, lastDeps: dependencies};
                     if(currSequence!==sequence.current) return;
-                    if(callback!=null) callback(val, null);
+                    if(currentCallback.current!=null) currentCallback.current(val, null);
                     setLatestProcessed(latestProcessedRef.current);
                 }).catch(err => {
                     currentPromise.current = null;
                     console.error(err);
                     latestProcessedRef.current = {sequence: currSequence, error: err, lastDeps: dependencies};
                     if(currSequence!==sequence.current) return;
-                    if(callback!=null) callback(null, err);
+                    if(currentCallback.current!=null) currentCallback.current(null, err);
                     setLatestProcessed(latestProcessedRef.current);
                 });
 
