@@ -51,7 +51,8 @@ export const FEConstants = {
     blockExplorers: {
         SOLANA: solBlockExplorer,
         STARKNET: starknetBlockExplorer,
-        CITREA: citreaBlockExplorer
+        CITREA: citreaBlockExplorer,
+        BOTANIX: botanixBlockExplorer
     },
     scBalances: {
         "SOLANA:So11111111111111111111111111111111111111112": {
