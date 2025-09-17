@@ -34,6 +34,8 @@ require('@solana/wallet-adapter-react-ui/styles.css');
 
 const noWalletPaths = new Set(["/about", "/faq", "/46jh456f45f"]);
 
+global.atomiqLogLevel = 5;
+
 function WrappedApp() {
     const navigateHref = useAnchorNavigate();
 
