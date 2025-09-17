@@ -46,7 +46,7 @@ export class UnisatLikeWalletChangeListener {
     }
 }
 function toSchnorrPubkey(ecdsaPublickey) {
-    return ecdsaPublickey.slice(2, 66);
+    return ecdsaPublickey.length === 66 ? ecdsaPublickey.slice(2, 66) : ecdsaPublickey;
 }
 function identifyAddressType(address, network) {
     switch (AddressParser(network).decode(address).type) {
@@ -88,6 +88,8 @@ export class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated {
     static async _init(getProvider, ctor, name, _data) {
         const provider = getProvider();
         if (_data?.account != null) {
+            if (_data.account.publicKey.length !== 66)
+                throw new Error("Invalid account data, public key length!");
             return new ctor(_data.account, _data?.multichainConnected);
         }
         UnisatLikeBitcoinWallet.changeListeners[name].ignoreAccountChange = true;
