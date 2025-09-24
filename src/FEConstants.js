@@ -18,16 +18,19 @@ const bitcoinNetwork = process.env.REACT_APP_BITCOIN_NETWORK;
 const mempoolApi = new MempoolApi(bitcoinNetwork === "MAINNET" ?
     [
         "https://mempool.space/api/",
+        "https://mempool.holdings/api/",
         "https://mempool.fra.mempool.space/api/",
         "https://mempool.va1.mempool.space/api/",
         "https://mempool.tk7.mempool.space/api/"
     ] : bitcoinNetwork === "TESTNET4" ? [
     "https://mempool.space/testnet4/api/",
+    "https://mempool.holdings/testnet4/api/",
     "https://mempool.fra.mempool.space/testnet4/api/",
     "https://mempool.va1.mempool.space/testnet4/api/",
     "https://mempool.tk7.mempool.space/testnet4/api/"
 ] : [
     "https://mempool.space/testnet/api/",
+    "https://mempool.holdings/testnet/api/",
     "https://mempool.fra.mempool.space/testnet/api/",
     "https://mempool.va1.mempool.space/testnet/api/",
     "https://mempool.tk7.mempool.space/testnet/api/"
