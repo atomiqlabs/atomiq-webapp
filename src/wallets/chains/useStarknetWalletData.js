@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { wallet, WalletAccount } from "starknet";
 import { connect, disconnect } from "@starknet-io/get-starknet";
-import { StarknetFees, StarknetSigner } from "@atomiqlabs/chain-starknet";
+import { StarknetBrowserSigner, StarknetFees } from "@atomiqlabs/chain-starknet";
 import { useLocalStorage } from "../../utils/hooks/useLocalStorage";
 import { FEConstants } from "../../FEConstants";
 import { timeoutPromise } from "../../utils/Utils";
@@ -44,7 +44,7 @@ export function useStarknetWalletData() {
             swo,
             listener: (accounts) => {
                 console.log("useStarknetWalletContext(): accountsChanged listener, new accounts: ", accounts);
-                const starknetSigner = new StarknetSigner(walletAccount);
+                const starknetSigner = new StarknetBrowserSigner(walletAccount);
                 wallet.requestChainId(walletAccount.walletProvider).then(chainId => {
                     console.log("useStarknetWalletContext(): connected wallet chainId: ", chainId);
                     if (FEConstants.starknetChainId !== chainId) {
@@ -58,7 +58,7 @@ export function useStarknetWalletData() {
         };
         swo.on("accountsChanged", currentSWORef.current.listener);
         await waitTillAddressPopulated(walletAccount);
-        const starknetSigner = new StarknetSigner(walletAccount);
+        const starknetSigner = new StarknetBrowserSigner(walletAccount);
         setStarknetSigner(starknetSigner);
         setStarknetWalletData(swo);
     };

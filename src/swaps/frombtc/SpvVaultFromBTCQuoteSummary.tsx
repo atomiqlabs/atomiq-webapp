@@ -65,7 +65,6 @@ export function SpvVaultFromBTCQuoteSummary(props: {
 
     const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => {
         return props.quote.waitForBitcoinTransaction(
-            abortSignalRef.current, null,
             (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
                 if(txId==null) {
                     setTxData(null);
@@ -77,7 +76,8 @@ export function SpvVaultFromBTCQuoteSummary(props: {
                     confTarget: confirmationTarget,
                     txEtaMs
                 });
-            }
+            },
+            undefined, abortSignalRef.current
         );
     }, [props.quote]);
 

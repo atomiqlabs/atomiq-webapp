@@ -42,7 +42,7 @@ export function TrustedFromBTCLNQuoteSummary(props: {
 
     const [onCommit, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
         if(setAmountLockRef.current!=null) setAmountLockRef.current(true);
-        return props.quote.waitForPayment(abortSignalRef.current, 2).then(() => true).catch(err => {
+        return props.quote.waitForPayment(2, abortSignalRef.current).then(() => true).catch(err => {
             if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
             throw err;
         });
