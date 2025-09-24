@@ -610,7 +610,7 @@ export function SwapNew(props: {
                             <Alert
                                 variant={"success"}
                                 className="mt-3 mb-0 text-center"
-                                show={!locked && outputChainData?.wallet == null && isBtcToken(outputToken) && outputToken.lightning && addressData == null}
+                                show={existingSwap==null && !locked && outputChainData?.wallet == null && isBtcToken(outputToken) && outputToken.lightning && addressData == null}
                             >
                                 <label>Only lightning invoices with pre-set amount are supported! Use lightning
                                     address/LNURL for variable amount.</label>

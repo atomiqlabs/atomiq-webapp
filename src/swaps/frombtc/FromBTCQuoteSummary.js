@@ -60,7 +60,7 @@ export function FromBTCQuoteSummary(props) {
         return commitTxId;
     }, [props.quote, smartChainWallet, payBitcoin]);
     const abortSignalRef = useAbortSignalRef([props.quote]);
-    const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => props.quote.waitForBitcoinTransaction(abortSignalRef.current, null, (txId, confirmations, confirmationTarget, txEtaMs) => {
+    const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => props.quote.waitForBitcoinTransaction((txId, confirmations, confirmationTarget, txEtaMs) => {
         if (txId == null) {
             setTxData(null);
             return;
@@ -71,7 +71,7 @@ export function FromBTCQuoteSummary(props) {
             confTarget: confirmationTarget,
             txEtaMs
         });
-    }), [props.quote]);
+    }, undefined, abortSignalRef.current), [props.quote]);
     const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
         return props.quote.claim(smartChainWallet.instance);
     }, [props.quote, smartChainWallet]);

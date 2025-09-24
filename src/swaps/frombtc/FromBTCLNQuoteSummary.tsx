@@ -53,6 +53,7 @@ export function FromBTCLNQuoteSummary(props: {
         isQuoteExpiredClaim,
         isFailed,
         isCreated,
+        isLpAutoCommiting,
         isClaimCommittable,
         isClaimClaimable,
         isClaimable,
@@ -130,6 +131,13 @@ export function FromBTCLNQuoteSummary(props: {
                         Abort swap
                     </Button>
                 </>
+            ) : ""}
+
+            {isLpAutoCommiting ? (
+                <div className="d-flex flex-column align-items-center tab-accent">
+                    <Spinner/>
+                    <small className="mt-2">Lightning network payment received, waiting for LP to initiate...</small>
+                </div>
             ) : ""}
 
             {isClaimable && isWaitingForWatchtowerClaim ? (

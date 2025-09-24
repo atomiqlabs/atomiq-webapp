@@ -32,7 +32,7 @@ export function useFromBtcLnQuote(
 
     const [waitForPayment, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
         if(setAmountLockRef.current!=null) setAmountLockRef.current(true);
-        return quote.waitForPayment(abortSignalRef.current, 2).then(() => true).catch(err => {
+        return quote.waitForPayment(undefined, 2, abortSignalRef.current).then(() => true).catch(err => {
             if(setAmountLockRef.current!=null) setAmountLockRef.current(false);
             throw err;
         });
@@ -66,8 +66,9 @@ export function useFromBtcLnQuote(
         state===FromBTCLNSwapState.EXPIRED;
 
     const isCreated = state===FromBTCLNSwapState.PR_CREATED ||
-        (state===FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && paymentWaiting) ||
-        (state===FromBTCLNSwapState.PR_PAID && quote?.getType()===SwapType.FROM_BTCLN_AUTO);
+        (state===FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && paymentWaiting);
+
+    const isLpAutoCommiting = state===FromBTCLNSwapState.PR_PAID && quote?.getType()===SwapType.FROM_BTCLN_AUTO;
 
     const isClaimCommittable = (state===FromBTCLNSwapState.PR_PAID && quote?.getType()!==SwapType.FROM_BTCLN_AUTO) || committing;
 
@@ -120,6 +121,7 @@ export function useFromBtcLnQuote(
             executionSteps[0] = {icon: ic_refresh, text: "Lightning payment reverted", type: "failed"};
             executionSteps[1] = {icon: ic_watch_later_outline, text: "Claim transaction expired", type: "failed"};
         }
+        if(isLpAutoCommiting) executionSteps[1] = {icon: ic_hourglass_top_outline, text: "Waiting for LP", type: "loading"};
         if(isClaimable) executionSteps[1] = {icon: ic_swap_horizontal_circle_outline, text: (committing || claiming) ? "Sending claim transaction" : "Send claim transaction", type: "loading"};
         if(isSuccess) executionSteps[1] = {icon: ic_verified_outline, text: "Claim success", type: "success"};
         if(isFailed) {
@@ -166,6 +168,7 @@ export function useFromBtcLnQuote(
         isQuoteExpiredClaim,
         isFailed,
         isCreated,
+        isLpAutoCommiting,
         isClaimCommittable,
         isClaimClaimable,
         isClaimable,

@@ -6,10 +6,10 @@
     "legacy-peer-deps": true
   },
   "dependencies": {
-    "@atomiqlabs/chain-evm": "^1.0.0-dev.92",
-    "@atomiqlabs/chain-solana": "^10.0.0-dev.6",
-    "@atomiqlabs/chain-starknet": "^4.0.0-dev.22",
-    "@atomiqlabs/sdk": "^5.0.0-dev.5",
+    "@atomiqlabs/chain-evm": "^1.0.0-dev.102",
+    "@atomiqlabs/chain-solana": "^10.0.0-dev.10",
+    "@atomiqlabs/chain-starknet": "^4.0.0-dev.38",
+    "@atomiqlabs/sdk": "^5.0.0-dev.6",
     "@coral-xyz/anchor": "0.29.0",
     "@rainbow-me/rainbowkit": "^2.2.8",
     "@scure/btc-signer": "^1.8.1",
@@ -45,7 +45,7 @@
     "typescript": "^5.9.2",
     "url": "^0.11.1",
     "viem": "^2.32.0",
-    "wagmi": "^2.15.7",
+    "wagmi": "2.15.7",
     "web-vitals": "^2.1.4",
     "webln": "0.3.2",
     "zlib-browserify": "^0.0.3"

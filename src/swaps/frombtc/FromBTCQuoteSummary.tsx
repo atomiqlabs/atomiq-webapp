@@ -85,7 +85,6 @@ export function FromBTCQuoteSummary(props: {
 
     const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(
         () => props.quote.waitForBitcoinTransaction(
-            abortSignalRef.current, null,
             (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
                 if(txId==null) {
                     setTxData(null);
@@ -97,7 +96,8 @@ export function FromBTCQuoteSummary(props: {
                     confTarget: confirmationTarget,
                     txEtaMs
                 });
-            }
+            },
+            undefined, abortSignalRef.current
         ),
         [props.quote]
     );

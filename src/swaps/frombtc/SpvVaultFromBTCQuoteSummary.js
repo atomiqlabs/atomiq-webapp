@@ -48,7 +48,7 @@ export function SpvVaultFromBTCQuoteSummary(props) {
     }, [props.quote, bitcoinWallet, props.feeRate]);
     const abortSignalRef = useAbortSignalRef([props.quote]);
     const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => {
-        return props.quote.waitForBitcoinTransaction(abortSignalRef.current, null, (txId, confirmations, confirmationTarget, txEtaMs) => {
+        return props.quote.waitForBitcoinTransaction((txId, confirmations, confirmationTarget, txEtaMs) => {
             if (txId == null) {
                 setTxData(null);
                 return;
@@ -59,7 +59,7 @@ export function SpvVaultFromBTCQuoteSummary(props) {
                 confTarget: confirmationTarget,
                 txEtaMs
             });
-        });
+        }, undefined, abortSignalRef.current);
     }, [props.quote]);
     const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
         return props.quote.claim(smartChainWallet.instance);

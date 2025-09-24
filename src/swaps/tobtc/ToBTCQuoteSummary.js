@@ -64,7 +64,7 @@ export function ToBTCQuoteSummary(props) {
     const abortSignalRef = useAbortSignalRef([props.quote]);
     const [retryWaitForPayment, _, __, paymentError] = useAsync(async () => {
         try {
-            await props.quote.waitForPayment(abortSignalRef.current, 2);
+            await props.quote.waitForPayment(undefined, 2, abortSignalRef.current);
         }
         catch (e) {
             if (abortSignalRef.current.aborted)
