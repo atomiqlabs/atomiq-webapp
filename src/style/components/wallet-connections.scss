@@ -80,17 +80,31 @@
   & > .dropdown {
     @apply transition-all flex flex-row items-center cursor-pointer;
 
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: var(--bs-border-radius);
-    border: 1px solid transparent;
+    &:not(&:has(.wallet-connections__button.is-main)) {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: var(--bs-border-radius);
+      border: 1px solid transparent;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+      }
+
+      &:first-child {
+        @apply rounded-r-none;
+      }
+
+      &:last-child {
+        @apply rounded-l-none;
+
+        .base-button.show {
+          @apply rounded-l-none;
+        }
+      }
+    }
 
     &:not(:has(.base-button)).show {
       border: 1px solid rgba(255, 255, 255, 0.2);
       background-color: rgba(255, 255, 255, 0.2);
-    }
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.15);
     }
 
     .icon-dropdown {
@@ -102,18 +116,6 @@
     .wallet-connections__badge > span {
       @apply px-3 py-[12px];
       background-color: transparent !important; // to rewrite bootstrap component class
-    }
-
-    &:first-child {
-      @apply rounded-r-none;
-    }
-
-    &:last-child {
-      @apply rounded-l-none;
-
-      .base-button.show {
-        @apply rounded-l-none;
-      }
     }
 
     .dropdown-header {
@@ -163,5 +165,8 @@
 
   &__trigger {
     @apply flex items-center;
+  }
+
+  &__simple {
   }
 }

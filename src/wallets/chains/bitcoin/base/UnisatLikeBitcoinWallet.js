@@ -1,17 +1,17 @@
-import { Transaction, Address as AddressParser } from "@scure/btc-signer";
-import * as EventEmitter from "events";
-import { BitcoinWalletNonSeparated } from "./BitcoinWalletNonSeparated";
-import { ExtensionBitcoinWallet } from "./ExtensionBitcoinWallet";
+import { Transaction, Address as AddressParser } from '@scure/btc-signer';
+import * as EventEmitter from 'events';
+import { BitcoinWalletNonSeparated } from './BitcoinWalletNonSeparated';
+import { ExtensionBitcoinWallet } from './ExtensionBitcoinWallet';
 export class UnisatLikeWalletChangeListener {
     constructor(ctor, provider, name) {
         this.events = new EventEmitter();
         this.ignoreAccountChange = false;
         this.provider = provider;
-        provider.on("accountsChanged", (accounts) => {
+        provider.on('accountsChanged', (accounts) => {
             console.log(name +
-                "BitcoinWallet: accountsChanged, ignore: " +
+                'BitcoinWallet: accountsChanged, ignore: ' +
                 this.ignoreAccountChange +
-                " accounts: ", accounts);
+                ' accounts: ', accounts);
             if (this.ignoreAccountChange)
                 return;
             let btcWalletState = ExtensionBitcoinWallet.loadState();
@@ -27,11 +27,11 @@ export class UnisatLikeWalletChangeListener {
                         account,
                         multichainConnected: btcWalletState.data.multichainConnected,
                     });
-                    this.events.emit("newWallet", new ctor({ address: accounts[0], publicKey }, btcWalletState.data.multichainConnected));
+                    this.events.emit('newWallet', new ctor({ address: accounts[0], publicKey }, btcWalletState.data.multichainConnected));
                 });
             }
             else {
-                this.events.emit("newWallet", null);
+                this.events.emit('newWallet', null);
             }
         });
     }
@@ -41,14 +41,14 @@ function toSchnorrPubkey(ecdsaPublickey) {
 }
 function identifyAddressType(address, network) {
     switch (AddressParser(network).decode(address).type) {
-        case "pkh":
-            return "p2pkh";
-        case "wpkh":
-            return "p2wpkh";
-        case "tr":
-            return "p2tr";
-        case "sh":
-            return "p2sh-p2wpkh";
+        case 'pkh':
+            return 'p2pkh';
+        case 'wpkh':
+            return 'p2wpkh';
+        case 'tr':
+            return 'p2tr';
+        case 'sh':
+            return 'p2sh-p2wpkh';
         default:
             return null;
     }
@@ -91,9 +91,9 @@ export class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated {
             throw e;
         }
         UnisatLikeBitcoinWallet.changeListeners[name].ignoreAccountChange = false;
-        console.log(name + "BitcoinWallet: init(): Loaded wallet accounts: ", addresses);
+        console.log(name + 'BitcoinWallet: init(): Loaded wallet accounts: ', addresses);
         if (addresses.length === 0)
-            throw new Error("No valid account found");
+            throw new Error('No valid account found');
         UnisatLikeBitcoinWallet.changeListeners[name].currentAccount = addresses[0];
         const publicKey = await provider.getPublicKey();
         console.log(name + "BitcoinWallet: init(): Fetched account's public key: ", publicKey);
@@ -128,9 +128,9 @@ export class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated {
     async sendTransaction(address, amount, feeRate) {
         const { psbt } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
         if (psbt == null) {
-            throw new Error("Not enough balance!");
+            throw new Error('Not enough balance!');
         }
-        const psbtHex = await this.provider.signPsbt(Buffer.from(psbt.toPSBT(0)).toString("hex"), {
+        const psbtHex = await this.provider.signPsbt(Buffer.from(psbt.toPSBT(0)).toString('hex'), {
             autoFinalized: true,
             toSignInputs: Array.from({ length: psbt.inputsLength }, (_, i) => {
                 return {
@@ -141,20 +141,20 @@ export class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated {
             }),
         });
         if (psbtHex == null)
-            throw new Error("User declined the transaction request");
-        const finalizedPsbt = Transaction.fromPSBT(Buffer.from(psbtHex, "hex"));
-        const txHex = Buffer.from(finalizedPsbt.extract()).toString("hex");
+            throw new Error('User declined the transaction request');
+        const finalizedPsbt = Transaction.fromPSBT(Buffer.from(psbtHex, 'hex'));
+        const txHex = Buffer.from(finalizedPsbt.extract()).toString('hex');
         const txId = await super._sendTransaction(txHex);
         return txId;
     }
     offWalletChanged(cbk) {
-        this.listener.events.off("newWallet", cbk);
+        this.listener.events.off('newWallet', cbk);
     }
     onWalletChanged(cbk) {
-        this.listener.events.on("newWallet", cbk);
+        this.listener.events.on('newWallet', cbk);
     }
     async signPsbt(psbt, signInputs) {
-        const psbtHex = await this.provider.signPsbt(Buffer.from(psbt.toPSBT(0)).toString("hex"), {
+        const psbtHex = await this.provider.signPsbt(Buffer.from(psbt.toPSBT(0)).toString('hex'), {
             autoFinalized: false,
             toSignInputs: signInputs.map((i) => {
                 return {
@@ -165,8 +165,8 @@ export class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated {
             }),
         });
         if (psbtHex == null)
-            throw new Error("Transaction not properly signed by the wallet!");
-        return Transaction.fromPSBT(Buffer.from(psbtHex, "hex"));
+            throw new Error('Transaction not properly signed by the wallet!');
+        return Transaction.fromPSBT(Buffer.from(psbtHex, 'hex'));
     }
 }
 UnisatLikeBitcoinWallet.changeListeners = {};

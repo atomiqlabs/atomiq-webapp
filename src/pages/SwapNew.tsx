@@ -455,35 +455,24 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
               <div className="swap-panel__card__title">You pay</div>
 
               {maxSpendable != null ? (
-                <>
+                <div className="swap-connected-wallet">
                   <div className="swap-panel__card__wallet">
                     <ConnectedWalletAnchor
                       noText={false}
+                      simple={true}
                       currency={inputToken}
                       variantButton="clear"
+                      maxSpendable={maxSpendable}
                     />
                   </div>
-                  {/* TODO implement this */}
-                  {/*<Button*/}
-                  {/*  variant="outline-light"*/}
-                  {/*  style={{ marginBottom: '2px' }}*/}
-                  {/*  className="py-0 px-1"*/}
-                  {/*  disabled={locked || amountsLocked}*/}
-                  {/*  onClick={() => {*/}
-                  {/*    setExactIn(true);*/}
-                  {/*    inputRef.current.setValue(maxSpendable?.balance?.amount);*/}
-                  {/*  }}*/}
-                  {/*>*/}
-                  {/*  <small className="font-smallest" style={{ marginBottom: '-2px' }}>*/}
-                  {/*    MAX*/}
-                  {/*  </small>*/}
-                  {/*</Button>*/}
-                </>
+                </div>
               ) : (
                 <div className="swap-panel__card__wallet">
                   <ConnectedWalletAnchor
                     noText={false}
+                    simple={true}
                     currency={inputToken}
+                    maxSpendable={maxSpendable}
                     variantButton="clear"
                   />
                 </div>
@@ -601,6 +590,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
               <div className="swap-panel__card__wallet">
                 <ConnectedWalletAnchor
                   noText={false}
+                  simple={true}
                   currency={outputToken}
                   variantButton="clear"
                 />

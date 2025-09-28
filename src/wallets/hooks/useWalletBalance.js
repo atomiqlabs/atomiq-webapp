@@ -1,8 +1,8 @@
-import { isBtcToken, isSCToken, SwapType, } from "@atomiqlabs/sdk";
-import { useContext, useEffect, useState } from "react";
-import { SwapsContext } from "../../swaps/context/SwapsContext";
-import { useStateRef } from "../../utils/hooks/useStateRef";
-import { useChainForCurrency } from "./useChainForCurrency";
+import { isBtcToken, isSCToken, SwapType } from '@atomiqlabs/sdk';
+import { useContext, useEffect, useState } from 'react';
+import { SwapsContext } from '../../swaps/context/SwapsContext';
+import { useStateRef } from '../../utils/hooks/useStateRef';
+import { useChainForCurrency } from './useChainForCurrency';
 export function useWalletBalance(currency, swapType, swapChainId, requestGasDrop, pause, minBtcFeeRate) {
     const { swapper } = useContext(SwapsContext);
     const chain = useChainForCurrency(currency);
@@ -19,12 +19,17 @@ export function useWalletBalance(currency, swapType, swapChainId, requestGasDrop
         let canceled = false;
         let getBalance;
         if (isBtcToken(currency)) {
-            getBalance = () => swapper.Utils.getBitcoinSpendableBalance(chain.wallet.instance, swapChainId, { gasDrop: requestGasDrop, minFeeRate: minBtcFeeRate });
+            getBalance = () => swapper.Utils.getBitcoinSpendableBalance(chain.wallet.instance, swapChainId, {
+                gasDrop: requestGasDrop,
+                minFeeRate: minBtcFeeRate,
+            });
         }
         else if (isSCToken(currency)) {
             getBalance = async () => {
                 return {
-                    balance: await swapper.Utils.getSpendableBalance(chain.wallet.instance, currency, { feeMultiplier: 1.5 }),
+                    balance: await swapper.Utils.getSpendableBalance(chain.wallet.instance, currency, {
+                        feeMultiplier: 1.5,
+                    }),
                 };
             };
         }

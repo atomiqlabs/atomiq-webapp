@@ -1,9 +1,9 @@
-import { CoinselectAddressTypes } from "@atomiqlabs/sdk";
-import { BTC_NETWORK } from "@scure/btc-signer/utils";
-import { Transaction, Address as AddressParser } from "@scure/btc-signer";
-import * as EventEmitter from "events";
-import { BitcoinWalletNonSeparated } from "./BitcoinWalletNonSeparated";
-import { ExtensionBitcoinWallet } from "./ExtensionBitcoinWallet";
+import { CoinselectAddressTypes } from '@atomiqlabs/sdk';
+import { BTC_NETWORK } from '@scure/btc-signer/utils';
+import { Transaction, Address as AddressParser } from '@scure/btc-signer';
+import * as EventEmitter from 'events';
+import { BitcoinWalletNonSeparated } from './BitcoinWalletNonSeparated';
+import { ExtensionBitcoinWallet } from './ExtensionBitcoinWallet';
 
 type UnisatLikeWalletProvider = {
   requestAccounts: () => Promise<string[]>;
@@ -21,45 +21,40 @@ type UnisatLikeWalletProvider = {
         disableTweakSigner?: boolean;
         useTweakedSigner?: boolean;
       }[];
-    },
+    }
   ) => Promise<string>;
-  on: (event: "accountsChanged", handler: (accounts: string[]) => void) => void;
-  removeListener: (
-    event: "accountsChanged",
-    handler: (accounts: string[]) => void,
-  ) => void;
+  on: (event: 'accountsChanged', handler: (accounts: string[]) => void) => void;
+  removeListener: (event: 'accountsChanged', handler: (accounts: string[]) => void) => void;
 };
 
 export class UnisatLikeWalletChangeListener {
   provider: UnisatLikeWalletProvider;
-  events: EventEmitter<{ newWallet: [UnisatLikeBitcoinWallet] }> =
-    new EventEmitter();
+  events: EventEmitter<{ newWallet: [UnisatLikeBitcoinWallet] }> = new EventEmitter();
   ignoreAccountChange: boolean = false;
   currentAccount: string;
 
   constructor(
     ctor: new (
       account: UnisatLikeAccount,
-      wasAutomaticallyConnected?: boolean,
+      wasAutomaticallyConnected?: boolean
     ) => UnisatLikeBitcoinWallet,
     provider: UnisatLikeWalletProvider,
-    name: string,
+    name: string
   ) {
     this.provider = provider;
-    provider.on("accountsChanged", (accounts: string[]) => {
+    provider.on('accountsChanged', (accounts: string[]) => {
       console.log(
         name +
-          "BitcoinWallet: accountsChanged, ignore: " +
+          'BitcoinWallet: accountsChanged, ignore: ' +
           this.ignoreAccountChange +
-          " accounts: ",
-        accounts,
+          ' accounts: ',
+        accounts
       );
       if (this.ignoreAccountChange) return;
       let btcWalletState = ExtensionBitcoinWallet.loadState();
       if (btcWalletState == null || btcWalletState.name !== name) return;
       if (accounts != null && accounts.length > 0) {
-        if (this.currentAccount != null && accounts[0] == this.currentAccount)
-          return;
+        if (this.currentAccount != null && accounts[0] == this.currentAccount) return;
         this.currentAccount = accounts[0];
         provider.getPublicKey().then((publicKey) => {
           const account = { address: accounts[0], publicKey };
@@ -68,15 +63,12 @@ export class UnisatLikeWalletChangeListener {
             multichainConnected: btcWalletState.data.multichainConnected,
           });
           this.events.emit(
-            "newWallet",
-            new ctor(
-              { address: accounts[0], publicKey },
-              btcWalletState.data.multichainConnected,
-            ),
+            'newWallet',
+            new ctor({ address: accounts[0], publicKey }, btcWalletState.data.multichainConnected)
           );
         });
       } else {
-        this.events.emit("newWallet", null);
+        this.events.emit('newWallet', null);
       }
     });
   }
@@ -86,19 +78,16 @@ function toSchnorrPubkey(ecdsaPublickey: string): string {
   return ecdsaPublickey.slice(2, 66);
 }
 
-function identifyAddressType(
-  address: string,
-  network: BTC_NETWORK,
-): CoinselectAddressTypes {
+function identifyAddressType(address: string, network: BTC_NETWORK): CoinselectAddressTypes {
   switch (AddressParser(network).decode(address).type) {
-    case "pkh":
-      return "p2pkh";
-    case "wpkh":
-      return "p2wpkh";
-    case "tr":
-      return "p2tr";
-    case "sh":
-      return "p2sh-p2wpkh";
+    case 'pkh':
+      return 'p2pkh';
+    case 'wpkh':
+      return 'p2wpkh';
+    case 'tr':
+      return 'p2tr';
+    case 'sh':
+      return 'p2sh-p2wpkh';
     default:
       return null;
   }
@@ -107,8 +96,7 @@ function identifyAddressType(
 type UnisatLikeAccount = { address: string; publicKey: string };
 
 export abstract class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated {
-  static changeListeners: { [name: string]: UnisatLikeWalletChangeListener } =
-    {};
+  static changeListeners: { [name: string]: UnisatLikeWalletChangeListener } = {};
 
   readonly account: UnisatLikeAccount;
   readonly addressType: CoinselectAddressTypes;
@@ -129,14 +117,17 @@ export abstract class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated 
     getProvider: () => UnisatLikeWalletProvider,
     ctor: new (
       account: UnisatLikeAccount,
-      wasAutomaticallyConnected?: boolean,
+      wasAutomaticallyConnected?: boolean
     ) => UnisatLikeBitcoinWallet,
-    name: string,
+    name: string
   ): Promise<boolean> {
     for (let i = 0; i < 10; i++) {
       if (getProvider() != null) {
-        UnisatLikeBitcoinWallet.changeListeners[name] ??=
-          new UnisatLikeWalletChangeListener(ctor, getProvider(), name);
+        UnisatLikeBitcoinWallet.changeListeners[name] ??= new UnisatLikeWalletChangeListener(
+          ctor,
+          getProvider(),
+          name
+        );
         return true;
       }
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -148,10 +139,10 @@ export abstract class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated 
     getProvider: () => UnisatLikeWalletProvider,
     ctor: new (
       account: UnisatLikeAccount,
-      wasAutomaticallyConnected?: boolean,
+      wasAutomaticallyConnected?: boolean
     ) => UnisatLikeBitcoinWallet,
     name: string,
-    _data?: any,
+    _data?: any
   ): Promise<UnisatLikeBitcoinWallet> {
     const provider = getProvider();
     if (_data?.account != null) {
@@ -168,19 +159,13 @@ export abstract class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated 
     }
     UnisatLikeBitcoinWallet.changeListeners[name].ignoreAccountChange = false;
 
-    console.log(
-      name + "BitcoinWallet: init(): Loaded wallet accounts: ",
-      addresses,
-    );
-    if (addresses.length === 0) throw new Error("No valid account found");
+    console.log(name + 'BitcoinWallet: init(): Loaded wallet accounts: ', addresses);
+    if (addresses.length === 0) throw new Error('No valid account found');
 
     UnisatLikeBitcoinWallet.changeListeners[name].currentAccount = addresses[0];
 
     const publicKey = await provider.getPublicKey();
-    console.log(
-      name + "BitcoinWallet: init(): Fetched account's public key: ",
-      publicKey,
-    );
+    console.log(name + "BitcoinWallet: init(): Fetched account's public key: ", publicKey);
 
     const acc = {
       address: addresses[0],
@@ -224,41 +209,33 @@ export abstract class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated 
     ];
   }
 
-  async sendTransaction(
-    address: string,
-    amount: bigint,
-    feeRate?: number,
-  ): Promise<string> {
+  async sendTransaction(address: string, amount: bigint, feeRate?: number): Promise<string> {
     const { psbt } = await super._getPsbt(
       this.toBitcoinWalletAccounts(),
       address,
       Number(amount),
-      feeRate,
+      feeRate
     );
 
     if (psbt == null) {
-      throw new Error("Not enough balance!");
+      throw new Error('Not enough balance!');
     }
 
-    const psbtHex = await this.provider.signPsbt(
-      Buffer.from(psbt.toPSBT(0)).toString("hex"),
-      {
-        autoFinalized: true,
-        toSignInputs: Array.from({ length: psbt.inputsLength }, (_, i) => {
-          return {
-            index: i,
-            address: this.account.address,
-            publicKey: this.account.publicKey,
-          };
-        }),
-      },
-    );
+    const psbtHex = await this.provider.signPsbt(Buffer.from(psbt.toPSBT(0)).toString('hex'), {
+      autoFinalized: true,
+      toSignInputs: Array.from({ length: psbt.inputsLength }, (_, i) => {
+        return {
+          index: i,
+          address: this.account.address,
+          publicKey: this.account.publicKey,
+        };
+      }),
+    });
 
-    if (psbtHex == null)
-      throw new Error("User declined the transaction request");
+    if (psbtHex == null) throw new Error('User declined the transaction request');
 
-    const finalizedPsbt = Transaction.fromPSBT(Buffer.from(psbtHex, "hex"));
-    const txHex = Buffer.from(finalizedPsbt.extract()).toString("hex");
+    const finalizedPsbt = Transaction.fromPSBT(Buffer.from(psbtHex, 'hex'));
+    const txHex = Buffer.from(finalizedPsbt.extract()).toString('hex');
     const txId = await super._sendTransaction(txHex);
 
     return txId;
@@ -268,34 +245,27 @@ export abstract class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated 
   abstract getIcon(): string;
 
   offWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
-    this.listener.events.off("newWallet", cbk);
+    this.listener.events.off('newWallet', cbk);
   }
 
   onWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
-    this.listener.events.on("newWallet", cbk);
+    this.listener.events.on('newWallet', cbk);
   }
 
-  async signPsbt(
-    psbt: Transaction,
-    signInputs: number[],
-  ): Promise<Transaction> {
-    const psbtHex = await this.provider.signPsbt(
-      Buffer.from(psbt.toPSBT(0)).toString("hex"),
-      {
-        autoFinalized: false,
-        toSignInputs: signInputs.map((i) => {
-          return {
-            index: i,
-            address: this.account.address,
-            publicKey: this.account.publicKey,
-          };
-        }),
-      },
-    );
+  async signPsbt(psbt: Transaction, signInputs: number[]): Promise<Transaction> {
+    const psbtHex = await this.provider.signPsbt(Buffer.from(psbt.toPSBT(0)).toString('hex'), {
+      autoFinalized: false,
+      toSignInputs: signInputs.map((i) => {
+        return {
+          index: i,
+          address: this.account.address,
+          publicKey: this.account.publicKey,
+        };
+      }),
+    });
 
-    if (psbtHex == null)
-      throw new Error("Transaction not properly signed by the wallet!");
+    if (psbtHex == null) throw new Error('Transaction not properly signed by the wallet!');
 
-    return Transaction.fromPSBT(Buffer.from(psbtHex, "hex"));
+    return Transaction.fromPSBT(Buffer.from(psbtHex, 'hex'));
   }
 }

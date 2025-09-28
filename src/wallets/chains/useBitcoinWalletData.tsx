@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ListGroup, Modal } from 'react-bootstrap';
 import * as React from 'react';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useStateRef } from '../../utils/hooks/useStateRef';
 import { ChainWalletData } from '../ChainDataProvider';
 import { ExtensionBitcoinWallet } from './bitcoin/base/ExtensionBitcoinWallet';
 import { BitcoinWalletType, getInstalledBitcoinWallets } from './bitcoin/utils/BitcoinWalletUtils';
+import { WalletModal } from '../shared/WalletModal';
+import { WalletListItem } from '../shared/WalletListItem';
 
 function BitcoinWalletModal(props: {
   modalOpened: boolean;
@@ -15,56 +16,34 @@ function BitcoinWalletModal(props: {
   installableWallets: BitcoinWalletType[];
 }) {
   return (
-    <Modal
-      contentClassName="wallet-adapter-modal-wrapper"
-      size="sm"
-      centered
-      show={props.modalOpened}
-      onHide={() => props.setModalOpened(false)}
-      dialogClassName="wallet-modal"
-      backdrop={false}
+    <WalletModal
+      visible={props.modalOpened}
+      onClose={() => props.setModalOpened(false)}
+      title="Select a Bitcoin Wallet"
     >
-      <Modal.Body>
-        <button
-          onClick={() => props.setModalOpened(false)}
-          className="wallet-adapter-modal-button-close"
-        >
-          <svg width="14" height="14">
-            <path d="M14 12.461 8.3 6.772l5.234-5.233L12.006 0 6.772 5.234 1.54 0 0 1.539l5.234 5.233L0 12.006l1.539 1.528L6.772 8.3l5.69 5.7L14 12.461z" />
-          </svg>
-        </button>
-        <h1 className="wallet-adapter-modal-title">Select a Bitcoin Wallet</h1>
-        <ul className="wallet-adapter-modal-list">
-          {props.usableWallets.map((e) => (
-            <li>
-              <button
-                className="wallet-modal__item"
-                onClick={() => props.connectWallet(e)}
-                key={e.name}
-              >
-                <img width={20} height={20} src={e.iconUrl} className="wallet-modal__item__icon" />
-                {e.name}
-                <div className="wallet-modal__item__status">Installed</div>
-              </button>
-            </li>
-          ))}
-        </ul>
-        <ul className="wallet-adapter-modal-list">
-          {props.installableWallets.map((e) => (
-            <li>
-              <button
-                className="wallet-modal__item"
-                onClick={() => props.connectWallet(e)}
-                key={e.name}
-              >
-                <img width={20} height={20} src={e.iconUrl} className="wallet-modal__item__icon" />
-                Install {e.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </Modal.Body>
-    </Modal>
+      <ul className="wallet-adapter-modal-list">
+        {props.usableWallets.map((e) => (
+          <WalletListItem
+            key={e.name}
+            name={e.name}
+            icon={e.iconUrl}
+            isInstalled={true}
+            onClick={() => props.connectWallet(e)}
+          />
+        ))}
+      </ul>
+      <ul className="wallet-adapter-modal-list">
+        {props.installableWallets.map((e) => (
+          <WalletListItem
+            key={e.name}
+            name={e.name}
+            icon={e.iconUrl}
+            isInstalled={false}
+            onClick={() => props.connectWallet(e)}
+          />
+        ))}
+      </ul>
+    </WalletModal>
   );
 }
 
@@ -206,6 +185,8 @@ export function useBitcoinWalletData(connectedOtherChainWallets: {
     ),
     [modalOpened, connectWallet, usableWallets, installableWallets]
   );
+
+  console.log(bitcoinWallet);
 
   return useMemo(
     () => [

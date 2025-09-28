@@ -148,7 +148,7 @@ export function WalletConnections() {
           {walletsArr.length == 0 ? (
             <Dropdown.Toggle
               as={BaseButton}
-              className="wallet-connections__button is-full"
+              className="wallet-connections__button is-main is-full"
               variant="transparent"
               customIcon="connect"
               bsPrefix="none"

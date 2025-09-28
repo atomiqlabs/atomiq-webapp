@@ -1,13 +1,14 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Modal } from 'react-bootstrap';
 import * as React from 'react';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useStateRef } from '../../utils/hooks/useStateRef';
 import { ExtensionBitcoinWallet } from './bitcoin/base/ExtensionBitcoinWallet';
 import { getInstalledBitcoinWallets } from './bitcoin/utils/BitcoinWalletUtils';
+import { WalletModal } from '../shared/WalletModal';
+import { WalletListItem } from '../shared/WalletListItem';
 function BitcoinWalletModal(props) {
-    return (_jsx(Modal, { contentClassName: "wallet-adapter-modal-wrapper", size: "sm", centered: true, show: props.modalOpened, onHide: () => props.setModalOpened(false), dialogClassName: "wallet-modal", backdrop: false, children: _jsxs(Modal.Body, { children: [_jsx("button", { onClick: () => props.setModalOpened(false), className: "wallet-adapter-modal-button-close", children: _jsx("svg", { width: "14", height: "14", children: _jsx("path", { d: "M14 12.461 8.3 6.772l5.234-5.233L12.006 0 6.772 5.234 1.54 0 0 1.539l5.234 5.233L0 12.006l1.539 1.528L6.772 8.3l5.69 5.7L14 12.461z" }) }) }), _jsx("h1", { className: "wallet-adapter-modal-title", children: "Select a Bitcoin Wallet" }), _jsx("ul", { className: "wallet-adapter-modal-list", children: props.usableWallets.map((e) => (_jsx("li", { children: _jsxs("button", { className: "wallet-modal__item", onClick: () => props.connectWallet(e), children: [_jsx("img", { width: 20, height: 20, src: e.iconUrl, className: "wallet-modal__item__icon" }), e.name, _jsx("div", { className: "wallet-modal__item__status", children: "Installed" })] }, e.name) }))) }), _jsx("ul", { className: "wallet-adapter-modal-list", children: props.installableWallets.map((e) => (_jsx("li", { children: _jsxs("button", { className: "wallet-modal__item", onClick: () => props.connectWallet(e), children: [_jsx("img", { width: 20, height: 20, src: e.iconUrl, className: "wallet-modal__item__icon" }), "Install ", e.name] }, e.name) }))) })] }) }));
+    return (_jsxs(WalletModal, { visible: props.modalOpened, onClose: () => props.setModalOpened(false), title: "Select a Bitcoin Wallet", children: [_jsx("ul", { className: "wallet-adapter-modal-list", children: props.usableWallets.map((e) => (_jsx(WalletListItem, { name: e.name, icon: e.iconUrl, isInstalled: true, onClick: () => props.connectWallet(e) }, e.name))) }), _jsx("ul", { className: "wallet-adapter-modal-list", children: props.installableWallets.map((e) => (_jsx(WalletListItem, { name: e.name, icon: e.iconUrl, isInstalled: false, onClick: () => props.connectWallet(e) }, e.name))) })] }));
 }
 export function useBitcoinWalletData(connectedOtherChainWallets) {
     const [bitcoinWallet, setBitcoinWallet] = React.useState(undefined);
@@ -113,6 +114,7 @@ export function useBitcoinWalletData(connectedOtherChainWallets) {
                 .then(() => setModalOpened(false))
                 .catch((err) => console.error(err));
         }, usableWallets: usableWallets, installableWallets: installableWallets })), [modalOpened, connectWallet, usableWallets, installableWallets]);
+    console.log(bitcoinWallet);
     return useMemo(() => [
         {
             chain: {

@@ -1,9 +1,6 @@
-import { SolanaWalletWrapper, useSolanaWalletData } from './chains/useSolanaWalletData';
-import { useBitcoinWalletData } from './chains/useBitcoinWalletData';
-import { useStarknetWalletData } from './chains/useStarknetWalletData';
-import { useLightningWalletData } from './chains/useLightningWalletData';
+import { SolanaWalletWrapper } from './chains/useSolanaWalletData';
 import { ChainDataContext } from './context/ChainDataContext';
-import { useMemo } from 'react';
+import { useWalletSystem } from './hooks/useWalletSystem';
 
 export type ChainWalletData<T> = {
   chain: {
@@ -16,41 +13,53 @@ export type ChainWalletData<T> = {
     address?: string;
     instance: T;
   };
-  wallets?: 'pole walletike'; // TODO
+  wallets?: Array<{
+    name: string;
+    icon: string;
+    isInstalled: boolean;
+    isConnected: boolean;
+  }>;
   id: string;
   disconnect: () => Promise<void> | void;
   connect: () => Promise<void> | void;
   connectWallet?: () => Promise<void> | void; // maybe todo
   changeWallet?: () => Promise<void> | void;
   swapperOptions?: any;
+
+  // Balances
+  /** Native token balance (e.g., BTC, SOL, STRK). */
+  balance?: {
+    /** Raw numeric value in base units (e.g., satoshis/lamports/wei equivalents or already in whole units). */
+    value: number | string;
+    /** Optional human-friendly rendering, e.g. "0.042 BTC". */
+    formatted?: string;
+    /** Currency symbol, e.g., "BTC", "SOL", "STRK". */
+    symbol: string;
+    /** How many decimals the value uses (to allow formatting). */
+    decimals?: number;
+  };
+
+  /** Optional list of token balances (SPL on Solana, ERC-20/STRK tokens on Starknet, etc.). */
+  tokenBalances?: Array<{
+    /** Token identifier — use `mint` for Solana, `contract` for EVM/Starknet; leave the other undefined. */
+    mint?: string;
+    contract?: string;
+    symbol: string;
+    value: number | string;
+    formatted?: string;
+    decimals?: number;
+  }>;
+
+  /** Optional callback your hooks can expose to force-refresh balances. */
+  refreshBalance?: () => Promise<void> | void;
 };
 
 function WrappedChainDataProvider(props: { children: React.ReactNode }) {
-  const [starknetChain] = useStarknetWalletData();
-  const [solanaChain] = useSolanaWalletData();
-  const [lightningChain] = useLightningWalletData();
-  const [bitcoinChain, bitcoinModal] = useBitcoinWalletData(
-    useMemo(() => {
-      return {
-        STARKNET: starknetChain.wallet?.name,
-        SOLANA: solanaChain.wallet?.name,
-      };
-    }, [starknetChain.wallet, solanaChain.wallet])
-  );
+  const { wallets, modals } = useWalletSystem();
 
   return (
-    <ChainDataContext.Provider
-      value={useMemo(() => {
-        const res: any = {
-          BITCOIN: bitcoinChain,
-          LIGHTNING: lightningChain,
-        };
-        if (solanaChain != null) res.SOLANA = solanaChain;
-        if (starknetChain != null) res.STARKNET = starknetChain;
-        return res;
-      }, [bitcoinChain, lightningChain, solanaChain, starknetChain])}
-    >
-      {bitcoinModal}
+    <ChainDataContext.Provider value={wallets}>
+      {modals}
       {props.children}
     </ChainDataContext.Provider>
   );

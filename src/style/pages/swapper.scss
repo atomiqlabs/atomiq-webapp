@@ -17,10 +17,8 @@
     }
 
     &__wallet {
-      @apply -mr-[16px];
-
       .base-button {
-        @apply transition-all;
+        @apply transition-all px-0;
 
         &:hover .base-button__content {
           @apply opacity-100;
@@ -77,4 +75,8 @@
   input::-webkit-inner-spin-button {
     -webkit-appearance: none;
   }
+}
+
+.swap-connected-wallet {
+  @apply flex;
 }
