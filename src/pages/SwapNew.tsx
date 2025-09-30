@@ -465,6 +465,21 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       maxSpendable={maxSpendable}
                     />
                   </div>
+                  {/* TODO implement this */}
+                  {/*<Button*/}
+                  {/*  variant="outline-light"*/}
+                  {/*  style={{ marginBottom: '2px' }}*/}
+                  {/*  className="py-0 px-1"*/}
+                  {/*  disabled={locked || amountsLocked}*/}
+                  {/*  onClick={() => {*/}
+                  {/*    setExactIn(true);*/}
+                  {/*    inputRef.current.setValue(maxSpendable?.balance?.amount);*/}
+                  {/*  }}*/}
+                  {/*>*/}
+                  {/*  <small className="font-smallest" style={{ marginBottom: '-2px' }}>*/}
+                  {/*    MAX*/}
+                  {/*  </small>*/}
+                  {/*</Button>*/}
                 </div>
               ) : (
                 <div className="swap-panel__card__wallet">

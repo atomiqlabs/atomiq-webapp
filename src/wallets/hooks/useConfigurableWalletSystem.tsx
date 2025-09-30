@@ -25,18 +25,27 @@ const DEFAULT_CONFIG: WalletSystemConfig = {
   enableBitcoin: true,
 };
 
-export function useConfigurableWalletSystem(config: WalletSystemConfig = DEFAULT_CONFIG): WalletSystemResult {
-  // Call all wallet hooks unconditionally (Rules of Hooks requirement)
-  // But use config to determine which ones to include in final result
+export function useConfigurableWalletSystem(
+  config: WalletSystemConfig = DEFAULT_CONFIG
+): WalletSystemResult {
+  // Call all wallet hooks unconditionally
   const [solanaChain] = useSolanaWalletData();
   const [starknetChain] = useStarknetWalletData();
   const [lightningChain] = useLightningWalletData();
 
   // Collect connected wallets for Bitcoin dependencies
-  const connectedWallets = useMemo(() => ({
-    STARKNET: config.enableStarknet ? starknetChain?.wallet?.name : undefined,
-    SOLANA: config.enableSolana ? solanaChain?.wallet?.name : undefined,
-  }), [config.enableStarknet, config.enableSolana, starknetChain?.wallet?.name, solanaChain?.wallet?.name]);
+  const connectedWallets = useMemo(
+    () => ({
+      STARKNET: config.enableStarknet ? starknetChain?.wallet?.name : undefined,
+      SOLANA: config.enableSolana ? solanaChain?.wallet?.name : undefined,
+    }),
+    [
+      config.enableStarknet,
+      config.enableSolana,
+      starknetChain?.wallet?.name,
+      solanaChain?.wallet?.name,
+    ]
+  );
 
   const [bitcoinChain, bitcoinModal] = useBitcoinWalletData(connectedWallets);
 
@@ -64,14 +73,7 @@ export function useConfigurableWalletSystem(config: WalletSystemConfig = DEFAULT
     }
 
     return { wallets, modals };
-  }, [
-    config,
-    solanaChain,
-    starknetChain,
-    lightningChain,
-    bitcoinChain,
-    bitcoinModal
-  ]);
+  }, [config, solanaChain, starknetChain, lightningChain, bitcoinChain, bitcoinModal]);
 }
 
 // Convenience hook with default config

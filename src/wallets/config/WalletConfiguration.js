@@ -35,7 +35,6 @@ export const getWalletConfig = (id) => {
 };
 // Helper to get all enabled wallet configs (you can add feature flags here)
 export const getEnabledWalletConfigs = () => {
-    // You can add feature flag logic here later
     return WALLET_CONFIGS;
 };
 // NOTE: Due to React's Rules of Hooks, we cannot dynamically call hooks in loops.
@@ -44,5 +43,3 @@ export const getEnabledWalletConfigs = () => {
 // 1. Add the wallet hook to useConfigurableWalletSystem.tsx
 // 2. Add a config flag in WalletSystemConfig
 // 3. Update the logic to conditionally include the wallet
-//
-// Future: Consider using React Context or other patterns for true dynamic wallet loading

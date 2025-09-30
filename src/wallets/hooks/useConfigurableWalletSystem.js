@@ -10,8 +10,7 @@ const DEFAULT_CONFIG = {
     enableBitcoin: true,
 };
 export function useConfigurableWalletSystem(config = DEFAULT_CONFIG) {
-    // Call all wallet hooks unconditionally (Rules of Hooks requirement)
-    // But use config to determine which ones to include in final result
+    // Call all wallet hooks unconditionally
     const [solanaChain] = useSolanaWalletData();
     const [starknetChain] = useStarknetWalletData();
     const [lightningChain] = useLightningWalletData();
@@ -19,7 +18,12 @@ export function useConfigurableWalletSystem(config = DEFAULT_CONFIG) {
     const connectedWallets = useMemo(() => ({
         STARKNET: config.enableStarknet ? starknetChain?.wallet?.name : undefined,
         SOLANA: config.enableSolana ? solanaChain?.wallet?.name : undefined,
-    }), [config.enableStarknet, config.enableSolana, starknetChain?.wallet?.name, solanaChain?.wallet?.name]);
+    }), [
+        config.enableStarknet,
+        config.enableSolana,
+        starknetChain?.wallet?.name,
+        solanaChain?.wallet?.name,
+    ]);
     const [bitcoinChain, bitcoinModal] = useBitcoinWalletData(connectedWallets);
     return useMemo(() => {
         const wallets = {};
@@ -42,14 +46,7 @@ export function useConfigurableWalletSystem(config = DEFAULT_CONFIG) {
             modals.push(bitcoinModal);
         }
         return { wallets, modals };
-    }, [
-        config,
-        solanaChain,
-        starknetChain,
-        lightningChain,
-        bitcoinChain,
-        bitcoinModal
-    ]);
+    }, [config, solanaChain, starknetChain, lightningChain, bitcoinChain, bitcoinModal]);
 }
 // Convenience hook with default config
 export const useWalletSystem = () => useConfigurableWalletSystem();
