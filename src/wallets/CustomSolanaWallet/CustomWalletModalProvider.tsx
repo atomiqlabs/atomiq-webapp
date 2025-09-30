@@ -1,7 +1,7 @@
 import type { FC, ReactNode } from 'react';
 import { useState } from 'react';
 import { WalletModalContext, WalletModalProviderProps } from '@solana/wallet-adapter-react-ui';
-import { CustomWalletModal } from './CustomWalletModal';
+import { SolanaWalletModal } from './SolanaWalletModal';
 
 export const CustomWalletModalProvider: FC<WalletModalProviderProps> = ({ children, ...props }) => {
   const [visible, setVisible] = useState(false);
@@ -14,7 +14,7 @@ export const CustomWalletModalProvider: FC<WalletModalProviderProps> = ({ childr
       }}
     >
       {children}
-      {visible && <CustomWalletModal {...props} />}
+      {visible && <SolanaWalletModal {...props} />}
     </WalletModalContext.Provider>
   );
 };

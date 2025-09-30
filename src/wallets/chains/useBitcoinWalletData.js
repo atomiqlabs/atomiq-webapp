@@ -1,15 +1,11 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as React from 'react';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useStateRef } from '../../utils/hooks/useStateRef';
 import { ExtensionBitcoinWallet } from './bitcoin/base/ExtensionBitcoinWallet';
 import { getInstalledBitcoinWallets } from './bitcoin/utils/BitcoinWalletUtils';
-import { WalletModal } from '../shared/WalletModal';
-import { WalletListItem } from '../shared/WalletListItem';
-function BitcoinWalletModal(props) {
-    return (_jsxs(WalletModal, { visible: props.modalOpened, onClose: () => props.setModalOpened(false), title: "Select a Bitcoin Wallet", children: [_jsx("ul", { className: "wallet-adapter-modal-list", children: props.usableWallets.map((e) => (_jsx(WalletListItem, { name: e.name, icon: e.iconUrl, isInstalled: true, onClick: () => props.connectWallet(e) }, e.name))) }), _jsx("ul", { className: "wallet-adapter-modal-list", children: props.installableWallets.map((e) => (_jsx(WalletListItem, { name: e.name, icon: e.iconUrl, isInstalled: false, onClick: () => props.connectWallet(e) }, e.name))) })] }));
-}
+import { GenericWalletModal } from '../shared/GenericWalletModal';
 export function useBitcoinWalletData(connectedOtherChainWallets) {
     const [bitcoinWallet, setBitcoinWallet] = React.useState(undefined);
     const [usableWallets, setUsableWallets] = useState([]);
@@ -109,11 +105,11 @@ export function useBitcoinWalletData(connectedOtherChainWallets) {
         }
     }, [usableWallets]);
     const [modalOpened, setModalOpened] = useState(false);
-    const modal = useMemo(() => (_jsx(BitcoinWalletModal, { modalOpened: modalOpened, setModalOpened: setModalOpened, connectWallet: (wallet) => {
-            connectWallet(wallet)
+    const modal = useMemo(() => (_jsx(GenericWalletModal, { visible: modalOpened, onClose: () => setModalOpened(false), title: "Select a Bitcoin Wallet", installedWallets: usableWallets.map((e) => ({ name: e.name, icon: e.iconUrl, data: e })), notInstalledWallets: installableWallets.map((e) => ({ name: e.name, icon: e.iconUrl, data: e })), onWalletClick: (wallet) => {
+            connectWallet(wallet.data)
                 .then(() => setModalOpened(false))
                 .catch((err) => console.error(err));
-        }, usableWallets: usableWallets, installableWallets: installableWallets })), [modalOpened, connectWallet, usableWallets, installableWallets]);
+        } })), [modalOpened, connectWallet, usableWallets, installableWallets]);
     console.log(bitcoinWallet);
     return useMemo(() => [
         {

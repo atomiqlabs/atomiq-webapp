@@ -4,7 +4,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { useCallback, useMemo } from 'react';
 import { useWalletModal, WalletIcon } from '@solana/wallet-adapter-react-ui';
 import { GenericWalletModal } from '../shared/GenericWalletModal';
-export const SWalletModal = ({ className = '', container = 'body' }) => {
+export const SolanaWalletModal = ({ className = '', container = 'body' }) => {
     const { wallets, select } = useWallet();
     const { visible, setVisible } = useWalletModal();
     const [installedWallets, notInstalledWallets] = useMemo(() => {

@@ -5,47 +5,7 @@ import { useStateRef } from '../../utils/hooks/useStateRef';
 import { ChainWalletData } from '../ChainDataProvider';
 import { ExtensionBitcoinWallet } from './bitcoin/base/ExtensionBitcoinWallet';
 import { BitcoinWalletType, getInstalledBitcoinWallets } from './bitcoin/utils/BitcoinWalletUtils';
-import { WalletModal } from '../shared/WalletModal';
-import { WalletListItem } from '../shared/WalletListItem';
-
-function BitcoinWalletModal(props: {
-  modalOpened: boolean;
-  setModalOpened: (opened: boolean) => void;
-  connectWallet: (wallet?: BitcoinWalletType) => void;
-  usableWallets: BitcoinWalletType[];
-  installableWallets: BitcoinWalletType[];
-}) {
-  return (
-    <WalletModal
-      visible={props.modalOpened}
-      onClose={() => props.setModalOpened(false)}
-      title="Select a Bitcoin Wallet"
-    >
-      <ul className="wallet-adapter-modal-list">
-        {props.usableWallets.map((e) => (
-          <WalletListItem
-            key={e.name}
-            name={e.name}
-            icon={e.iconUrl}
-            isInstalled={true}
-            onClick={() => props.connectWallet(e)}
-          />
-        ))}
-      </ul>
-      <ul className="wallet-adapter-modal-list">
-        {props.installableWallets.map((e) => (
-          <WalletListItem
-            key={e.name}
-            name={e.name}
-            icon={e.iconUrl}
-            isInstalled={false}
-            onClick={() => props.connectWallet(e)}
-          />
-        ))}
-      </ul>
-    </WalletModal>
-  );
-}
+import { GenericWalletModal, WalletOption } from '../shared/GenericWalletModal';
 
 export function useBitcoinWalletData(connectedOtherChainWallets: {
   [chainName: string]: string;
@@ -171,16 +131,17 @@ export function useBitcoinWalletData(connectedOtherChainWallets: {
   const [modalOpened, setModalOpened] = useState<boolean>(false);
   const modal = useMemo(
     () => (
-      <BitcoinWalletModal
-        modalOpened={modalOpened}
-        setModalOpened={setModalOpened}
-        connectWallet={(wallet) => {
-          connectWallet(wallet)
+      <GenericWalletModal
+        visible={modalOpened}
+        onClose={() => setModalOpened(false)}
+        title="Select a Bitcoin Wallet"
+        installedWallets={usableWallets.map((e) => ({ name: e.name, icon: e.iconUrl, data: e }))}
+        notInstalledWallets={installableWallets.map((e) => ({ name: e.name, icon: e.iconUrl, data: e }))}
+        onWalletClick={(wallet: WalletOption<BitcoinWalletType>) => {
+          connectWallet(wallet.data)
             .then(() => setModalOpened(false))
             .catch((err) => console.error(err));
         }}
-        usableWallets={usableWallets}
-        installableWallets={installableWallets}
       />
     ),
     [modalOpened, connectWallet, usableWallets, installableWallets]
