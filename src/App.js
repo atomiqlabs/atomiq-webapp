@@ -70,7 +70,8 @@ function WrappedApp() {
                     feeOverrideCode: "frontend"
                 },
                 mempoolApi: FEConstants.mempoolApi,
-                defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp
+                defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
+                automaticClockDriftCorrection: true
             });
             console.log("App: loadSwapper(): Swapper: ", swapper);
             await swapper.init();

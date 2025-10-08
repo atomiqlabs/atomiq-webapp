@@ -6,10 +6,10 @@
     "legacy-peer-deps": true
   },
   "dependencies": {
-    "@atomiqlabs/chain-evm": "^1.0.0-dev.102",
-    "@atomiqlabs/chain-solana": "^10.0.0-dev.10",
-    "@atomiqlabs/chain-starknet": "^4.0.0-dev.38",
-    "@atomiqlabs/sdk": "^5.0.0-dev.6",
+    "@atomiqlabs/chain-evm": "^1.0.2",
+    "@atomiqlabs/chain-solana": "^12.0.0",
+    "@atomiqlabs/chain-starknet": "^7.0.2",
+    "@atomiqlabs/sdk": "^7.0.1",
     "@coral-xyz/anchor": "0.29.0",
     "@rainbow-me/rainbowkit": "^2.2.8",
     "@scure/btc-signer": "^1.8.1",
