@@ -6,9 +6,9 @@
     "legacy-peer-deps": true
   },
   "dependencies": {
-    "@atomiqlabs/chain-evm": "^1.0.2",
+    "@atomiqlabs/chain-evm": "^1.1.0",
     "@atomiqlabs/chain-solana": "^12.0.0",
-    "@atomiqlabs/chain-starknet": "^7.0.2",
+    "@atomiqlabs/chain-starknet": "^7.0.3",
     "@atomiqlabs/sdk": "^7.0.1",
     "@coral-xyz/anchor": "0.29.0",
     "@rainbow-me/rainbowkit": "^2.2.8",
