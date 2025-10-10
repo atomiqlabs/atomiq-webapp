@@ -8,7 +8,7 @@ type TokenTickers = {
 }[keyof TokensType];
 
 export const TokenIcons: {
-    [C in TokenTickers]: string
+    [C in TokenTickers]?: string
 } = {
     WBTC: "/icons/crypto/WBTC.png",
     USDC: "/icons/crypto/USDC.svg",

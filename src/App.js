@@ -63,7 +63,8 @@ function WrappedApp() {
                 bitcoinNetwork: FEConstants.bitcoinNetwork,
                 pricingFeeDifferencePPM: 50000n,
                 defaultAdditionalParameters: {
-                    affiliate: affiliateLink
+                    affiliate: affiliateLink,
+                    feeOverrideCode: "frontend"
                 },
                 mempoolApi: FEConstants.mempoolApi,
                 defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp
