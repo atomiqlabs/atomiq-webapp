@@ -1,4 +1,3 @@
-import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { ChainWalletData } from '../ChainDataProvider';
 import { SolanaFees, SolanaSigner } from '@atomiqlabs/chain-solana';
@@ -14,7 +13,6 @@ import {
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 import { FEConstants } from '../../FEConstants';
-import { CustomWalletModalProvider } from '../CustomSolanaWallet/CustomWalletModalProvider';
 
 const wallets = [
   new PhantomWalletAdapter(),
@@ -67,17 +65,13 @@ export function SolanaWalletWrapper(props: { children: any }) {
       config={{ fetch: fetchWithTimeout, commitment: 'confirmed' }}
     >
       <WalletProvider wallets={wallets} autoConnect>
-        <CustomWalletModalProvider>
-          {/*TODO Tento element moze ist pravdepodobne dopice*/}
-          {props.children}
-        </CustomWalletModalProvider>
+        {props.children}
       </WalletProvider>
     </ConnectionProvider>
   );
 }
 
 export function useSolanaWalletData(): StandardChainHookResult<SolanaSigner> {
-  const { setVisible, visible } = useWalletModal();
   const { wallet, disconnect, wallets: availableWallets, select } = useWallet();
   const solanaWallet = useAnchorWallet();
   const { connection } = useConnection();
