@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
-import { useSolanaWalletData } from '../chains/useSolanaWalletData';
-import { useStarknetWalletData } from '../chains/useStarknetWalletData';
-import { useLightningWalletData } from '../chains/useLightningWalletData';
-import { useBitcoinWalletData } from '../chains/useBitcoinWalletData';
+import {
+  useSolanaWallet,
+  useStarknetWallet,
+  useLightningWallet,
+  useBitcoinWallet,
+} from '../registry/chainRegistry';
 import { ChainWalletData } from '../ChainDataProvider';
 import { WalletSystemContextType } from '../context/WalletSystemContext';
 import { StandardChainHookResult } from '../types/ChainHookTypes';
@@ -30,10 +32,11 @@ const DEFAULT_CONFIG: WalletSystemConfig = {
 export function useConfigurableWalletSystem(
   config: WalletSystemConfig = DEFAULT_CONFIG
 ): WalletSystemResult {
-  // Call all wallet hooks unconditionally - they now return StandardChainHookResult
-  const solanaResult = useSolanaWalletData();
-  const starknetResult = useStarknetWalletData();
-  const lightningResult = useLightningWalletData();
+  // Call all wallet hooks unconditionally using chain registry
+  // All hooks now use either useGenericChainWallet (with config) or custom implementation (Solana)
+  const solanaResult = useSolanaWallet();
+  const starknetResult = useStarknetWallet();
+  const lightningResult = useLightningWallet();
 
   // Collect connected wallets for Bitcoin dependencies
   const connectedWallets = useMemo(
@@ -49,7 +52,7 @@ export function useConfigurableWalletSystem(
     ]
   );
 
-  const bitcoinResult = useBitcoinWalletData(connectedWallets);
+  const bitcoinResult = useBitcoinWallet(connectedWallets);
 
   return useMemo(() => {
     const wallets: Record<string, ChainWalletData<any>> = {};
@@ -75,7 +78,7 @@ export function useConfigurableWalletSystem(
 
     return {
       wallets,
-      walletSystemContext: { chains }
+      walletSystemContext: { chains },
     };
   }, [config, solanaResult, starknetResult, lightningResult, bitcoinResult]);
 }

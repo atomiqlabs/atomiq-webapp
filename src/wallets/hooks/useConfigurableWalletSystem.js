@@ -1,8 +1,5 @@
 import { useMemo } from 'react';
-import { useSolanaWalletData } from '../chains/useSolanaWalletData';
-import { useStarknetWalletData } from '../chains/useStarknetWalletData';
-import { useLightningWalletData } from '../chains/useLightningWalletData';
-import { useBitcoinWalletData } from '../chains/useBitcoinWalletData';
+import { useSolanaWallet, useStarknetWallet, useLightningWallet, useBitcoinWallet, } from '../registry/chainRegistry';
 const DEFAULT_CONFIG = {
     enableSolana: true,
     enableStarknet: true,
@@ -10,10 +7,11 @@ const DEFAULT_CONFIG = {
     enableBitcoin: true,
 };
 export function useConfigurableWalletSystem(config = DEFAULT_CONFIG) {
-    // Call all wallet hooks unconditionally - they now return StandardChainHookResult
-    const solanaResult = useSolanaWalletData();
-    const starknetResult = useStarknetWalletData();
-    const lightningResult = useLightningWalletData();
+    // Call all wallet hooks unconditionally using chain registry
+    // All hooks now use either useGenericChainWallet (with config) or custom implementation (Solana)
+    const solanaResult = useSolanaWallet();
+    const starknetResult = useStarknetWallet();
+    const lightningResult = useLightningWallet();
     // Collect connected wallets for Bitcoin dependencies
     const connectedWallets = useMemo(() => ({
         STARKNET: config.enableStarknet ? starknetResult?.chainData?.wallet?.name : undefined,
@@ -24,7 +22,7 @@ export function useConfigurableWalletSystem(config = DEFAULT_CONFIG) {
         starknetResult?.chainData?.wallet?.name,
         solanaResult?.chainData?.wallet?.name,
     ]);
-    const bitcoinResult = useBitcoinWalletData(connectedWallets);
+    const bitcoinResult = useBitcoinWallet(connectedWallets);
     return useMemo(() => {
         const wallets = {};
         const chains = {};
@@ -47,7 +45,7 @@ export function useConfigurableWalletSystem(config = DEFAULT_CONFIG) {
         }
         return {
             wallets,
-            walletSystemContext: { chains }
+            walletSystemContext: { chains },
         };
     }, [config, solanaResult, starknetResult, lightningResult, bitcoinResult]);
 }

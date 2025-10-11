@@ -123,6 +123,7 @@ export function WalletConnections() {
   // <img className="social-footer__icon" src={`/icons/socials/${image}`} alt={title}/>
   const [solanaToken, setSolanaToken] = useStateWithOverride(smartChainTokenArray[0], null);
   const [bitcoinToken, setBitcoinToken] = useStateWithOverride(Tokens.BITCOIN.BTC, null);
+
   const connections: WalletConnection[] = [
     {
       name: 'Solana',
@@ -153,7 +154,7 @@ export function WalletConnections() {
               customIcon="connect"
               bsPrefix="none"
             >
-              Connect Wallet
+              Connect Walletisko
             </Dropdown.Toggle>
           ) : (
             <Dropdown.Toggle

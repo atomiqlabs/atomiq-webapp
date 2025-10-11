@@ -74,7 +74,7 @@ export function ConnectedWalletAnchor({
           size="smaller"
           className="wallet-connections__item__button"
         >
-          Connect Wallet
+          Connect Walletik
         </BaseButton>
       ) : (
         <Dropdown align={{ md: 'start' }}>

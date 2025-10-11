@@ -2,145 +2,226 @@
 
 ## Architecture Overview
 
-The wallet system uses a **standardized interface** with a unified modal:
-- **`StandardChainHookResult<T>`** - All chain hooks return this standardized interface
-- **`WalletSystemContext`** - Global context storing all chain wallet data
+The wallet system uses a **configuration-driven** approach with **dependency injection**:
+- **`ChainConfig<TWallet, TSigner>`** - Configuration object defining chain behavior
+- **`useGenericChainWallet(config)`** - Generic hook that works with any config
+- **`Chain Registry`** - Central place where all chains are defined
 - **`UnifiedWalletModal`** - Single modal component that works for all chains
-- **`useConfigurableWalletSystem`** - Hook that calls all chain hooks and populates context
 
-**Key Principle:** All chain hooks return the same structure with `installedWallets` and `installableWallets`. The unified modal reads this data from the global context.
+**Key Principle:** Define each chain once in a config object with injected functions. The generic hook handles all common logic (state, modal, listeners, etc.).
 
 ## Example: Adding Ethereum Support
 
-### 1. Create the wallet hook
+### 1. Create Chain Configuration
 
-**IMPORTANT:** Your hook must return `StandardChainHookResult<T>` interface.
+Create `src/wallets/configs/ethereumConfig.ts`:
 
 ```typescript
-// src/wallets/chains/useEthereumWalletData.ts
-import { useState, useMemo, useCallback, useEffect } from 'react';
-import { ChainWalletData } from '../ChainDataProvider';
-import { StandardChainHookResult, ChainWalletOption } from '../types/ChainHookTypes';
+import { ChainConfig } from '../types/ChainConfig';
 
-// Define your wallet type
+// Define your wallet types
 interface EthereumWalletType {
   name: string;
   iconUrl: string;
   detect: () => Promise<boolean>;
-  use: () => Promise<EthereumWallet>;
+  connect: () => Promise<EthereumWallet>;
 }
 
-export function useEthereumWalletData(): StandardChainHookResult<EthereumSigner> {
-  const [wallet, setWallet] = useState<EthereumWallet | undefined>();
-  const [usableWallets, setUsableWallets] = useState<EthereumWalletType[]>([]);
-  const [installableWallets, setInstallableWallets] = useState<EthereumWalletType[]>([]);
-  const [modalOpened, setModalOpened] = useState(false);
+interface EthereumWallet {
+  name: string;
+  icon: string;
+  address: string;
+  signTransaction: (tx: any) => Promise<any>;
+}
 
-  // 1. DETECT WALLETS ON MOUNT
-  useEffect(() => {
-    detectEthereumWallets()
-      .then((resp) => {
-        setUsableWallets(resp.installed);
-        setInstallableWallets(resp.installable);
-      })
-      .catch((e) => console.error(e));
-  }, []);
+/**
+ * Ethereum chain configuration
+ *
+ * All chain-specific logic is defined here as injected functions.
+ * The generic hook (useGenericChainWallet) handles everything else.
+ */
+export const ethereumConfig: ChainConfig<
+  EthereumWallet,
+  EthereumSigner,
+  EthereumWalletType
+> = {
+  // ========== Metadata ==========
+  id: 'ETHEREUM',
+  name: 'Ethereum',
+  icon: '/icons/chains/ethereum.svg',
 
-  // 2. MODAL CONTROLS
-  const openModal = useCallback(() => {
-    setModalOpened(true);
-  }, []);
+  // ========== Wallet Detection ==========
+  detectWallets: async () => {
+    const installed: EthereumWalletType[] = [];
+    const installable: EthereumWalletType[] = [];
 
-  const closeModal = useCallback(() => {
-    setModalOpened(false);
-  }, []);
-
-  // 3. CONNECTION LOGIC
-  const connectWalletInternal = useCallback(async (walletType: EthereumWalletType) => {
-    const connectedWallet = await walletType.use();
-    setWallet(connectedWallet);
-  }, []);
-
-  const connectWallet = useCallback(
-    async (walletOption: ChainWalletOption<EthereumWalletType>) => {
-      await connectWalletInternal(walletOption.data);
-      closeModal();
-    },
-    [connectWalletInternal, closeModal]
-  );
-
-  const disconnect = useCallback(() => {
-    setWallet(undefined);
-  }, []);
-
-  const connect = useCallback(() => {
-    if (usableWallets.length === 1) {
-      connectWalletInternal(usableWallets[0]).catch(console.error);
+    // Check for MetaMask
+    if (window.ethereum?.isMetaMask) {
+      installed.push({
+        name: 'MetaMask',
+        iconUrl: '/wallets/metamask.svg',
+        detect: async () => true,
+        connect: async () => {
+          const accounts = await window.ethereum.request({
+            method: 'eth_requestAccounts',
+          });
+          return {
+            name: 'MetaMask',
+            icon: '/wallets/metamask.svg',
+            address: accounts[0],
+            signTransaction: (tx) => window.ethereum.request({
+              method: 'eth_sendTransaction',
+              params: [tx],
+            }),
+          };
+        },
+      });
     } else {
-      openModal();
+      installable.push({
+        name: 'MetaMask',
+        iconUrl: '/wallets/metamask.svg',
+        detect: async () => false,
+        connect: async () => { throw new Error('Not installed'); },
+      });
     }
-  }, [usableWallets, connectWalletInternal, openModal]);
 
-  // 4. CONVERT TO ChainWalletOption FORMAT
-  const installedWalletOptions = useMemo<ChainWalletOption<EthereumWalletType>[]>(
-    () => usableWallets.map((w) => ({ name: w.name, icon: w.iconUrl, data: w })),
-    [usableWallets]
-  );
+    // Add more wallets...
 
-  const installableWalletOptions = useMemo<ChainWalletOption<EthereumWalletType>[]>(
-    () => installableWallets.map((w) => ({ name: w.name, icon: w.iconUrl, data: w })),
-    [installableWallets]
-  );
+    return {
+      installed: installed.map(w => ({
+        name: w.name,
+        icon: w.iconUrl,
+        data: w,
+      })),
+      installable: installable.map(w => ({
+        name: w.name,
+        icon: w.iconUrl,
+        data: w,
+      })),
+    };
+  },
 
-  // 5. PREPARE chainData
-  const chainData = useMemo<ChainWalletData<EthereumSigner>>(
-    () => ({
-      chain: {
-        name: 'Ethereum',
-        icon: '/icons/chains/ethereum.svg',
-      },
-      wallet: wallet == null ? null : {
-        name: wallet.getName(),
-        icon: wallet.getIcon(),
-        instance: wallet.getSigner(), // Your signer instance
-        address: wallet.getAddress(),
-      },
-      id: 'ETHEREUM',
-      connect: usableWallets.length > 0 ? connect : null,
-      disconnect: wallet != null ? disconnect : null,
-      changeWallet: wallet != null && usableWallets.length > 1 ? connect : null,
-    }),
-    [wallet, usableWallets, connect, disconnect]
-  );
+  // ========== Connection Lifecycle ==========
+  connectWallet: async (descriptor) => {
+    return await descriptor.data.connect();
+  },
 
-  // 6. RETURN StandardChainHookResult
-  return useMemo(
-    () => ({
-      chainData,
-      installedWallets: installedWalletOptions,
-      installableWallets: installableWalletOptions,
-      connectWallet,
-      openModal,
-      closeModal,
-      isModalOpen: modalOpened,
-    }),
-    [chainData, installedWalletOptions, installableWalletOptions, connectWallet, openModal, closeModal, modalOpened]
-  );
-}
+  disconnectWallet: async (wallet) => {
+    // Ethereum doesn't have explicit disconnect
+    // Just clear local state (handled by generic hook)
+  },
+
+  // ========== Wallet Info ==========
+  createSigner: (wallet) => {
+    return new EthereumSigner(wallet);
+  },
+
+  getWalletInfo: (wallet) => {
+    return {
+      name: wallet.name,
+      icon: wallet.icon,
+      address: wallet.address,
+    };
+  },
+
+  // ========== Optional: Auto-Connect ==========
+  loadAutoConnect: async () => {
+    const savedAddress = localStorage.getItem('ethereum-wallet-address');
+    if (!savedAddress) return null;
+
+    // Try to reconnect silently
+    try {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({
+          method: 'eth_accounts', // Get accounts without prompt
+        });
+
+        if (accounts.includes(savedAddress)) {
+          return {
+            name: 'MetaMask',
+            icon: '/wallets/metamask.svg',
+            address: savedAddress,
+            signTransaction: (tx) => window.ethereum.request({
+              method: 'eth_sendTransaction',
+              params: [tx],
+            }),
+          };
+        }
+      }
+    } catch (error) {
+      console.error('[Ethereum] Auto-connect failed:', error);
+    }
+
+    return null;
+  },
+
+  saveAutoConnect: (wallet) => {
+    localStorage.setItem('ethereum-wallet-address', wallet.address);
+  },
+
+  clearAutoConnect: () => {
+    localStorage.removeItem('ethereum-wallet-address');
+  },
+
+  // ========== Optional: Event Listeners ==========
+  setupListeners: (wallet, onChange) => {
+    if (!window.ethereum) return () => {};
+
+    const handleAccountsChanged = (accounts: string[]) => {
+      if (accounts.length === 0) {
+        // User disconnected
+        onChange(null);
+      } else if (accounts[0] !== wallet.address) {
+        // User switched account
+        onChange({
+          ...wallet,
+          address: accounts[0],
+        });
+      }
+    };
+
+    const handleChainChanged = () => {
+      // Chain changed - reload or update
+      window.location.reload();
+    };
+
+    window.ethereum.on('accountsChanged', handleAccountsChanged);
+    window.ethereum.on('chainChanged', handleChainChanged);
+
+    return () => {
+      window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      window.ethereum.removeListener('chainChanged', handleChainChanged);
+    };
+  },
+};
 ```
 
 **Key Points:**
-- ✅ Returns `StandardChainHookResult<T>` (not `[data, modal]`)
-- ✅ Provides `installedWallets` and `installableWallets` arrays
-- ✅ No manual modal creation - modal is automatically rendered
-- ✅ Modal control via `openModal()`, `closeModal()`, `isModalOpen`
+- ✅ All chain-specific logic in **one config object**
+- ✅ Functions are **injected** (dependency injection pattern)
+- ✅ **~80-100 lines** instead of ~200 lines for manual hook
+- ✅ No state management, no modal code - generic hook handles it
+- ✅ Clear separation: config = what, generic hook = how
 
-### 2. Add to `ChainIdentifiers` type
+### 2. Add to Chain Registry
 
-First, add your chain to the type definition:
+Add wrapper hook to `src/wallets/registry/chainRegistry.ts`:
 
 ```typescript
-// src/wallets/context/ChainDataContext.ts
+import { ethereumConfig } from '../configs/ethereumConfig';
+import { useGenericChainWallet } from '../hooks/useGenericChainWallet';
+
+// Add wrapper hook
+export function useEthereumWallet(): StandardChainHookResult<EthereumSigner> {
+  return useGenericChainWallet(ethereumConfig);
+}
+```
+
+### 3. Add to Type Definitions
+
+Update `src/wallets/context/ChainDataContext.ts`:
+
+```typescript
 export type ChainIdentifiers =
   | "BITCOIN"
   | "LIGHTNING"
@@ -157,12 +238,14 @@ type WalletTypes = {
 };
 ```
 
-### 3. Add to `useConfigurableWalletSystem`
+### 4. Add to Wallet System
+
+Update `src/wallets/hooks/useConfigurableWalletSystem.tsx`:
 
 ```typescript
-// src/wallets/hooks/useConfigurableWalletSystem.tsx
-import { useEthereumWalletData } from '../chains/useEthereumWalletData';
+import { useEthereumWallet } from '../registry/chainRegistry';
 
+// Add to config interface
 export interface WalletSystemConfig {
   enableSolana: boolean;
   enableStarknet: boolean;
@@ -171,6 +254,7 @@ export interface WalletSystemConfig {
   enableEthereum: boolean; // Add this
 }
 
+// Add to default config
 const DEFAULT_CONFIG: WalletSystemConfig = {
   enableSolana: true,
   enableStarknet: true,
@@ -182,12 +266,10 @@ const DEFAULT_CONFIG: WalletSystemConfig = {
 export function useConfigurableWalletSystem(
   config: WalletSystemConfig = DEFAULT_CONFIG
 ): WalletSystemResult {
-  // Call all hooks unconditionally (React Rules of Hooks)
-  const solanaResult = useSolanaWalletData();
-  const starknetResult = useStarknetWalletData();
-  const lightningResult = useLightningWalletData();
-  const bitcoinResult = useBitcoinWalletData(connectedWallets);
-  const ethereumResult = useEthereumWalletData(); // Add this
+  // Call wrapper hook
+  const ethereumResult = useEthereumWallet(); // Add this
+
+  // ... other hooks
 
   return useMemo(() => {
     const wallets: Record<string, ChainWalletData<any>> = {};
@@ -209,7 +291,7 @@ export function useConfigurableWalletSystem(
 }
 ```
 
-**That's it!** The modal is automatically rendered by `ChainDataProvider`.
+**That's it!** The modal is automatically rendered, all functionality works.
 
 ---
 
