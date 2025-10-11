@@ -6,6 +6,7 @@ import { ChainWalletData } from '../ChainDataProvider';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { FEConstants } from '../../FEConstants';
 import { timeoutPromise } from '../../utils/Utils';
+import { StandardChainHookResult, ChainWalletOption } from '../types/ChainHookTypes';
 
 function waitTillAddressPopulated(acc: WalletAccount) {
   return new Promise<void>((resolve) => {
@@ -22,10 +23,11 @@ function waitTillAddressPopulated(acc: WalletAccount) {
   });
 }
 
-export function useStarknetWalletData(): [ChainWalletData<StarknetSigner>] {
+export function useStarknetWalletData(): StandardChainHookResult<StarknetSigner> {
   const [starknetSigner, setStarknetSigner] = useState<StarknetSigner>();
   const [starknetWalletData, setStarknetWalletData] = useState<StarknetWindowObject>();
   const [defaultStarknetWallet, setStarknetAutoConnect] = useLocalStorage('starknet-wallet', null);
+  const [modalOpened, setModalOpened] = useState<boolean>(false);
 
   const currentSWORef = useRef<{
     swo: StarknetWindowObject;
@@ -97,6 +99,14 @@ export function useStarknetWalletData(): [ChainWalletData<StarknetSigner>] {
       });
   }, []);
 
+  const openModal = useCallback(() => {
+    setModalOpened(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setModalOpened(false);
+  }, []);
+
   const _connect: () => Promise<void> = useCallback(async () => {
     const swo = await connect({ modalMode: 'alwaysAsk', modalTheme: 'dark' });
     setStarknetAutoConnect(swo?.id);
@@ -118,39 +128,57 @@ export function useStarknetWalletData(): [ChainWalletData<StarknetSigner>] {
     return _disconnect().then(() => _connect());
   }, []);
 
-  return useMemo(
-    () =>
-      !FEConstants.allowedChains.has('STARKNET')
-        ? [null]
-        : [
-            {
-              chain: {
-                name: 'Starknet',
-                icon: '/icons/chains/STARKNET.svg',
-              },
-              wallet:
-                starknetWalletData == null || starknetSigner == null
-                  ? null
-                  : {
-                      name: starknetWalletData.name,
-                      icon:
-                        typeof starknetWalletData?.icon !== 'string'
-                          ? starknetWalletData?.icon?.dark
-                          : starknetWalletData?.icon,
-                      instance: starknetSigner,
-                      address: starknetSigner.getAddress(),
-                    },
-              id: 'STARKNET',
-              connect: _connect,
-              disconnect: _disconnect,
-              changeWallet,
-              swapperOptions: {
-                rpcUrl: FEConstants.starknetRpc,
-                chainId: FEConstants.starknetChainId,
-                fees: new StarknetFees(FEConstants.starknetRpc),
-              },
+  // Starknet uses get-starknet's built-in modal, so we return empty arrays
+  // The modal is handled by the get-starknet library
+  const installedWalletOptions = useMemo<ChainWalletOption[]>(() => [], []);
+  const installableWalletOptions = useMemo<ChainWalletOption[]>(() => [], []);
+
+  const connectWallet = useCallback(async (_wallet: ChainWalletOption) => {
+    // Not used for Starknet - uses get-starknet modal
+  }, []);
+
+  const chainData = useMemo<ChainWalletData<StarknetSigner>>(() => {
+    if (!FEConstants.allowedChains.has('STARKNET')) return null;
+
+    return {
+      chain: {
+        name: 'Starknet',
+        icon: '/icons/chains/STARKNET.svg',
+      },
+      wallet:
+        starknetWalletData == null || starknetSigner == null
+          ? null
+          : {
+              name: starknetWalletData.name,
+              icon:
+                typeof starknetWalletData?.icon !== 'string'
+                  ? starknetWalletData?.icon?.dark
+                  : starknetWalletData?.icon,
+              instance: starknetSigner,
+              address: starknetSigner.getAddress(),
             },
-          ],
-    [starknetWalletData, starknetSigner, _connect, _disconnect, changeWallet]
+      id: 'STARKNET',
+      connect: _connect,
+      disconnect: _disconnect,
+      changeWallet,
+      swapperOptions: {
+        rpcUrl: FEConstants.starknetRpc,
+        chainId: FEConstants.starknetChainId,
+        fees: new StarknetFees(FEConstants.starknetRpc),
+      },
+    };
+  }, [starknetWalletData, starknetSigner, _connect, _disconnect, changeWallet]);
+
+  return useMemo(
+    () => ({
+      chainData,
+      installedWallets: installedWalletOptions,
+      installableWallets: installableWalletOptions,
+      connectWallet,
+      openModal,
+      closeModal,
+      isModalOpen: modalOpened,
+    }),
+    [chainData, installedWalletOptions, installableWalletOptions, connectWallet, openModal, closeModal, modalOpened]
   );
 }

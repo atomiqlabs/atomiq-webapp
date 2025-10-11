@@ -2,7 +2,7 @@ import { jsx as _jsx } from "react/jsx-runtime";
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { SolanaFees, SolanaSigner } from '@atomiqlabs/chain-solana';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { LedgerWalletAdapter, PhantomWalletAdapter, TorusWalletAdapter, SolflareWalletAdapter, } from '@solana/wallet-adapter-wallets';
 import { FEConstants } from '../../FEConstants';
@@ -52,49 +52,86 @@ export function SolanaWalletWrapper(props) {
     return (_jsx(ConnectionProvider, { endpoint: FEConstants.solanaRpcUrl ?? 'http://example.com/', config: { fetch: fetchWithTimeout, commitment: 'confirmed' }, children: _jsx(WalletProvider, { wallets: wallets, autoConnect: true, children: _jsx(CustomWalletModalProvider, { children: props.children }) }) }));
 }
 export function useSolanaWalletData() {
-    const { setVisible } = useWalletModal();
-    const { wallet, disconnect } = useWallet();
+    const { setVisible, visible } = useWalletModal();
+    const { wallet, disconnect, wallets: availableWallets, select } = useWallet();
     const solanaWallet = useAnchorWallet();
     const { connection } = useConnection();
     const solanaSigner = useMemo(() => (solanaWallet == null ? null : new SolanaSigner(solanaWallet)), [solanaWallet]);
+    const [modalOpened, setModalOpened] = useState(false);
+    const openModal = useCallback(() => {
+        setModalOpened(true);
+    }, []);
+    const closeModal = useCallback(() => {
+        setModalOpened(false);
+    }, []);
     const connect = useCallback(() => {
-        setVisible(true);
-    }, [setVisible]);
-    return useMemo(() => {
+        openModal();
+    }, [openModal]);
+    // Extract installed and installable wallets from Solana wallet adapter
+    const installedWalletOptions = useMemo(() => {
+        return availableWallets
+            .filter((w) => w.readyState === 'Installed')
+            .map((w) => ({
+            name: w.adapter.name,
+            icon: w.adapter.icon,
+            data: w,
+        }));
+    }, [availableWallets]);
+    const installableWalletOptions = useMemo(() => {
+        return availableWallets
+            .filter((w) => w.readyState === 'NotDetected' || w.readyState === 'Loadable')
+            .map((w) => ({
+            name: w.adapter.name,
+            icon: w.adapter.icon,
+            data: w,
+        }));
+    }, [availableWallets]);
+    const connectWallet = useCallback(async (walletOption) => {
+        select(walletOption.data.adapter.name);
+        closeModal();
+    }, [select, closeModal]);
+    const chainData = useMemo(() => {
         if (!FEConstants.allowedChains.has('SOLANA'))
-            return [null];
+            return null;
         const solanaFees = new SolanaFees(connection, 1000000, 2, 100, 'auto', 'high', () => 50000n
         //, {
         //    address: jitoPubkey,
         //    endpoint: jitoEndpoint
         //}
         );
-        return [
-            {
-                chain: {
-                    name: 'Solana',
-                    icon: '/icons/chains/solana.svg',
-                },
-                wallet: wallet == null
-                    ? null
-                    : {
-                        name: wallet.adapter?.name,
-                        icon: wallet.adapter?.icon,
-                        instance: solanaSigner,
-                        address: wallet.adapter?.publicKey?.toBase58(),
-                    },
-                id: 'SOLANA',
-                disconnect,
-                connect,
-                changeWallet: connect,
-                swapperOptions: {
-                    rpcUrl: connection,
-                    retryPolicy: {
-                        transactionResendInterval: 3000,
-                    },
-                    fees: solanaFees,
-                },
+        return {
+            chain: {
+                name: 'Solana',
+                icon: '/icons/chains/solana.svg',
             },
-        ];
+            wallet: wallet == null
+                ? null
+                : {
+                    name: wallet.adapter?.name,
+                    icon: wallet.adapter?.icon,
+                    instance: solanaSigner,
+                    address: wallet.adapter?.publicKey?.toBase58(),
+                },
+            id: 'SOLANA',
+            disconnect,
+            connect,
+            changeWallet: connect,
+            swapperOptions: {
+                rpcUrl: connection,
+                retryPolicy: {
+                    transactionResendInterval: 3000,
+                },
+                fees: solanaFees,
+            },
+        };
     }, [wallet, solanaSigner, disconnect, connect, connection]);
+    return useMemo(() => ({
+        chainData,
+        installedWallets: installedWalletOptions,
+        installableWallets: installableWalletOptions,
+        connectWallet,
+        openModal,
+        closeModal,
+        isModalOpen: modalOpened,
+    }), [chainData, installedWalletOptions, installableWalletOptions, connectWallet, openModal, closeModal, modalOpened]);
 }

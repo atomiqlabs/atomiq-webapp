@@ -1,6 +1,9 @@
 import { SolanaWalletWrapper } from './chains/useSolanaWalletData';
 import { ChainDataContext } from './context/ChainDataContext';
+import { WalletSystemContext } from './context/WalletSystemContext';
 import { useWalletSystem } from './hooks/useWalletSystem';
+import { UnifiedWalletModal } from './shared/UnifiedWalletModal';
+import { ChainIdentifiers } from './context/ChainDataContext';
 
 export type ChainWalletData<T> = {
   chain: {
@@ -45,13 +48,28 @@ export type ChainWalletData<T> = {
 };
 
 function WrappedChainDataProvider(props: { children: React.ReactNode }) {
-  const { wallets, modals } = useWalletSystem();
+  const { wallets, walletSystemContext } = useWalletSystem();
 
   return (
-    <ChainDataContext.Provider value={wallets}>
-      {modals}
-      {props.children}
-    </ChainDataContext.Provider>
+    <WalletSystemContext.Provider value={walletSystemContext}>
+      <ChainDataContext.Provider value={wallets}>
+        {/* Render unified modals for chains that have wallets to display */}
+        {Object.keys(walletSystemContext.chains).map((chainId) => {
+          const chain = walletSystemContext.chains[chainId as ChainIdentifiers];
+          if (!chain) return null;
+
+          return (
+            <UnifiedWalletModal
+              key={chainId}
+              chainId={chainId as ChainIdentifiers}
+              visible={chain.isModalOpen}
+              onClose={chain.closeModal}
+            />
+          );
+        })}
+        {props.children}
+      </ChainDataContext.Provider>
+    </WalletSystemContext.Provider>
   );
 }
 

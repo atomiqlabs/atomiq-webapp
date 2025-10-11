@@ -10,43 +10,46 @@ const DEFAULT_CONFIG = {
     enableBitcoin: true,
 };
 export function useConfigurableWalletSystem(config = DEFAULT_CONFIG) {
-    // Call all wallet hooks unconditionally
-    const [solanaChain] = useSolanaWalletData();
-    const [starknetChain] = useStarknetWalletData();
-    const [lightningChain] = useLightningWalletData();
+    // Call all wallet hooks unconditionally - they now return StandardChainHookResult
+    const solanaResult = useSolanaWalletData();
+    const starknetResult = useStarknetWalletData();
+    const lightningResult = useLightningWalletData();
     // Collect connected wallets for Bitcoin dependencies
     const connectedWallets = useMemo(() => ({
-        STARKNET: config.enableStarknet ? starknetChain?.wallet?.name : undefined,
-        SOLANA: config.enableSolana ? solanaChain?.wallet?.name : undefined,
+        STARKNET: config.enableStarknet ? starknetResult?.chainData?.wallet?.name : undefined,
+        SOLANA: config.enableSolana ? solanaResult?.chainData?.wallet?.name : undefined,
     }), [
         config.enableStarknet,
         config.enableSolana,
-        starknetChain?.wallet?.name,
-        solanaChain?.wallet?.name,
+        starknetResult?.chainData?.wallet?.name,
+        solanaResult?.chainData?.wallet?.name,
     ]);
-    const [bitcoinChain, bitcoinModal] = useBitcoinWalletData(connectedWallets);
+    const bitcoinResult = useBitcoinWalletData(connectedWallets);
     return useMemo(() => {
         const wallets = {};
-        const modals = [];
-        // Add wallets based on configuration
-        if (config.enableSolana && solanaChain) {
-            wallets.SOLANA = solanaChain;
+        const chains = {};
+        // Add wallets and chain data based on configuration
+        if (config.enableSolana && solanaResult?.chainData) {
+            wallets.SOLANA = solanaResult.chainData;
+            chains.SOLANA = solanaResult;
         }
-        if (config.enableStarknet && starknetChain) {
-            wallets.STARKNET = starknetChain;
+        if (config.enableStarknet && starknetResult?.chainData) {
+            wallets.STARKNET = starknetResult.chainData;
+            chains.STARKNET = starknetResult;
         }
-        if (config.enableLightning && lightningChain) {
-            wallets.LIGHTNING = lightningChain;
+        if (config.enableLightning && lightningResult?.chainData) {
+            wallets.LIGHTNING = lightningResult.chainData;
+            chains.LIGHTNING = lightningResult;
         }
-        if (config.enableBitcoin && bitcoinChain) {
-            wallets.BITCOIN = bitcoinChain;
+        if (config.enableBitcoin && bitcoinResult?.chainData) {
+            wallets.BITCOIN = bitcoinResult.chainData;
+            chains.BITCOIN = bitcoinResult;
         }
-        // Add modals for enabled wallets
-        if (config.enableBitcoin && bitcoinModal) {
-            modals.push(bitcoinModal);
-        }
-        return { wallets, modals };
-    }, [config, solanaChain, starknetChain, lightningChain, bitcoinChain, bitcoinModal]);
+        return {
+            wallets,
+            walletSystemContext: { chains }
+        };
+    }, [config, solanaResult, starknetResult, lightningResult, bitcoinResult]);
 }
 // Convenience hook with default config
 export const useWalletSystem = () => useConfigurableWalletSystem();

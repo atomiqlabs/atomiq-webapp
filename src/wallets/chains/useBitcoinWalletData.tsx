@@ -5,11 +5,11 @@ import { useStateRef } from '../../utils/hooks/useStateRef';
 import { ChainWalletData } from '../ChainDataProvider';
 import { ExtensionBitcoinWallet } from './bitcoin/base/ExtensionBitcoinWallet';
 import { BitcoinWalletType, getInstalledBitcoinWallets } from './bitcoin/utils/BitcoinWalletUtils';
-import { GenericWalletModal, WalletOption } from '../shared/GenericWalletModal';
+import { StandardChainHookResult, ChainWalletOption } from '../types/ChainHookTypes';
 
 export function useBitcoinWalletData(connectedOtherChainWallets: {
   [chainName: string]: string;
-}): [ChainWalletData<ExtensionBitcoinWallet>, JSX.Element] {
+}): StandardChainHookResult<ExtensionBitcoinWallet> {
   const [bitcoinWallet, setBitcoinWallet] = React.useState<ExtensionBitcoinWallet>(undefined);
   const [usableWallets, setUsableWallets] = useState<BitcoinWalletType[]>([]);
   const [installableWallets, setInstallableWallets] = useState<BitcoinWalletType[]>([]);
@@ -117,6 +117,16 @@ export function useBitcoinWalletData(connectedOtherChainWallets: {
     []
   );
 
+  const [modalOpened, setModalOpened] = useState<boolean>(false);
+
+  const openModal = useCallback(() => {
+    setModalOpened(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setModalOpened(false);
+  }, []);
+
   const connect = useCallback(() => {
     if (usableWallets.length === 1) {
       connectWallet(usableWallets[0]).catch((e) => {
@@ -124,54 +134,64 @@ export function useBitcoinWalletData(connectedOtherChainWallets: {
       });
       return;
     } else {
-      setModalOpened(true);
+      openModal();
     }
-  }, [usableWallets]);
+  }, [usableWallets, connectWallet, openModal]);
 
-  const [modalOpened, setModalOpened] = useState<boolean>(false);
-  const modal = useMemo(
-    () => (
-      <GenericWalletModal
-        visible={modalOpened}
-        onClose={() => setModalOpened(false)}
-        title="Select a Bitcoin Wallet"
-        installedWallets={usableWallets.map((e) => ({ name: e.name, icon: e.iconUrl, data: e }))}
-        notInstalledWallets={installableWallets.map((e) => ({ name: e.name, icon: e.iconUrl, data: e }))}
-        onWalletClick={(wallet: WalletOption<BitcoinWalletType>) => {
-          connectWallet(wallet.data)
-            .then(() => setModalOpened(false))
-            .catch((err) => console.error(err));
-        }}
-      />
-    ),
-    [modalOpened, connectWallet, usableWallets, installableWallets]
+  // Convert BitcoinWalletType to ChainWalletOption
+  const installedWalletOptions = useMemo<ChainWalletOption<BitcoinWalletType>[]>(
+    () => usableWallets.map((wallet) => ({ name: wallet.name, icon: wallet.iconUrl, data: wallet })),
+    [usableWallets]
+  );
+
+  const installableWalletOptions = useMemo<ChainWalletOption<BitcoinWalletType>[]>(
+    () => installableWallets.map((wallet) => ({ name: wallet.name, icon: wallet.iconUrl, data: wallet })),
+    [installableWallets]
+  );
+
+  const connectWalletOption = useCallback(
+    async (wallet: ChainWalletOption<BitcoinWalletType>) => {
+      await connectWallet(wallet.data);
+      closeModal();
+    },
+    [connectWallet, closeModal]
   );
 
   console.log(bitcoinWallet);
 
-  return useMemo(
-    () => [
-      {
-        chain: {
-          name: 'Bitcoin',
-          icon: '/icons/chains/BITCOIN.svg',
-        },
-        wallet:
-          bitcoinWallet == null
-            ? null
-            : {
-                name: bitcoinWallet.getName(),
-                icon: bitcoinWallet.getIcon(),
-                instance: bitcoinWallet,
-                address: bitcoinWallet.getReceiveAddress(),
-              },
-        id: 'BITCOIN',
-        connect: usableWallets.length > 0 || installableWallets.length > 0 ? connect : null,
-        disconnect: bitcoinWallet != null ? disconnect : null,
-        changeWallet: bitcoinWallet != null && usableWallets.length > 1 ? connect : null,
+  const chainData = useMemo<ChainWalletData<ExtensionBitcoinWallet>>(
+    () => ({
+      chain: {
+        name: 'Bitcoin',
+        icon: '/icons/chains/BITCOIN.svg',
       },
-      modal,
-    ],
-    [bitcoinWallet, usableWallets, installableWallets, connect, disconnect, modal]
+      wallet:
+        bitcoinWallet == null
+          ? null
+          : {
+              name: bitcoinWallet.getName(),
+              icon: bitcoinWallet.getIcon(),
+              instance: bitcoinWallet,
+              address: bitcoinWallet.getReceiveAddress(),
+            },
+      id: 'BITCOIN',
+      connect: usableWallets.length > 0 || installableWallets.length > 0 ? connect : null,
+      disconnect: bitcoinWallet != null ? disconnect : null,
+      changeWallet: bitcoinWallet != null && usableWallets.length > 1 ? connect : null,
+    }),
+    [bitcoinWallet, usableWallets, installableWallets, connect, disconnect]
+  );
+
+  return useMemo(
+    () => ({
+      chainData,
+      installedWallets: installedWalletOptions,
+      installableWallets: installableWalletOptions,
+      connectWallet: connectWalletOption,
+      openModal,
+      closeModal,
+      isModalOpen: modalOpened,
+    }),
+    [chainData, installedWalletOptions, installableWalletOptions, connectWalletOption, openModal, closeModal, modalOpened]
   );
 }
