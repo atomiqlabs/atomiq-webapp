@@ -14,9 +14,11 @@ import { useAsync } from "../../utils/hooks/useAsync";
 import { useNFCScanner } from "../../nfc/hooks/useNFCScanner";
 import { SwapsContext } from "../context/SwapsContext";
 import { NFCStartResult } from "../../nfc/NFCReader";
+import { useChain } from "../../wallets/hooks/useChain";
 export function LightningQR(props) {
     const { swapper } = useContext(SwapsContext);
-    const lightningChainData = useContext(ChainDataContext).LIGHTNING;
+    const { disconnectWallet } = useContext(ChainDataContext);
+    const lightningChainData = useChain("LIGHTNING");
     const [payingWithLNURL, setPayingWithLNURL] = useState(false);
     const NFCScanning = useNFCScanner((address) => {
         //TODO: Maybe we need to stop the scanning here as well
@@ -63,7 +65,7 @@ export function LightningQR(props) {
                                     pay();
                                 }, children: [payLoading ? (_jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" })) : (""), "Pay with", _jsx("img", { width: 20, height: 20, src: "/wallets/WebLN.png", className: "ms-2 me-1" }), "WebLN"] }), _jsx("small", { className: "mt-2", children: _jsx("a", { href: "#", onClick: (e) => {
                                         e.preventDefault();
-                                        lightningChainData.disconnect();
+                                        disconnectWallet("LIGHTNING");
                                     }, children: "Or use a QR code/LN invoice" }) })] })] })) : (_jsx(CopyOverlay, { placement: "top", children: qrContent })), lightningChainData.wallet == null && props.setAutoClaim != null ? (_jsxs(Form, { className: "text-start d-flex align-items-center justify-content-center font-bigger mt-3", children: [_jsx(Form.Check // prettier-ignore
                     , { id: "autoclaim", type: "switch", onChange: (val) => props.setAutoClaim(val.target.checked), checked: props.autoClaim }), _jsx("label", { title: "", htmlFor: "autoclaim", className: "form-check-label me-2", children: "Auto-claim" }), _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "autoclaim-pay-tooltip", children: "Automatically requests authorization of the claim transaction through your wallet as soon as the lightning payment arrives." }), children: _jsx(Badge, { bg: "primary", className: "pill-round", pill: true, children: "?" }) })] })) : ("")] }));
 }

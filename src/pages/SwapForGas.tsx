@@ -15,7 +15,7 @@ import { TrustedFromBTCLNQuoteSummary } from "../swaps/frombtc/TrustedFromBTCLNQ
 import { useSwapState } from "../swaps/hooks/useSwapState";
 import { ErrorAlert } from "../components/ErrorAlert";
 import { Tokens } from "../FEConstants";
-import { useChainForCurrency } from "../wallets/hooks/useChainForCurrency";
+import { useChain } from "../wallets/hooks/useChain";
 import { ChainWalletData } from "../wallets/ChainDataProvider";
 
 const defaultSwapAmount = "12500000";
@@ -35,7 +35,7 @@ export function SwapForGas() {
   const amount = BigInt(state?.amount ?? defaultSwapAmount);
 
   const outputChainData: ChainWalletData<AbstractSigner> =
-    useChainForCurrency(nativeCurrency);
+    useChain(nativeCurrency);
 
   const [createSwap, loading, swapData, error] = useAsync(() => {
     if (swapper == null || outputChainData?.wallet == null) return null;

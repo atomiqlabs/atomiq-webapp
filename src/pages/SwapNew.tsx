@@ -42,7 +42,7 @@ import { ic_power_off_outline } from 'react-icons-kit/md/ic_power_off_outline';
 import { useExistingSwap } from '../swaps/hooks/useExistingSwap';
 import { ConnectedWalletAnchor } from '../wallets/ConnectedWalletAnchor';
 import { useStateWithOverride } from '../utils/hooks/useStateWithOverride';
-import { useChainForCurrency } from '../wallets/hooks/useChainForCurrency';
+import { useChain } from '../wallets/hooks/useChain';
 import { WebLNProvider } from 'webln';
 import { useSupportedTokens } from '../swaps/hooks/useSupportedTokens';
 import { useDecimalNumberState } from '../utils/hooks/useDecimalNumberState';
@@ -85,9 +85,9 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       ? outputToken
       : null;
 
-  const inputChainData = useChainForCurrency(inputToken);
-  const outputChainData = useChainForCurrency(outputToken);
-  const chainsData = useContext(ChainDataContext);
+  const inputChainData = useChain(inputToken);
+  const outputChainData = useChain(outputToken);
+  const {chains, disconnectWallet, connectWallet} = useContext(ChainDataContext);
 
   //Address
   const addressRef = useRef<ValidatedInputRef>();
@@ -132,14 +132,14 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
     if (token == null) return 'Address not supported for swaps!';
     const counterTokens = swapper.getSwapCounterTokens(token, false);
     if (counterTokens.length === 0) return 'Address not supported for swaps!';
-    const outputChainData: ChainWalletData<any> = chainsData[getChainIdentifierForCurrency(token)];
+    const outputChainData: ChainWalletData<any> = chains[getChainIdentifierForCurrency(token)];
     if (
       outputChainData.wallet != null &&
       outputChainData.wallet.address != null &&
       outputChainData.wallet.address !== addressData.address
     ) {
       console.log('SwapNew(): Disconnecting wallet: ' + outputChainData.wallet.name);
-      outputChainData.disconnect();
+      disconnectWallet(outputChainData.chainId);
     }
     console.log('SwapNew(): Using token based on the address: ' + outputToken.ticker);
     setOutputToken(token);
@@ -155,7 +155,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   if (outputChainData?.wallet?.address != null) {
     addressData = {
       address: outputChainData.wallet.address,
-      type: outputChainData.id,
+      type: outputChainData.chainId,
       swapType: null,
     };
     addressLoading = false;
@@ -565,7 +565,8 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       href="#"
                       onClick={(event) => {
                         event.preventDefault();
-                        inputChainData?.disconnect?.();
+                        if(inputChainData==null) return;
+                        disconnectWallet(inputChainData.chainId);
                       }}
                     >
                       Use external wallet
@@ -747,7 +748,8 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       href="#"
                       onClick={(event) => {
                         event.preventDefault();
-                        outputChainData.connect();
+                        if(outputChainData==null) return;
+                        connectWallet(outputChainData.chainId);
                       }}
                     >
                       Connect wallet
@@ -772,7 +774,8 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                         }}
                         onClick={(e) => {
                           e.preventDefault();
-                          outputChainData.disconnect();
+                          if(outputChainData==null) return;
+                          disconnectWallet(outputChainData.chainId);
                         }}
                       >
                         <Icon size={24} icon={ic_power_off_outline} />

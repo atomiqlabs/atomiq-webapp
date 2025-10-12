@@ -2,7 +2,7 @@ import { useContext, useMemo } from "react";
 import { BitcoinNetwork, fromHumanReadableString, isBtcToken, isLNURLWithdraw, isSCToken, SwapType, } from "@atomiqlabs/sdk";
 import { SwapsContext } from "../context/SwapsContext";
 import { useWithAwait } from "../../utils/hooks/useWithAwait";
-import { useChainForCurrency } from "../../wallets/hooks/useChainForCurrency";
+import { useChain } from "../../wallets/hooks/useChain";
 import { Address, NETWORK, TEST_NETWORK } from "@scure/btc-signer";
 import { FEConstants } from "../../FEConstants";
 import * as randomBytes from "randombytes";
@@ -26,7 +26,7 @@ function getRandomAddress(swapper, token) {
 }
 export function useQuote(amount, exactIn, inToken, outToken, address, gasDropAmount, btcFeeRate, pause) {
     const { swapper } = useContext(SwapsContext);
-    const inputChain = useChainForCurrency(inToken);
+    const inputChain = useChain(inToken);
     let inputAddress = inputChain?.wallet?.address;
     if (inToken != null &&
         isBtcToken(inToken) &&
@@ -35,7 +35,7 @@ export function useQuote(amount, exactIn, inToken, outToken, address, gasDropAmo
         inputAddress = address;
         address = null;
     }
-    const outputChain = useChainForCurrency(outToken);
+    const outputChain = useChain(outToken);
     address ?? (address = outputChain?.wallet?.address);
     const swapType = useMemo(() => {
         if (swapper != null && inToken != null && outToken != null)

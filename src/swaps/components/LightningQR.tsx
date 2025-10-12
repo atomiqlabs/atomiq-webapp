@@ -23,6 +23,7 @@ import { useAsync } from "../../utils/hooks/useAsync";
 import { useNFCScanner } from "../../nfc/hooks/useNFCScanner";
 import { SwapsContext } from "../context/SwapsContext";
 import { NFCStartResult } from "../../nfc/NFCReader";
+import {useChain} from "../../wallets/hooks/useChain";
 
 export function LightningQR(props: {
   quote: FromBTCLNSwap | LnForGasSwap;
@@ -32,7 +33,8 @@ export function LightningQR(props: {
   onHyperlink?: () => void;
 }) {
   const { swapper } = useContext(SwapsContext);
-  const lightningChainData = useContext(ChainDataContext).LIGHTNING;
+  const { disconnectWallet } = useContext(ChainDataContext);
+  const lightningChainData = useChain("LIGHTNING");
 
   const [payingWithLNURL, setPayingWithLNURL] = useState<boolean>(false);
   const NFCScanning = useNFCScanner(
@@ -187,7 +189,7 @@ export function LightningQR(props: {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  lightningChainData.disconnect();
+                  disconnectWallet("LIGHTNING");
                 }}
               >
                 Or use a QR code/LN invoice

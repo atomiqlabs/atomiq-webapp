@@ -32,14 +32,14 @@ export const bitcoinTokenArray = [Tokens.BITCOIN.BTC, Tokens.BITCOIN.BTCLN];
 
 export const smartChainTokenArray: SCToken[] = [];
 
-if (FEConstants.allowedChains.has("SOLANA")) {
+if (FEConstants.chainsConfiguration.enableSolana) {
   smartChainTokenArray.push(Tokens.SOLANA.SOL);
   smartChainTokenArray.push(Tokens.SOLANA.USDC);
   smartChainTokenArray.push(Tokens.SOLANA.WBTC);
   smartChainTokenArray.push(Tokens.SOLANA.BONK);
 }
 
-if (FEConstants.allowedChains.has("STARKNET")) {
+if (FEConstants.chainsConfiguration.enableStarknet) {
   smartChainTokenArray.push(Tokens.STARKNET.WBTC);
   smartChainTokenArray.push(Tokens.STARKNET.STRK);
   smartChainTokenArray.push(Tokens.STARKNET.ETH);

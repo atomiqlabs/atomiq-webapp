@@ -1,5 +1,5 @@
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Button, Spinner } from 'react-bootstrap';
 import { FromBTCLNSwapState } from '@atomiqlabs/sdk';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
@@ -13,9 +13,9 @@ import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { LightningQR } from '../components/LightningQR';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import { useFromBtcLnQuote } from './useFromBtcLnQuote';
-import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
+import { useChain } from "../../wallets/hooks/useChain";
 /*
 Steps:
 1. Awaiting lightning payment -> Lightning payment received
@@ -23,7 +23,7 @@ Steps:
 3. Send claim transaction -> Sending claim transaction -> Claim success
  */
 export function FromBTCLNQuoteSummary(props) {
-    const lightningWallet = useContext(ChainDataContext).LIGHTNING?.wallet;
+    const lightningWallet = useChain("LIGHTNING")?.wallet;
     const smartChainWallet = useSmartChainWallet(props.quote, true);
     const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
     const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);

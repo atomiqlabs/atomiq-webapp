@@ -47,8 +47,8 @@ function WrappedApp() {
         try {
             const swapper = Factory.newSwapper({
                 chains: {
-                    SOLANA: chainsData.SOLANA?.swapperOptions,
-                    STARKNET: chainsData.STARKNET?.swapperOptions,
+                    SOLANA: chainsData.chains.SOLANA?.swapperOptions,
+                    STARKNET: chainsData.chains.STARKNET?.swapperOptions,
                 },
                 intermediaryUrl: useLp,
                 getRequestTimeout: 15000,

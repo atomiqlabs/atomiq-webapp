@@ -1,11 +1,11 @@
-import { useContext, useMemo } from "react";
-import { ChainDataContext } from "../../wallets/context/ChainDataContext";
+import { useMemo } from "react";
 import { FeeType, FromBTCLNSwap, FromBTCSwap, IToBTCSwap, SpvFromBTCSwap, } from "@atomiqlabs/sdk";
 import { useWithAwait } from "../../utils/hooks/useWithAwait";
 import { capitalizeFirstLetter } from "../../utils/Utils";
 import { getChainIdentifierForCurrency } from "../../tokens/Tokens";
+import { useChain } from "../../wallets/hooks/useChain";
 export function useSwapFees(swap, btcFeeRate, fetchUsdAndNetworkFees = true) {
-    const bitcoinChainData = useContext(ChainDataContext).BITCOIN;
+    const bitcoinChainData = useChain("BITCOIN");
     const fees = useMemo(() => {
         if (swap == null)
             return null;

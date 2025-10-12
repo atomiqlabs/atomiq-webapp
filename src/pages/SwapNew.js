@@ -25,7 +25,7 @@ import { ic_power_off_outline } from 'react-icons-kit/md/ic_power_off_outline';
 import { useExistingSwap } from '../swaps/hooks/useExistingSwap';
 import { ConnectedWalletAnchor } from '../wallets/ConnectedWalletAnchor';
 import { useStateWithOverride } from '../utils/hooks/useStateWithOverride';
-import { useChainForCurrency } from '../wallets/hooks/useChainForCurrency';
+import { useChain } from '../wallets/hooks/useChain';
 import { useSupportedTokens } from '../swaps/hooks/useSupportedTokens';
 import { useDecimalNumberState } from '../utils/hooks/useDecimalNumberState';
 import { ChainDataContext } from '../wallets/context/ChainDataContext';
@@ -50,9 +50,9 @@ export function SwapNew(props) {
         : isSCToken(outputToken)
             ? outputToken
             : null;
-    const inputChainData = useChainForCurrency(inputToken);
-    const outputChainData = useChainForCurrency(outputToken);
-    const chainsData = useContext(ChainDataContext);
+    const inputChainData = useChain(inputToken);
+    const outputChainData = useChain(outputToken);
+    const { chains, disconnectWallet, connectWallet } = useContext(ChainDataContext);
     //Address
     const addressRef = useRef();
     const addressValidator = useCallback((val) => {
@@ -101,12 +101,12 @@ export function SwapNew(props) {
         const counterTokens = swapper.getSwapCounterTokens(token, false);
         if (counterTokens.length === 0)
             return 'Address not supported for swaps!';
-        const outputChainData = chainsData[getChainIdentifierForCurrency(token)];
+        const outputChainData = chains[getChainIdentifierForCurrency(token)];
         if (outputChainData.wallet != null &&
             outputChainData.wallet.address != null &&
             outputChainData.wallet.address !== addressData.address) {
             console.log('SwapNew(): Disconnecting wallet: ' + outputChainData.wallet.name);
-            outputChainData.disconnect();
+            disconnectWallet(outputChainData.chainId);
         }
         console.log('SwapNew(): Using token based on the address: ' + outputToken.ticker);
         setOutputToken(token);
@@ -123,7 +123,7 @@ export function SwapNew(props) {
     if (outputChainData?.wallet?.address != null) {
         addressData = {
             address: outputChainData.wallet.address,
-            type: outputChainData.id,
+            type: outputChainData.chainId,
             swapType: null,
         };
         addressLoading = false;
@@ -394,7 +394,9 @@ export function SwapNew(props) {
                                                 ? new BigNumber('0.00000001')
                                                 : new BigNumber(10).pow(new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals))), min: inputLimits?.min, max: inputLimits?.max, onValidate: inputAmountValidator, feedbackEndElement: showUseExternalWallet ? (_jsx("a", { className: "ms-auto", href: "#", onClick: (event) => {
                                                     event.preventDefault();
-                                                    inputChainData?.disconnect?.();
+                                                    if (inputChainData == null)
+                                                        return;
+                                                    disconnectWallet(inputChainData.chainId);
                                                 }, children: "Use external wallet" })) : null, validated: notEnoughBalance
                                                 ? 'Not enough balance'
                                                 : (!exactIn && quote != null) || existingSwap != null
@@ -457,12 +459,16 @@ export function SwapNew(props) {
                                                     leaveExistingSwap(true);
                                             }, value: outputAddress, inputRef: addressRef, placeholder: 'Destination wallet address', onValidate: addressValidator, validated: isOutputWalletAddress || outputAddress !== address ? null : addressError?.message, disabled: locked || outputChainData?.wallet != null, feedbackEndElement: outputChainData?.wallet == null ? (_jsx("a", { className: "ms-auto", href: "#", onClick: (event) => {
                                                     event.preventDefault();
-                                                    outputChainData.connect();
+                                                    if (outputChainData == null)
+                                                        return;
+                                                    connectWallet(outputChainData.chainId);
                                                 }, children: "Connect wallet" })) : null, textStart: addressLoading ? _jsx(Spinner, { size: "sm", className: "text-white" }) : null, textEnd: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", style: {
                                                         marginTop: '-3px',
                                                     }, onClick: (e) => {
                                                         e.preventDefault();
-                                                        outputChainData.disconnect();
+                                                        if (outputChainData == null)
+                                                            return;
+                                                        disconnectWallet(outputChainData.chainId);
                                                     }, children: _jsx(Icon, { size: 24, icon: ic_power_off_outline }) }) })) : (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Scan QR code" }), children: _jsx("a", { href: "#", style: {
                                                         marginTop: '-3px',
                                                     }, onClick: (e) => {

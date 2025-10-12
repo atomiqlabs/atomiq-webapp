@@ -1,20 +1,15 @@
-import type { FC, MouseEvent, ReactNode } from 'react';
+import type { FC, MouseEvent } from 'react';
 import { WalletModal } from './WalletModal';
 import { WalletListItem } from './WalletListItem';
-
-export interface WalletOption<T = any> {
-  name: string;
-  icon: string | ReactNode;
-  data: T;
-}
+import {WalletListData} from "../ChainDataProvider";
 
 export interface GenericWalletModalProps<T = any> {
   visible: boolean;
   onClose: () => void;
   title: string;
-  installedWallets: WalletOption<T>[];
-  notInstalledWallets?: WalletOption<T>[];
-  onWalletClick: (wallet: WalletOption<T>, event: MouseEvent) => void;
+  installedWallets: WalletListData[];
+  notInstalledWallets?: WalletListData[];
+  onWalletClick: (wallet: WalletListData, event: MouseEvent) => void;
   className?: string;
   container?: string;
 }
@@ -58,7 +53,9 @@ export const GenericWalletModal: FC<GenericWalletModalProps> = ({
               name={wallet.name}
               icon={wallet.icon}
               isInstalled={false}
-              onClick={(event) => onWalletClick(wallet, event)}
+              onClick={() => {
+                window.location.href = wallet.downloadLink;
+              }}
             />
           ))}
         </ul>

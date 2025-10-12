@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Spinner } from 'react-bootstrap';
 import { SpvFromBTCSwapState } from '@atomiqlabs/sdk';
 import { getDeltaText } from '../../utils/Utils';
@@ -20,9 +20,9 @@ import { useStateRef } from '../../utils/hooks/useStateRef';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
-import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
+import { useChain } from "../../wallets/hooks/useChain";
 /*
 Steps:
 1. Bitcoin payment -> Broadcasting bitcoin transaction -> Waiting bitcoin confirmations -> Bitcoin confirmed
@@ -32,7 +32,7 @@ export function SpvVaultFromBTCQuoteSummary(props) {
     const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
     const isAlreadyClaimable = useMemo(() => props.quote?.isClaimable(), [props.quote]);
     const setAmountLockRef = useStateRef(props.setAmountLock);
-    const bitcoinWallet = useContext(ChainDataContext)?.BITCOIN?.wallet;
+    const bitcoinWallet = useChain("BITCOIN")?.wallet;
     const smartChainWallet = useSmartChainWallet(props.quote);
     const [onSend, sendLoading, sendSuccess, sendError] = useAsync(() => {
         if (setAmountLockRef.current != null) {

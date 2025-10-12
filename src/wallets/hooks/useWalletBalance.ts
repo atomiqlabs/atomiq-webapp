@@ -2,7 +2,7 @@ import { isBtcToken, isSCToken, SwapType, Token, TokenAmount } from '@atomiqlabs
 import { useContext, useEffect, useState } from 'react';
 import { SwapsContext } from '../../swaps/context/SwapsContext';
 import { useStateRef } from '../../utils/hooks/useStateRef';
-import { useChainForCurrency } from './useChainForCurrency';
+import { useChain } from './useChain';
 
 export type WalletBalanceResult = {
   balance: TokenAmount;
@@ -18,7 +18,7 @@ export function useWalletBalance(
   minBtcFeeRate?: number
 ): WalletBalanceResult {
   const { swapper } = useContext(SwapsContext);
-  const chain = useChainForCurrency(currency);
+  const chain = useChain(currency);
 
   const pauseRef = useStateRef(pause);
 

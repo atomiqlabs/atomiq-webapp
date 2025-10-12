@@ -1,8 +1,7 @@
 import { useAnchorWallet, useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { ChainWalletData } from '../ChainDataProvider';
 import { SolanaFees, SolanaSigner } from '@atomiqlabs/chain-solana';
-import { useCallback, useMemo, useState } from 'react';
-import { StandardChainHookResult, ChainWalletOption } from '../types/ChainHookTypes';
+import { useCallback, useMemo } from 'react';
 
 import * as React from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
@@ -71,7 +70,7 @@ export function SolanaWalletWrapper(props: { children: any }) {
   );
 }
 
-export function useSolanaWalletData(): StandardChainHookResult<SolanaSigner> {
+export function useSolanaWalletData(enabled: boolean): ChainWalletData<SolanaSigner> {
   const { wallet, disconnect, wallets: availableWallets, select } = useWallet();
   const solanaWallet = useAnchorWallet();
   const { connection } = useConnection();
@@ -81,51 +80,15 @@ export function useSolanaWalletData(): StandardChainHookResult<SolanaSigner> {
     [solanaWallet]
   );
 
-  const [modalOpened, setModalOpened] = useState<boolean>(false);
-
-  const openModal = useCallback(() => {
-    setModalOpened(true);
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setModalOpened(false);
-  }, []);
-
-  const connect = useCallback(() => {
-    openModal();
-  }, [openModal]);
-
-  // Extract installed and installable wallets from Solana wallet adapter
-  const installedWalletOptions = useMemo<ChainWalletOption[]>(() => {
-    return availableWallets
-      .filter((w) => w.readyState === 'Installed')
-      .map((w) => ({
-        name: w.adapter.name,
-        icon: w.adapter.icon,
-        data: w,
-      }));
-  }, [availableWallets]);
-
-  const installableWalletOptions = useMemo<ChainWalletOption[]>(() => {
-    return availableWallets
-      .filter((w) => w.readyState === 'NotDetected' || w.readyState === 'Loadable')
-      .map((w) => ({
-        name: w.adapter.name,
-        icon: w.adapter.icon,
-        data: w,
-      }));
-  }, [availableWallets]);
-
   const connectWallet = useCallback(
-    async (walletOption: ChainWalletOption) => {
-      select(walletOption.data.adapter.name);
-      closeModal();
+    async (walletName: string) => {
+      select(walletName as any);
     },
-    [select, closeModal]
+    [select]
   );
 
-  const chainData = useMemo<ChainWalletData<SolanaSigner>>(() => {
-    if (!FEConstants.allowedChains.has('SOLANA')) return null;
+  return useMemo<ChainWalletData<SolanaSigner>>(() => {
+    if (!enabled) return null;
 
     const solanaFees = new SolanaFees(
       connection,
@@ -155,10 +118,19 @@ export function useSolanaWalletData(): StandardChainHookResult<SolanaSigner> {
               instance: solanaSigner,
               address: wallet.adapter?.publicKey?.toBase58(),
             },
-      id: 'SOLANA',
-      disconnect,
-      connect,
-      changeWallet: connect,
+      installedWallets: availableWallets.filter(w => w.readyState === 'Installed').map(w => ({
+        name: w.adapter.name,
+        icon: w.adapter.icon,
+        isConnected: w.adapter.name===wallet?.adapter?.name
+      })),
+      nonInstalledWallets: availableWallets.filter(w => w.readyState === 'Loadable' || w.readyState === 'NotDetected').map(w => ({
+        name: w.adapter.name,
+        icon: w.adapter.icon,
+        downloadLink: w.adapter.url
+      })),
+      chainId: 'SOLANA',
+      _disconnect: disconnect,
+      _connectWallet: connectWallet,
       swapperOptions: {
         rpcUrl: connection,
         retryPolicy: {
@@ -166,19 +138,7 @@ export function useSolanaWalletData(): StandardChainHookResult<SolanaSigner> {
         },
         fees: solanaFees,
       },
+      hasWallets: availableWallets.length>0
     };
-  }, [wallet, solanaSigner, disconnect, connect, connection]);
-
-  return useMemo(
-    () => ({
-      chainData,
-      installedWallets: installedWalletOptions,
-      installableWallets: installableWalletOptions,
-      connectWallet,
-      openModal,
-      closeModal,
-      isModalOpen: modalOpened,
-    }),
-    [chainData, installedWalletOptions, installableWalletOptions, connectWallet, openModal, closeModal, modalOpened]
-  );
+  }, [wallet, solanaSigner, disconnect, connectWallet, connection, availableWallets]);
 }

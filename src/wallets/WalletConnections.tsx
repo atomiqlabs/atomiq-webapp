@@ -14,10 +14,9 @@ type MultichainWallet = {
   icon: string;
   chains: {
     [chain: string]: {
-      disconnect: () => Promise<void> | void;
-      changeWallet: () => Promise<void> | void;
       name: string;
       icon: string;
+      chainId: string;
     };
   };
 };
@@ -30,6 +29,7 @@ type WalletConnection = {
 };
 
 function MultichainWalletDisplay(props: { wallet: MultichainWallet; className?: string }) {
+  const chainWalletData = useContext(ChainDataContext);
   const chains = Object.keys(props.wallet.chains).map((chain) => props.wallet.chains[chain]);
 
   const [show, setShow] = useState<boolean>(false);
@@ -74,18 +74,14 @@ function MultichainWalletDisplay(props: { wallet: MultichainWallet; className?: 
                 </div>
               </Dropdown.Header>
               <div className="dropdown-list">
-                <Dropdown.Item onClick={() => value.disconnect()}>
+                <Dropdown.Item onClick={() => chainWalletData.disconnectWallet(value.chainId)}>
                   <div className="icon icon-disconnect"></div>
                   Disconnect Wallet
                 </Dropdown.Item>
-                {value.changeWallet != null ? (
-                  <Dropdown.Item onClick={() => value.changeWallet()}>
-                    <div className="icon icon-change-wallet"></div>
-                    Change Wallet
-                  </Dropdown.Item>
-                ) : (
-                  ''
-                )}
+                <Dropdown.Item onClick={() => chainWalletData.changeWallet(value.chainId)}>
+                  <div className="icon icon-change-wallet"></div>
+                  Change Wallet
+                </Dropdown.Item>
               </div>
             </>
           );
@@ -96,13 +92,13 @@ function MultichainWalletDisplay(props: { wallet: MultichainWallet; className?: 
 }
 
 export function WalletConnections() {
-  const chainWalletData = useContext(ChainDataContext);
+  const {chains} = useContext(ChainDataContext);
 
   const connectedWallets: {
     [walletName: string]: MultichainWallet;
   } = {};
-  for (let chain in chainWalletData) {
-    const chainData: ChainWalletData<any> = chainWalletData[chain];
+  for (let chain in chains) {
+    const chainData: ChainWalletData<any> = chains[chain];
     if (chainData.wallet == null) continue;
     connectedWallets[chainData.wallet.name] ??= {
       name: chainData.wallet.name,
@@ -112,8 +108,7 @@ export function WalletConnections() {
     connectedWallets[chainData.wallet.name].chains[chain] = {
       name: chainData.chain.name,
       icon: chainData.chain.icon,
-      disconnect: chainData.disconnect,
-      changeWallet: chainData.changeWallet,
+      chainId: chain
     };
   }
 

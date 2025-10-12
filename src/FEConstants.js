@@ -65,10 +65,12 @@ export const FEConstants = {
     },
     mempoolApi,
     bitcoinRpc,
-    allowedChains: new Set([
-        solanaRpcUrl != null ? "SOLANA" : undefined,
-        starknetRpcUrl != null ? "STARKNET" : undefined,
-    ]),
+    chainsConfiguration: {
+        enableBitcoin: true,
+        enableLightning: true,
+        enableStarknet: starknetRpcUrl != null,
+        enableSolana: solanaRpcUrl != null
+    },
     statsUrl,
     solanaChain: solanaChain === "MAINNET"
         ? WalletAdapterNetwork.Mainnet
