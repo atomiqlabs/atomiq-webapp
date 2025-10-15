@@ -47,7 +47,7 @@
 
   &__input-wrapper {
     .invalid-feedback div {
-      @apply justify-end;
+      @apply justify-end flex-wrap;
     }
   }
 
@@ -75,8 +75,37 @@
   input::-webkit-inner-spin-button {
     -webkit-appearance: none;
   }
+
+  .use-external {
+    @apply basis-full mx-auto text-right hover:no-underline;
+
+    color: rgb(255 108 108 / var(--tw-text-opacity, 1));
+  }
+
+  &__group {
+    @apply flex flex-col gap-[2px];
+
+    .swap-panel__card:not(:first-of-type) {
+      @apply rounded-t-none;
+    }
+    .swap-panel__card:not(:last-of-type) {
+      @apply rounded-b-none;
+    }
+  }
 }
 
 .swap-connected-wallet {
   @apply flex;
+}
+
+.vetified-by {
+  @apply text-[14px] opacity-75 mt-[32px];
+
+  .icon-verified {
+    @apply text-[17px] mr-2;
+  }
+
+  img {
+    @apply h-[16px] ml-[5px];
+  }
 }

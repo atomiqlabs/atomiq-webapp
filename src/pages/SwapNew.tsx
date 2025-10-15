@@ -87,7 +87,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
 
   const inputChainData = useChain(inputToken);
   const outputChainData = useChain(outputToken);
-  const {chains, disconnectWallet, connectWallet} = useContext(ChainDataContext);
+  const { chains, disconnectWallet, connectWallet } = useContext(ChainDataContext);
 
   //Address
   const addressRef = useRef<ValidatedInputRef>();
@@ -561,11 +561,11 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 feedbackEndElement={
                   showUseExternalWallet ? (
                     <a
-                      className="ms-auto"
+                      className="use-external"
                       href="#"
                       onClick={(event) => {
                         event.preventDefault();
-                        if(inputChainData==null) return;
+                        if (inputChainData == null) return;
                         disconnectWallet(inputChainData.chainId);
                       }}
                     >
@@ -600,269 +600,278 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
               <div className="icon icon-swap"></div>
             </Button>
           </div>
-          <div className="swap-panel__card">
-            <div className="swap-panel__card__header">
-              <div className="swap-panel__card__title">You receive</div>
-              <div className="swap-panel__card__wallet">
-                <ConnectedWalletAnchor
-                  noText={false}
-                  simple={true}
-                  currency={outputToken}
-                  variantButton="clear"
+          <div className="swap-panel__group">
+            <div className="swap-panel__card">
+              <div className="swap-panel__card__header">
+                <div className="swap-panel__card__title">You receive</div>
+                <div className="swap-panel__card__wallet">
+                  <ConnectedWalletAnchor
+                    noText={false}
+                    simple={true}
+                    currency={outputToken}
+                    variantButton="clear"
+                  />
+                </div>
+              </div>
+              <div className="swap-panel__card__body">
+                <CurrencyDropdown
+                  currencyList={outputTokens}
+                  onSelect={(val) => {
+                    if (locked) return;
+                    leaveExistingSwap();
+                    if (val === outputToken) return;
+                    if (
+                      getChainIdentifierForCurrency(val) !==
+                      getChainIdentifierForCurrency(outputToken)
+                    )
+                      addressRef.current.setValue('');
+                    const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
+                    setOutputToken(val);
+                    if (includesToken(supportedCounterTokens, inputToken)) return;
+                    if (includesToken(supportedCounterTokens, outputToken)) {
+                      setInputToken(outputToken);
+                      setExactIn(!exactIn);
+                    } else {
+                      let token: Token;
+                      if (isSCToken(inputToken))
+                        token = supportedCounterTokens.find(
+                          (val) => isSCToken(val) && val.chainId === inputToken.chainId
+                        );
+                      token ??= supportedCounterTokens[0];
+                      if (token == null) {
+                        setOutputToken(outputToken);
+                        return;
+                      }
+                      setInputToken(token);
+                    }
+                  }}
+                  value={outputToken}
+                  className="round-right text-white bg-black bg-opacity-10"
+                />
+                <ValidatedInput
+                  disabled={locked || amountsLocked}
+                  inputRef={outputRef}
+                  className="flex-fill strip-group-text"
+                  type="number"
+                  value={outputAmount}
+                  size={'lg'}
+                  textStart={
+                    exactIn && quoteLoading ? <Spinner size="sm" className="text-white" /> : null
+                  }
+                  onChange={(val, forcedChange) => {
+                    setAmount(val);
+                    setExactIn(false);
+                    if (webLnForOutput) addressRef.current.setValue('');
+                    if (!forcedChange) leaveExistingSwap(webLnForOutput, true);
+                  }}
+                  inputId="amount-output"
+                  inputClassName="swap-panel__input"
+                  floatingLabelClassName="swap-panel__label"
+                  placeholder={'0.00'}
+                  floatingLabel={FEConstants.USDollar.format(outputValue ?? 0)}
+                  expectingFloatingLabel={true}
+                  step={
+                    outputToken == null
+                      ? new BigNumber('0.00000001')
+                      : new BigNumber(10).pow(
+                          new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals))
+                        )
+                  }
+                  min={outputLimits?.min}
+                  max={outputLimits?.max}
+                  onValidate={outputAmountValidator}
+                  validated={(exactIn && quote != null) || existingSwap != null ? null : undefined}
+                />
+              </div>
+              <div className={gasDropTokenAmount != null ? 'd-flex' : 'd-none'}>
+                <ValidatedInput
+                  type={'checkbox'}
+                  className="swap-panel__input-wrapper"
+                  onChange={(val: boolean) => {
+                    setGasDropChecked(val);
+                    leaveExistingSwap();
+                  }}
+                  placeholder={
+                    <span>
+                      <OverlayTrigger
+                        overlay={
+                          <Tooltip id={'fee-tooltip-gas-drop'}>
+                            <span>
+                              Swap some amount of BTC to {gasDropTokenAmount?.token.ticker} (gas
+                              token on the destination chain), so that you can transact on{' '}
+                              {gasDropTokenAmount?.token.chainId}
+                            </span>
+                          </Tooltip>
+                        }
+                      >
+                        <span className="dottedUnderline">
+                          Request gas drop of {gasDropTokenAmount?._amount.toString(10)}{' '}
+                          {gasDropTokenAmount?.token.ticker}
+                        </span>
+                      </OverlayTrigger>
+                    </span>
+                  }
+                  value={gasDropChecked}
+                  onValidate={() => null}
+                  disabled={locked}
                 />
               </div>
             </div>
-            <div className="swap-panel__card__body">
-              <CurrencyDropdown
-                currencyList={outputTokens}
-                onSelect={(val) => {
-                  if (locked) return;
-                  leaveExistingSwap();
-                  if (val === outputToken) return;
-                  if (
-                    getChainIdentifierForCurrency(val) !==
-                    getChainIdentifierForCurrency(outputToken)
-                  )
-                    addressRef.current.setValue('');
-                  const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
-                  setOutputToken(val);
-                  if (includesToken(supportedCounterTokens, inputToken)) return;
-                  if (includesToken(supportedCounterTokens, outputToken)) {
-                    setInputToken(outputToken);
-                    setExactIn(!exactIn);
-                  } else {
-                    let token: Token;
-                    if (isSCToken(inputToken))
-                      token = supportedCounterTokens.find(
-                        (val) => isSCToken(val) && val.chainId === inputToken.chainId
-                      );
-                    token ??= supportedCounterTokens[0];
-                    if (token == null) {
-                      setOutputToken(outputToken);
-                      return;
-                    }
-                    setInputToken(token);
+            {quoteError != null ? (
+              <Button variant="light" className="mt-3" onClick={refreshQuote}>
+                Retry
+              </Button>
+            ) : (
+              ''
+            )}
+
+            <div className="swap-panel__card">
+              <div className="swap-panel__card__body">
+                <div
+                  className={
+                    'flex-column ' +
+                    (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
+                      ? 'd-none'
+                      : 'd-flex')
                   }
-                }}
-                value={outputToken}
-                className="round-right text-white bg-black bg-opacity-10"
-              />
-              <ValidatedInput
-                disabled={locked || amountsLocked}
-                inputRef={outputRef}
-                className="flex-fill strip-group-text"
-                type="number"
-                value={outputAmount}
-                size={'lg'}
-                textStart={
-                  exactIn && quoteLoading ? <Spinner size="sm" className="text-white" /> : null
-                }
-                onChange={(val, forcedChange) => {
-                  setAmount(val);
-                  setExactIn(false);
-                  if (webLnForOutput) addressRef.current.setValue('');
-                  if (!forcedChange) leaveExistingSwap(webLnForOutput, true);
-                }}
-                inputId="amount-output"
-                inputClassName="swap-panel__input"
-                floatingLabelClassName="swap-panel__label"
-                placeholder={'0.00'}
-                floatingLabel={FEConstants.USDollar.format(outputValue ?? 0)}
-                expectingFloatingLabel={true}
-                step={
-                  outputToken == null
-                    ? new BigNumber('0.00000001')
-                    : new BigNumber(10).pow(
-                        new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals))
-                      )
-                }
-                min={outputLimits?.min}
-                max={outputLimits?.max}
-                onValidate={outputAmountValidator}
-                validated={(exactIn && quote != null) || existingSwap != null ? null : undefined}
-              />
-            </div>
-            <div className={gasDropTokenAmount != null ? 'd-flex' : 'd-none'}>
-              <ValidatedInput
-                type={'checkbox'}
-                className="swap-panel__input-wrapper"
-                onChange={(val: boolean) => {
-                  setGasDropChecked(val);
-                  leaveExistingSwap();
-                }}
-                placeholder={
-                  <span>
-                    <OverlayTrigger
-                      overlay={
-                        <Tooltip id={'fee-tooltip-gas-drop'}>
-                          <span>
-                            Swap some amount of BTC to {gasDropTokenAmount?.token.ticker} (gas token
-                            on the destination chain), so that you can transact on{' '}
-                            {gasDropTokenAmount?.token.chainId}
-                          </span>
-                        </Tooltip>
-                      }
-                    >
-                      <span className="dottedUnderline">
-                        Request gas drop of {gasDropTokenAmount?._amount.toString(10)}{' '}
-                        {gasDropTokenAmount?.token.ticker}
-                      </span>
-                    </OverlayTrigger>
-                  </span>
-                }
-                value={gasDropChecked}
-                onValidate={() => null}
-                disabled={locked}
-              />
-            </div>
-            <div
-              className={
-                'flex-column ' +
-                (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
-                  ? 'd-none'
-                  : 'd-flex')
-              }
-            >
-              <ValidatedInput
-                type={'text'}
-                className={
-                  'flex-fill mt-3 ' +
-                  (webLnForOutput && addressData?.address == null ? 'd-none' : '')
-                }
-                onChange={(val, forcedChange) => {
-                  setAddress(val);
-                  if (!forcedChange) leaveExistingSwap(true);
-                }}
-                value={outputAddress}
-                inputRef={addressRef}
-                placeholder={'Destination wallet address'}
-                onValidate={addressValidator}
-                validated={
-                  isOutputWalletAddress || outputAddress !== address ? null : addressError?.message
-                }
-                disabled={locked || outputChainData?.wallet != null}
-                feedbackEndElement={
-                  outputChainData?.wallet == null ? (
-                    <a
-                      className="ms-auto"
-                      href="#"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        if(outputChainData==null) return;
-                        connectWallet(outputChainData.chainId);
-                      }}
-                    >
-                      Connect wallet
-                    </a>
-                  ) : null
-                }
-                textStart={addressLoading ? <Spinner size="sm" className="text-white" /> : null}
-                textEnd={
-                  locked ? null : outputChainData?.wallet != null ? (
-                    <OverlayTrigger
-                      placement="top"
-                      overlay={
-                        <Tooltip id="scan-qr-tooltip">
-                          Disconnect wallet & use external wallet
-                        </Tooltip>
-                      }
-                    >
-                      <a
-                        href="#"
-                        style={{
-                          marginTop: '-3px',
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if(outputChainData==null) return;
-                          disconnectWallet(outputChainData.chainId);
-                        }}
-                      >
-                        <Icon size={24} icon={ic_power_off_outline} />
-                      </a>
-                    </OverlayTrigger>
-                  ) : (
-                    <OverlayTrigger
-                      placement="top"
-                      overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
-                    >
-                      <a
-                        href="#"
-                        style={{
-                          marginTop: '-3px',
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setQrScanning(true);
-                        }}
-                      >
-                        <Icon size={24} icon={ic_qr_code_scanner} />
-                      </a>
-                    </OverlayTrigger>
-                  )
-                }
-                successFeedback={
-                  isOutputWalletAddress
-                    ? 'Address fetched from your ' + outputChainData?.wallet.name + ' wallet!'
-                    : null
-                }
-              />
-              {webLnForOutput ? (
-                <>
-                  {addressData?.address == null && validatedAmount != null ? (
-                    <div className="mt-2">
-                      <a
-                        href="#"
-                        onClick={async (e) => {
-                          e.preventDefault();
-                          if (validatedAmount == null) return;
-                          const webln: WebLNProvider = outputChainData.wallet.instance;
-                          try {
-                            const res = await webln.makeInvoice(
-                              Number(fromHumanReadableString(validatedAmount, Tokens.BITCOIN.BTCLN))
-                            );
-                            addressRef.current.setValue(res.paymentRequest);
-                          } catch (e) {
-                            console.error(e);
+                >
+                  <ValidatedInput
+                    type={'text'}
+                    className={webLnForOutput && addressData?.address == null ? 'd-none' : ''}
+                    onChange={(val, forcedChange) => {
+                      setAddress(val);
+                      if (!forcedChange) leaveExistingSwap(true);
+                    }}
+                    value={outputAddress}
+                    inputRef={addressRef}
+                    placeholder={'Destination wallet address'}
+                    onValidate={addressValidator}
+                    validated={
+                      isOutputWalletAddress || outputAddress !== address
+                        ? null
+                        : addressError?.message
+                    }
+                    disabled={locked || outputChainData?.wallet != null}
+                    feedbackEndElement={
+                      outputChainData?.wallet == null ? (
+                        <a
+                          className="ms-auto"
+                          href="#"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            if (outputChainData == null) return;
+                            connectWallet(outputChainData.chainId);
+                          }}
+                        >
+                          Connect wallet
+                        </a>
+                      ) : null
+                    }
+                    textStart={addressLoading ? <Spinner size="sm" className="text-white" /> : null}
+                    textEnd={
+                      locked ? null : outputChainData?.wallet != null ? (
+                        <OverlayTrigger
+                          placement="top"
+                          overlay={
+                            <Tooltip id="scan-qr-tooltip">
+                              Disconnect wallet & use external wallet
+                            </Tooltip>
                           }
-                        }}
-                      >
-                        Fetch invoice from WebLN
-                      </a>
-                    </div>
+                        >
+                          <a
+                            href="#"
+                            style={{
+                              marginTop: '-3px',
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (outputChainData == null) return;
+                              disconnectWallet(outputChainData.chainId);
+                            }}
+                          >
+                            <Icon size={24} icon={ic_power_off_outline} />
+                          </a>
+                        </OverlayTrigger>
+                      ) : (
+                        <OverlayTrigger
+                          placement="top"
+                          overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
+                        >
+                          <a
+                            href="#"
+                            style={{
+                              marginTop: '-3px',
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setQrScanning(true);
+                            }}
+                          >
+                            <Icon size={24} icon={ic_qr_code_scanner} />
+                          </a>
+                        </OverlayTrigger>
+                      )
+                    }
+                    successFeedback={
+                      isOutputWalletAddress
+                        ? 'Address fetched from your ' + outputChainData?.wallet.name + ' wallet!'
+                        : null
+                    }
+                  />
+                  {webLnForOutput ? (
+                    <>
+                      {addressData?.address == null && validatedAmount != null ? (
+                        <div className="mt-2">
+                          <a
+                            href="#"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              if (validatedAmount == null) return;
+                              const webln: WebLNProvider = outputChainData.wallet.instance;
+                              try {
+                                const res = await webln.makeInvoice(
+                                  Number(
+                                    fromHumanReadableString(validatedAmount, Tokens.BITCOIN.BTCLN)
+                                  )
+                                );
+                                addressRef.current.setValue(res.paymentRequest);
+                              } catch (e) {
+                                console.error(e);
+                              }
+                            }}
+                          >
+                            Fetch invoice from WebLN
+                          </a>
+                        </div>
+                      ) : (
+                        ''
+                      )}
+                    </>
                   ) : (
                     ''
                   )}
-                </>
-              ) : (
-                ''
-              )}
 
-              <Alert
-                variant={'success'}
-                className="mt-3 mb-0 text-center"
-                show={
-                  !locked &&
-                  outputChainData?.wallet == null &&
-                  isBtcToken(outputToken) &&
-                  outputToken.lightning &&
-                  addressData == null
-                }
-              >
-                <label>
-                  Only lightning invoices with pre-set amount are supported! Use lightning
-                  address/LNURL for variable amount.
-                </label>
-              </Alert>
+                  <Alert
+                    variant={'success'}
+                    className="mt-3 mb-0 text-center"
+                    show={
+                      !locked &&
+                      outputChainData?.wallet == null &&
+                      isBtcToken(outputToken) &&
+                      outputToken.lightning &&
+                      addressData == null
+                    }
+                  >
+                    <label>
+                      Only lightning invoices with pre-set amount are supported! Use lightning
+                      address/LNURL for variable amount.
+                    </label>
+                  </Alert>
+                </div>
+              </div>
             </div>
           </div>
-          {quoteError != null ? (
-            <Button variant="light" className="mt-3" onClick={refreshQuote}>
-              Retry
-            </Button>
-          ) : (
-            ''
-          )}
+
           {quote != null || existingSwap != null ? (
             <>
               <div className="mt-3">
@@ -908,27 +917,17 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
         </div>
       </div>
 
-      <div className="mt-4 text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3">
+      <div className="vetified-by text-light  d-flex flex-row align-items-center justify-content-center mb-3">
         <div
           className="cursor-pointer d-flex align-items-center justify-content-center"
           onClick={() => navigate('/faq?tabOpen=6')}
         >
-          <Icon size={18} icon={lock} style={{ marginTop: '-0.5rem' }} />
+          <div className="icon icon-verified"></div>
           <small>Audited by</small>
           {scCurrency?.chainId === 'STARKNET' ? (
-            <img
-              className="d-block ms-1"
-              height={18}
-              src="/csc-white-logo.png"
-              style={{ marginTop: '-0.075rem', opacity: 0.6 }}
-            />
+            <img src="/csc-white-logo.png" style={{ marginTop: '-0.075rem' }} />
           ) : (
-            <img
-              className="opacity-50 d-block ms-1"
-              height={18}
-              src="/ackee_blockchain.svg"
-              style={{ marginTop: '-0.125rem' }}
-            />
+            <img src="/ackee_logo.svg" style={{ marginTop: '-0.125rem' }} />
           )}
         </div>
       </div>
