@@ -93,6 +93,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   const addressRef = useRef<ValidatedInputRef>();
   const addressValidator = useCallback(
     (val: string) => {
+      if (val == null || val.trim() === '') return null;
       if (swapper == null) return null;
       try {
         const addressParseResult = swapper.Utils.parseAddressSync(val);
@@ -725,99 +726,112 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
               ''
             )}
 
-            <div className="swap-panel__card">
+            <div
+              className={
+                'swap-panel__card ' +
+                (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
+                  ? 'd-none'
+                  : 'd-flex')
+              }
+            >
               <div className="swap-panel__card__body">
-                <div
-                  className={
-                    'flex-column ' +
-                    (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
-                      ? 'd-none'
-                      : 'd-flex')
-                  }
-                >
-                  <ValidatedInput
-                    type={'text'}
-                    className={webLnForOutput && addressData?.address == null ? 'd-none' : ''}
-                    onChange={(val, forcedChange) => {
-                      setAddress(val);
-                      if (!forcedChange) leaveExistingSwap(true);
-                    }}
-                    value={outputAddress}
-                    inputRef={addressRef}
-                    placeholder={'Destination wallet address'}
-                    onValidate={addressValidator}
-                    validated={
-                      isOutputWalletAddress || outputAddress !== address
-                        ? null
-                        : addressError?.message
-                    }
-                    disabled={locked || outputChainData?.wallet != null}
-                    feedbackEndElement={
-                      outputChainData?.wallet == null ? (
+                <div className="wallet-address">
+                  <div className="wallet-address__body">
+                    <div className="wallet-address__title">
+                      {outputChainData?.chain?.name ?? outputToken?.chain ?? 'Wallet'} Destination
+                      Address
+                    </div>
+                    <ValidatedInput
+                      type={'text'}
+                      className={
+                        'wallet-address__form ' +
+                        (webLnForOutput && addressData?.address == null ? 'd-none' : '')
+                      }
+                      onChange={(val, forcedChange) => {
+                        setAddress(val);
+                        if (!forcedChange) leaveExistingSwap(true);
+                      }}
+                      value={outputAddress}
+                      inputRef={addressRef}
+                      placeholder={'Enter destination address'}
+                      onValidate={addressValidator}
+                      validated={
+                        isOutputWalletAddress || outputAddress !== address
+                          ? null
+                          : addressError?.message
+                      }
+                      disabled={locked || outputChainData?.wallet != null}
+                      // feedbackEndElement={
+                      //   outputChainData?.wallet == null ? (
+                      //     <a
+                      //       className="ms-auto"
+                      //       href="#"
+                      //       onClick={(event) => {
+                      //         event.preventDefault();
+                      //         if (outputChainData == null) return;
+                      //         connectWallet(outputChainData.chainId);
+                      //       }}
+                      //     >
+                      //       Connect wallet
+                      //     </a>
+                      //   ) : null
+                      // }
+                      textStart={
+                        addressLoading ? <Spinner size="sm" className="text-white" /> : null
+                      }
+                      successFeedback={
+                        isOutputWalletAddress
+                          ? 'Address fetched from your ' + outputChainData?.wallet.name + ' wallet!'
+                          : null
+                      }
+                    />
+                  </div>
+
+                  <div className="wallet-address__action">
+                    {locked ? null : outputChainData?.wallet != null ? (
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={
+                          <Tooltip id="scan-qr-tooltip">
+                            Disconnect wallet & use external wallet
+                          </Tooltip>
+                        }
+                      >
                         <a
-                          className="ms-auto"
                           href="#"
-                          onClick={(event) => {
-                            event.preventDefault();
+                          style={{
+                            marginTop: '-3px',
+                          }}
+                          onClick={(e) => {
+                            e.preventDefault();
                             if (outputChainData == null) return;
-                            connectWallet(outputChainData.chainId);
+                            disconnectWallet(outputChainData.chainId);
                           }}
                         >
-                          Connect wallet
+                          <Icon size={24} icon={ic_power_off_outline} />
                         </a>
-                      ) : null
-                    }
-                    textStart={addressLoading ? <Spinner size="sm" className="text-white" /> : null}
-                    textEnd={
-                      locked ? null : outputChainData?.wallet != null ? (
-                        <OverlayTrigger
-                          placement="top"
-                          overlay={
-                            <Tooltip id="scan-qr-tooltip">
-                              Disconnect wallet & use external wallet
-                            </Tooltip>
-                          }
+                      </OverlayTrigger>
+                    ) : (
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
+                      >
+                        <a
+                          href="#"
+                          className="wallet-address__scanner"
+                          style={{
+                            marginTop: '-3px',
+                          }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setQrScanning(true);
+                          }}
                         >
-                          <a
-                            href="#"
-                            style={{
-                              marginTop: '-3px',
-                            }}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (outputChainData == null) return;
-                              disconnectWallet(outputChainData.chainId);
-                            }}
-                          >
-                            <Icon size={24} icon={ic_power_off_outline} />
-                          </a>
-                        </OverlayTrigger>
-                      ) : (
-                        <OverlayTrigger
-                          placement="top"
-                          overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
-                        >
-                          <a
-                            href="#"
-                            style={{
-                              marginTop: '-3px',
-                            }}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setQrScanning(true);
-                            }}
-                          >
-                            <Icon size={24} icon={ic_qr_code_scanner} />
-                          </a>
-                        </OverlayTrigger>
-                      )
-                    }
-                    successFeedback={
-                      isOutputWalletAddress
-                        ? 'Address fetched from your ' + outputChainData?.wallet.name + ' wallet!'
-                        : null
-                    }
-                  />
+                          <span className="icon icon-qr-scan"></span>
+                        </a>
+                      </OverlayTrigger>
+                    )}
+                  </div>
                   {webLnForOutput ? (
                     <>
                       {addressData?.address == null && validatedAmount != null ? (

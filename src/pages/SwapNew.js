@@ -19,7 +19,6 @@ import { useQuote } from '../swaps/hooks/useQuote';
 import { usePricing } from '../tokens/hooks/usePricing';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from 'react-icons-kit';
-import { ic_qr_code_scanner } from 'react-icons-kit/md/ic_qr_code_scanner';
 import { ic_power_off_outline } from 'react-icons-kit/md/ic_power_off_outline';
 import { useExistingSwap } from '../swaps/hooks/useExistingSwap';
 import { ConnectedWalletAnchor } from '../wallets/ConnectedWalletAnchor';
@@ -55,6 +54,8 @@ export function SwapNew(props) {
     //Address
     const addressRef = useRef();
     const addressValidator = useCallback((val) => {
+        if (val == null || val.trim() === '')
+            return null;
         if (swapper == null)
             return null;
         try {
@@ -448,35 +449,47 @@ export function SwapNew(props) {
                                                         : new BigNumber(10).pow(new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals))), min: outputLimits?.min, max: outputLimits?.max, onValidate: outputAmountValidator, validated: (exactIn && quote != null) || existingSwap != null ? null : undefined })] }), _jsx("div", { className: gasDropTokenAmount != null ? 'd-flex' : 'd-none', children: _jsx(ValidatedInput, { type: 'checkbox', className: "swap-panel__input-wrapper", onChange: (val) => {
                                                     setGasDropChecked(val);
                                                     leaveExistingSwap();
-                                                }, placeholder: _jsx("span", { children: _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: 'fee-tooltip-gas-drop', children: _jsxs("span", { children: ["Swap some amount of BTC to ", gasDropTokenAmount?.token.ticker, " (gas token on the destination chain), so that you can transact on", ' ', gasDropTokenAmount?.token.chainId] }) }), children: _jsxs("span", { className: "dottedUnderline", children: ["Request gas drop of ", gasDropTokenAmount?._amount.toString(10), ' ', gasDropTokenAmount?.token.ticker] }) }) }), value: gasDropChecked, onValidate: () => null, disabled: locked }) })] }), quoteError != null ? (_jsx(Button, { variant: "light", className: "mt-3", onClick: refreshQuote, children: "Retry" })) : (''), _jsx("div", { className: "swap-panel__card", children: _jsx("div", { className: "swap-panel__card__body", children: _jsxs("div", { className: 'flex-column ' +
-                                                (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
-                                                    ? 'd-none'
-                                                    : 'd-flex'), children: [_jsx(ValidatedInput, { type: 'text', className: webLnForOutput && addressData?.address == null ? 'd-none' : '', onChange: (val, forcedChange) => {
-                                                        setAddress(val);
-                                                        if (!forcedChange)
-                                                            leaveExistingSwap(true);
-                                                    }, value: outputAddress, inputRef: addressRef, placeholder: 'Destination wallet address', onValidate: addressValidator, validated: isOutputWalletAddress || outputAddress !== address
-                                                        ? null
-                                                        : addressError?.message, disabled: locked || outputChainData?.wallet != null, feedbackEndElement: outputChainData?.wallet == null ? (_jsx("a", { className: "ms-auto", href: "#", onClick: (event) => {
-                                                            event.preventDefault();
-                                                            if (outputChainData == null)
-                                                                return;
-                                                            connectWallet(outputChainData.chainId);
-                                                        }, children: "Connect wallet" })) : null, textStart: addressLoading ? _jsx(Spinner, { size: "sm", className: "text-white" }) : null, textEnd: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", style: {
+                                                }, placeholder: _jsx("span", { children: _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: 'fee-tooltip-gas-drop', children: _jsxs("span", { children: ["Swap some amount of BTC to ", gasDropTokenAmount?.token.ticker, " (gas token on the destination chain), so that you can transact on", ' ', gasDropTokenAmount?.token.chainId] }) }), children: _jsxs("span", { className: "dottedUnderline", children: ["Request gas drop of ", gasDropTokenAmount?._amount.toString(10), ' ', gasDropTokenAmount?.token.ticker] }) }) }), value: gasDropChecked, onValidate: () => null, disabled: locked }) })] }), quoteError != null ? (_jsx(Button, { variant: "light", className: "mt-3", onClick: refreshQuote, children: "Retry" })) : (''), _jsx("div", { className: 'swap-panel__card ' +
+                                        (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
+                                            ? 'd-none'
+                                            : 'd-flex'), children: _jsx("div", { className: "swap-panel__card__body", children: _jsxs("div", { className: "wallet-address", children: [_jsxs("div", { className: "wallet-address__body", children: [_jsxs("div", { className: "wallet-address__title", children: [outputChainData?.chain?.name ?? outputToken?.chain ?? 'Wallet', " Destination Address"] }), _jsx(ValidatedInput, { type: 'text', className: 'wallet-address__form ' +
+                                                                (webLnForOutput && addressData?.address == null ? 'd-none' : ''), onChange: (val, forcedChange) => {
+                                                                setAddress(val);
+                                                                if (!forcedChange)
+                                                                    leaveExistingSwap(true);
+                                                            }, value: outputAddress, inputRef: addressRef, placeholder: 'Enter destination address', onValidate: addressValidator, validated: isOutputWalletAddress || outputAddress !== address
+                                                                ? null
+                                                                : addressError?.message, disabled: locked || outputChainData?.wallet != null, 
+                                                            // feedbackEndElement={
+                                                            //   outputChainData?.wallet == null ? (
+                                                            //     <a
+                                                            //       className="ms-auto"
+                                                            //       href="#"
+                                                            //       onClick={(event) => {
+                                                            //         event.preventDefault();
+                                                            //         if (outputChainData == null) return;
+                                                            //         connectWallet(outputChainData.chainId);
+                                                            //       }}
+                                                            //     >
+                                                            //       Connect wallet
+                                                            //     </a>
+                                                            //   ) : null
+                                                            // }
+                                                            textStart: addressLoading ? _jsx(Spinner, { size: "sm", className: "text-white" }) : null, successFeedback: isOutputWalletAddress
+                                                                ? 'Address fetched from your ' + outputChainData?.wallet.name + ' wallet!'
+                                                                : null })] }), _jsx("div", { className: "wallet-address__action", children: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", style: {
                                                                 marginTop: '-3px',
                                                             }, onClick: (e) => {
                                                                 e.preventDefault();
                                                                 if (outputChainData == null)
                                                                     return;
                                                                 disconnectWallet(outputChainData.chainId);
-                                                            }, children: _jsx(Icon, { size: 24, icon: ic_power_off_outline }) }) })) : (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Scan QR code" }), children: _jsx("a", { href: "#", style: {
+                                                            }, children: _jsx(Icon, { size: 24, icon: ic_power_off_outline }) }) })) : (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Scan QR code" }), children: _jsx("a", { href: "#", className: "wallet-address__scanner", style: {
                                                                 marginTop: '-3px',
                                                             }, onClick: (e) => {
                                                                 e.preventDefault();
                                                                 setQrScanning(true);
-                                                            }, children: _jsx(Icon, { size: 24, icon: ic_qr_code_scanner }) }) })), successFeedback: isOutputWalletAddress
-                                                        ? 'Address fetched from your ' + outputChainData?.wallet.name + ' wallet!'
-                                                        : null }), webLnForOutput ? (_jsx(_Fragment, { children: addressData?.address == null && validatedAmount != null ? (_jsx("div", { className: "mt-2", children: _jsx("a", { href: "#", onClick: async (e) => {
+                                                            }, children: _jsx("span", { className: "icon icon-qr-scan" }) }) })) }), webLnForOutput ? (_jsx(_Fragment, { children: addressData?.address == null && validatedAmount != null ? (_jsx("div", { className: "mt-2", children: _jsx("a", { href: "#", onClick: async (e) => {
                                                                 e.preventDefault();
                                                                 if (validatedAmount == null)
                                                                     return;

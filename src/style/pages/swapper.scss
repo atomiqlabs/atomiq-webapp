@@ -18,7 +18,7 @@
 
     &__wallet {
       .base-button {
-        @apply transition-all px-0;
+        @apply transition-all px-0 h-auto;
 
         &:hover .base-button__content {
           @apply opacity-100;
@@ -31,7 +31,7 @@
     }
 
     &__body {
-      @apply flex justify-between gap-5;
+      @apply flex justify-between gap-5 w-full;
     }
   }
 
@@ -85,11 +85,16 @@
   &__group {
     @apply flex flex-col gap-[2px];
 
-    .swap-panel__card:not(:first-of-type) {
-      @apply rounded-t-none;
-    }
-    .swap-panel__card:not(:last-of-type) {
-      @apply rounded-b-none;
+    /* Apply only if there are at least two VISIBLE cards (ignore .d-none) */
+    &:has(> .swap-panel__card:not(.d-none) + .swap-panel__card:not(.d-none)) {
+      /* Not the first visible card → remove top radius */
+      .swap-panel__card:nth-child(n + 2 of .swap-panel__card:not(.d-none)) {
+        @apply rounded-t-none;
+      }
+      /* Not the last visible card → remove bottom radius */
+      .swap-panel__card:nth-last-child(n + 2 of .swap-panel__card:not(.d-none)) {
+        @apply rounded-b-none;
+      }
     }
   }
 }
@@ -107,5 +112,40 @@
 
   img {
     @apply h-[16px] ml-[5px];
+  }
+}
+
+.wallet-address {
+  & {
+    @apply flex gap-6 w-full items-center;
+  }
+
+  &__title {
+    @apply font-semibold text-xs leading-[16px] text-center uppercase opacity-50;
+    letter-spacing: 0.07em;
+  }
+
+  &__body {
+    @apply flex flex-col gap-1 items-start flex-1;
+  }
+
+  &__form {
+    @apply w-full;
+
+    input {
+      @apply border-0 p-0 bg-transparent;
+      &::placeholder {
+        @apply text-white/30;
+      }
+      &:focus {
+        outline: none;
+        box-shadow: none !important;
+        background-color: transparent;
+      }
+    }
+  }
+
+  &__scanner {
+    @apply bg-white/10 hover:bg-white/20 text-white/50 p-[10px] no-underline rounded w-[40px] h-[40px] flex items-center justify-center transition-all;
   }
 }
