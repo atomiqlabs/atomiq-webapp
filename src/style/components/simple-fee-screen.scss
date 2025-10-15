@@ -26,6 +26,16 @@
 
   &__quote {
     @apply flex gap-2 mr-auto items-center;
+
+    &__error {
+      @apply text-red flex items-center gap-2 mr-1 pr-3;
+
+      border-right: 1px solid rgb(255 255 255 / 0.2);
+
+      .icon-invalid-error {
+        @apply relative top-[2px];
+      }
+    }
   }
 
   &__fee {
@@ -47,6 +57,10 @@
 
   .circular-progress {
     transform: rotate(0deg);
+
+    &__retry {
+      @apply underline font-medium;
+    }
   }
 
   .circular-progress-bar {

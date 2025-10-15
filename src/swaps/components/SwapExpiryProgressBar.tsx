@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Button } from 'react-bootstrap';
 
 export function SwapExpiryProgressBar(props: {
   timeRemaining: number;
@@ -7,6 +8,7 @@ export function SwapExpiryProgressBar(props: {
   show?: boolean;
   expiryText?: string;
   quoteAlias?: string;
+  onRefreshQuote?: () => void;
 }) {
   const timeRemaining = Math.max(0, props.timeRemaining ?? 0);
   const progress = props.totalTime > 0 ? (timeRemaining / props.totalTime) * 100 : 0;
@@ -25,37 +27,38 @@ export function SwapExpiryProgressBar(props: {
       }
     >
       <div className="circular-progress-wrapper">
-        <svg width={size} height={size} className="circular-progress">
-          {/* Background circle */}
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="rgba(255, 255, 255, 0.1)"
-            strokeWidth={strokeWidth}
-          />
-          {/* Progress circle */}
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke={props.expired ? '#ff6c6c' : '#FF2E8C'}
-            strokeWidth={strokeWidth}
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            strokeLinecap="round"
-            transform={`rotate(-90 ${size / 2} ${size / 2})`}
-            className="circular-progress-bar"
-          />
-        </svg>
+        {props.expired && props.onRefreshQuote ? (
+          <div onClick={props.onRefreshQuote} className="circular-progress__retry">
+            Retry Quote
+          </div>
+        ) : (
+          <svg width={size} height={size} className="circular-progress">
+            {/* Background circle */}
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.1)"
+              strokeWidth={strokeWidth}
+            />
+            {/* Progress circle */}
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="none"
+              stroke={props.expired ? '#ff6c6c' : '#FF2E8C'}
+              strokeWidth={strokeWidth}
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              transform={`rotate(-90 ${size / 2} ${size / 2})`}
+              className="circular-progress-bar"
+            />
+          </svg>
+        )}
       </div>
-      {props.expired ? (
-        <div className="flex-column">
-          <label className="mb-0">{props.expiryText ?? 'Quote expired!'}</label>
-        </div>
-      ) : null}
     </div>
   );
 }

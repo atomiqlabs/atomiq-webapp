@@ -875,6 +875,18 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 <SimpleFeeSummaryScreen
                   swap={existingSwap ?? quote}
                   btcFeeRate={inputToken.chain === 'BTC' ? maxSpendable?.feeRate : null}
+                  onRefreshQuote={() => {
+                    if (existingSwap != null) {
+                      leaveExistingSwap(false, true);
+                      setExactIn(existingSwap.exactIn);
+                      if (existingSwap.exactIn) {
+                        setAmount(existingSwap.getInput().amount);
+                      } else {
+                        setAmount(existingSwap.getOutput().amount);
+                      }
+                    }
+                    refreshQuote();
+                  }}
                 />
               </div>
               {!randomQuote || swapper.SwapTypeInfo[swapType].requiresOutputWallet ? (

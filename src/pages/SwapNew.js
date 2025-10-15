@@ -483,7 +483,19 @@ export function SwapNew(props) {
                                                         outputChainData?.wallet == null &&
                                                         isBtcToken(outputToken) &&
                                                         outputToken.lightning &&
-                                                        addressData == null, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] }) }) })] }), quote != null || existingSwap != null ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "mt-3", children: _jsx(SimpleFeeSummaryScreen, { swap: existingSwap ?? quote, btcFeeRate: inputToken.chain === 'BTC' ? maxSpendable?.feeRate : null }) }), !randomQuote || swapper.SwapTypeInfo[swapType].requiresOutputWallet ? (_jsx("div", { className: "mt-3 d-flex flex-column text-white", children: _jsx(QuoteSummary, { type: "swap", quote: existingSwap ?? quote, balance: maxSpendable?.balance.rawAmount ?? null, refreshQuote: () => {
+                                                        addressData == null, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] }) }) })] }), quote != null || existingSwap != null ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "mt-3", children: _jsx(SimpleFeeSummaryScreen, { swap: existingSwap ?? quote, btcFeeRate: inputToken.chain === 'BTC' ? maxSpendable?.feeRate : null, onRefreshQuote: () => {
+                                            if (existingSwap != null) {
+                                                leaveExistingSwap(false, true);
+                                                setExactIn(existingSwap.exactIn);
+                                                if (existingSwap.exactIn) {
+                                                    setAmount(existingSwap.getInput().amount);
+                                                }
+                                                else {
+                                                    setAmount(existingSwap.getOutput().amount);
+                                                }
+                                            }
+                                            refreshQuote();
+                                        } }) }), !randomQuote || swapper.SwapTypeInfo[swapType].requiresOutputWallet ? (_jsx("div", { className: "mt-3 d-flex flex-column text-white", children: _jsx(QuoteSummary, { type: "swap", quote: existingSwap ?? quote, balance: maxSpendable?.balance.rawAmount ?? null, refreshQuote: () => {
                                             if (existingSwap != null) {
                                                 leaveExistingSwap(false, true);
                                                 setExactIn(existingSwap.exactIn);

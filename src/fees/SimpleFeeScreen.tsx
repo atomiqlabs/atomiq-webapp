@@ -112,6 +112,7 @@ export function SimpleFeeSummaryScreen(props: {
   swap: ISwap;
   btcFeeRate?: number;
   className?: string;
+  onRefreshQuote?: () => void;
 }) {
   const { fees, totalUsdFee } = useSwapFees(props.swap, props.btcFeeRate);
 
@@ -151,11 +152,20 @@ export function SimpleFeeSummaryScreen(props: {
           <Accordion.Header className="font-bigger d-flex flex-row" bsPrefix="fee-accordion-header">
             <div className="simple-fee-screen__quote">
               <div className="sc-text">
-                1 {outputToken.ticker} ={' '}
-                {props.swap
-                  .getPriceInfo()
-                  .swapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals)}{' '}
-                {inputToken.ticker}
+                {isCreated && isExpired ? (
+                  <span className="simple-fee-screen__quote__error">
+                    <span className="icon icon-invalid-error"></span>
+                    <span className="sc-text">Quote expired</span>
+                  </span>
+                ) : (
+                  <>
+                    1 {outputToken.ticker} ={' '}
+                    {props.swap
+                      .getPriceInfo()
+                      .swapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals)}{' '}
+                    {inputToken.ticker}
+                  </>
+                )}
               </div>
               <SwapExpiryProgressBar
                 expired={isExpired}
@@ -163,6 +173,7 @@ export function SimpleFeeSummaryScreen(props: {
                 totalTime={totalQuoteTime}
                 show={isCreated || isExpired}
                 expiryText="Quote expired!"
+                onRefreshQuote={props.onRefreshQuote}
               />
             </div>
             <div className="icon icon-receipt-fees"></div>
