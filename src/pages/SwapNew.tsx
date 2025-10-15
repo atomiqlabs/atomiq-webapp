@@ -744,7 +744,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                     <ValidatedInput
                       type={'text'}
                       className={
-                        'wallet-address__form ' +
+                        'wallet-address__form with-inline-icon ' +
                         (webLnForOutput && addressData?.address == null ? 'd-none' : '')
                       }
                       onChange={(val, forcedChange) => {
@@ -761,27 +761,15 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                           : addressError?.message
                       }
                       disabled={locked || outputChainData?.wallet != null}
-                      // feedbackEndElement={
-                      //   outputChainData?.wallet == null ? (
-                      //     <a
-                      //       className="ms-auto"
-                      //       href="#"
-                      //       onClick={(event) => {
-                      //         event.preventDefault();
-                      //         if (outputChainData == null) return;
-                      //         connectWallet(outputChainData.chainId);
-                      //       }}
-                      //     >
-                      //       Connect wallet
-                      //     </a>
-                      //   ) : null
-                      // }
+                      textEnd={
+                        isOutputWalletAddress ? <span className="icon icon-check"></span> : null
+                      }
                       textStart={
                         addressLoading ? <Spinner size="sm" className="text-white" /> : null
                       }
                       successFeedback={
                         isOutputWalletAddress
-                          ? 'Address fetched from your ' + outputChainData?.wallet.name + ' wallet!'
+                          ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
                           : null
                       }
                     />
@@ -799,16 +787,14 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       >
                         <a
                           href="#"
-                          style={{
-                            marginTop: '-3px',
-                          }}
+                          className="wallet-address__action__button"
                           onClick={(e) => {
                             e.preventDefault();
                             if (outputChainData == null) return;
                             disconnectWallet(outputChainData.chainId);
                           }}
                         >
-                          <Icon size={24} icon={ic_power_off_outline} />
+                          <span className="icon icon-disconnect"></span>
                         </a>
                       </OverlayTrigger>
                     ) : (
@@ -818,10 +804,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       >
                         <a
                           href="#"
-                          className="wallet-address__scanner"
-                          style={{
-                            marginTop: '-3px',
-                          }}
+                          className="wallet-address__action__button"
                           onClick={(e) => {
                             e.preventDefault();
                             setQrScanning(true);
