@@ -18,7 +18,7 @@
 
     &__wallet {
       .base-button {
-        @apply transition-all px-0 h-auto;
+        @apply transition-all p-0 h-auto;
 
         &:hover .base-button__content {
           @apply opacity-100;
@@ -168,7 +168,7 @@
       top: 3px;
       line-height: 1;
       pointer-events: none;
-      left: 390px;
+      left: 395px;
     }
 
     /* Make sure the icon itself is centered nicely */
