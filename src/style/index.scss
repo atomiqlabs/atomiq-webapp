@@ -262,7 +262,6 @@ td {
 
 .tab-accent {
   @extend .card;
-  @extend .p-2;
   @extend .border-0;
   @extend .bg-black;
   @extend .bg-opacity-10;
@@ -325,6 +324,10 @@ td {
 
 .accordion-button {
   font-size: 1.5rem;
+
+  &:focus {
+    box-shadow: none;
+  }
 }
 
 .fee-accordion-header {

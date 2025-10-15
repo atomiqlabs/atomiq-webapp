@@ -1,10 +1,20 @@
-import { ISwap, Token } from '@atomiqlabs/sdk';
+import {
+  ISwap,
+  Token,
+  ToBTCSwapState,
+  FromBTCSwapState,
+  SwapType,
+  FromBTCLNSwapState,
+} from '@atomiqlabs/sdk';
 import * as React from 'react';
 import { Accordion, Badge, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import { useMemo } from 'react';
 import Icon from 'react-icons-kit';
 import { ic_receipt_outline } from 'react-icons-kit/md/ic_receipt_outline';
 import { TokenIcon } from '../tokens/TokenIcon';
 import { FeeDetails, useSwapFees } from './hooks/useSwapFees';
+import { SwapExpiryProgressBar } from '../swaps/components/SwapExpiryProgressBar';
+import { useSwapState } from '../swaps/hooks/useSwapState';
 
 function FeePart(props: FeeDetails) {
   return (
@@ -108,33 +118,70 @@ export function SimpleFeeSummaryScreen(props: {
   const inputToken: Token = props.swap?.getInput().token;
   const outputToken: Token = props.swap?.getOutput().token;
 
+  const { totalQuoteTime, quoteTimeRemaining, state } = useSwapState(props.swap);
+
+  const swapType = props.swap?.getType();
+
+  const [isCreated, isExpired] = useMemo(() => {
+    if (swapType === SwapType.TO_BTC || swapType === SwapType.TO_BTCLN) {
+      return [
+        state === ToBTCSwapState.CREATED || state === ToBTCSwapState.QUOTE_SOFT_EXPIRED,
+        state === ToBTCSwapState.QUOTE_EXPIRED || state === ToBTCSwapState.QUOTE_SOFT_EXPIRED,
+      ];
+    } else if (swapType === SwapType.FROM_BTC) {
+      return [
+        state === FromBTCSwapState.PR_CREATED || state === FromBTCSwapState.QUOTE_SOFT_EXPIRED,
+        state === FromBTCSwapState.QUOTE_EXPIRED || state === FromBTCSwapState.QUOTE_SOFT_EXPIRED,
+      ];
+    } else if (swapType === SwapType.FROM_BTCLN) {
+      return [
+        state === FromBTCLNSwapState.PR_CREATED || state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED,
+        state === FromBTCLNSwapState.QUOTE_EXPIRED ||
+          state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED,
+      ];
+    }
+    // For other swap types, default to false
+    return [false, false];
+  }, [state, swapType]);
+
   return (
-    <Accordion className="simple-fee-screen">
-      <Accordion.Item eventKey="0" className="tab-accent-nop">
-        <Accordion.Header className="font-bigger d-flex flex-row" bsPrefix="fee-accordion-header">
-          <small className="me-auto">
-            1 {outputToken.ticker} ={' '}
-            {props.swap
-              .getPriceInfo()
-              .swapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals)}{' '}
-            {inputToken.ticker}
-          </small>
-          <div className="icon icon-receipt-fees"></div>
-          <span className="simple-fee-screen__fee">
-            {totalUsdFee == null ? (
-              <Spinner animation="border" size="sm" />
-            ) : (
-              '$' + totalUsdFee.toFixed(2)
-            )}
-          </span>
-          <div className="icon icon-caret-down"></div>
-        </Accordion.Header>
-        <Accordion.Body className="simple-fee-screen__body">
-          {fees.map((e, index) => (
-            <FeePart key={index} {...e} />
-          ))}
-        </Accordion.Body>
-      </Accordion.Item>
-    </Accordion>
+    <>
+      <Accordion className="simple-fee-screen">
+        <Accordion.Item eventKey="0" className="tab-accent-nop">
+          <Accordion.Header className="font-bigger d-flex flex-row" bsPrefix="fee-accordion-header">
+            <div className="simple-fee-screen__quote">
+              <div className="sc-text">
+                1 {outputToken.ticker} ={' '}
+                {props.swap
+                  .getPriceInfo()
+                  .swapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals)}{' '}
+                {inputToken.ticker}
+              </div>
+              <SwapExpiryProgressBar
+                expired={isExpired}
+                timeRemaining={quoteTimeRemaining}
+                totalTime={totalQuoteTime}
+                show={isCreated || isExpired}
+                expiryText="Quote expired!"
+              />
+            </div>
+            <div className="icon icon-receipt-fees"></div>
+            <span className="simple-fee-screen__fee">
+              {totalUsdFee == null ? (
+                <Spinner animation="border" size="sm" />
+              ) : (
+                '$' + totalUsdFee.toFixed(2)
+              )}
+            </span>
+            <div className="icon icon-caret-down"></div>
+          </Accordion.Header>
+          <Accordion.Body className="simple-fee-screen__body">
+            {fees.map((e, index) => (
+              <FeePart key={index} {...e} />
+            ))}
+          </Accordion.Body>
+        </Accordion.Item>
+      </Accordion>
+    </>
   );
 }

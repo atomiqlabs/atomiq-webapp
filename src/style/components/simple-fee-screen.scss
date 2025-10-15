@@ -24,6 +24,10 @@
     }
   }
 
+  &__quote {
+    @apply flex gap-2 mr-auto items-center;
+  }
+
   &__fee {
     @apply mr-3;
   }
@@ -34,5 +38,18 @@
 
   .icon-receipt-fees {
     @apply mr-2 opacity-50;
+  }
+
+  // Circular progress bar
+  .circular-progress-wrapper {
+    @apply flex items-center justify-center;
+  }
+
+  .circular-progress {
+    transform: rotate(0deg);
+  }
+
+  .circular-progress-bar {
+    transition: stroke-dashoffset 0.5s ease-in-out;
   }
 }

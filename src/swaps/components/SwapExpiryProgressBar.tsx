@@ -1,6 +1,4 @@
-import { ProgressBar } from "react-bootstrap";
-import * as React from "react";
-import { getDeltaTextHours } from "../../utils/Utils";
+import * as React from 'react';
 
 export function SwapExpiryProgressBar(props: {
   timeRemaining: number;
@@ -11,21 +9,53 @@ export function SwapExpiryProgressBar(props: {
   quoteAlias?: string;
 }) {
   const timeRemaining = Math.max(0, props.timeRemaining ?? 0);
+  const progress = props.totalTime > 0 ? (timeRemaining / props.totalTime) * 100 : 0;
+
+  // Circle properties
+  const size = 20;
+  const strokeWidth = 2;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (progress / 100) * circumference;
+
   return (
     <div
       className={
-        props.show === false ? "d-none" : "d-flex flex-column mb-3 tab-accent"
+        props.show === false ? 'd-none' : 'd-flex flex-row align-items-center gap-2 tab-accent'
       }
     >
+      <div className="circular-progress-wrapper">
+        <svg width={size} height={size} className="circular-progress">
+          {/* Background circle */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="rgba(255, 255, 255, 0.1)"
+            strokeWidth={strokeWidth}
+          />
+          {/* Progress circle */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={props.expired ? '#ff6c6c' : '#FF2E8C'}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            transform={`rotate(-90 ${size / 2} ${size / 2})`}
+            className="circular-progress-bar"
+          />
+        </svg>
+      </div>
       {props.expired ? (
-        <label>{props.expiryText ?? "Quote expired!"}</label>
-      ) : (
-        <label>
-          {props.quoteAlias ?? "Quote"} expires in{" "}
-          {getDeltaTextHours(timeRemaining * 1000)}
-        </label>
-      )}
-      <ProgressBar animated now={timeRemaining} max={props.totalTime} min={0} />
+        <div className="flex-column">
+          <label className="mb-0">{props.expiryText ?? 'Quote expired!'}</label>
+        </div>
+      ) : null}
     </div>
   );
 }

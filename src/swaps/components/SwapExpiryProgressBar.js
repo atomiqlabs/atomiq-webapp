@@ -1,7 +1,12 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { ProgressBar } from "react-bootstrap";
-import { getDeltaTextHours } from "../../utils/Utils";
 export function SwapExpiryProgressBar(props) {
     const timeRemaining = Math.max(0, props.timeRemaining ?? 0);
-    return (_jsxs("div", { className: props.show === false ? "d-none" : "d-flex flex-column mb-3 tab-accent", children: [props.expired ? (_jsx("label", { children: props.expiryText ?? "Quote expired!" })) : (_jsxs("label", { children: [props.quoteAlias ?? "Quote", " expires in", " ", getDeltaTextHours(timeRemaining * 1000)] })), _jsx(ProgressBar, { animated: true, now: timeRemaining, max: props.totalTime, min: 0 })] }));
+    const progress = props.totalTime > 0 ? (timeRemaining / props.totalTime) * 100 : 0;
+    // Circle properties
+    const size = 20;
+    const strokeWidth = 2;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (progress / 100) * circumference;
+    return (_jsxs("div", { className: props.show === false ? 'd-none' : 'd-flex flex-row align-items-center gap-2 tab-accent', children: [_jsx("div", { className: "circular-progress-wrapper", children: _jsxs("svg", { width: size, height: size, className: "circular-progress", children: [_jsx("circle", { cx: size / 2, cy: size / 2, r: radius, fill: "none", stroke: "rgba(255, 255, 255, 0.1)", strokeWidth: strokeWidth }), _jsx("circle", { cx: size / 2, cy: size / 2, r: radius, fill: "none", stroke: props.expired ? '#ff6c6c' : '#FF2E8C', strokeWidth: strokeWidth, strokeDasharray: circumference, strokeDashoffset: offset, strokeLinecap: "round", transform: `rotate(-90 ${size / 2} ${size / 2})`, className: "circular-progress-bar" })] }) }), props.expired ? (_jsx("div", { className: "flex-column", children: _jsx("label", { className: "mb-0", children: props.expiryText ?? 'Quote expired!' }) })) : null] }));
 }
