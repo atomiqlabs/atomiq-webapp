@@ -69,7 +69,8 @@ function WrappedApp() {
                     SOLANA: chainsData.SOLANA?.swapperOptions,
                     STARKNET: chainsData.STARKNET?.swapperOptions,
                     CITREA: chainsData.CITREA?.swapperOptions,
-                    BOTANIX: chainsData.BOTANIX?.swapperOptions
+                    BOTANIX: chainsData.BOTANIX?.swapperOptions,
+                    ALPEN: chainsData.ALPEN?.swapperOptions
                 },
                 intermediaryUrl: useLp,
                 getRequestTimeout: 15000,

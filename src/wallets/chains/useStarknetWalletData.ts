@@ -118,6 +118,7 @@ export function useStarknetWalletData(): [ChainWalletData<StarknetSigner>] {
         changeWallet,
         swapperOptions: {
             rpcUrl: FEConstants.starknetRpc,
+            wsUrl: FEConstants.starknetWs,
             chainId: FEConstants.starknetChainId,
             fees: new StarknetFees(FEConstants.starknetRpc)
         }

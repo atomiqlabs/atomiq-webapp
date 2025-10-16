@@ -12,7 +12,8 @@ export const TokenIcons = {
     ETH: "/icons/crypto/ETH.png",
     STRK: "/icons/crypto/STRK.png",
     CBTC: "/icons/crypto/BTC.svg",
-    BBTC: "/icons/crypto/BBTC.svg"
+    BBTC: "/icons/crypto/BBTC.svg",
+    ABTC: "/icons/crypto/BTC.svg"
 };
 export const bitcoinTokenArray = [
     Tokens.BITCOIN.BTC,
@@ -31,6 +32,9 @@ if (FEConstants.allowedChains.has("CITREA")) {
 }
 if (FEConstants.allowedChains.has("BOTANIX")) {
     smartChainTokenArray.push(Tokens.BOTANIX.BBTC);
+}
+if (FEConstants.allowedChains.has("ALPEN")) {
+    smartChainTokenArray.push(Tokens.ALPEN.ABTC);
 }
 if (FEConstants.allowedChains.has("STARKNET")) {
     smartChainTokenArray.push(Tokens.STARKNET.WBTC);

@@ -5,12 +5,13 @@ import { useStarknetWalletData } from "./chains/useStarknetWalletData";
 import { useLightningWalletData } from "./chains/useLightningWalletData";
 import { ChainDataContext } from "./context/ChainDataContext";
 import { useMemo } from "react";
-import { EVMWalletWrapper, useCitreaWallet, useBotanixWallet } from "./chains/useEVMWallet";
+import { EVMWalletWrapper, useCitreaWallet, useBotanixWallet, useAlpenWallet } from "./chains/useEVMWallet";
 function WrappedChainDataProvider(props) {
     const [starknetChain] = useStarknetWalletData();
     const [solanaChain] = useSolanaWalletData();
     const [citreaChain] = useCitreaWallet();
     const [botanixChain] = useBotanixWallet();
+    const [alpenChain] = useAlpenWallet();
     const [lightningChain] = useLightningWalletData();
     const [bitcoinChain, bitcoinModal] = useBitcoinWalletData(useMemo(() => {
         return {
@@ -31,8 +32,10 @@ function WrappedChainDataProvider(props) {
                 res.CITREA = citreaChain;
             if (botanixChain != null)
                 res.BOTANIX = botanixChain;
+            if (alpenChain != null)
+                res.ALPEN = alpenChain;
             return res;
-        }, [bitcoinChain, lightningChain, solanaChain, starknetChain, citreaChain, botanixChain]), children: [bitcoinModal, props.children] }));
+        }, [bitcoinChain, lightningChain, solanaChain, starknetChain, citreaChain, botanixChain, alpenChain]), children: [bitcoinModal, props.children] }));
 }
 export function ChainDataProvider(props) {
     return (_jsx(EVMWalletWrapper, { children: _jsx(SolanaWalletWrapper, { children: _jsx(WrappedChainDataProvider, { children: props.children }) }) }));

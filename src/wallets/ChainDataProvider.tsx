@@ -4,7 +4,7 @@ import {useStarknetWalletData} from "./chains/useStarknetWalletData";
 import {useLightningWalletData} from "./chains/useLightningWalletData";
 import { ChainDataContext } from "./context/ChainDataContext";
 import {useMemo} from "react";
-import {EVMWalletWrapper, useCitreaWallet, useBotanixWallet} from "./chains/useEVMWallet";
+import {EVMWalletWrapper, useCitreaWallet, useBotanixWallet, useAlpenWallet} from "./chains/useEVMWallet";
 
 export type ChainWalletData<T> = {
     chain: {
@@ -29,6 +29,7 @@ function WrappedChainDataProvider(props: {children: React.ReactNode}) {
     const [solanaChain] = useSolanaWalletData();
     const [citreaChain] = useCitreaWallet();
     const [botanixChain] = useBotanixWallet();
+    const [alpenChain] = useAlpenWallet();
     const [lightningChain] = useLightningWalletData();
     const [bitcoinChain, bitcoinModal] = useBitcoinWalletData(useMemo(() => {
         return {
@@ -47,8 +48,9 @@ function WrappedChainDataProvider(props: {children: React.ReactNode}) {
             if(starknetChain!=null) res.STARKNET = starknetChain;
             if(citreaChain!=null) res.CITREA = citreaChain;
             if(botanixChain!=null) res.BOTANIX = botanixChain;
+            if(alpenChain!=null) res.ALPEN = alpenChain;
             return res;
-        }, [bitcoinChain, lightningChain, solanaChain, starknetChain, citreaChain, botanixChain])}>
+        }, [bitcoinChain, lightningChain, solanaChain, starknetChain, citreaChain, botanixChain, alpenChain])}>
             {bitcoinModal}
             {props.children}
         </ChainDataContext.Provider>

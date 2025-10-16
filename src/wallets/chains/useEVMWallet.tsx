@@ -10,6 +10,56 @@ import {EVMBrowserSigner, EVMSigner} from "@atomiqlabs/chain-evm";
 import {BrowserProvider, JsonRpcProvider} from "ethers";
 import '@rainbow-me/rainbowkit/styles.css';
 
+const botanixMainnetRoutescan = {
+    name: "Routescan - Botanix Mainnet",
+    url: "https://botanixscan.io/"
+};
+
+const botanixMainnetChain = {
+    blockExplorers: {
+        "Routescan": botanixMainnetRoutescan,
+        default: botanixMainnetRoutescan
+    },
+    blockTime: 5*1000,
+    id: 3637,
+    name: "Botanix",
+    nativeCurrency: {
+        name: "Bitcoin",
+        symbol: "BTC",
+        decimals: 18
+    },
+    rpcUrls: {
+        "Botanix public": {http: ["https://rpc.botanixlabs.com"]},
+        default: {http: ["https://rpc.botanixlabs.com"]}
+    },
+    testnet: false
+};
+
+const alpenTestnetBlockscout = {
+    name: "Blockscout - Alpen Testnet",
+    url: "https://explorer.testnet.alpenlabs.io/"
+};
+
+const alpenTestnetChain = {
+    blockExplorers: {
+        "Blockscout": alpenTestnetBlockscout,
+        default: alpenTestnetBlockscout
+    },
+    blockTime: 5*1000,
+    id: 2892,
+    name: "Alpen Testnet",
+    nativeCurrency: {
+        name: "Signet BTC",
+        symbol: "sBTC",
+        decimals: 18
+    },
+    rpcUrls: {
+        "Alpen public": {http: ["https://rpc.testnet.alpenlabs.io"]},
+        default: {http: ["https://rpc.testnet.alpenlabs.io"]}
+    },
+    testnet: true
+};
+
 const botanixTestnetBlockscout = {
     name: "Routescan - Botanix Testnet",
     url: "https://testnet.botanixscan.io/"
@@ -61,8 +111,9 @@ const citreaTestnetChain = {
 };
 
 const chains: any = [];
+if(FEConstants.alpenRpc!=null) chains.push(alpenTestnetChain);
 if(FEConstants.citreaRpc!=null) chains.push(citreaTestnetChain);
-if(FEConstants.botanixRpc!=null) chains.push(botanixTestnetChain);
+if(FEConstants.botanixRpc!=null) chains.push(FEConstants.botanixChainType==="MAINNET" ? botanixMainnetChain : botanixTestnetChain);
 
 const config = getDefaultConfig({
     appName: "atomiq.exchange",
@@ -201,6 +252,26 @@ export function useBotanixWallet(): [ChainWalletData<EVMSigner>] {
             swapperOptions: {
                 rpcUrl: FEConstants.botanixRpc,
                 chainType: FEConstants.botanixChainType
+            },
+            ...base
+        }]
+    }, [base]);
+}
+
+export function useAlpenWallet(): [ChainWalletData<EVMSigner>] {
+    const base = useEVMWallet();
+
+    return useMemo(() => {
+        if(!FEConstants.allowedChains.has("ALPEN")) return [null];
+        return [{
+            id: "ALPEN",
+            chain: {
+                name: "Alpen",
+                icon: "/icons/chains/ALPEN.svg",
+            },
+            swapperOptions: {
+                rpcUrl: FEConstants.alpenRpc,
+                chainType: FEConstants.alpenChainType
             },
             ...base
         }]

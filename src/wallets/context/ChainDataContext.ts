@@ -12,10 +12,11 @@ type WalletTypes = {
    SOLANA: SolanaSigner,
    STARKNET: StarknetSigner,
    CITREA: EVMSigner,
-   BOTANIX: EVMSigner
+   BOTANIX: EVMSigner,
+   ALPEN: EVMSigner
 };
 
-export type ChainIdentifiers = "BITCOIN" | "LIGHTNING" | "SOLANA" | "STARKNET" | "CITREA" | "BOTANIX";
+export type ChainIdentifiers = "BITCOIN" | "LIGHTNING" | "SOLANA" | "STARKNET" | "CITREA" | "BOTANIX" | "ALPEN";
 
 export const ChainDataContext: React.Context<{
     [chain in ChainIdentifiers]?: ChainWalletData<WalletTypes[chain]>
