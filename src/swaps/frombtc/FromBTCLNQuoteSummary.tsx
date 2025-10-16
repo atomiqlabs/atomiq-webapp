@@ -17,6 +17,7 @@ import { useFromBtcLnQuote } from './useFromBtcLnQuote';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
+import {useChain} from "../../wallets/hooks/useChain";
 
 /*
 Steps:
@@ -33,7 +34,7 @@ export function FromBTCLNQuoteSummary(props: {
   abortSwap?: () => void;
   notEnoughForGas: bigint;
 }) {
-  const lightningWallet = useContext(ChainDataContext).LIGHTNING?.wallet;
+  const lightningWallet = useChain("LIGHTNING")?.wallet;
   const smartChainWallet = useSmartChainWallet(props.quote, true);
 
   const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();

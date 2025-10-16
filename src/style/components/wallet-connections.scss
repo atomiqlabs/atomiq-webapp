@@ -4,7 +4,7 @@
   --bs-btn-active-bg: rgba(255, 255, 255, 0.2);
   --bs-btn-active-border-color: rgba(255, 255, 255, 0.2);
 
-  @apply flex gap-[2px] justify-end;
+  @apply flex gap-[2px] justify-end items-center;
 
   &__button {
     & {
@@ -168,5 +168,6 @@
   }
 
   &__simple {
+    @apply gap-2;
   }
 }

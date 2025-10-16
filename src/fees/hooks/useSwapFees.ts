@@ -15,6 +15,9 @@ import {
 import { useWithAwait } from "../../utils/hooks/useWithAwait";
 import { capitalizeFirstLetter } from "../../utils/Utils";
 import { getChainIdentifierForCurrency } from "../../tokens/Tokens";
+import {useChain} from "../../wallets/hooks/useChain";
+import {ExtensionBitcoinWallet} from "../../wallets/chains/bitcoin/base/ExtensionBitcoinWallet";
+import {ChainWalletData} from "../../wallets/ChainDataProvider";
 
 export type FeeDetails = {
   text: string;
@@ -37,7 +40,7 @@ export function useSwapFees(
   fees: FeeDetails[];
   totalUsdFee: number;
 } {
-  const bitcoinChainData = useContext(ChainDataContext).BITCOIN;
+  const bitcoinChainData: ChainWalletData<ExtensionBitcoinWallet> = useChain("BITCOIN");
 
   const fees = useMemo(() => {
     if (swap == null) return null;

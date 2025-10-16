@@ -1,9 +1,15 @@
 import { SolanaWalletWrapper } from './chains/useSolanaWalletData';
 import { ChainDataContext } from './context/ChainDataContext';
-import { WalletSystemContext } from './context/WalletSystemContext';
-import { useWalletSystem } from './hooks/useWalletSystem';
-import { UnifiedWalletModal } from './shared/UnifiedWalletModal';
-import { ChainIdentifiers } from './context/ChainDataContext';
+import {GenericWalletModal} from "./shared/GenericWalletModal";
+import {useChainWalletSystem} from "./hooks/useChainWalletSystem";
+import {FEConstants} from "../FEConstants";
+import {useCallback, useMemo, useState} from "react";
+
+export type WalletListData = {
+  name: string;
+  icon: string;
+  downloadLink?: string;
+}
 
 export type ChainWalletData<T> = {
   chain: {
@@ -16,60 +22,62 @@ export type ChainWalletData<T> = {
     address?: string;
     instance: T;
   };
-  wallets?: Array<{
-    name: string;
-    icon: string;
-    isInstalled: boolean;
-    isConnected: boolean;
-  }>;
-  id: string;
-  disconnect: () => Promise<void> | void;
-  connect: () => Promise<void> | void;
-  connectWallet?: () => Promise<void> | void; // maybe todo
-  changeWallet?: () => Promise<void> | void;
+  installedWallets: Array<WalletListData & {isConnected?: boolean}>;
+  nonInstalledWallets: Array<WalletListData>;
+  chainId: string;
+  _disconnect: () => Promise<void> | void;
+  _connectWallet: (walletName: string) => Promise<void> | void;
   swapperOptions?: any;
-  balance?: {
-    value: number | string;
-    formatted?: string;
-    symbol: string;
-    decimals?: number;
-  };
-  tokenBalances?: Array<{
-    mint?: string;
-    contract?: string;
-    symbol: string;
-    value: number | string;
-    formatted?: string;
-    decimals?: number;
-  }>;
-
-  /** Optional callback your hooks can expose to force-refresh balances. */
-  refreshBalance?: () => Promise<void> | void;
+  hasWallets: boolean;
 };
 
 function WrappedChainDataProvider(props: { children: React.ReactNode }) {
-  const { wallets, walletSystemContext } = useWalletSystem();
+  const chainsData = useChainWalletSystem(FEConstants.chainsConfiguration);
+
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [modalChainId, setModalChainId] = useState<string>();
+  const modalSelectedChainData = useMemo(() => chainsData[modalChainId], [modalChainId]);
+
+  const connectWallet: (chainIdentifier: string) => void = useCallback((chainIdentifier: string) => {
+    setModalOpen(true);
+    setModalChainId(chainIdentifier);
+  }, [chainsData]);
+  const disconnectWallet: (chainIdentifier: string) => Promise<void> = useCallback(async (chainIdentifier: string) => {
+    const chain = chainsData[chainIdentifier];
+    if(!chain) return;
+    await chain._disconnect();
+  }, [chainsData]);
+  const changeWallet: (chainIdentifier: string) => Promise<void> = useCallback(async (chainIdentifier: string) => {
+    const chain = chainsData[chainIdentifier];
+    if(!chain || !chain._disconnect) return;
+    await chain._disconnect();
+    setModalOpen(true);
+    setModalChainId(chainIdentifier);
+  }, [chainsData]);
 
   return (
-    <WalletSystemContext.Provider value={walletSystemContext}>
-      <ChainDataContext.Provider value={wallets}>
-        {/* Render unified modals for chains that have wallets to display */}
-        {Object.keys(walletSystemContext.chains).map((chainId) => {
-          const chain = walletSystemContext.chains[chainId as ChainIdentifiers];
-          if (!chain) return null;
-
-          return (
-            <UnifiedWalletModal
-              key={chainId}
-              chainId={chainId as ChainIdentifiers}
-              visible={chain.isModalOpen}
-              onClose={chain.closeModal}
-            />
-          );
-        })}
-        {props.children}
-      </ChainDataContext.Provider>
-    </WalletSystemContext.Provider>
+    <ChainDataContext.Provider value={{
+      chains: chainsData,
+      connectWallet,
+      disconnectWallet,
+      changeWallet
+    }}>
+      <GenericWalletModal
+          visible={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title={`Select a ${modalSelectedChainData?.chain.name ?? modalChainId} Wallet`}
+          installedWallets={modalSelectedChainData?.installedWallets ?? []}
+          notInstalledWallets={modalSelectedChainData?.nonInstalledWallets ?? []}
+          onWalletClick={(wallet) => {
+            if(modalSelectedChainData==null) return;
+            (async() => {
+              await modalSelectedChainData._connectWallet(wallet.name);
+              setModalOpen(false);
+            })()
+          }}
+      />
+      {props.children}
+    </ChainDataContext.Provider>
   );
 }
 

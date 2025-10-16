@@ -15,7 +15,7 @@ import {
 } from "@atomiqlabs/sdk";
 import { SwapsContext } from "../context/SwapsContext";
 import { useWithAwait } from "../../utils/hooks/useWithAwait";
-import { useChainForCurrency } from "../../wallets/hooks/useChainForCurrency";
+import { useChain } from "../../wallets/hooks/useChain";
 import { Address, NETWORK, TEST_NETWORK } from "@scure/btc-signer";
 import { FEConstants } from "../../FEConstants";
 import * as randomBytes from "randombytes";
@@ -54,7 +54,7 @@ export function useQuote(
 ): [() => void, ISwap, boolean, boolean, any] {
   const { swapper } = useContext(SwapsContext);
 
-  const inputChain = useChainForCurrency(inToken);
+  const inputChain = useChain(inToken);
   let inputAddress: string | LNURLWithdraw = inputChain?.wallet?.address;
   if (
     inToken != null &&
@@ -66,7 +66,7 @@ export function useQuote(
     address = null;
   }
 
-  const outputChain = useChainForCurrency(outToken);
+  const outputChain = useChain(outToken);
   address ??= outputChain?.wallet?.address;
 
   const swapType = useMemo(() => {

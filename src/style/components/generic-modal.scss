@@ -1,0 +1,84 @@
+.generic-modal {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+  max-width: 100%;
+  height: 100%;
+  width: 100vw;
+  margin-top: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  opacity: 0;
+  transition: opacity 0.15s linear;
+
+  &.generic-modal-fade-in {
+    opacity: 1;
+  }
+}
+
+.generic-modal-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.generic-modal-wrapper {
+  background-color: #180931;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  max-width: 80vw;
+  padding: 32px;
+  position: relative;
+  z-index: 1051;
+  max-height: 90vh;
+}
+
+.generic-modal-overlay {
+  @apply bg-transparent;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+}
+
+.generic-modal-button-close {
+  @apply bg-transparent;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    fill: white;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+  }
+
+  &:hover svg {
+    opacity: 1;
+  }
+}
+
+.generic-modal-title {
+  @apply p-0 w-full text-left text-white;
+
+  font-family: WorkSans, sans-serif;
+  margin-bottom: 24px;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -1px;
+}

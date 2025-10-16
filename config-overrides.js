@@ -23,5 +23,24 @@ module.exports = function override(config, env) {
     ignored: '*.tsx',
   };
 
+  // Fix resolve-url-loader source map issues
+  const oneOfRule = config.module.rules.find(rule => rule.oneOf);
+  if (oneOfRule) {
+    const sassRule = oneOfRule.oneOf.find(
+      rule => rule.test && rule.test.toString().includes('scss|sass')
+    );
+
+    if (sassRule && sassRule.use) {
+      sassRule.use.forEach(loader => {
+        if (loader.loader && loader.loader.includes('resolve-url-loader')) {
+          loader.options = {
+            ...loader.options,
+            sourceMap: false,
+          };
+        }
+      });
+    }
+  }
+
   return config;
 };

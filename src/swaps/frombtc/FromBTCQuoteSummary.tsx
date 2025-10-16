@@ -36,6 +36,7 @@ import { ErrorAlert } from '../../components/ErrorAlert';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { BaseButton } from '../../components/BaseButton';
+import {useChain} from "../../wallets/hooks/useChain";
 
 /*
 Steps:
@@ -54,7 +55,8 @@ export function FromBTCQuoteSummary(props: {
   feeRate?: number;
   balance?: bigint;
 }) {
-  const bitcoinChainData = useContext(ChainDataContext).BITCOIN;
+  const {disconnectWallet} = useContext(ChainDataContext);
+  const bitcoinChainData = useChain("BITCOIN");
   const smartChainWallet = useSmartChainWallet(props.quote, true);
 
   const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
@@ -424,7 +426,7 @@ export function FromBTCQuoteSummary(props: {
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            bitcoinChainData.disconnect();
+                            disconnectWallet("BITCOIN");
                           }}
                         >
                           Or use a QR code/wallet address

@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { ChainDataContext } from "../context/ChainDataContext";
 import { getChainIdentifierForCurrency } from "../../tokens/Tokens";
-export function useChainForCurrency(token) {
+export function useChain(tokenOrChainId) {
     const connectedWallets = useContext(ChainDataContext);
-    return connectedWallets[getChainIdentifierForCurrency(token)];
+    return connectedWallets.chains[typeof (tokenOrChainId) === "string" ? tokenOrChainId : getChainIdentifierForCurrency(tokenOrChainId)];
 }

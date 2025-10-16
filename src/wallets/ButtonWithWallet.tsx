@@ -1,4 +1,3 @@
-import { Button } from 'react-bootstrap';
 import { useContext } from 'react';
 import { ChainDataContext } from './context/ChainDataContext';
 import { ChainWalletData } from './ChainDataProvider';
@@ -15,7 +14,7 @@ export function ButtonWithWallet(props: {
   className?: string;
 }) {
   const chainData = useContext(ChainDataContext);
-  const requestedChain: ChainWalletData<any> = chainData[props.chainId];
+  const requestedChain: ChainWalletData<any> = chainData.chains[props.chainId];
   const isWalletConnected = requestedChain?.wallet != null;
   const isCorrectWalletConnected =
     props.requiredWalletAddress == null ||
@@ -25,7 +24,7 @@ export function ButtonWithWallet(props: {
     <BaseButton
       onClick={() => {
         if (requestedChain != null && !isWalletConnected) {
-          requestedChain.connect();
+          chainData.connectWallet(props.chainId);
         } else {
           props.onClick();
         }

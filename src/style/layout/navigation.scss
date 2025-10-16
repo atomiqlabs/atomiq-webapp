@@ -1,9 +1,7 @@
-@use '../components/wallet-connections';
-
 .main-navigation {
   @apply text-white z-20 grid gap-2;
 
-  grid-template-columns: 200px 1fr 200px;
+  grid-template-columns: 1fr auto 1fr;
   grid-template-areas: 'logo nav wallet';
 
   @media (max-width: 992px) {

@@ -3,9 +3,11 @@ import * as React from 'react';
 import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
 import Icon from 'react-icons-kit';
 import { Token } from '@atomiqlabs/sdk';
-import { useChainForCurrency } from './hooks/useChainForCurrency';
+import { useChain } from './hooks/useChain';
 import { BaseButton, BaseButtonVariantProps } from '../components/BaseButton';
 import { WalletBalanceResult } from './hooks/useWalletBalance';
+import { useContext } from 'react';
+import { ChainDataContext } from './context/ChainDataContext';
 
 const ConnectedWallet = React.forwardRef<any, any>(({ name, onClick, noText }, ref) => (
   <BaseButton
@@ -34,9 +36,10 @@ export function ConnectedWalletAnchor({
   variantButton?: BaseButtonVariantProps;
   maxSpendable?: WalletBalanceResult;
 }) {
-  const { wallet, connect, disconnect, changeWallet, chain } = useChainForCurrency(currency);
+  const { wallet, hasWallets, chainId } = useChain(currency);
+  const { connectWallet, disconnectWallet, changeWallet } = useContext(ChainDataContext);
 
-  if (wallet == null && connect == null) {
+  if (wallet == null && hasWallets == null) {
     return <></>;
   }
 
@@ -44,7 +47,9 @@ export function ConnectedWalletAnchor({
     return (
       <div className="wallet-connections wallet-connections__simple">
         <img width={16} height={16} src={wallet.icon} alt={wallet.name} />
-        <div className="wallet-connections__amount">{maxSpendable?.balance?.amount ?? '-'}</div>
+        {maxSpendable?.balance?.amount && (
+          <div className="wallet-connections__amount">{maxSpendable.balance.amount}</div>
+        )}
         {/* TODO implement this */}
         {/*<Button*/}
         {/*  variant="outline-light"*/}
@@ -69,12 +74,12 @@ export function ConnectedWalletAnchor({
       {wallet == null ? (
         <BaseButton
           customIcon="connect"
-          onClick={() => connect()}
+          onClick={() => connectWallet(chainId)}
           variant={variantButton}
           size="smaller"
           className="wallet-connections__item__button"
         >
-          Connect Walletik
+          Connect Wallet
         </BaseButton>
       ) : (
         <Dropdown align={{ md: 'start' }}>
@@ -90,14 +95,14 @@ export function ConnectedWalletAnchor({
           </Dropdown.Toggle>
 
           <Dropdown.Menu>
-            <Dropdown.Item eventKey="1" onClick={disconnect}>
+            <Dropdown.Item eventKey="1" onClick={() => disconnectWallet(chainId)}>
               Disconnect
             </Dropdown.Item>
             {changeWallet != null ? (
               <Dropdown.Item
                 eventKey="2"
                 onClick={() => {
-                  changeWallet();
+                  changeWallet(chainId);
                 }}
               >
                 Change wallet

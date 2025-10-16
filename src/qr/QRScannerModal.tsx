@@ -1,6 +1,6 @@
-import { QRScanner } from "./QRScanner";
-import * as React from "react";
-import { CloseButton, Modal } from "react-bootstrap";
+import { QRScanner } from './QRScanner';
+import * as React from 'react';
+import { GenericModal } from '../components/GenericModal';
 
 export function QRScannerModal(props: {
   onScanned: (value: string) => void;
@@ -8,38 +8,17 @@ export function QRScannerModal(props: {
   onHide: () => void;
 }) {
   return (
-    <Modal
-      contentClassName="text-white bg-dark"
-      size="lg"
-      centered
-      show={props.show}
-      onHide={props.onHide}
-    >
-      <Modal.Header className="border-0">
-        <Modal.Title
-          id="contained-modal-title-vcenter"
-          className="d-flex flex-grow-1"
-        >
-          Scan QR code
-          <CloseButton
-            className="ms-auto"
-            variant="white"
-            onClick={props.onHide}
-          />
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <QRScanner
-          onResult={(result, err) => {
-            if (result != null) {
-              if (props.onScanned != null) {
-                props.onScanned(result);
-              }
+    <GenericModal visible={props.show} onClose={props.onHide} title="Scan QR code">
+      <QRScanner
+        onResult={(result, err) => {
+          if (result != null) {
+            if (props.onScanned != null) {
+              props.onScanned(result);
             }
-          }}
-          camera={"environment"}
-        />
-      </Modal.Body>
-    </Modal>
+          }
+        }}
+        camera={'environment'}
+      />
+    </GenericModal>
   );
 }

@@ -24,6 +24,20 @@
     }
   }
 
+  &__quote {
+    @apply flex gap-2 mr-auto items-center;
+
+    &__error {
+      @apply text-red flex items-center gap-2 mr-1 pr-3;
+
+      border-right: 1px solid rgb(255 255 255 / 0.2);
+
+      .icon-invalid-error {
+        @apply relative top-[2px];
+      }
+    }
+  }
+
   &__fee {
     @apply mr-3;
   }
@@ -34,5 +48,22 @@
 
   .icon-receipt-fees {
     @apply mr-2 opacity-50;
+  }
+
+  // Circular progress bar
+  .circular-progress-wrapper {
+    @apply flex items-center justify-center;
+  }
+
+  .circular-progress {
+    transform: rotate(0deg);
+
+    &__retry {
+      @apply underline font-medium;
+    }
+  }
+
+  .circular-progress-bar {
+    transition: stroke-dashoffset 0.5s ease-in-out;
   }
 }
