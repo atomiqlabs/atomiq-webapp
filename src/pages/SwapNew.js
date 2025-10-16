@@ -459,7 +459,7 @@ export function SwapNew(props) {
                                                                 ? null
                                                                 : addressError?.message, disabled: locked || outputChainData?.wallet != null, textEnd: isOutputWalletAddress ? _jsx("span", { className: "icon icon-check" }) : null, textStart: addressLoading ? _jsx(Spinner, { size: "sm", className: "text-white" }) : null, successFeedback: isOutputWalletAddress
                                                                 ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
-                                                                : null })] }), _jsx("div", { className: "wallet-address__action", children: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", className: "wallet-address__action__button", onClick: (e) => {
+                                                                : null, dynamicTextEndPosition: true })] }), _jsx("div", { className: "wallet-address__action", children: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", className: "wallet-address__action__button", onClick: (e) => {
                                                                 e.preventDefault();
                                                                 if (outputChainData == null)
                                                                     return;

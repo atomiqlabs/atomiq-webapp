@@ -1,6 +1,6 @@
 import { Form, InputGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import * as React from 'react';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 
 import { copy } from 'react-icons-kit/fa/copy';
@@ -78,6 +78,7 @@ function ValidatedInput(props: {
   readOnly?: boolean;
   successFeedback?: string | JSX.Element;
   onCopy?: () => void;
+  dynamicTextEndPosition?: boolean;
 }) {
   const [state, setState] = React.useState<{
     value: string;
@@ -98,6 +99,38 @@ function ValidatedInput(props: {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const inputTextAreaRef = useRef<HTMLTextAreaElement>(null);
+  const textEndRef = useRef<HTMLDivElement>(null);
+
+  const [textEndLeftPosition, setTextEndLeftPosition] = useState<number | null>(null);
+
+  // Function to measure text width
+  const measureTextWidth = useCallback((text: string, font: string) => {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (context) {
+      context.font = font;
+      return context.measureText(text).width;
+    }
+    return 0;
+  }, []);
+
+  // Update textEnd icon position based on text width
+  useEffect(() => {
+    if (!props.dynamicTextEndPosition || !props.textEnd) return;
+
+    const currentInputRef = props.type === 'textarea' ? inputTextAreaRef.current : inputRef.current;
+    if (currentInputRef && textEndRef.current) {
+      const computedStyle = window.getComputedStyle(currentInputRef);
+      const font = `${computedStyle.fontSize} ${computedStyle.fontFamily}`;
+
+      const displayText = value || '';
+      const textWidth = measureTextWidth(displayText, font);
+
+      // 10px is the desired offset after the text
+      const newPosition = textWidth + 10;
+      setTextEndLeftPosition(newPosition);
+    }
+  }, [value, props.dynamicTextEndPosition, props.textEnd, props.type, measureTextWidth]);
 
   const changeValueHandler = useCallback(
     (forcedChange: boolean, value: any) => {
@@ -297,7 +330,20 @@ function ValidatedInput(props: {
                 <label className={props.floatingLabelClassName}>{props.floatingLabel}</label>
               )}
               {props.elementEnd || ''}
-              {props.textEnd ? <InputGroup.Text>{props.textEnd}</InputGroup.Text> : ''}
+              {props.textEnd ? (
+                <InputGroup.Text
+                  ref={textEndRef}
+                  style={
+                    props.dynamicTextEndPosition && textEndLeftPosition !== null
+                      ? { left: `${textEndLeftPosition}px` }
+                      : undefined
+                  }
+                >
+                  {props.textEnd}
+                </InputGroup.Text>
+              ) : (
+                ''
+              )}
             </>
           )}
           <Form.Control.Feedback type={props.successFeedback ? 'valid' : 'invalid'}>

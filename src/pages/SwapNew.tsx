@@ -772,6 +772,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                           ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
                           : null
                       }
+                      dynamicTextEndPosition={true}
                     />
                   </div>
 
