@@ -1,6 +1,11 @@
-import {TokenIcons} from "./Tokens";
-import {Token} from "@atomiqlabs/sdk";
+import {TokenIcons, TokenIconsChainSpecific} from "./Tokens";
+import {isSCToken, Token} from "@atomiqlabs/sdk";
 
+function getTokenIconUrl(tokenOrTicker: string | Token) {
+    if(typeof(tokenOrTicker)==="string") return TokenIcons[tokenOrTicker];
+    if(!isSCToken(tokenOrTicker)) return TokenIcons[tokenOrTicker.ticker];
+    return TokenIconsChainSpecific[tokenOrTicker.chainId]?.[tokenOrTicker.ticker] ?? TokenIcons[tokenOrTicker.ticker];
+}
 
 export function TokenIcon(props: {
     tokenOrTicker: string | Token,
@@ -8,7 +13,7 @@ export function TokenIcon(props: {
     style?: any,
 }) {
     return <img
-        src={TokenIcons[typeof(props.tokenOrTicker)==="string" ? props.tokenOrTicker : props.tokenOrTicker.ticker]}
+        src={getTokenIconUrl(props.tokenOrTicker)}
         className={props.className}
         style={props.style}
     />;

@@ -1,6 +1,11 @@
 import BigNumber from "bignumber.js";
 import { isBtcToken, isSCToken, toHumanReadableString } from "@atomiqlabs/sdk";
 import { FEConstants, TokenResolver, Tokens } from "../FEConstants";
+export const TokenIconsChainSpecific = {
+    BOTANIX: {
+        BTC: "/icons/crypto/BBTC.svg"
+    }
+};
 export const TokenIcons = {
     WBTC: "/icons/crypto/WBTC.png",
     USDC: "/icons/crypto/USDC.svg",
@@ -12,8 +17,8 @@ export const TokenIcons = {
     ETH: "/icons/crypto/ETH.png",
     STRK: "/icons/crypto/STRK.png",
     CBTC: "/icons/crypto/BTC.svg",
-    BBTC: "/icons/crypto/BBTC.svg",
-    ABTC: "/icons/crypto/BTC.svg"
+    // BBTC: "/icons/crypto/BBTC.svg",
+    // ABTC: "/icons/crypto/BTC.svg"
 };
 export const bitcoinTokenArray = [
     Tokens.BITCOIN.BTC,
@@ -31,10 +36,10 @@ if (FEConstants.allowedChains.has("CITREA")) {
     smartChainTokenArray.push(Tokens.CITREA.USDC);
 }
 if (FEConstants.allowedChains.has("BOTANIX")) {
-    smartChainTokenArray.push(Tokens.BOTANIX.BBTC);
+    smartChainTokenArray.push(Tokens.BOTANIX.BTC);
 }
 if (FEConstants.allowedChains.has("ALPEN")) {
-    smartChainTokenArray.push(Tokens.ALPEN.ABTC);
+    smartChainTokenArray.push(Tokens.ALPEN.BTC);
 }
 if (FEConstants.allowedChains.has("STARKNET")) {
     smartChainTokenArray.push(Tokens.STARKNET.WBTC);

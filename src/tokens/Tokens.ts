@@ -7,6 +7,16 @@ type TokenTickers = {
     [Chain in keyof TokensType]: keyof TokensType[Chain];
 }[keyof TokensType];
 
+export const TokenIconsChainSpecific: {
+    [chainId: string]: {
+        [C in TokenTickers]?: string
+    }
+} = {
+    BOTANIX: {
+        BTC: "/icons/crypto/BBTC.svg"
+    }
+};
+
 export const TokenIcons: {
     [C in TokenTickers]?: string
 } = {
@@ -20,8 +30,8 @@ export const TokenIcons: {
     ETH: "/icons/crypto/ETH.png",
     STRK: "/icons/crypto/STRK.png",
     CBTC: "/icons/crypto/BTC.svg",
-    BBTC: "/icons/crypto/BBTC.svg",
-    ABTC: "/icons/crypto/BTC.svg"
+    // BBTC: "/icons/crypto/BBTC.svg",
+    // ABTC: "/icons/crypto/BTC.svg"
 };
 
 export const bitcoinTokenArray = [
@@ -44,11 +54,11 @@ if(FEConstants.allowedChains.has("CITREA")) {
 }
 
 if(FEConstants.allowedChains.has("BOTANIX")) {
-    smartChainTokenArray.push(Tokens.BOTANIX.BBTC);
+    smartChainTokenArray.push(Tokens.BOTANIX.BTC);
 }
 
 if(FEConstants.allowedChains.has("ALPEN")) {
-    smartChainTokenArray.push(Tokens.ALPEN.ABTC);
+    smartChainTokenArray.push(Tokens.ALPEN.BTC);
 }
 
 if(FEConstants.allowedChains.has("STARKNET")) {
