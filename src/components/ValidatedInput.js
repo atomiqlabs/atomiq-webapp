@@ -64,9 +64,14 @@ function ValidatedInput(props) {
             const font = `${computedStyle.fontSize} ${computedStyle.fontFamily}`;
             const displayText = value || '';
             const textWidth = measureTextWidth(displayText, font);
+            // Get input width
+            const inputWidth = currentInputRef.offsetWidth;
             // 10px is the desired offset after the text
             const newPosition = textWidth + 10;
-            setTextEndLeftPosition(newPosition);
+            // Cap the position at input width minus 10px
+            const maxPosition = inputWidth - 10;
+            const finalPosition = Math.min(newPosition, maxPosition);
+            setTextEndLeftPosition(finalPosition);
         }
     }, [value, props.dynamicTextEndPosition, props.textEnd, props.type, measureTextWidth]);
     const changeValueHandler = useCallback((forcedChange, value) => {
