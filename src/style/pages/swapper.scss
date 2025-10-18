@@ -97,6 +97,9 @@
       }
     }
   }
+  &__action {
+    @apply w-full mt-6;
+  }
 }
 
 .swap-connected-wallet {
@@ -191,5 +194,85 @@
 
   .valid-feedback {
     @apply text-green;
+  }
+}
+
+.swap-steps {
+  @apply py-6 rounded-2xl;
+
+  &__data {
+    @apply flex justify-between items-start px-6 mb-8 relative;
+
+    &__in,
+    &__out {
+      @apply flex-1;
+    }
+
+    &__in {
+      @apply flex justify-start;
+    }
+
+    &__out {
+      @apply flex justify-end;
+    }
+
+    &__arrow {
+      @apply absolute opacity-50 w-[15px] left-0 right-0 top-0 bottom-0 m-auto flex items-center;
+    }
+  }
+
+  &__indicator {
+    background-color: rgb(255 255 255 / 0.05);
+    @apply py-6 rounded-lg flex justify-around items-center gap-4;
+
+    &__text {
+      @apply mt-[12px];
+    }
+  }
+
+  &__dots {
+    @apply flex items-center gap-[20px] absolute pointer-events-none;
+  }
+
+  &__dot {
+    @apply w-1 h-1 rounded-full bg-white/20;
+  }
+
+  &__address {
+    @apply w-full flex justify-between px-3 py-2 mb-3 text-[14px] rounded-[4px];
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+.swap-steps-wallet {
+  @apply flex items-center gap-3;
+
+  &__icon {
+    @apply w-8 h-8 rounded-full flex items-center justify-center relative;
+
+    &__img {
+      @apply w-8 h-8 object-contain;
+    }
+
+    &__currency {
+      @apply absolute w-4 h-4 object-contain -right-1 -bottom-1;
+    }
+  }
+
+  &__ammounts {
+    @apply flex flex-col items-start;
+
+    &__original {
+      @apply text-[18px] font-semibold text-white leading-none;
+    }
+
+    &__dolars {
+      @apply text-[14px] opacity-50;
+    }
+  }
+
+  &__address {
+    @apply text-xs opacity-50 max-w-[150px] truncate;
   }
 }

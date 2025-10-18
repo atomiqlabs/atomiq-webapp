@@ -25,6 +25,7 @@ import { useChain } from '../wallets/hooks/useChain';
 import { useSupportedTokens } from '../swaps/hooks/useSupportedTokens';
 import { useDecimalNumberState } from '../utils/hooks/useDecimalNumberState';
 import { ChainDataContext } from '../wallets/context/ChainDataContext';
+import { AuditedBy } from '../components/AuditedBy';
 export function SwapNew(props) {
     const navigate = useNavigate();
     const { swapper } = useContext(SwapsContext);
@@ -353,6 +354,27 @@ export function SwapNew(props) {
         return (parsedAmount.gt(balance) &&
             (swapInputLimits?.max == null || parsedAmount.lte(swapInputLimits.max)));
     }, [swapper, maxSpendable?.balance, inputAmount, swapInputLimits?.max, swapType]);
+    // Check if swap is initiated and showing steps then
+    const isSwapInitiated = useMemo(() => {
+        return !!existingSwap ? true : !!quote;
+    }, [existingSwap]);
+    if (isSwapInitiated) {
+        return (_jsxs("div", { className: "d-flex flex-column align-items-center", children: [_jsx("div", { className: "swap-panel", children: _jsx(QuoteSummary, { type: "swap", quote: existingSwap, balance: maxSpendable?.balance.rawAmount ?? null, refreshQuote: () => {
+                            leaveExistingSwap(false, true);
+                            setExactIn(existingSwap.exactIn);
+                            if (existingSwap.exactIn) {
+                                setAmount(existingSwap.getInput().amount);
+                            }
+                            else {
+                                setAmount(existingSwap.getOutput().amount);
+                            }
+                            refreshQuote();
+                        }, setAmountLock: setAmountLock, abortSwap: () => {
+                            inputRef.current.setValue('');
+                            outputRef.current.setValue('');
+                            navigate('/');
+                        }, feeRate: maxSpendable?.feeRate }) }), _jsx(AuditedBy, { chainId: scCurrency?.chainId })] }));
+    }
     return (_jsxs(_Fragment, { children: [_jsx(QRScannerModal, { onScanned: (data) => {
                     console.log('QR scanned: ', data);
                     addressRef.current.setValue(data);
@@ -511,5 +533,5 @@ export function SwapNew(props) {
                                             inputRef.current.setValue('');
                                             outputRef.current.setValue('');
                                             navigate('/');
-                                        }, feeRate: maxSpendable?.feeRate }) })) : ('')] })) : ('')] }) }), _jsx("div", { className: "vetified-by text-light  d-flex flex-row align-items-center justify-content-center mb-3", children: _jsxs("div", { className: "cursor-pointer d-flex align-items-center justify-content-center", onClick: () => navigate('/faq?tabOpen=6'), children: [_jsx("div", { className: "icon icon-verified" }), _jsx("small", { children: "Audited by" }), scCurrency?.chainId === 'STARKNET' ? (_jsx("img", { src: "/csc-white-logo.png", style: { marginTop: '-0.075rem' } })) : (_jsx("img", { src: "/ackee_logo.svg", style: { marginTop: '-0.125rem' } }))] }) })] }));
+                                        }, feeRate: maxSpendable?.feeRate }) })) : ('')] })) : ('')] }) }), _jsx(AuditedBy, { chainId: scCurrency?.chainId })] }));
 }

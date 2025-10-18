@@ -69,6 +69,10 @@ export function QuoteSummary(props: {
     }
   }, [props.quote, chainsData]);
 
+  if (!props.quote) {
+    return null;
+  }
+
   let swapElement: JSX.Element;
 
   switch (props.quote.getType()) {

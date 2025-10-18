@@ -48,6 +48,7 @@ import { useSupportedTokens } from '../swaps/hooks/useSupportedTokens';
 import { useDecimalNumberState } from '../utils/hooks/useDecimalNumberState';
 import { ChainDataContext } from '../wallets/context/ChainDataContext';
 import { ChainWalletData } from '../wallets/ChainDataProvider';
+import { AuditedBy } from '../components/AuditedBy';
 
 export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   const navigate = useNavigate();
@@ -433,11 +434,47 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
     );
   }, [swapper, maxSpendable?.balance, inputAmount, swapInputLimits?.max, swapType]);
 
+  // Check if swap is initiated and showing steps then
+  const isSwapInitiated = useMemo(() => {
+    return !!existingSwap ? true : !!quote;
+  }, [existingSwap]);
+
+  if (isSwapInitiated) {
+    return (
+      <div className="d-flex flex-column align-items-center">
+        <div className="swap-panel">
+          <QuoteSummary
+            type="swap"
+            quote={existingSwap}
+            balance={maxSpendable?.balance.rawAmount ?? null}
+            refreshQuote={() => {
+              leaveExistingSwap(false, true);
+              setExactIn(existingSwap.exactIn);
+              if (existingSwap.exactIn) {
+                setAmount(existingSwap.getInput().amount);
+              } else {
+                setAmount(existingSwap.getOutput().amount);
+              }
+              refreshQuote();
+            }}
+            setAmountLock={setAmountLock}
+            abortSwap={() => {
+              inputRef.current.setValue('');
+              outputRef.current.setValue('');
+              navigate('/');
+            }}
+            feeRate={maxSpendable?.feeRate}
+          />
+        </div>
+        <AuditedBy chainId={scCurrency?.chainId} />
+      </div>
+    );
+  }
+
   return (
     <>
       {/* TODO remove, maybe it will be inspiration in the future */}
       {/*<SwapTopbar selected={0} enabled={!locked} />*/}
-
       <QRScannerModal
         onScanned={(data: string) => {
           console.log('QR scanned: ', data);
@@ -447,7 +484,6 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
         show={qrScanning}
         onHide={() => setQrScanning(false)}
       />
-
       <div className="d-flex flex-column align-items-center text-white">
         <div className="swap-panel">
           <ErrorAlert title="Quote error" error={quoteError} className="swap-panel__error" />
@@ -927,20 +963,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
         </div>
       </div>
 
-      <div className="vetified-by text-light  d-flex flex-row align-items-center justify-content-center mb-3">
-        <div
-          className="cursor-pointer d-flex align-items-center justify-content-center"
-          onClick={() => navigate('/faq?tabOpen=6')}
-        >
-          <div className="icon icon-verified"></div>
-          <small>Audited by</small>
-          {scCurrency?.chainId === 'STARKNET' ? (
-            <img src="/csc-white-logo.png" style={{ marginTop: '-0.075rem' }} />
-          ) : (
-            <img src="/ackee_logo.svg" style={{ marginTop: '-0.125rem' }} />
-          )}
-        </div>
-      </div>
+      <AuditedBy chainId={scCurrency?.chainId} />
     </>
   );
 }

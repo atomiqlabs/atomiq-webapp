@@ -28,10 +28,12 @@ import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outl
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
-import { SingleStep, StepByStep } from '../../components/StepByStep';
+import { SingleStep, StepByStep, WalletData } from '../../components/StepByStep';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import { useWithAwait } from '../../utils/hooks/useWithAwait';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
+import { TokenIcons } from '../../tokens/Tokens';
+import { usePricing } from '../../tokens/hooks/usePricing';
 
 /*
 Steps lightning:
@@ -140,6 +142,53 @@ export function ToBTCQuoteSummary(props: {
     }
   }, [isExpired, isSuccess, isRefunded]);
 
+  // Source wallet data (input token)
+  const inputAmount = props.quote.getInput().amount;
+  const inputToken = props.quote.getInput().token;
+  const inputValue = usePricing(inputAmount, inputToken);
+
+  const sourceWallet: WalletData = useMemo(() => {
+    if (!inputToken) return null;
+    const formattedAmount = parseFloat(inputAmount).toFixed(4);
+    const chainIcon = props.quote.chainIdentifier?.includes('SOLANA')
+      ? '/icons/chains/solana.svg'
+      : props.quote.chainIdentifier?.includes('STARKNET')
+      ? '/icons/chains/STARKNET.svg'
+      : undefined;
+    return {
+      icon: TokenIcons[inputToken.ticker],
+      chainIcon,
+      amount: `${formattedAmount} ${inputToken.ticker}`,
+      dollarValue: inputValue ? FEConstants.USDollar.format(inputValue) : undefined,
+    };
+  }, [inputToken, inputAmount, inputValue, props.quote.chainIdentifier]);
+
+  // Destination wallet data (output token)
+  const outputAmount = props.quote.getOutput().amount;
+  const outputToken = props.quote.getOutput().token;
+  const outputValue = usePricing(outputAmount, outputToken);
+  const outputAddress = props.quote.getOutputAddress();
+
+  const destinationWallet: WalletData = useMemo(() => {
+    if (!outputToken) return null;
+    const isBTC = outputToken.ticker === 'BTC' || outputToken.ticker === 'BTCLN';
+    const formattedAmount = isBTC
+      ? parseFloat(outputAmount).toFixed(8)
+      : parseFloat(outputAmount).toFixed(4);
+    const chainIcon = outputToken.ticker === 'BTC'
+      ? '/icons/chains/bitcoin.svg'
+      : outputToken.ticker === 'BTCLN'
+      ? '/icons/chains/LIGHTNING.svg'
+      : undefined;
+    return {
+      icon: TokenIcons[outputToken.ticker],
+      chainIcon,
+      amount: `${formattedAmount} ${outputToken.ticker}`,
+      dollarValue: outputValue ? FEConstants.USDollar.format(outputValue) : undefined,
+      address: outputAddress,
+    };
+  }, [outputToken, outputAmount, outputValue, outputAddress]);
+
   const executionSteps: SingleStep[] = [
     {
       icon: ic_check_circle_outline,
@@ -244,7 +293,6 @@ export function ToBTCQuoteSummary(props: {
           case)!
         </label>
       </Alert>
-
       <Alert
         className="text-center mb-3"
         show={isCreated && nonCustodialWarning && props.type === 'swap'}
@@ -257,9 +305,15 @@ export function ToBTCQuoteSummary(props: {
           case)!
         </label>
       </Alert>
-
-      {isInitiated ? <StepByStep steps={executionSteps} /> : ''}
-
+      {isInitiated ? (
+        <div className="swap-panel__card">
+          <StepByStep
+            steps={executionSteps}
+            sourceWallet={sourceWallet}
+            destinationWallet={destinationWallet}
+          />
+        </div>
+      ) : null}
       <Alert
         className="text-center mb-3"
         show={!!notEnoughBalanceError}
@@ -269,7 +323,6 @@ export function ToBTCQuoteSummary(props: {
         <strong>Not enough funds</strong>
         <label>{notEnoughBalanceError}</label>
       </Alert>
-
       {/*<SwapExpiryProgressBar*/}
       {/*  expired={isExpired}*/}
       {/*  timeRemaining={quoteTimeRemaining}*/}
@@ -282,9 +335,7 @@ export function ToBTCQuoteSummary(props: {
       {/*    !notEnoughBalanceError*/}
       {/*  }*/}
       {/*/>*/}
-
       <ErrorAlert className="mb-3" title="Swap initialization error" error={continueError} />
-
       {(isCreated && !notEnoughBalanceError) || isPaying ? (
         <>
           <Alert
@@ -301,6 +352,7 @@ export function ToBTCQuoteSummary(props: {
           </Alert>
 
           <ButtonWithWallet
+            className="swap-panel__action"
             requiredWalletAddress={props.quote._getInitiator()}
             chainId={props.quote.chainIdentifier}
             onClick={() => onContinue()}
@@ -318,7 +370,6 @@ export function ToBTCQuoteSummary(props: {
       ) : (
         ''
       )}
-
       {isPayError ? (
         <>
           <ErrorAlert className="mb-3" title="Swap error" error={paymentError} />
@@ -330,7 +381,6 @@ export function ToBTCQuoteSummary(props: {
       ) : (
         ''
       )}
-
       {isSuccess ? (
         <Alert variant="success" className={props.type === 'payment' ? 'mb-0' : 'mb-3'}>
           <strong>Swap successful</strong>
@@ -351,7 +401,6 @@ export function ToBTCQuoteSummary(props: {
       ) : (
         ''
       )}
-
       {isRefundable || isRefunding ? (
         <>
           <Alert variant="danger" className="mb-3">
@@ -375,17 +424,15 @@ export function ToBTCQuoteSummary(props: {
       ) : (
         ''
       )}
-
       <Alert variant="danger" className="mb-3" show={isRefunded}>
         <strong>Swap failed</strong>
         <label>Funds refunded successfully!</label>
       </Alert>
-
       {isRefunded ||
       isExpired ||
       !!notEnoughBalanceError ||
       (isSuccess && props.type !== 'payment') ? (
-        <Button onClick={props.refreshQuote} variant="secondary">
+        <Button onClick={props.refreshQuote} variant="secondary" className="swap-panel__action">
           New quote
         </Button>
       ) : (

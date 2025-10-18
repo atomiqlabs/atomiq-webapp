@@ -148,10 +148,10 @@ export class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated {
         return txId;
     }
     offWalletChanged(cbk) {
-        this.listener.events.off('newWallet', cbk);
+        this.listener?.events.off('newWallet', cbk);
     }
     onWalletChanged(cbk) {
-        this.listener.events.on('newWallet', cbk);
+        this.listener?.events.on('newWallet', cbk);
     }
     async signPsbt(psbt, signInputs) {
         const psbtHex = await this.provider.signPsbt(Buffer.from(psbt.toPSBT(0)).toString('hex'), {

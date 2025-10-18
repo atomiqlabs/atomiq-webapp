@@ -245,11 +245,11 @@ export abstract class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated 
   abstract getIcon(): string;
 
   offWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
-    this.listener.events.off('newWallet', cbk);
+    this.listener?.events.off('newWallet', cbk);
   }
 
   onWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
-    this.listener.events.on('newWallet', cbk);
+    this.listener?.events.on('newWallet', cbk);
   }
 
   async signPsbt(psbt: Transaction, signInputs: number[]): Promise<Transaction> {
