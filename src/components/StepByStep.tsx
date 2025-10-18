@@ -1,6 +1,7 @@
 import { Col, Row } from 'react-bootstrap';
 import Icon from 'react-icons-kit';
 import * as React from 'react';
+import classNames from 'classnames';
 import { AuditedBy } from './AuditedBy';
 
 export type SingleStep = {
@@ -26,7 +27,7 @@ export function StepByStep(props: {
   destinationWallet?: WalletData;
 }) {
   return (
-    <div className="swap-steps d-flex flex-column mb-3">
+    <div className="swap-steps">
       <div className="swap-steps__data">
         <div className="swap-steps__data__arrow icon icon-arrow-right"></div>
         <div className="swap-steps__data__in">
@@ -99,24 +100,23 @@ export function StepByStep(props: {
           </div>
         </div>
       )}
-      <div className="swap-steps__indicator font-small">
+      <div className="swap-steps__indicator">
         {props.steps.map((step, index) => {
           return (
             <React.Fragment key={index.toString()}>
               <div
-                className={
-                  'd-flex flex-column ' +
-                  (step.type === 'disabled'
-                    ? 'text-light text-opacity-50'
-                    : step.type === 'loading'
-                      ? 'text-light loading-glow'
-                      : step.type === 'success'
-                        ? 'text-success'
-                        : 'text-danger')
-                }
+                className={classNames('d-flex flex-column align-items-center', {
+                  'text-light text-opacity-50': step.type === 'disabled',
+                  'text-light loading-glow': step.type === 'loading',
+                })}
               >
-                <div className="swap-steps__indicator__icon">
-                  <Icon size={32} icon={step.icon} />
+                <div
+                  className={classNames('swap-steps__indicator__icon', {
+                    'is-failed': step.type === 'failed',
+                    'is-success': step.type === 'success',
+                  })}
+                >
+                  <Icon size={20} icon={step.icon} />
                 </div>
                 <div className="swap-steps__indicator__text">{step.text}</div>
                 {/*{step.amount && <div className="mt-1 font-weight-bold">{step.amount}</div>}*/}
@@ -127,7 +127,12 @@ export function StepByStep(props: {
                 {/*)}*/}
               </div>
               {index < props.steps.length - 1 && (
-                <div className="swap-steps__dots">
+                <div
+                  className={classNames('swap-steps__dots', {
+                    'is-loading loading-glow': step.type === 'loading',
+                    'is-success': step.type === 'success',
+                  })}
+                >
                   {[...Array(8)].map((_, dotIndex) => (
                     <div key={dotIndex} className="swap-steps__dot"></div>
                   ))}

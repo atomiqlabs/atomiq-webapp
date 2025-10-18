@@ -98,7 +98,11 @@
     }
   }
   &__action {
-    @apply w-full mt-6;
+    @apply w-full mt-6 h-[48px];
+
+    &.btn-primary {
+      @apply h-[64px];
+    }
   }
 }
 
@@ -198,7 +202,7 @@
 }
 
 .swap-steps {
-  @apply py-6 rounded-2xl;
+  @apply rounded-2xl flex flex-col pt-[20px] pb-1;
 
   &__data {
     @apply flex justify-between items-start px-6 mb-8 relative;
@@ -223,15 +227,33 @@
 
   &__indicator {
     background-color: rgb(255 255 255 / 0.05);
-    @apply py-6 rounded-lg flex justify-around items-center gap-4;
+    @apply py-6 rounded-lg flex justify-around items-center gap-4 relative;
 
     &__text {
       @apply mt-[12px];
     }
+
+    &__icon {
+      @apply w-[40px] h-[40px] rounded-full border-2 border-solid border-white/30 flex items-center justify-center leading-none;
+
+      &.is-failed {
+        @apply border-red text-red bg-red/10;
+      }
+
+      &.is-success {
+        @apply border-green text-green bg-green/10;
+      }
+    }
   }
 
   &__dots {
-    @apply flex items-center gap-[20px] absolute pointer-events-none;
+    @apply flex items-center gap-[20px] absolute pointer-events-none top-[42px];
+
+    &.is-success {
+      .swap-steps__dot {
+        @apply bg-white;
+      }
+    }
   }
 
   &__dot {

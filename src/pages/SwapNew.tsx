@@ -927,7 +927,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 />
               </div>
               {!randomQuote || swapper.SwapTypeInfo[swapType].requiresOutputWallet ? (
-                <div className="mt-3 d-flex flex-column text-white">
+                <div className="d-flex flex-column text-white">
                   <QuoteSummary
                     type="swap"
                     quote={existingSwap ?? quote}

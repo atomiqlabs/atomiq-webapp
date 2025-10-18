@@ -13,7 +13,6 @@ import { FEConstants } from '../../FEConstants';
 import { SwapsContext } from '../context/SwapsContext';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
 import { useSwapState } from '../hooks/useSwapState';
-import { SwapExpiryProgressBar } from '../components/SwapExpiryProgressBar';
 import { useAsync } from '../../utils/hooks/useAsync';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
 import { useStateRef } from '../../utils/hooks/useStateRef';
@@ -24,10 +23,9 @@ import { ic_error_outline_outline } from 'react-icons-kit/md/ic_error_outline_ou
 import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empty_outline';
-import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outline';
+import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
-import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { SingleStep, StepByStep, WalletData } from '../../components/StepByStep';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import { useWithAwait } from '../../utils/hooks/useWithAwait';
@@ -153,8 +151,8 @@ export function ToBTCQuoteSummary(props: {
     const chainIcon = props.quote.chainIdentifier?.includes('SOLANA')
       ? '/icons/chains/solana.svg'
       : props.quote.chainIdentifier?.includes('STARKNET')
-      ? '/icons/chains/STARKNET.svg'
-      : undefined;
+        ? '/icons/chains/STARKNET.svg'
+        : undefined;
     return {
       icon: TokenIcons[inputToken.ticker],
       chainIcon,
@@ -175,11 +173,12 @@ export function ToBTCQuoteSummary(props: {
     const formattedAmount = isBTC
       ? parseFloat(outputAmount).toFixed(8)
       : parseFloat(outputAmount).toFixed(4);
-    const chainIcon = outputToken.ticker === 'BTC'
-      ? '/icons/chains/bitcoin.svg'
-      : outputToken.ticker === 'BTCLN'
-      ? '/icons/chains/LIGHTNING.svg'
-      : undefined;
+    const chainIcon =
+      outputToken.ticker === 'BTC'
+        ? '/icons/chains/bitcoin.svg'
+        : outputToken.ticker === 'BTCLN'
+          ? '/icons/chains/LIGHTNING.svg'
+          : undefined;
     return {
       icon: TokenIcons[outputToken.ticker],
       chainIcon,
@@ -191,15 +190,15 @@ export function ToBTCQuoteSummary(props: {
 
   const executionSteps: SingleStep[] = [
     {
-      icon: ic_check_circle_outline,
-      text: 'Init transaction confirmed',
+      icon: ic_check_outline,
+      text: 'Transaction confirmed',
       type: 'success',
     },
   ];
   if (isCreated && !continueLoading)
     executionSteps[0] = {
       icon: ic_play_circle_outline,
-      text: 'Send init transaction',
+      text: 'Sending transaction',
       type: 'loading',
     };
   if (isCreated && continueLoading)
@@ -228,7 +227,7 @@ export function ToBTCQuoteSummary(props: {
       };
     if (isSuccess)
       executionSteps[1] = {
-        icon: ic_verified_outline,
+        icon: ic_check_outline,
         text: 'Lightning payout success',
         type: 'success',
       };
@@ -252,8 +251,8 @@ export function ToBTCQuoteSummary(props: {
       };
     if (isSuccess)
       executionSteps[1] = {
-        icon: ic_verified_outline,
-        text: 'Bitcoin payout success',
+        icon: ic_check_outline,
+        text: 'Bitcoin payout sent',
         type: 'success',
       };
     if (isRefundable || isRefunding || isRefunded)
@@ -277,7 +276,7 @@ export function ToBTCQuoteSummary(props: {
     };
   if (isRefunded)
     executionSteps[2] = {
-      icon: ic_check_circle_outline,
+      icon: ic_check_outline,
       text: 'Refunded',
       type: 'success',
     };
@@ -351,21 +350,20 @@ export function ToBTCQuoteSummary(props: {
             </label>
           </Alert>
 
-          <ButtonWithWallet
-            className="swap-panel__action"
-            requiredWalletAddress={props.quote._getInitiator()}
-            chainId={props.quote.chainIdentifier}
-            onClick={() => onContinue()}
-            disabled={isPaying || continueLoading || !!props.notEnoughForGas}
-            size="lg"
-          >
-            {isPaying || continueLoading ? (
-              <Spinner animation="border" size="sm" className="mr-2" />
-            ) : (
-              ''
-            )}
-            {props.type === 'payment' ? 'Pay' : 'Swap'}
-          </ButtonWithWallet>
+          {!isPaying && !continueLoading && !isInitiated ? (
+            <ButtonWithWallet
+              className="swap-panel__action"
+              requiredWalletAddress={props.quote._getInitiator()}
+              chainId={props.quote.chainIdentifier}
+              onClick={() => onContinue()}
+              disabled={isPaying || continueLoading || !!props.notEnoughForGas}
+              size="lg"
+            >
+              {props.type === 'payment' ? 'Pay' : 'Swapx'}
+            </ButtonWithWallet>
+          ) : (
+            ''
+          )}
         </>
       ) : (
         ''

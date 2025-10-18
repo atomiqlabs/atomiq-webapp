@@ -517,7 +517,7 @@ export function SwapNew(props) {
                                                 }
                                             }
                                             refreshQuote();
-                                        } }) }), !randomQuote || swapper.SwapTypeInfo[swapType].requiresOutputWallet ? (_jsx("div", { className: "mt-3 d-flex flex-column text-white", children: _jsx(QuoteSummary, { type: "swap", quote: existingSwap ?? quote, balance: maxSpendable?.balance.rawAmount ?? null, refreshQuote: () => {
+                                        } }) }), !randomQuote || swapper.SwapTypeInfo[swapType].requiresOutputWallet ? (_jsx("div", { className: "d-flex flex-column text-white", children: _jsx(QuoteSummary, { type: "swap", quote: existingSwap ?? quote, balance: maxSpendable?.balance.rawAmount ?? null, refreshQuote: () => {
                                             if (existingSwap != null) {
                                                 leaveExistingSwap(false, true);
                                                 setExactIn(existingSwap.exactIn);

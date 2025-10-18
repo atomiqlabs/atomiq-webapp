@@ -1,47 +1,45 @@
-import { FromBTCLNSwap, FromBTCLNSwapState } from "@atomiqlabs/sdk";
-import { useEffect } from "react";
-import { useSwapState } from "../hooks/useSwapState";
-import { useStateRef } from "../../utils/hooks/useStateRef";
-import { useAbortSignalRef } from "../../utils/hooks/useAbortSignal";
-import { useAsync } from "../../utils/hooks/useAsync";
-import { SingleStep } from "../../components/StepByStep";
+import { FromBTCLNSwap, FromBTCLNSwapState } from '@atomiqlabs/sdk';
+import { useEffect } from 'react';
+import { useSwapState } from '../hooks/useSwapState';
+import { useStateRef } from '../../utils/hooks/useStateRef';
+import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
+import { useAsync } from '../../utils/hooks/useAsync';
+import { SingleStep } from '../../components/StepByStep';
 
-import { ic_hourglass_top_outline } from "react-icons-kit/md/ic_hourglass_top_outline";
-import { ic_refresh } from "react-icons-kit/md/ic_refresh";
-import { ic_flash_on_outline } from "react-icons-kit/md/ic_flash_on_outline";
-import { ic_hourglass_disabled_outline } from "react-icons-kit/md/ic_hourglass_disabled_outline";
-import { ic_watch_later_outline } from "react-icons-kit/md/ic_watch_later_outline";
-import { ic_check_circle_outline } from "react-icons-kit/md/ic_check_circle_outline";
-import { ic_swap_horizontal_circle_outline } from "react-icons-kit/md/ic_swap_horizontal_circle_outline";
-import { ic_verified_outline } from "react-icons-kit/md/ic_verified_outline";
-import { ic_download_outline } from "react-icons-kit/md/ic_download_outline";
-import { timeoutPromise } from "../../utils/Utils";
-import { useSmartChainWallet } from "../../wallets/hooks/useSmartChainWallet";
+import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
+import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
+import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
+import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
+import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
+import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outline';
+import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
+import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
+import { ic_download_outline } from 'react-icons-kit/md/ic_download_outline';
+import { timeoutPromise } from '../../utils/Utils';
+import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 
 export function useFromBtcLnQuote(
   quote: FromBTCLNSwap<any>,
-  setAmountLock: (isLocked: boolean) => void,
+  setAmountLock: (isLocked: boolean) => void
 ) {
   const smartChainWallet = useSmartChainWallet(quote, true);
   const canClaimInOneShot = quote?.canCommitAndClaimInOneShot();
 
-  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } =
-    useSwapState(quote);
+  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote);
 
   const setAmountLockRef = useStateRef(setAmountLock);
   const abortSignalRef = useAbortSignalRef([quote]);
 
-  const [waitForPayment, paymentWaiting, paymentSuccess, paymentError] =
-    useAsync(() => {
-      if (setAmountLockRef.current != null) setAmountLockRef.current(true);
-      return quote
-        .waitForPayment(abortSignalRef.current, 2)
-        .then(() => true)
-        .catch((err) => {
-          if (setAmountLockRef.current != null) setAmountLockRef.current(false);
-          throw err;
-        });
-    }, [quote]);
+  const [waitForPayment, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
+    if (setAmountLockRef.current != null) setAmountLockRef.current(true);
+    return quote
+      .waitForPayment(abortSignalRef.current, 2)
+      .then(() => true)
+      .catch((err) => {
+        if (setAmountLockRef.current != null) setAmountLockRef.current(false);
+        throw err;
+      });
+  }, [quote]);
 
   const [onCommit, committing, commitSuccess, commitError] = useAsync(
     async (skipChecks?: boolean) => {
@@ -51,27 +49,24 @@ export function useFromBtcLnQuote(
           .then((txs) => txs[0]);
       } else {
         await quote.commit(smartChainWallet.instance, null, skipChecks);
-        if (quote.chainIdentifier === "STARKNET") await timeoutPromise(5000);
+        if (quote.chainIdentifier === 'STARKNET') await timeoutPromise(5000);
       }
     },
-    [quote, smartChainWallet],
+    [quote, smartChainWallet]
   );
 
   const [onClaim, claiming, claimSuccess, claimError] = useAsync(
     () => quote.claim(smartChainWallet.instance),
-    [quote, smartChainWallet],
+    [quote, smartChainWallet]
   );
 
   const isQuoteExpired =
     state === FromBTCLNSwapState.QUOTE_EXPIRED ||
-    (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED &&
-      !committing &&
-      !paymentWaiting);
+    (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !committing && !paymentWaiting);
 
   const isQuoteExpiredClaim = isQuoteExpired && quote.signatureData != null;
 
-  const isFailed =
-    state === FromBTCLNSwapState.FAILED || state === FromBTCLNSwapState.EXPIRED;
+  const isFailed = state === FromBTCLNSwapState.FAILED || state === FromBTCLNSwapState.EXPIRED;
 
   const isCreated =
     state === FromBTCLNSwapState.PR_CREATED ||
@@ -82,8 +77,7 @@ export function useFromBtcLnQuote(
     (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && committing) ||
     committing;
 
-  const isClaimClaimable =
-    state === FromBTCLNSwapState.CLAIM_COMMITED && !committing;
+  const isClaimClaimable = state === FromBTCLNSwapState.CLAIM_COMMITED && !committing;
 
   const isClaimable = isClaimCommittable || isClaimClaimable;
 
@@ -100,13 +94,13 @@ export function useFromBtcLnQuote(
   const executionSteps: SingleStep[] = [
     {
       icon: ic_check_circle_outline,
-      text: "Lightning payment received",
-      type: "success",
+      text: 'Lightning payment received',
+      type: 'success',
     },
     {
       icon: ic_swap_horizontal_circle_outline,
-      text: "Send claim transaction",
-      type: "disabled",
+      text: 'Send claim transaction',
+      type: 'disabled',
     },
   ];
   if (isCreated) {
@@ -114,141 +108,136 @@ export function useFromBtcLnQuote(
       if (paymentWaiting) {
         executionSteps[0] = {
           icon: ic_hourglass_top_outline,
-          text: "Requesting lightning payment",
-          type: "loading",
+          text: 'Requesting lightning payment',
+          type: 'loading',
         };
       } else {
         executionSteps[0] = {
           icon: ic_flash_on_outline,
-          text: "Request lightning payment",
-          type: "loading",
+          text: 'Request lightning payment',
+          type: 'loading',
         };
       }
     } else {
       executionSteps[0] = {
         icon: ic_flash_on_outline,
-        text: "Awaiting lightning payment",
-        type: "loading",
+        text: 'Awaiting lightning payment',
+        type: 'loading',
       };
     }
   }
   if (isQuoteExpired && !isQuoteExpiredClaim)
     executionSteps[0] = {
       icon: ic_hourglass_disabled_outline,
-      text: "Quote expired",
-      type: "failed",
+      text: 'Quote expired',
+      type: 'failed',
     };
 
   if (canClaimInOneShot) {
     if (isQuoteExpiredClaim) {
       executionSteps[0] = {
         icon: ic_refresh,
-        text: "Lightning payment reverted",
-        type: "failed",
+        text: 'Lightning payment reverted',
+        type: 'failed',
       };
       executionSteps[1] = {
         icon: ic_watch_later_outline,
-        text: "Claim transaction expired",
-        type: "failed",
+        text: 'Claim transaction expired',
+        type: 'failed',
       };
     }
     if (isClaimable)
       executionSteps[1] = {
         icon: ic_swap_horizontal_circle_outline,
-        text:
-          committing || claiming
-            ? "Sending claim transaction"
-            : "Send claim transaction",
-        type: "loading",
+        text: committing || claiming ? 'Sending claim transaction' : 'Send claim transaction',
+        type: 'loading',
       };
     if (isSuccess)
       executionSteps[1] = {
         icon: ic_verified_outline,
-        text: "Claim success",
-        type: "success",
+        text: 'Claim success',
+        type: 'success',
       };
     if (isFailed) {
       executionSteps[0] = {
         icon: ic_refresh,
-        text: "Lightning payment reverted",
-        type: "failed",
+        text: 'Lightning payment reverted',
+        type: 'failed',
       };
       executionSteps[1] = {
         icon: ic_watch_later_outline,
-        text: "Swap expired",
-        type: "failed",
+        text: 'Swap expired',
+        type: 'failed',
       };
     }
   } else {
     executionSteps[1] = {
       icon: ic_swap_horizontal_circle_outline,
-      text: "Send initialization transaction",
-      type: "disabled",
+      text: 'Sending transaction',
+      type: 'disabled',
     };
     executionSteps[2] = {
       icon: ic_download_outline,
-      text: "Send claim transaction",
-      type: "disabled",
+      text: 'Send claim transaction',
+      type: 'disabled',
     };
     if (isQuoteExpiredClaim) {
       executionSteps[0] = {
         icon: ic_refresh,
-        text: "Lightning payment reverted",
-        type: "failed",
+        text: 'Lightning payment reverted',
+        type: 'failed',
       };
       executionSteps[1] = {
         icon: ic_watch_later_outline,
-        text: "Initialization transaction expired",
-        type: "failed",
+        text: 'Initialization transaction expired',
+        type: 'failed',
       };
     }
     if (isClaimCommittable)
       executionSteps[1] = {
         icon: ic_swap_horizontal_circle_outline,
-        text: committing
-          ? "Sending initialization transaction"
-          : "Send initialization transaction",
-        type: "loading",
+        text: committing ? 'Sending initialization transaction' : 'Sending transaction',
+        type: 'loading',
       };
     if (isClaimClaimable) {
       executionSteps[1] = {
         icon: ic_check_circle_outline,
-        text: "Initialization success",
-        type: "success",
+        text: 'Initialization success',
+        type: 'success',
       };
       executionSteps[2] = {
         icon: ic_download_outline,
-        text: claiming ? "Sending claim transaction" : "Send claim transaction",
-        type: "loading",
+        text: claiming ? 'Sending claim transaction' : 'Send claim transaction',
+        type: 'loading',
       };
     }
     if (isSuccess) {
       executionSteps[1] = {
         icon: ic_check_circle_outline,
-        text: "Initialization success",
-        type: "success",
+        text: 'Initialization success',
+        type: 'success',
       };
       executionSteps[2] = {
         icon: ic_verified_outline,
-        text: "Claim success",
-        type: "success",
+        text: 'Claim success',
+        type: 'success',
       };
     }
     if (isFailed) {
       executionSteps[0] = {
         icon: ic_refresh,
-        text: "Lightning payment reverted",
-        type: "failed",
+        text: 'Lightning payment reverted',
+        type: 'failed',
       };
       executionSteps[1] = {
         icon: ic_check_circle_outline,
-        text: "Initialization success",
-        type: "success",
+        text: 'Initialization success',
+        type: 'success',
       };
       executionSteps[2] = {
         icon: ic_watch_later_outline,
-        text: "Swap expired",
-        type: "failed",
+        text: 'Swap expired',
+        type: 'failed',
       };
     }
   }
