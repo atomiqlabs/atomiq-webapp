@@ -72,11 +72,16 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
 
     &__icon {
-      @apply w-12 h-12 rounded-full text-green flex items-center justify-center mb-3;
-      background-color: rgba(64, 231, 45, 0.1);
+      @apply w-12 h-12 rounded-full text-green flex items-center justify-center mb-3 relative;
+
+      &::before {
+        content: '';
+        @apply absolute inset-0 rounded-full animate-pulse;
+        background-color: rgba(64, 231, 45, 0.2);
+      }
 
       svg {
-        @apply relative top-[-1px];
+        @apply relative top-[-1px] z-10;
       }
     }
 
