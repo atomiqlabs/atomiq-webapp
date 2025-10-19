@@ -99,7 +99,11 @@
 
     &.is-success {
       .swap-steps__alert__action {
-        @apply text-green;
+        @apply text-green hover:text-green/90 transition-all;
+
+        &:hover .sc-text {
+          @apply underline;
+        }
       }
     }
   }
