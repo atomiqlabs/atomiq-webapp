@@ -36,10 +36,18 @@
         @apply relative top-[2px];
       }
     }
+
+    .simple-fee-screen__skeleton {
+      @apply w-[200px];
+    }
   }
 
   &__fee {
     @apply mr-3;
+
+    .simple-fee-screen__skeleton {
+      @apply w-[39px];
+    }
   }
 
   &__body {
@@ -65,5 +73,12 @@
 
   .circular-progress-bar {
     transition: stroke-dashoffset 0.5s ease-in-out;
+  }
+
+  &__skeleton {
+    @apply animate-pulse h-[10px];
+
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
   }
 }

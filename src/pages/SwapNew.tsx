@@ -572,9 +572,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 type="number"
                 value={inputAmount}
                 size={'lg'}
-                textStart={
-                  !exactIn && quoteLoading ? <Spinner size="sm" className="text-white" /> : null
-                }
+                textStart={!exactIn && quoteLoading ? <Spinner className="text-white" /> : null}
                 onChange={(value, forcedChange) => {
                   setAmount(value);
                   setExactIn(true);
@@ -688,13 +686,11 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                 <ValidatedInput
                   disabled={locked || amountsLocked}
                   inputRef={outputRef}
-                  className="flex-fill strip-group-text"
+                  className="flex-fill strip-group-text currency-field"
                   type="number"
                   value={outputAmount}
                   size={'lg'}
-                  textStart={
-                    exactIn && quoteLoading ? <Spinner size="sm" className="text-white" /> : null
-                  }
+                  textStart={exactIn && quoteLoading ? <Spinner className="text-white" /> : null}
                   onChange={(val, forcedChange) => {
                     setAmount(val);
                     setExactIn(false);
@@ -800,9 +796,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       textEnd={
                         isOutputWalletAddress ? <span className="icon icon-check"></span> : null
                       }
-                      textStart={
-                        addressLoading ? <Spinner size="sm" className="text-white" /> : null
-                      }
+                      textStart={addressLoading ? <Spinner className="text-white" /> : null}
                       successFeedback={
                         isOutputWalletAddress
                           ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
@@ -906,7 +900,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
             </div>
           </div>
 
-          {quote != null || existingSwap != null ? (
+          {quote != null || existingSwap != null || quoteLoading ? (
             <>
               <div className="mt-3">
                 <SimpleFeeSummaryScreen

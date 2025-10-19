@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { ToBTCSwapState, FromBTCSwapState, SwapType, FromBTCLNSwapState, } from '@atomiqlabs/sdk';
-import { Accordion, Badge, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import { Accordion, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useMemo } from 'react';
 import { TokenIcon } from '../tokens/TokenIcon';
 import { useSwapFees } from './hooks/useSwapFees';
@@ -11,8 +11,8 @@ function FeePart(props) {
 }
 export function SimpleFeeSummaryScreen(props) {
     const { fees, totalUsdFee } = useSwapFees(props.swap, props.btcFeeRate);
-    const inputToken = props.swap?.getInput().token;
-    const outputToken = props.swap?.getOutput().token;
+    const inputToken = props.swap?.getInput()?.token;
+    const outputToken = props.swap?.getOutput()?.token;
     const { totalQuoteTime, quoteTimeRemaining, state } = useSwapState(props.swap);
     const swapType = props.swap?.getType();
     const [isCreated, isExpired] = useMemo(() => {
@@ -38,7 +38,7 @@ export function SimpleFeeSummaryScreen(props) {
         // For other swap types, default to false
         return [false, false];
     }, [state, swapType]);
-    return (_jsx(_Fragment, { children: _jsx(Accordion, { className: "simple-fee-screen", children: _jsxs(Accordion.Item, { eventKey: "0", className: "tab-accent-nop", children: [_jsxs(Accordion.Header, { className: "font-bigger d-flex flex-row", bsPrefix: "fee-accordion-header", children: [_jsxs("div", { className: "simple-fee-screen__quote", children: [_jsx("div", { className: "sc-text", children: isCreated && isExpired ? (_jsxs("span", { className: "simple-fee-screen__quote__error", children: [_jsx("span", { className: "icon icon-invalid-error" }), _jsx("span", { className: "sc-text", children: "Quote expired" })] })) : (_jsxs(_Fragment, { children: ["1 ", outputToken.ticker, " =", ' ', props.swap
+    return (_jsx(_Fragment, { children: _jsx(Accordion, { className: "simple-fee-screen", children: _jsxs(Accordion.Item, { eventKey: "0", className: "tab-accent-nop", children: [_jsxs(Accordion.Header, { className: "font-bigger d-flex flex-row", bsPrefix: "fee-accordion-header", children: [_jsxs("div", { className: "simple-fee-screen__quote", children: [_jsx("div", { className: "sc-text", children: isCreated && isExpired && false ? (_jsxs("span", { className: "simple-fee-screen__quote__error", children: [_jsx("span", { className: "icon icon-invalid-error" }), _jsx("span", { className: "sc-text", children: "Quote expired" })] })) : !outputToken || !inputToken || !props.swap ? (_jsx("div", { className: "simple-fee-screen__skeleton" })) : (_jsxs(_Fragment, { children: ["1 ", outputToken.ticker, " =", ' ', props.swap
                                                     .getPriceInfo()
-                                                    .swapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals), ' ', inputToken.ticker] })) }), _jsx(SwapExpiryProgressBar, { expired: isExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: isCreated || isExpired, expiryText: "Quote expired!", onRefreshQuote: props.onRefreshQuote })] }), _jsx("div", { className: "icon icon-receipt-fees" }), _jsx("span", { className: "simple-fee-screen__fee", children: totalUsdFee == null ? (_jsx(Spinner, { animation: "border", size: "sm" })) : ('$' + totalUsdFee.toFixed(2)) }), _jsx("div", { className: "icon icon-caret-down" })] }), _jsx(Accordion.Body, { className: "simple-fee-screen__body", children: fees.map((e, index) => (_jsx(FeePart, { ...e }, index))) })] }) }) }));
+                                                    .swapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals), ' ', inputToken.ticker] })) }), _jsx(SwapExpiryProgressBar, { expired: isExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: isCreated || isExpired, expiryText: "Quote expired!", onRefreshQuote: props.onRefreshQuote })] }), _jsx("div", { className: "icon icon-receipt-fees" }), _jsx("span", { className: "simple-fee-screen__fee", children: totalUsdFee == null ? (_jsx("div", { className: "simple-fee-screen__skeleton" })) : ('$' + totalUsdFee.toFixed(2)) }), _jsx("div", { className: "icon icon-caret-down" })] }), _jsx(Accordion.Body, { className: "simple-fee-screen__body", children: fees.map((e, index) => (_jsx(FeePart, { ...e }, index))) })] }) }) }));
 }

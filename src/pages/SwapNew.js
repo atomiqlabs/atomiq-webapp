@@ -405,7 +405,7 @@ export function SwapNew(props) {
                                                 if (getChainIdentifierForCurrency(newOutputToken) !==
                                                     getChainIdentifierForCurrency(outputToken))
                                                     addressRef.current.setValue('');
-                                            }, value: inputToken, className: "round-right text-white bg-black bg-opacity-10" }), _jsx(ValidatedInput, { disabled: locked || amountsLocked || webLnForOutput, inputRef: inputRef, className: "swap-panel__input-wrapper", placeholder: '0.00', type: "number", value: inputAmount, size: 'lg', textStart: !exactIn && quoteLoading ? _jsx(Spinner, { size: "sm", className: "text-white" }) : null, onChange: (value, forcedChange) => {
+                                            }, value: inputToken, className: "round-right text-white bg-black bg-opacity-10" }), _jsx(ValidatedInput, { disabled: locked || amountsLocked || webLnForOutput, inputRef: inputRef, className: "swap-panel__input-wrapper", placeholder: '0.00', type: "number", value: inputAmount, size: 'lg', textStart: !exactIn && quoteLoading ? _jsx(Spinner, { className: "text-white" }) : null, onChange: (value, forcedChange) => {
                                                 setAmount(value);
                                                 setExactIn(true);
                                                 if (!forcedChange)
@@ -457,7 +457,7 @@ export function SwapNew(props) {
                                                             }
                                                             setInputToken(token);
                                                         }
-                                                    }, value: outputToken, className: "round-right text-white bg-black bg-opacity-10" }), _jsx(ValidatedInput, { disabled: locked || amountsLocked, inputRef: outputRef, className: "flex-fill strip-group-text", type: "number", value: outputAmount, size: 'lg', textStart: exactIn && quoteLoading ? _jsx(Spinner, { size: "sm", className: "text-white" }) : null, onChange: (val, forcedChange) => {
+                                                    }, value: outputToken, className: "round-right text-white bg-black bg-opacity-10" }), _jsx(ValidatedInput, { disabled: locked || amountsLocked, inputRef: outputRef, className: "flex-fill strip-group-text currency-field", type: "number", value: outputAmount, size: 'lg', textStart: exactIn && quoteLoading ? _jsx(Spinner, { className: "text-white" }) : null, onChange: (val, forcedChange) => {
                                                         setAmount(val);
                                                         setExactIn(false);
                                                         if (webLnForOutput)
@@ -479,7 +479,7 @@ export function SwapNew(props) {
                                                                     leaveExistingSwap(true);
                                                             }, value: outputAddress, inputRef: addressRef, placeholder: 'Enter destination address', onValidate: addressValidator, validated: isOutputWalletAddress || outputAddress !== address
                                                                 ? null
-                                                                : addressError?.message, disabled: locked || outputChainData?.wallet != null, textEnd: isOutputWalletAddress ? _jsx("span", { className: "icon icon-check" }) : null, textStart: addressLoading ? _jsx(Spinner, { size: "sm", className: "text-white" }) : null, successFeedback: isOutputWalletAddress
+                                                                : addressError?.message, disabled: locked || outputChainData?.wallet != null, textEnd: isOutputWalletAddress ? _jsx("span", { className: "icon icon-check" }) : null, textStart: addressLoading ? _jsx(Spinner, { className: "text-white" }) : null, successFeedback: isOutputWalletAddress
                                                                 ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
                                                                 : null, dynamicTextEndPosition: true })] }), _jsx("div", { className: "wallet-address__action", children: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", className: "wallet-address__action__button", onClick: (e) => {
                                                                 e.preventDefault();
@@ -505,7 +505,7 @@ export function SwapNew(props) {
                                                         outputChainData?.wallet == null &&
                                                         isBtcToken(outputToken) &&
                                                         outputToken.lightning &&
-                                                        addressData == null, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] }) }) })] }), quote != null || existingSwap != null ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "mt-3", children: _jsx(SimpleFeeSummaryScreen, { swap: existingSwap ?? quote, btcFeeRate: inputToken.chain === 'BTC' ? maxSpendable?.feeRate : null, onRefreshQuote: () => {
+                                                        addressData == null, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] }) }) })] }), quote != null || existingSwap != null || quoteLoading ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "mt-3", children: _jsx(SimpleFeeSummaryScreen, { swap: existingSwap ?? quote, btcFeeRate: inputToken.chain === 'BTC' ? maxSpendable?.feeRate : null, onRefreshQuote: () => {
                                             if (existingSwap != null) {
                                                 leaveExistingSwap(false, true);
                                                 setExactIn(existingSwap.exactIn);

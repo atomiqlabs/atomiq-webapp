@@ -116,8 +116,8 @@ export function SimpleFeeSummaryScreen(props: {
 }) {
   const { fees, totalUsdFee } = useSwapFees(props.swap, props.btcFeeRate);
 
-  const inputToken: Token = props.swap?.getInput().token;
-  const outputToken: Token = props.swap?.getOutput().token;
+  const inputToken: Token = props.swap?.getInput()?.token;
+  const outputToken: Token = props.swap?.getOutput()?.token;
 
   const { totalQuoteTime, quoteTimeRemaining, state } = useSwapState(props.swap);
 
@@ -152,11 +152,13 @@ export function SimpleFeeSummaryScreen(props: {
           <Accordion.Header className="font-bigger d-flex flex-row" bsPrefix="fee-accordion-header">
             <div className="simple-fee-screen__quote">
               <div className="sc-text">
-                {isCreated && isExpired ? (
+                {isCreated && isExpired && false ? (
                   <span className="simple-fee-screen__quote__error">
                     <span className="icon icon-invalid-error"></span>
                     <span className="sc-text">Quote expired</span>
                   </span>
+                ) : !outputToken || !inputToken || !props.swap ? (
+                  <div className="simple-fee-screen__skeleton"></div>
                 ) : (
                   <>
                     1 {outputToken.ticker} ={' '}
@@ -179,7 +181,7 @@ export function SimpleFeeSummaryScreen(props: {
             <div className="icon icon-receipt-fees"></div>
             <span className="simple-fee-screen__fee">
               {totalUsdFee == null ? (
-                <Spinner animation="border" size="sm" />
+                <div className="simple-fee-screen__skeleton"></div>
               ) : (
                 '$' + totalUsdFee.toFixed(2)
               )}
