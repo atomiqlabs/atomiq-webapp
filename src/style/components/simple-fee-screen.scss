@@ -5,7 +5,7 @@
   border: 1px solid rgb(255, 255, 255, 0.1);
 
   .accordion-button {
-    @apply px-[20px] py-3 text-white;
+    @apply px-[20px] py-3 text-white min-h-[52px];
 
     font-size: 14px;
 
