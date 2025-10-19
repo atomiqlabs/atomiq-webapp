@@ -24,7 +24,7 @@ import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
-import {useChain} from "../../wallets/hooks/useChain";
+import { useChain } from '../../wallets/hooks/useChain';
 
 /*
 Steps:
@@ -46,7 +46,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
   const isAlreadyClaimable = useMemo(() => props.quote?.isClaimable(), [props.quote]);
   const setAmountLockRef = useStateRef(props.setAmountLock);
 
-  const bitcoinWallet = useChain("BITCOIN")?.wallet;
+  const bitcoinWallet = useChain('BITCOIN')?.wallet;
   const smartChainWallet = useSmartChainWallet(props.quote);
 
   const [onSend, sendLoading, sendSuccess, sendError] = useAsync(() => {
@@ -359,8 +359,8 @@ export function SpvVaultFromBTCQuoteSummary(props: {
 
       {isSuccess ? (
         <Alert variant="success" className="mb-3">
-          <strong>Swap successful</strong>
-          <label>Swap was executed successfully</label>
+          <strong>Swap success</strong>
+          <label>Your swap was executed successfully!</label>
         </Alert>
       ) : (
         ''

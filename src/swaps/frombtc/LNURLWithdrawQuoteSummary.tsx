@@ -138,8 +138,8 @@ export function LNURLWithdrawQuoteSummary(props: {
 
       {isSuccess ? (
         <Alert variant="success" className="mb-0">
-          <strong>Swap successful</strong>
-          <label>Swap was executed successfully</label>
+          <strong>Swap success</strong>
+          <label>Your swap was executed successfully!</label>
         </Alert>
       ) : (
         ''

@@ -1,8 +1,6 @@
-import { Col, Row } from 'react-bootstrap';
 import Icon from 'react-icons-kit';
 import * as React from 'react';
 import classNames from 'classnames';
-import { AuditedBy } from './AuditedBy';
 
 export type SingleStep = {
   icon: any;
@@ -10,7 +8,6 @@ export type SingleStep = {
   type: 'disabled' | 'loading' | 'success' | 'failed';
   amount?: string;
   address?: string;
-  progress?: number; // 0-100 for loading state
 };
 
 export type WalletData = {
@@ -105,7 +102,7 @@ export function StepByStep(props: {
           return (
             <React.Fragment key={index.toString()}>
               <div
-                className={classNames('d-flex flex-column align-items-center', {
+                className={classNames('swap-steps__indicator__step', {
                   'text-light text-opacity-50': step.type === 'disabled',
                   'text-light loading-glow': step.type === 'loading',
                 })}

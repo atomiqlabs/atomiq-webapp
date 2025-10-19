@@ -17,7 +17,7 @@ import { useFromBtcLnQuote } from './useFromBtcLnQuote';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
-import {useChain} from "../../wallets/hooks/useChain";
+import { useChain } from '../../wallets/hooks/useChain';
 
 /*
 Steps:
@@ -34,7 +34,7 @@ export function FromBTCLNQuoteSummary(props: {
   abortSwap?: () => void;
   notEnoughForGas: bigint;
 }) {
-  const lightningWallet = useChain("LIGHTNING")?.wallet;
+  const lightningWallet = useChain('LIGHTNING')?.wallet;
   const smartChainWallet = useSmartChainWallet(props.quote, true);
 
   const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
@@ -213,8 +213,8 @@ export function FromBTCLNQuoteSummary(props: {
 
       {isSuccess ? (
         <Alert variant="success" className="mb-3">
-          <strong>Swap successful</strong>
-          <label>Swap was executed successfully</label>
+          <strong>Swap success</strong>
+          <label>Your swap was executed successfully!</label>
         </Alert>
       ) : (
         ''

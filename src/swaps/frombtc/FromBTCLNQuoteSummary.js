@@ -15,7 +15,7 @@ import { ErrorAlert } from '../../components/ErrorAlert';
 import { useFromBtcLnQuote } from './useFromBtcLnQuote';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
-import { useChain } from "../../wallets/hooks/useChain";
+import { useChain } from '../../wallets/hooks/useChain';
 /*
 Steps:
 1. Awaiting lightning payment -> Lightning payment received
@@ -23,7 +23,7 @@ Steps:
 3. Send claim transaction -> Sending claim transaction -> Claim success
  */
 export function FromBTCLNQuoteSummary(props) {
-    const lightningWallet = useChain("LIGHTNING")?.wallet;
+    const lightningWallet = useChain('LIGHTNING')?.wallet;
     const smartChainWallet = useSmartChainWallet(props.quote, true);
     const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
     const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
@@ -61,7 +61,7 @@ export function FromBTCLNQuoteSummary(props) {
                                     ? '1. Initialized'
                                     : committing
                                         ? '1. Initializing...'
-                                        : '1. Finish swap (initialize)'] }), !canClaimInOneShot ? (_jsxs(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote?.chainIdentifier, onClick: () => onClaim(), disabled: claiming || !isClaimClaimable, size: isClaimClaimable ? 'lg' : 'sm', className: "mt-2", children: [claiming ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : '', claiming ? '2. Claiming funds...' : '2. Finish swap (claim funds)'] })) : ('')] })) : (''), isSuccess ? (_jsxs(Alert, { variant: "success", className: "mb-3", children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was executed successfully" })] })) : (''), isQuoteExpired || isFailed || isSuccess ? (_jsxs(_Fragment, { children: [_jsxs(Alert, { variant: "danger", className: "mb-3", show: isFailed, children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Swap HTLC expired, your lightning payment will be refunded shortly!" })] }), _jsx(SwapExpiryProgressBar, { show: isQuoteExpired, expired: true, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, expiryText: isInitiated
+                                        : '1. Finish swap (initialize)'] }), !canClaimInOneShot ? (_jsxs(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote?.chainIdentifier, onClick: () => onClaim(), disabled: claiming || !isClaimClaimable, size: isClaimClaimable ? 'lg' : 'sm', className: "mt-2", children: [claiming ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : '', claiming ? '2. Claiming funds...' : '2. Finish swap (claim funds)'] })) : ('')] })) : (''), isSuccess ? (_jsxs(Alert, { variant: "success", className: "mb-3", children: [_jsx("strong", { children: "Swap success" }), _jsx("label", { children: "Your swap was executed successfully!" })] })) : (''), isQuoteExpired || isFailed || isSuccess ? (_jsxs(_Fragment, { children: [_jsxs(Alert, { variant: "danger", className: "mb-3", show: isFailed, children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Swap HTLC expired, your lightning payment will be refunded shortly!" })] }), _jsx(SwapExpiryProgressBar, { show: isQuoteExpired, expired: true, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, expiryText: isInitiated
                             ? 'Swap expired! Your lightning payment should refund shortly.'
                             : 'Swap expired!', quoteAlias: "Swap" }), _jsx(BaseButton, { onClick: props.refreshQuote, variant: "primary", size: "large", children: "New quote" })] })) : (''), _jsx(ScrollAnchor, { trigger: isInitiated })] }));
 }

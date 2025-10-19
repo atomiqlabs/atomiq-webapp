@@ -24,6 +24,7 @@ import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empty_outline';
 import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
+import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { SingleStep, StepByStep, WalletData } from '../../components/StepByStep';
@@ -32,6 +33,8 @@ import { useWithAwait } from '../../utils/hooks/useWithAwait';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { TokenIcons } from '../../tokens/Tokens';
 import { usePricing } from '../../tokens/hooks/usePricing';
+import Icon from 'react-icons-kit';
+import { BaseButton } from '../../components/BaseButton';
 
 /*
 Steps lightning:
@@ -311,6 +314,33 @@ export function ToBTCQuoteSummary(props: {
             sourceWallet={sourceWallet}
             destinationWallet={destinationWallet}
           />
+          {isSuccess ? (
+            <div className="swap-steps__alert is-success">
+              <div className="swap-steps__alert__icon">
+                <Icon size={20} icon={ic_check_circle} />
+              </div>
+
+              <strong className="swap-steps__alert__title">Swap success</strong>
+
+              <label className="swap-steps__alert__description">
+                Your swap was executed successfully!
+              </label>
+
+              {props.quote.getType() === SwapType.TO_BTC ? (
+                <a
+                  href={FEConstants.btcBlockExplorer + props.quote.getOutputTxId()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="swap-steps__alert__action"
+                >
+                  <div className="sc-text">View transaction</div>
+                  <div className="icon icon-new-window"></div>
+                </a>
+              ) : (
+                ''
+              )}
+            </div>
+          ) : null}
         </div>
       ) : null}
       <Alert
@@ -359,7 +389,7 @@ export function ToBTCQuoteSummary(props: {
               disabled={isPaying || continueLoading || !!props.notEnoughForGas}
               size="lg"
             >
-              {props.type === 'payment' ? 'Pay' : 'Swapx'}
+              {props.type === 'payment' ? 'Pay' : 'Swap'}
             </ButtonWithWallet>
           ) : (
             ''
@@ -376,26 +406,6 @@ export function ToBTCQuoteSummary(props: {
             Retry
           </Button>
         </>
-      ) : (
-        ''
-      )}
-      {isSuccess ? (
-        <Alert variant="success" className={props.type === 'payment' ? 'mb-0' : 'mb-3'}>
-          <strong>Swap successful</strong>
-          <label>Swap was executed successfully</label>
-          {props.quote.getType() === SwapType.TO_BTC ? (
-            <Button
-              href={FEConstants.btcBlockExplorer + props.quote.getOutputTxId()}
-              target="_blank"
-              variant="success"
-              className="mt-3"
-            >
-              View transaction
-            </Button>
-          ) : (
-            ''
-          )}
-        </Alert>
       ) : (
         ''
       )}
@@ -426,13 +436,17 @@ export function ToBTCQuoteSummary(props: {
         <strong>Swap failed</strong>
         <label>Funds refunded successfully!</label>
       </Alert>
-      {isRefunded ||
-      isExpired ||
-      !!notEnoughBalanceError ||
-      (isSuccess && props.type !== 'payment') ? (
+      {isRefunded || isExpired || !!notEnoughBalanceError ? (
         <Button onClick={props.refreshQuote} variant="secondary" className="swap-panel__action">
           New quote
         </Button>
+      ) : (
+        ''
+      )}
+      {isSuccess && props.type !== 'payment' ? (
+        <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
+          New Swap
+        </BaseButton>
       ) : (
         ''
       )}

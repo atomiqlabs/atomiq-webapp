@@ -36,7 +36,7 @@ import { ErrorAlert } from '../../components/ErrorAlert';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { BaseButton } from '../../components/BaseButton';
-import {useChain} from "../../wallets/hooks/useChain";
+import { useChain } from '../../wallets/hooks/useChain';
 
 /*
 Steps:
@@ -55,8 +55,8 @@ export function FromBTCQuoteSummary(props: {
   feeRate?: number;
   balance?: bigint;
 }) {
-  const {disconnectWallet} = useContext(ChainDataContext);
-  const bitcoinChainData = useChain("BITCOIN");
+  const { disconnectWallet } = useContext(ChainDataContext);
+  const bitcoinChainData = useChain('BITCOIN');
   const smartChainWallet = useSmartChainWallet(props.quote, true);
 
   const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
@@ -426,7 +426,7 @@ export function FromBTCQuoteSummary(props: {
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            disconnectWallet("BITCOIN");
+                            disconnectWallet('BITCOIN');
                           }}
                         >
                           Or use a QR code/wallet address
@@ -536,8 +536,8 @@ export function FromBTCQuoteSummary(props: {
 
       {isSuccess ? (
         <Alert variant="success" className="mb-3">
-          <strong>Swap successful</strong>
-          <label>Swap was executed successfully</label>
+          <strong>Swap success</strong>
+          <label>Your swap was executed successfully!</label>
         </Alert>
       ) : (
         ''
