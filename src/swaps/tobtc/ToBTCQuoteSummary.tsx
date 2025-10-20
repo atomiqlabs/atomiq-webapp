@@ -27,7 +27,7 @@ import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
-import { ic_cancel_outline } from 'react-icons-kit/md/ic_cancel_outline';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { SingleStep, StepByStep, WalletData } from '../../components/StepByStep';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import { useWithAwait } from '../../utils/hooks/useWithAwait';
@@ -259,10 +259,9 @@ export function ToBTCQuoteSummary(props: {
       type: 'loading',
     };
   if (isContinueCancelled) {
-    console.log('✅ Setting executionSteps[0] to CANCELLED');
     executionSteps[0] = {
-      icon: ic_cancel_outline,
-      text: 'Transaction cancelled',
+      icon: ic_warning,
+      text: 'Transaction didn’t confirm',
       type: 'failed',
     };
   }

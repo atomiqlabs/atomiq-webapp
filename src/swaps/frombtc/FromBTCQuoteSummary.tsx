@@ -27,7 +27,7 @@ import { ic_pending_outline } from 'react-icons-kit/md/ic_pending_outline';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
-import { ic_cancel_outline } from 'react-icons-kit/md/ic_cancel_outline';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { SingleStep, StepByStep } from '../../components/StepByStep';
 import { useStateRef } from '../../utils/hooks/useStateRef';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
@@ -243,8 +243,8 @@ export function FromBTCQuoteSummary(props: {
     };
   if (isCommitCancelled)
     executionSteps[0] = {
-      icon: ic_cancel_outline,
-      text: 'Transaction cancelled',
+      icon: ic_warning,
+      text: 'Transaction didn’t confirm',
       type: 'failed',
     };
   if (isQuoteExpired)
@@ -293,7 +293,7 @@ export function FromBTCQuoteSummary(props: {
     };
   if (isClaimCancelled)
     executionSteps[2] = {
-      icon: ic_cancel_outline,
+      icon: ic_warning,
       text: 'Claim cancelled',
       type: 'failed',
     };
