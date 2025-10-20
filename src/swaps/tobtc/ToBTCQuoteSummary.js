@@ -129,17 +129,20 @@ export function ToBTCQuoteSummary(props) {
     const sourceWallet = useMemo(() => {
         if (!inputToken)
             return null;
-        const formattedAmount = parseFloat(inputAmount).toFixed(4);
         const chainIcon = props.quote.chainIdentifier?.includes('SOLANA')
             ? '/icons/chains/solana.svg'
             : props.quote.chainIdentifier?.includes('STARKNET')
                 ? '/icons/chains/STARKNET.svg'
                 : undefined;
+        // Get string representation and remove trailing zeros
+        const amountStr = props.quote.getInput().toString();
+        const [numPart, tickerPart] = amountStr.split(' ');
+        const cleanedAmount = parseFloat(numPart).toString();
         return {
             icon: TokenIcons[inputToken.ticker],
             chainIcon,
-            amount: `${formattedAmount} ${inputToken.ticker}`,
-            dollarValue: inputValue ? FEConstants.USDollar.format(inputValue) : undefined,
+            amount: `${cleanedAmount} ${tickerPart}`,
+            dollarValue: inputValue ? `$${inputValue.toFixed(2)}` : undefined,
         };
     }, [inputToken, inputAmount, inputValue, props.quote.chainIdentifier]);
     // Destination wallet data (output token)
@@ -150,20 +153,20 @@ export function ToBTCQuoteSummary(props) {
     const destinationWallet = useMemo(() => {
         if (!outputToken)
             return null;
-        const isBTC = outputToken.ticker === 'BTC' || outputToken.ticker === 'BTCLN';
-        const formattedAmount = isBTC
-            ? parseFloat(outputAmount).toFixed(8)
-            : parseFloat(outputAmount).toFixed(4);
         const chainIcon = outputToken.ticker === 'BTC'
             ? '/icons/chains/bitcoin.svg'
             : outputToken.ticker === 'BTCLN'
                 ? '/icons/chains/LIGHTNING.svg'
                 : undefined;
+        // Get string representation and remove trailing zeros
+        const amountStr = props.quote.getOutput().toString();
+        const [numPart, tickerPart] = amountStr.split(' ');
+        const cleanedAmount = parseFloat(numPart).toString();
         return {
             icon: TokenIcons[outputToken.ticker],
             chainIcon,
-            amount: `${formattedAmount} ${outputToken.ticker}`,
-            dollarValue: outputValue ? FEConstants.USDollar.format(outputValue) : undefined,
+            amount: `${cleanedAmount} ${tickerPart}`,
+            dollarValue: outputValue ? `$${outputValue.toFixed(2)}` : undefined,
             address: outputAddress,
         };
     }, [outputToken, outputAmount, outputValue, outputAddress]);
