@@ -1,15 +1,15 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { IFromBTCSwap, IToBTCSwap, SwapType, } from "@atomiqlabs/sdk";
-import { ToBTCQuoteSummary } from "./tobtc/ToBTCQuoteSummary";
-import { LNURLWithdrawQuoteSummary } from "./frombtc/LNURLWithdrawQuoteSummary";
-import { FromBTCLNQuoteSummary } from "./frombtc/FromBTCLNQuoteSummary";
-import { FromBTCQuoteSummary } from "./frombtc/FromBTCQuoteSummary";
-import { useContext } from "react";
-import { FEConstants } from "../FEConstants";
-import { SpvVaultFromBTCQuoteSummary } from "./frombtc/SpvVaultFromBTCQuoteSummary";
-import { useWithAwait } from "../utils/hooks/useWithAwait";
-import { ChainDataContext } from "../wallets/context/ChainDataContext";
-import { getChainIdentifierForCurrency, toTokenIdentifier, } from "../tokens/Tokens";
+import { IFromBTCSwap, IToBTCSwap, SwapType, } from '@atomiqlabs/sdk';
+import { ToBTCQuoteSummary } from './tobtc/ToBTCQuoteSummary';
+import { LNURLWithdrawQuoteSummary } from './frombtc/LNURLWithdrawQuoteSummary';
+import { FromBTCLNQuoteSummary } from './frombtc/FromBTCLNQuoteSummary';
+import { FromBTCQuoteSummary } from './frombtc/FromBTCQuoteSummary';
+import { useContext } from 'react';
+import { FEConstants } from '../FEConstants';
+import { SpvVaultFromBTCQuoteSummary } from './frombtc/SpvVaultFromBTCQuoteSummary';
+import { useWithAwait } from '../utils/hooks/useWithAwait';
+import { ChainDataContext } from '../wallets/context/ChainDataContext';
+import { getChainIdentifierForCurrency, toTokenIdentifier } from '../tokens/Tokens';
 export function QuoteSummary(props) {
     const chainsData = useContext(ChainDataContext);
     const [notEnoughForGas] = useWithAwait(async () => {
@@ -32,8 +32,7 @@ export function QuoteSummary(props) {
             const chainIdentifer = getChainIdentifierForCurrency(result.required.token);
             const chainData = chainsData[chainIdentifer];
             if (chainData.wallet?.address == address) {
-                return (FEConstants.scBalances[toTokenIdentifier(result.required.token)]
-                    .optimal +
+                return (FEConstants.scBalances[toTokenIdentifier(result.required.token)].optimal +
                     result.required.rawAmount -
                     result.balance.rawAmount);
             }
@@ -53,7 +52,7 @@ export function QuoteSummary(props) {
             break;
         case SwapType.FROM_BTCLN:
             const _quote = props.quote;
-            if (_quote.lnurl != null && props.type !== "swap") {
+            if (_quote.lnurl != null && props.type !== 'swap') {
                 swapElement = (_jsx(LNURLWithdrawQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: _quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas }));
             }
             else {

@@ -7,28 +7,25 @@ import {
   SpvFromBTCSwap,
   SwapType,
   TokenAmount,
-} from "@atomiqlabs/sdk";
-import { ToBTCQuoteSummary } from "./tobtc/ToBTCQuoteSummary";
-import { LNURLWithdrawQuoteSummary } from "./frombtc/LNURLWithdrawQuoteSummary";
-import { FromBTCLNQuoteSummary } from "./frombtc/FromBTCLNQuoteSummary";
-import { FromBTCQuoteSummary } from "./frombtc/FromBTCQuoteSummary";
-import * as React from "react";
-import { useContext } from "react";
-import { FEConstants } from "../FEConstants";
-import { SpvVaultFromBTCQuoteSummary } from "./frombtc/SpvVaultFromBTCQuoteSummary";
-import { useWithAwait } from "../utils/hooks/useWithAwait";
-import { ChainDataContext } from "../wallets/context/ChainDataContext";
-import { ChainWalletData } from "../wallets/ChainDataProvider";
-import {
-  getChainIdentifierForCurrency,
-  toTokenIdentifier,
-} from "../tokens/Tokens";
+} from '@atomiqlabs/sdk';
+import { ToBTCQuoteSummary } from './tobtc/ToBTCQuoteSummary';
+import { LNURLWithdrawQuoteSummary } from './frombtc/LNURLWithdrawQuoteSummary';
+import { FromBTCLNQuoteSummary } from './frombtc/FromBTCLNQuoteSummary';
+import { FromBTCQuoteSummary } from './frombtc/FromBTCQuoteSummary';
+import * as React from 'react';
+import { useContext } from 'react';
+import { FEConstants } from '../FEConstants';
+import { SpvVaultFromBTCQuoteSummary } from './frombtc/SpvVaultFromBTCQuoteSummary';
+import { useWithAwait } from '../utils/hooks/useWithAwait';
+import { ChainDataContext } from '../wallets/context/ChainDataContext';
+import { ChainWalletData } from '../wallets/ChainDataProvider';
+import { getChainIdentifierForCurrency, toTokenIdentifier } from '../tokens/Tokens';
 
 export function QuoteSummary(props: {
   quote: ISwap;
   refreshQuote: () => void;
   setAmountLock?: (isLocked: boolean) => void;
-  type?: "payment" | "swap";
+  type?: 'payment' | 'swap';
   abortSwap?: () => void;
   balance?: bigint;
   autoContinue?: boolean;
@@ -54,14 +51,11 @@ export function QuoteSummary(props: {
       return;
     }
     if (!result.enoughBalance) {
-      const chainIdentifer = getChainIdentifierForCurrency(
-        result.required.token,
-      );
+      const chainIdentifer = getChainIdentifierForCurrency(result.required.token);
       const chainData: ChainWalletData<any> = chainsData[chainIdentifer];
       if (chainData.wallet?.address == address) {
         return (
-          FEConstants.scBalances[toTokenIdentifier(result.required.token)]
-            .optimal +
+          FEConstants.scBalances[toTokenIdentifier(result.required.token)].optimal +
           result.required.rawAmount -
           result.balance.rawAmount
         );
@@ -105,7 +99,7 @@ export function QuoteSummary(props: {
       break;
     case SwapType.FROM_BTCLN:
       const _quote = props.quote as FromBTCLNSwap;
-      if (_quote.lnurl != null && props.type !== "swap") {
+      if (_quote.lnurl != null && props.type !== 'swap') {
         swapElement = (
           <LNURLWithdrawQuoteSummary
             type={props.type}

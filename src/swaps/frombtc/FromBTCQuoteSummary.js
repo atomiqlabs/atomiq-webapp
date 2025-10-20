@@ -26,6 +26,7 @@ import { ic_pending_outline } from 'react-icons-kit/md/ic_pending_outline';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
+import { ic_cancel_outline } from 'react-icons-kit/md/ic_cancel_outline';
 import { StepByStep } from '../../components/StepByStep';
 import { useStateRef } from '../../utils/hooks/useStateRef';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
@@ -81,6 +82,24 @@ export function FromBTCQuoteSummary(props) {
     const textFieldRef = useRef();
     const openModalRef = useRef(null);
     const [txData, setTxData] = useState(null);
+    // Helper function to check if error is a user cancellation
+    const isUserCancellation = useCallback((error) => {
+        if (!error)
+            return false;
+        const errorMessage = error?.message?.toLowerCase() || error?.toString()?.toLowerCase() || '';
+        return (errorMessage.includes('user rejected') ||
+            errorMessage.includes('user denied') ||
+            errorMessage.includes('user cancelled') ||
+            errorMessage.includes('user canceled') ||
+            errorMessage.includes('transaction rejected') ||
+            errorMessage.includes('cancelled by user') ||
+            errorMessage.includes('canceled by user') ||
+            error?.code === 4001 || // MetaMask user rejection
+            error?.code === 'ACTION_REJECTED');
+    }, []);
+    // Track cancellation states
+    const isCommitCancelled = useMemo(() => isUserCancellation(commitError), [commitError, isUserCancellation]);
+    const isClaimCancelled = useMemo(() => isUserCancellation(claimError), [claimError, isUserCancellation]);
     const [claimable, setClaimable] = useState(false);
     useEffect(() => {
         if (state === FromBTCSwapState.CLAIM_COMMITED || state === FromBTCSwapState.EXPIRED) {
@@ -114,11 +133,16 @@ export function FromBTCQuoteSummary(props) {
     const isFailed = state === FromBTCSwapState.FAILED;
     const isSuccess = state === FromBTCSwapState.CLAIM_CLAIMED;
     useEffect(() => {
-        if (isSuccess || isFailed || isExpired || isQuoteExpired) {
+        if (isSuccess ||
+            isFailed ||
+            isExpired ||
+            isQuoteExpired ||
+            isCommitCancelled ||
+            isClaimCancelled) {
             if (setAmountLockRef.current != null)
                 setAmountLockRef.current(false);
         }
-    }, [isSuccess, isFailed, isExpired, isQuoteExpired]);
+    }, [isSuccess, isFailed, isExpired, isQuoteExpired, isCommitCancelled, isClaimCancelled]);
     /*
       Steps:
       1. Opening swap address -> Swap address opened
@@ -149,6 +173,12 @@ export function FromBTCQuoteSummary(props) {
             icon: ic_hourglass_empty_outline,
             text: 'Opening swap address',
             type: 'loading',
+        };
+    if (isCommitCancelled)
+        executionSteps[0] = {
+            icon: ic_cancel_outline,
+            text: 'Transaction cancelled',
+            type: 'failed',
         };
     if (isQuoteExpired)
         executionSteps[0] = {
@@ -191,6 +221,12 @@ export function FromBTCQuoteSummary(props) {
             icon: ic_hourglass_empty_outline,
             text: 'Sending claim transaction',
             type: 'loading',
+        };
+    if (isClaimCancelled)
+        executionSteps[2] = {
+            icon: ic_cancel_outline,
+            text: 'Claim cancelled',
+            type: 'failed',
         };
     if (isSuccess)
         executionSteps[2] = {

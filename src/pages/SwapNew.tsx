@@ -439,38 +439,6 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
     return !!existingSwap ? true : !!quote;
   }, [existingSwap]);
 
-  if (isSwapInitiated) {
-    return (
-      <div className="d-flex flex-column align-items-center">
-        <div className="swap-panel">
-          <QuoteSummary
-            type="swap"
-            quote={existingSwap}
-            balance={maxSpendable?.balance.rawAmount ?? null}
-            refreshQuote={() => {
-              leaveExistingSwap(false, true);
-              setExactIn(existingSwap.exactIn);
-              if (existingSwap.exactIn) {
-                setAmount(existingSwap.getInput().amount);
-              } else {
-                setAmount(existingSwap.getOutput().amount);
-              }
-              refreshQuote();
-            }}
-            setAmountLock={setAmountLock}
-            abortSwap={() => {
-              inputRef.current.setValue('');
-              outputRef.current.setValue('');
-              navigate('/');
-            }}
-            feeRate={maxSpendable?.feeRate}
-          />
-        </div>
-        <AuditedBy chainId={scCurrency?.chainId} />
-      </div>
-    );
-  }
-
   return (
     <>
       {/* TODO remove, maybe it will be inspiration in the future */}
@@ -487,439 +455,452 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       <div className="d-flex flex-column align-items-center text-white">
         <div className="swap-panel">
           <ErrorAlert title="Quote error" error={quoteError} className="swap-panel__error" />
-          <div className="swap-panel__card">
-            <div className="swap-panel__card__header">
-              <div className="swap-panel__card__title">You pay</div>
+          {isSwapInitiated ? null : (
+            <>
+              <div className="swap-panel__card">
+                <div className="swap-panel__card__header">
+                  <div className="swap-panel__card__title">You pay</div>
 
-              {maxSpendable != null ? (
-                <div className="swap-connected-wallet">
-                  <div className="swap-panel__card__wallet">
-                    <ConnectedWalletAnchor
-                      noText={false}
-                      simple={true}
-                      currency={inputToken}
-                      variantButton="clear"
-                      maxSpendable={maxSpendable}
-                    />
-                  </div>
-                  {/* TODO implement this */}
-                  {/*<Button*/}
-                  {/*  variant="outline-light"*/}
-                  {/*  style={{ marginBottom: '2px' }}*/}
-                  {/*  className="py-0 px-1"*/}
-                  {/*  disabled={locked || amountsLocked}*/}
-                  {/*  onClick={() => {*/}
-                  {/*    setExactIn(true);*/}
-                  {/*    inputRef.current.setValue(maxSpendable?.balance?.amount);*/}
-                  {/*  }}*/}
-                  {/*>*/}
-                  {/*  <small className="font-smallest" style={{ marginBottom: '-2px' }}>*/}
-                  {/*    MAX*/}
-                  {/*  </small>*/}
-                  {/*</Button>*/}
-                </div>
-              ) : (
-                <div className="swap-panel__card__wallet">
-                  <ConnectedWalletAnchor
-                    noText={false}
-                    simple={true}
-                    currency={inputToken}
-                    maxSpendable={maxSpendable}
-                    variantButton="clear"
-                  />
-                </div>
-              )}
-            </div>
-            <div className="swap-panel__card__body">
-              <CurrencyDropdown
-                currencyList={inputTokens}
-                onSelect={(val) => {
-                  if (locked) return;
-                  leaveExistingSwap();
-                  const supportedCounterTokens = swapper.getSwapCounterTokens(val, true);
-                  setInputToken(val);
-                  if (includesToken(supportedCounterTokens, outputToken)) return;
-                  let newOutputToken: Token;
-                  if (includesToken(supportedCounterTokens, inputToken)) {
-                    newOutputToken = inputToken;
-                    setExactIn(!exactIn);
-                  } else {
-                    if (isSCToken(outputToken))
-                      newOutputToken = supportedCounterTokens.find(
-                        (val) => isSCToken(val) && val.chainId === outputToken.chainId
-                      );
-                    newOutputToken ??= supportedCounterTokens[0];
-                    if (newOutputToken == null) {
-                      setInputToken(inputToken);
-                      return;
-                    }
-                  }
-                  setOutputToken(newOutputToken);
-                  if (
-                    getChainIdentifierForCurrency(newOutputToken) !==
-                    getChainIdentifierForCurrency(outputToken)
-                  )
-                    addressRef.current.setValue('');
-                }}
-                value={inputToken}
-                className="round-right text-white bg-black bg-opacity-10"
-              />
-              <ValidatedInput
-                disabled={locked || amountsLocked || webLnForOutput}
-                inputRef={inputRef}
-                className="swap-panel__input-wrapper"
-                placeholder={'0.00'}
-                type="number"
-                value={inputAmount}
-                size={'lg'}
-                textStart={!exactIn && quoteLoading ? <Spinner className="text-white" /> : null}
-                onChange={(value, forcedChange) => {
-                  setAmount(value);
-                  setExactIn(true);
-                  if (!forcedChange) leaveExistingSwap(false, true);
-                }}
-                inputId="amount-input"
-                inputClassName="swap-panel__input"
-                floatingLabelClassName="swap-panel__label"
-                floatingLabel={FEConstants.USDollar.format(inputValue ?? 0)}
-                expectingFloatingLabel={true}
-                step={
-                  inputToken == null
-                    ? new BigNumber('0.00000001')
-                    : new BigNumber(10).pow(
-                        new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals))
-                      )
-                }
-                min={inputLimits?.min}
-                max={inputLimits?.max}
-                onValidate={inputAmountValidator}
-                feedbackEndElement={
-                  showUseExternalWallet ? (
-                    <a
-                      className="use-external"
-                      href="#"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        if (inputChainData == null) return;
-                        disconnectWallet(inputChainData.chainId);
-                      }}
-                    >
-                      Use external wallet
-                    </a>
-                  ) : null
-                }
-                validated={
-                  notEnoughBalance
-                    ? 'Not enough balance'
-                    : (!exactIn && quote != null) || existingSwap != null
-                      ? null
-                      : undefined
-                }
-              />
-            </div>
-          </div>
-          <div className="swap-panel__toggle">
-            <Button
-              onClick={() => {
-                if (locked) return;
-                setReversed((v) => !v);
-                changeDirection();
-              }}
-              size="lg"
-              className="swap-panel__toggle__button"
-              style={{
-                transition: 'transform 0.35s ease',
-                transform: reversed ? 'rotate(180deg)' : 'rotate(0deg)',
-              }}
-            >
-              <div className="icon icon-swap"></div>
-            </Button>
-          </div>
-          <div className="swap-panel__group">
-            <div className="swap-panel__card">
-              <div className="swap-panel__card__header">
-                <div className="swap-panel__card__title">You receive</div>
-                <div className="swap-panel__card__wallet">
-                  <ConnectedWalletAnchor
-                    noText={false}
-                    simple={true}
-                    currency={outputToken}
-                    variantButton="clear"
-                  />
-                </div>
-              </div>
-              <div className="swap-panel__card__body">
-                <CurrencyDropdown
-                  currencyList={outputTokens}
-                  onSelect={(val) => {
-                    if (locked) return;
-                    leaveExistingSwap();
-                    if (val === outputToken) return;
-                    if (
-                      getChainIdentifierForCurrency(val) !==
-                      getChainIdentifierForCurrency(outputToken)
-                    )
-                      addressRef.current.setValue('');
-                    const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
-                    setOutputToken(val);
-                    if (includesToken(supportedCounterTokens, inputToken)) return;
-                    if (includesToken(supportedCounterTokens, outputToken)) {
-                      setInputToken(outputToken);
-                      setExactIn(!exactIn);
-                    } else {
-                      let token: Token;
-                      if (isSCToken(inputToken))
-                        token = supportedCounterTokens.find(
-                          (val) => isSCToken(val) && val.chainId === inputToken.chainId
-                        );
-                      token ??= supportedCounterTokens[0];
-                      if (token == null) {
-                        setOutputToken(outputToken);
-                        return;
-                      }
-                      setInputToken(token);
-                    }
-                  }}
-                  value={outputToken}
-                  className="round-right text-white bg-black bg-opacity-10"
-                />
-                <ValidatedInput
-                  disabled={locked || amountsLocked}
-                  inputRef={outputRef}
-                  className="flex-fill strip-group-text currency-field"
-                  type="number"
-                  value={outputAmount}
-                  size={'lg'}
-                  textStart={exactIn && quoteLoading ? <Spinner className="text-white" /> : null}
-                  onChange={(val, forcedChange) => {
-                    setAmount(val);
-                    setExactIn(false);
-                    if (webLnForOutput) addressRef.current.setValue('');
-                    if (!forcedChange) leaveExistingSwap(webLnForOutput, true);
-                  }}
-                  inputId="amount-output"
-                  inputClassName="swap-panel__input"
-                  floatingLabelClassName="swap-panel__label"
-                  placeholder={'0.00'}
-                  floatingLabel={FEConstants.USDollar.format(outputValue ?? 0)}
-                  expectingFloatingLabel={true}
-                  step={
-                    outputToken == null
-                      ? new BigNumber('0.00000001')
-                      : new BigNumber(10).pow(
-                          new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals))
-                        )
-                  }
-                  min={outputLimits?.min}
-                  max={outputLimits?.max}
-                  onValidate={outputAmountValidator}
-                  validated={(exactIn && quote != null) || existingSwap != null ? null : undefined}
-                />
-              </div>
-              <div className={gasDropTokenAmount != null ? 'd-flex' : 'd-none'}>
-                <ValidatedInput
-                  type={'checkbox'}
-                  className="swap-panel__input-wrapper"
-                  onChange={(val: boolean) => {
-                    setGasDropChecked(val);
-                    leaveExistingSwap();
-                  }}
-                  placeholder={
-                    <span>
-                      <OverlayTrigger
-                        overlay={
-                          <Tooltip id={'fee-tooltip-gas-drop'}>
-                            <span>
-                              Swap some amount of BTC to {gasDropTokenAmount?.token.ticker} (gas
-                              token on the destination chain), so that you can transact on{' '}
-                              {gasDropTokenAmount?.token.chainId}
-                            </span>
-                          </Tooltip>
-                        }
-                      >
-                        <span className="dottedUnderline">
-                          Request gas drop of {gasDropTokenAmount?._amount.toString(10)}{' '}
-                          {gasDropTokenAmount?.token.ticker}
-                        </span>
-                      </OverlayTrigger>
-                    </span>
-                  }
-                  value={gasDropChecked}
-                  onValidate={() => null}
-                  disabled={locked}
-                />
-              </div>
-            </div>
-            {quoteError != null ? (
-              <Button variant="light" className="mt-3" onClick={refreshQuote}>
-                Retry
-              </Button>
-            ) : (
-              ''
-            )}
-
-            <div
-              className={
-                'swap-panel__card ' +
-                (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
-                  ? 'd-none'
-                  : 'd-flex')
-              }
-            >
-              <div className="swap-panel__card__body">
-                <div className="wallet-address">
-                  <div className="wallet-address__body">
-                    <div className="wallet-address__title">
-                      {outputChainData?.chain?.name ?? outputToken?.chain ?? 'Wallet'} Destination
-                      Address
+                  {maxSpendable != null ? (
+                    <div className="swap-connected-wallet">
+                      <div className="swap-panel__card__wallet">
+                        <ConnectedWalletAnchor
+                          noText={false}
+                          simple={true}
+                          currency={inputToken}
+                          variantButton="clear"
+                          maxSpendable={maxSpendable}
+                        />
+                      </div>
+                      {/* TODO implement this */}
+                      {/*<Button*/}
+                      {/*  variant="outline-light"*/}
+                      {/*  style={{ marginBottom: '2px' }}*/}
+                      {/*  className="py-0 px-1"*/}
+                      {/*  disabled={locked || amountsLocked}*/}
+                      {/*  onClick={() => {*/}
+                      {/*    setExactIn(true);*/}
+                      {/*    inputRef.current.setValue(maxSpendable?.balance?.amount);*/}
+                      {/*  }}*/}
+                      {/*>*/}
+                      {/*  <small className="font-smallest" style={{ marginBottom: '-2px' }}>*/}
+                      {/*    MAX*/}
+                      {/*  </small>*/}
+                      {/*</Button>*/}
                     </div>
+                  ) : (
+                    <div className="swap-panel__card__wallet">
+                      <ConnectedWalletAnchor
+                        noText={false}
+                        simple={true}
+                        currency={inputToken}
+                        maxSpendable={maxSpendable}
+                        variantButton="clear"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="swap-panel__card__body">
+                  <CurrencyDropdown
+                    currencyList={inputTokens}
+                    onSelect={(val) => {
+                      if (locked) return;
+                      leaveExistingSwap();
+                      const supportedCounterTokens = swapper.getSwapCounterTokens(val, true);
+                      setInputToken(val);
+                      if (includesToken(supportedCounterTokens, outputToken)) return;
+                      let newOutputToken: Token;
+                      if (includesToken(supportedCounterTokens, inputToken)) {
+                        newOutputToken = inputToken;
+                        setExactIn(!exactIn);
+                      } else {
+                        if (isSCToken(outputToken))
+                          newOutputToken = supportedCounterTokens.find(
+                            (val) => isSCToken(val) && val.chainId === outputToken.chainId
+                          );
+                        newOutputToken ??= supportedCounterTokens[0];
+                        if (newOutputToken == null) {
+                          setInputToken(inputToken);
+                          return;
+                        }
+                      }
+                      setOutputToken(newOutputToken);
+                      if (
+                        getChainIdentifierForCurrency(newOutputToken) !==
+                        getChainIdentifierForCurrency(outputToken)
+                      )
+                        addressRef.current.setValue('');
+                    }}
+                    value={inputToken}
+                    className="round-right text-white bg-black bg-opacity-10"
+                  />
+                  <ValidatedInput
+                    disabled={locked || amountsLocked || webLnForOutput}
+                    inputRef={inputRef}
+                    className="swap-panel__input-wrapper"
+                    placeholder={'0.00'}
+                    type="number"
+                    value={inputAmount}
+                    size={'lg'}
+                    textStart={!exactIn && quoteLoading ? <Spinner className="text-white" /> : null}
+                    onChange={(value, forcedChange) => {
+                      setAmount(value);
+                      setExactIn(true);
+                      if (!forcedChange) leaveExistingSwap(false, true);
+                    }}
+                    inputId="amount-input"
+                    inputClassName="swap-panel__input"
+                    floatingLabelClassName="swap-panel__label"
+                    floatingLabel={FEConstants.USDollar.format(inputValue ?? 0)}
+                    expectingFloatingLabel={true}
+                    step={
+                      inputToken == null
+                        ? new BigNumber('0.00000001')
+                        : new BigNumber(10).pow(
+                            new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals))
+                          )
+                    }
+                    min={inputLimits?.min}
+                    max={inputLimits?.max}
+                    onValidate={inputAmountValidator}
+                    feedbackEndElement={
+                      showUseExternalWallet ? (
+                        <a
+                          className="use-external"
+                          href="#"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            if (inputChainData == null) return;
+                            disconnectWallet(inputChainData.chainId);
+                          }}
+                        >
+                          Use external wallet
+                        </a>
+                      ) : null
+                    }
+                    validated={
+                      notEnoughBalance
+                        ? 'Not enough balance'
+                        : (!exactIn && quote != null) || existingSwap != null
+                          ? null
+                          : undefined
+                    }
+                  />
+                </div>
+              </div>
+              <div className="swap-panel__toggle">
+                <Button
+                  onClick={() => {
+                    if (locked) return;
+                    setReversed((v) => !v);
+                    changeDirection();
+                  }}
+                  size="lg"
+                  className="swap-panel__toggle__button"
+                  style={{
+                    transition: 'transform 0.35s ease',
+                    transform: reversed ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}
+                >
+                  <div className="icon icon-swap"></div>
+                </Button>
+              </div>
+              <div className="swap-panel__group">
+                <div className="swap-panel__card">
+                  <div className="swap-panel__card__header">
+                    <div className="swap-panel__card__title">You receive</div>
+                    <div className="swap-panel__card__wallet">
+                      <ConnectedWalletAnchor
+                        noText={false}
+                        simple={true}
+                        currency={outputToken}
+                        variantButton="clear"
+                      />
+                    </div>
+                  </div>
+                  <div className="swap-panel__card__body">
+                    <CurrencyDropdown
+                      currencyList={outputTokens}
+                      onSelect={(val) => {
+                        if (locked) return;
+                        leaveExistingSwap();
+                        if (val === outputToken) return;
+                        if (
+                          getChainIdentifierForCurrency(val) !==
+                          getChainIdentifierForCurrency(outputToken)
+                        )
+                          addressRef.current.setValue('');
+                        const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
+                        setOutputToken(val);
+                        if (includesToken(supportedCounterTokens, inputToken)) return;
+                        if (includesToken(supportedCounterTokens, outputToken)) {
+                          setInputToken(outputToken);
+                          setExactIn(!exactIn);
+                        } else {
+                          let token: Token;
+                          if (isSCToken(inputToken))
+                            token = supportedCounterTokens.find(
+                              (val) => isSCToken(val) && val.chainId === inputToken.chainId
+                            );
+                          token ??= supportedCounterTokens[0];
+                          if (token == null) {
+                            setOutputToken(outputToken);
+                            return;
+                          }
+                          setInputToken(token);
+                        }
+                      }}
+                      value={outputToken}
+                      className="round-right text-white bg-black bg-opacity-10"
+                    />
                     <ValidatedInput
-                      type={'text'}
-                      className={
-                        'wallet-address__form with-inline-icon ' +
-                        (webLnForOutput && addressData?.address == null ? 'd-none' : '')
+                      disabled={locked || amountsLocked}
+                      inputRef={outputRef}
+                      className="flex-fill strip-group-text currency-field"
+                      type="number"
+                      value={outputAmount}
+                      size={'lg'}
+                      textStart={
+                        exactIn && quoteLoading ? <Spinner className="text-white" /> : null
                       }
                       onChange={(val, forcedChange) => {
-                        setAddress(val);
-                        if (!forcedChange) leaveExistingSwap(true);
+                        setAmount(val);
+                        setExactIn(false);
+                        if (webLnForOutput) addressRef.current.setValue('');
+                        if (!forcedChange) leaveExistingSwap(webLnForOutput, true);
                       }}
-                      value={outputAddress}
-                      inputRef={addressRef}
-                      placeholder={'Enter destination address'}
-                      onValidate={addressValidator}
+                      inputId="amount-output"
+                      inputClassName="swap-panel__input"
+                      floatingLabelClassName="swap-panel__label"
+                      placeholder={'0.00'}
+                      floatingLabel={FEConstants.USDollar.format(outputValue ?? 0)}
+                      expectingFloatingLabel={true}
+                      step={
+                        outputToken == null
+                          ? new BigNumber('0.00000001')
+                          : new BigNumber(10).pow(
+                              new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals))
+                            )
+                      }
+                      min={outputLimits?.min}
+                      max={outputLimits?.max}
+                      onValidate={outputAmountValidator}
                       validated={
-                        isOutputWalletAddress || outputAddress !== address
-                          ? null
-                          : addressError?.message
+                        (exactIn && quote != null) || existingSwap != null ? null : undefined
                       }
-                      disabled={locked || outputChainData?.wallet != null}
-                      textEnd={
-                        isOutputWalletAddress ? <span className="icon icon-check"></span> : null
-                      }
-                      textStart={addressLoading ? <Spinner className="text-white" /> : null}
-                      successFeedback={
-                        isOutputWalletAddress
-                          ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
-                          : null
-                      }
-                      dynamicTextEndPosition={true}
                     />
                   </div>
-
-                  <div className="wallet-address__action">
-                    {locked ? null : outputChainData?.wallet != null ? (
-                      <OverlayTrigger
-                        placement="top"
-                        overlay={
-                          <Tooltip id="scan-qr-tooltip">
-                            Disconnect wallet & use external wallet
-                          </Tooltip>
-                        }
-                      >
-                        <a
-                          href="#"
-                          className="wallet-address__action__button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (outputChainData == null) return;
-                            disconnectWallet(outputChainData.chainId);
-                          }}
-                        >
-                          <span className="icon icon-disconnect"></span>
-                        </a>
-                      </OverlayTrigger>
-                    ) : (
-                      <OverlayTrigger
-                        placement="top"
-                        overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
-                      >
-                        <a
-                          href="#"
-                          className="wallet-address__action__button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setQrScanning(true);
-                          }}
-                        >
-                          <span className="icon icon-qr-scan"></span>
-                        </a>
-                      </OverlayTrigger>
-                    )}
-                  </div>
-                  {webLnForOutput ? (
-                    <>
-                      {addressData?.address == null && validatedAmount != null ? (
-                        <div className="mt-2">
-                          <a
-                            href="#"
-                            onClick={async (e) => {
-                              e.preventDefault();
-                              if (validatedAmount == null) return;
-                              const webln: WebLNProvider = outputChainData.wallet.instance;
-                              try {
-                                const res = await webln.makeInvoice(
-                                  Number(
-                                    fromHumanReadableString(validatedAmount, Tokens.BITCOIN.BTCLN)
-                                  )
-                                );
-                                addressRef.current.setValue(res.paymentRequest);
-                              } catch (e) {
-                                console.error(e);
-                              }
-                            }}
+                  <div className={gasDropTokenAmount != null ? 'd-flex' : 'd-none'}>
+                    <ValidatedInput
+                      type={'checkbox'}
+                      className="swap-panel__input-wrapper"
+                      onChange={(val: boolean) => {
+                        setGasDropChecked(val);
+                        leaveExistingSwap();
+                      }}
+                      placeholder={
+                        <span>
+                          <OverlayTrigger
+                            overlay={
+                              <Tooltip id={'fee-tooltip-gas-drop'}>
+                                <span>
+                                  Swap some amount of BTC to {gasDropTokenAmount?.token.ticker} (gas
+                                  token on the destination chain), so that you can transact on{' '}
+                                  {gasDropTokenAmount?.token.chainId}
+                                </span>
+                              </Tooltip>
+                            }
                           >
-                            Fetch invoice from WebLN
-                          </a>
+                            <span className="dottedUnderline">
+                              Request gas drop of {gasDropTokenAmount?._amount.toString(10)}{' '}
+                              {gasDropTokenAmount?.token.ticker}
+                            </span>
+                          </OverlayTrigger>
+                        </span>
+                      }
+                      value={gasDropChecked}
+                      onValidate={() => null}
+                      disabled={locked}
+                    />
+                  </div>
+                </div>
+                {quoteError != null ? (
+                  <Button variant="light" className="mt-3" onClick={refreshQuote}>
+                    Retry
+                  </Button>
+                ) : (
+                  ''
+                )}
+
+                <div
+                  className={
+                    'swap-panel__card ' +
+                    (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
+                      ? 'd-none'
+                      : 'd-flex')
+                  }
+                >
+                  <div className="swap-panel__card__body">
+                    <div className="wallet-address">
+                      <div className="wallet-address__body">
+                        <div className="wallet-address__title">
+                          {outputChainData?.chain?.name ?? outputToken?.chain ?? 'Wallet'}{' '}
+                          Destination Address
                         </div>
+                        <ValidatedInput
+                          type={'text'}
+                          className={
+                            'wallet-address__form with-inline-icon ' +
+                            (webLnForOutput && addressData?.address == null ? 'd-none' : '')
+                          }
+                          onChange={(val, forcedChange) => {
+                            setAddress(val);
+                            if (!forcedChange) leaveExistingSwap(true);
+                          }}
+                          value={outputAddress}
+                          inputRef={addressRef}
+                          placeholder={'Enter destination address'}
+                          onValidate={addressValidator}
+                          validated={
+                            isOutputWalletAddress || outputAddress !== address
+                              ? null
+                              : addressError?.message
+                          }
+                          disabled={locked || outputChainData?.wallet != null}
+                          textEnd={
+                            isOutputWalletAddress ? <span className="icon icon-check"></span> : null
+                          }
+                          textStart={addressLoading ? <Spinner className="text-white" /> : null}
+                          successFeedback={
+                            isOutputWalletAddress
+                              ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
+                              : null
+                          }
+                          dynamicTextEndPosition={true}
+                        />
+                      </div>
+
+                      <div className="wallet-address__action">
+                        {locked ? null : outputChainData?.wallet != null ? (
+                          <OverlayTrigger
+                            placement="top"
+                            overlay={
+                              <Tooltip id="scan-qr-tooltip">
+                                Disconnect wallet & use external wallet
+                              </Tooltip>
+                            }
+                          >
+                            <a
+                              href="#"
+                              className="wallet-address__action__button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (outputChainData == null) return;
+                                disconnectWallet(outputChainData.chainId);
+                              }}
+                            >
+                              <span className="icon icon-disconnect"></span>
+                            </a>
+                          </OverlayTrigger>
+                        ) : (
+                          <OverlayTrigger
+                            placement="top"
+                            overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
+                          >
+                            <a
+                              href="#"
+                              className="wallet-address__action__button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setQrScanning(true);
+                              }}
+                            >
+                              <span className="icon icon-qr-scan"></span>
+                            </a>
+                          </OverlayTrigger>
+                        )}
+                      </div>
+                      {webLnForOutput ? (
+                        <>
+                          {addressData?.address == null && validatedAmount != null ? (
+                            <div className="mt-2">
+                              <a
+                                href="#"
+                                onClick={async (e) => {
+                                  e.preventDefault();
+                                  if (validatedAmount == null) return;
+                                  const webln: WebLNProvider = outputChainData.wallet.instance;
+                                  try {
+                                    const res = await webln.makeInvoice(
+                                      Number(
+                                        fromHumanReadableString(
+                                          validatedAmount,
+                                          Tokens.BITCOIN.BTCLN
+                                        )
+                                      )
+                                    );
+                                    addressRef.current.setValue(res.paymentRequest);
+                                  } catch (e) {
+                                    console.error(e);
+                                  }
+                                }}
+                              >
+                                Fetch invoice from WebLN
+                              </a>
+                            </div>
+                          ) : (
+                            ''
+                          )}
+                        </>
                       ) : (
                         ''
                       )}
-                    </>
-                  ) : (
-                    ''
-                  )}
 
-                  <Alert
-                    variant={'success'}
-                    className="mt-3 mb-0 text-center"
-                    show={
-                      !locked &&
-                      outputChainData?.wallet == null &&
-                      isBtcToken(outputToken) &&
-                      outputToken.lightning &&
-                      addressData == null
-                    }
-                  >
-                    <label>
-                      Only lightning invoices with pre-set amount are supported! Use lightning
-                      address/LNURL for variable amount.
-                    </label>
-                  </Alert>
+                      <Alert
+                        variant={'success'}
+                        className="mt-3 mb-0 text-center"
+                        show={
+                          !locked &&
+                          outputChainData?.wallet == null &&
+                          isBtcToken(outputToken) &&
+                          outputToken.lightning &&
+                          addressData == null
+                        }
+                      >
+                        <label>
+                          Only lightning invoices with pre-set amount are supported! Use lightning
+                          address/LNURL for variable amount.
+                        </label>
+                      </Alert>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
 
           {quote != null || existingSwap != null || quoteLoading ? (
             <>
-              <div className="mt-3">
-                <SimpleFeeSummaryScreen
-                  swap={existingSwap ?? quote}
-                  btcFeeRate={inputToken.chain === 'BTC' ? maxSpendable?.feeRate : null}
-                  onRefreshQuote={() => {
-                    if (existingSwap != null) {
-                      leaveExistingSwap(false, true);
-                      setExactIn(existingSwap.exactIn);
-                      if (existingSwap.exactIn) {
-                        setAmount(existingSwap.getInput().amount);
-                      } else {
-                        setAmount(existingSwap.getOutput().amount);
+              {!isSwapInitiated ? (
+                <div className="mt-3">
+                  <SimpleFeeSummaryScreen
+                    swap={existingSwap ?? quote}
+                    btcFeeRate={inputToken.chain === 'BTC' ? maxSpendable?.feeRate : null}
+                    onRefreshQuote={() => {
+                      if (existingSwap != null) {
+                        leaveExistingSwap(false, true);
+                        setExactIn(existingSwap.exactIn);
+                        if (existingSwap.exactIn) {
+                          setAmount(existingSwap.getInput().amount);
+                        } else {
+                          setAmount(existingSwap.getOutput().amount);
+                        }
                       }
-                    }
-                    refreshQuote();
-                  }}
-                />
-              </div>
+                      refreshQuote();
+                    }}
+                  />
+                </div>
+              ) : null}
               {!randomQuote || swapper.SwapTypeInfo[swapType].requiresOutputWallet ? (
                 <div className="d-flex flex-column text-white">
                   <QuoteSummary

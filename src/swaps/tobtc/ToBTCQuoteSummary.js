@@ -19,6 +19,7 @@ import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
+import { ic_cancel_outline } from 'react-icons-kit/md/ic_cancel_outline';
 import { StepByStep } from '../../components/StepByStep';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import { useWithAwait } from '../../utils/hooks/useWithAwait';
@@ -27,6 +28,7 @@ import { TokenIcons } from '../../tokens/Tokens';
 import { usePricing } from '../../tokens/hooks/usePricing';
 import Icon from 'react-icons-kit';
 import { BaseButton } from '../../components/BaseButton';
+import { useCallback } from 'react';
 /*
 Steps lightning:
 1. Sending <chain> transaction -> <chain> transaction confirmed
@@ -49,6 +51,25 @@ export function ToBTCQuoteSummary(props) {
         return [false, false];
     }, [props.quote]);
     const setAmountLockRef = useStateRef(props.setAmountLock);
+    // Helper function to check if error is a user cancellation
+    const isUserCancellation = useCallback((error) => {
+        if (!error)
+            return false;
+        const errorMessage = error?.message?.toLowerCase() || error?.toString()?.toLowerCase() || '';
+        const isCancelled = errorMessage.includes('user rejected') ||
+            errorMessage.includes('user denied') ||
+            errorMessage.includes('user cancelled') ||
+            errorMessage.includes('user canceled') ||
+            errorMessage.includes('transaction rejected') ||
+            errorMessage.includes('cancelled by user') ||
+            errorMessage.includes('canceled by user') ||
+            error?.code === 4001 || // MetaMask user rejection
+            error?.code === 'ACTION_REJECTED';
+        if (isCancelled) {
+            console.log('🚫 CANCELLED DETECTED:', error?.message || error?.toString(), error);
+        }
+        return isCancelled;
+    }, []);
     const [onContinue, continueLoading, continueSuccess, continueError] = useAsync((skipChecks) => {
         if (setAmountLockRef.current)
             setAmountLockRef.current(true);
@@ -106,6 +127,17 @@ export function ToBTCQuoteSummary(props) {
             nativeToken,
         };
     }, [props.notEnoughForGas, props.quote, swapper]);
+    // Track cancellation states
+    const isContinueCancelled = useMemo(() => {
+        const cancelled = isUserCancellation(continueError);
+        console.log('📊 isContinueCancelled:', cancelled, 'continueError:', continueError);
+        return cancelled;
+    }, [continueError, isUserCancellation]);
+    const isRefundCancelled = useMemo(() => {
+        const cancelled = isUserCancellation(refundError);
+        console.log('📊 isRefundCancelled:', cancelled, 'refundError:', refundError);
+        return cancelled;
+    }, [refundError, isUserCancellation]);
     const isCreated = state === ToBTCSwapState.CREATED ||
         (state === ToBTCSwapState.QUOTE_SOFT_EXPIRED && continueLoading);
     const isExpired = state === ToBTCSwapState.QUOTE_EXPIRED ||
@@ -189,12 +221,29 @@ export function ToBTCQuoteSummary(props) {
             text: 'Sending init transaction',
             type: 'loading',
         };
+    if (isContinueCancelled) {
+        console.log('✅ Setting executionSteps[0] to CANCELLED');
+        executionSteps[0] = {
+            icon: ic_cancel_outline,
+            text: 'Transaction cancelled',
+            type: 'failed',
+        };
+    }
     if (isExpired)
         executionSteps[0] = {
             icon: ic_hourglass_disabled_outline,
             text: 'Quote expired',
             type: 'failed',
         };
+    // console.log('🎨 RENDER STATE:', {
+    //   state,
+    //   isInitiated,
+    //   isCreated,
+    //   isContinueCancelled,
+    //   continueError: continueError?.message,
+    //   continueLoading,
+    //   executionSteps: executionSteps[0],
+    // });
     if (props.quote.getType() === SwapType.TO_BTCLN) {
         executionSteps[1] = {
             icon: ic_flash_on_outline,
