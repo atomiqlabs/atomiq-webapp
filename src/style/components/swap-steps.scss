@@ -40,6 +40,18 @@
       &.is-success {
         @apply border-green text-green bg-green/10;
       }
+
+      &.is-loading {
+        @apply border-transparent relative;
+
+        &::before {
+          content: '';
+          @apply absolute inset-0 rounded-full;
+          border: 2px solid white;
+          border-bottom-color: transparent;
+          animation: spinner-spin 3s linear infinite;
+        }
+      }
     }
 
     &__step {
@@ -54,6 +66,10 @@
       .swap-steps__dot {
         @apply bg-white;
       }
+    }
+
+    &.is-loading {
+      @apply animate-pulse;
     }
   }
 
@@ -138,5 +154,14 @@
 
   &__address {
     @apply text-xs opacity-50 max-w-[150px] truncate;
+  }
+}
+
+@keyframes spinner-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

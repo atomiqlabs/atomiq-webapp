@@ -104,18 +104,25 @@ export function StepByStep(props: {
               <div
                 className={classNames('swap-steps__indicator__step', {
                   'text-light text-opacity-50': step.type === 'disabled',
-                  'text-light loading-glow': step.type === 'loading',
+                  'text-light': step.type === 'loading',
                 })}
               >
                 <div
                   className={classNames('swap-steps__indicator__icon', {
                     'is-failed': step.type === 'failed',
                     'is-success': step.type === 'success',
+                    'is-loading': step.type === 'loading',
                   })}
                 >
                   <Icon size={20} icon={step.icon} />
                 </div>
-                <div className="swap-steps__indicator__text">{step.text}</div>
+                <div
+                  className={classNames('swap-steps__indicator__text', {
+                    'loading-glow': step.type === 'loading',
+                  })}
+                >
+                  {step.text}
+                </div>
                 {/*{step.amount && <div className="mt-1 font-weight-bold">{step.amount}</div>}*/}
                 {/*{step.address && (*/}
                 {/*  <div className="mt-1 text-truncate" style={{ fontSize: '0.75rem' }}>*/}
@@ -126,7 +133,7 @@ export function StepByStep(props: {
               {index < props.steps.length - 1 && (
                 <div
                   className={classNames('swap-steps__dots', {
-                    'is-loading loading-glow': step.type === 'loading',
+                    'is-loading': step.type === 'loading',
                     'is-success': step.type === 'success',
                   })}
                 >

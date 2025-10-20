@@ -95,6 +95,14 @@ export function ToBTCQuoteSummary(props: {
       await props.quote.waitForPayment(abortSignalRef.current, 2);
     } catch (e) {
       if (abortSignalRef.current.aborted) return;
+      // Enhance error message for transaction expiration
+      if (e?.message?.includes('expired') || e?.message?.includes('Expired')) {
+        const enhancedError = new Error(
+          'Transaction expired before confirmation, please try again!'
+        );
+        enhancedError.stack = e.stack;
+        throw enhancedError;
+      }
       throw e;
     }
   }, [props.quote]);
