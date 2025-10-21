@@ -152,7 +152,7 @@ export function SimpleFeeSummaryScreen(props: {
           <Accordion.Header className="font-bigger d-flex flex-row" bsPrefix="fee-accordion-header">
             <div className="simple-fee-screen__quote">
               <div className="sc-text">
-                {isCreated && isExpired && false ? (
+                {isCreated && isExpired ? (
                   <span className="simple-fee-screen__quote__error">
                     <span className="icon icon-invalid-error"></span>
                     <span className="sc-text">Quote expired</span>

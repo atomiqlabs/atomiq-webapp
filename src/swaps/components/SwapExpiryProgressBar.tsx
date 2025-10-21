@@ -28,7 +28,13 @@ export function SwapExpiryProgressBar(props: {
     >
       <div className="circular-progress-wrapper">
         {props.expired && props.onRefreshQuote ? (
-          <div onClick={props.onRefreshQuote} className="circular-progress__retry">
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              props.onRefreshQuote?.();
+            }}
+            className="circular-progress__retry"
+          >
             Retry Quote
           </div>
         ) : (
