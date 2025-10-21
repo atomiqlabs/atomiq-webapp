@@ -10,6 +10,10 @@
     @apply text-white border-0 text-[18px];
   }
 
+  &--secondary {
+    @apply bg-white border-0 text-[18px] hover:bg-white/80 font-semibold;
+  }
+
   &--small {
     @apply h-12;
   }

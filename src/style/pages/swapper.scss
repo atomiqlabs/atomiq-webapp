@@ -5,6 +5,10 @@
     @apply py-3 px-[20px] rounded-xl;
     background: rgba(255, 255, 255, 0.1);
 
+    &:empty {
+      @apply p-0;
+    }
+
     &__header {
       @apply flex flex-row items-center justify-between mb-[12px];
     }
@@ -95,7 +99,7 @@
     }
   }
   &__action {
-    @apply w-full mt-6 h-[48px] rounded-xl;
+    @apply w-full mt-6 h-[48px] rounded-xl text-[16px];
 
     &.btn-primary {
       @apply h-[64px] font-semibold;
