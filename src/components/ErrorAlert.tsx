@@ -1,7 +1,7 @@
-import { Alert, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
-import Icon from "react-icons-kit";
-import { ic_content_copy } from "react-icons-kit/md/ic_content_copy";
-import * as React from "react";
+import { Alert, Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import Icon from 'react-icons-kit';
+import { ic_content_copy } from 'react-icons-kit/md/ic_content_copy';
+import * as React from 'react';
 
 export function ErrorAlert(props: {
   title: string;
@@ -12,7 +12,7 @@ export function ErrorAlert(props: {
 }) {
   return (
     <Alert
-      className={"text-center " + (props.className ?? "")}
+      className={'text-center ' + (props.className ?? '')}
       show={props.error != null}
       variant="danger"
       onClose={props.clearError}
@@ -22,15 +22,13 @@ export function ErrorAlert(props: {
         <strong>{props.title}</strong>
         <OverlayTrigger
           placement="top"
-          overlay={
-            <Tooltip id="scan-qr-tooltip">Copy full error stack</Tooltip>
-          }
+          overlay={<Tooltip id="scan-qr-tooltip">Copy full error stack</Tooltip>}
         >
           <a
             href="#"
             className="d-inline-flex align-items-center justify-content-middle"
-            onClick={(evnt) => {
-              evnt.preventDefault();
+            onClick={(event) => {
+              event.preventDefault();
               // @ts-ignore
               navigator.clipboard.writeText(
                 JSON.stringify(
@@ -40,8 +38,8 @@ export function ErrorAlert(props: {
                     stack: props.error.stack,
                   },
                   null,
-                  4,
-                ),
+                  4
+                )
               );
             }}
           >
@@ -60,7 +58,7 @@ export function ErrorAlert(props: {
           Retry
         </Button>
       ) : (
-        ""
+        ''
       )}
     </Alert>
   );

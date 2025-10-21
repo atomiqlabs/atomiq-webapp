@@ -82,47 +82,6 @@
 
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
-
-  &__alert {
-    @apply flex flex-col rounded-lg p-[20px] mt-3 items-center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-
-    &__icon {
-      @apply w-12 h-12 rounded-full text-green flex items-center justify-center mb-3 relative;
-
-      &::before {
-        content: '';
-        @apply absolute inset-0 rounded-full animate-pulse;
-        background-color: rgba(64, 231, 45, 0.2);
-      }
-
-      svg {
-        @apply relative top-[-1px] z-10;
-      }
-    }
-
-    &__title {
-      @apply leading-[24px];
-    }
-
-    &__description {
-      @apply leading-[20px];
-    }
-
-    &__action {
-      @apply flex gap-2 no-underline font-semibold items-center mt-3;
-    }
-
-    &.is-success {
-      .swap-steps__alert__action {
-        @apply text-green hover:text-green/90 transition-all;
-
-        &:hover .sc-text {
-          @apply underline;
-        }
-      }
-    }
-  }
 }
 
 .swap-steps-wallet {

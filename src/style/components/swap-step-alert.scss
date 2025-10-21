@@ -1,0 +1,119 @@
+.swap-step-alert {
+  @apply flex flex-col rounded-lg p-[20px] mt-3 items-center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  &__icon {
+    @apply w-12 h-12 rounded-full text-green flex items-center justify-center mb-3 relative;
+
+    &::before {
+      content: '';
+      @apply absolute inset-0 rounded-full animate-pulse;
+      background-color: rgba(64, 231, 45, 0.2);
+    }
+
+    svg {
+      @apply relative top-[-1px] z-10;
+    }
+  }
+
+  &__title {
+    @apply leading-[24px] flex items-center;
+  }
+
+  &__description {
+    @apply leading-[20px];
+  }
+
+  &__action {
+    @apply flex gap-2 no-underline font-semibold items-center mt-3;
+  }
+
+  &__button {
+    @apply w-full rounded-[8px] mt-3;
+  }
+
+  &__copy {
+    @apply text-red;
+  }
+
+  &.is-success {
+    .swap-step-alert__action {
+      @apply text-green hover:text-green/90 transition-all;
+
+      &:hover .sc-text {
+        @apply underline;
+      }
+    }
+  }
+
+  &.is-error {
+    .swap-step-alert__action {
+      @apply text-red hover:text-red/90 transition-all;
+
+      &:hover .sc-text {
+        @apply underline;
+      }
+    }
+    .swap-step-alert__icon {
+      @apply text-red;
+      &::before {
+        background-color: rgba(255, 108, 108, 0.2);
+      }
+    }
+  }
+
+  &.is-warning {
+    .swap-step-alert__action {
+      @apply text-pink hover:text-pink/90 transition-all;
+
+      &:hover .sc-text {
+        @apply underline;
+      }
+    }
+    .swap-step-alert__icon {
+      @apply text-pink;
+      &::before {
+        background-color: rgba(255, 165, 0, 0.2);
+      }
+    }
+  }
+
+  &.is-danger {
+    .swap-step-alert__action {
+      @apply text-red hover:text-red/90 transition-all;
+
+      &:hover .sc-text {
+        @apply underline;
+      }
+    }
+    .swap-step-alert__icon {
+      @apply text-red;
+      &::before {
+        background-color: rgba(255, 108, 108, 0.2);
+      }
+    }
+  }
+
+  &.is-info {
+    .swap-step-alert__action {
+      @apply text-blue hover:text-blue/90 transition-all;
+
+      &:hover .sc-text {
+        @apply underline;
+      }
+    }
+    .swap-step-alert__icon {
+      @apply text-blue;
+      &::before {
+        background-color: rgba(96, 165, 250, 0.2);
+      }
+    }
+  }
+
+  // Handle cases without icon
+  &.no-icon {
+    .swap-step-alert__icon {
+      @apply hidden;
+    }
+  }
+}

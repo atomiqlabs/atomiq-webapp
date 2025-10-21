@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useContext, useEffect, useMemo } from 'react';
-import { Alert, Button, Spinner } from 'react-bootstrap';
+import { Button, Spinner } from 'react-bootstrap';
 import {
   AbstractSigner,
   IToBTCSwap,
@@ -34,9 +34,9 @@ import { useWithAwait } from '../../utils/hooks/useWithAwait';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { TokenIcons } from '../../tokens/Tokens';
 import { usePricing } from '../../tokens/hooks/usePricing';
-import Icon from 'react-icons-kit';
 import { BaseButton } from '../../components/BaseButton';
 import { useCallback } from 'react';
+import { SwapStepAlert } from '../components/SwapStepAlert';
 
 /*
 Steps lightning:
@@ -352,27 +352,20 @@ export function ToBTCQuoteSummary(props: {
 
   return (
     <>
-      <Alert className="text-center mb-3" show={isCreated && confidenceWarning} variant="warning">
-        <strong>Payment might likely fail!</strong>
-        <label>
-          We weren't able to check if the recipient is reachable (send probe request) on the
-          Lightning network, this is common with some wallets, but could also indicate that the
-          destination is unreachable and payment might therefore fail (you will get a refund in that
-          case)!
-        </label>
-      </Alert>
-      <Alert
-        className="text-center mb-3"
+      <SwapStepAlert
+        show={isCreated && confidenceWarning}
+        type="warning"
+        icon={ic_warning}
+        title="Payment might likely fail!"
+        description="We weren't able to check if the recipient is reachable (send probe request) on the Lightning network, this is common with some wallets, but could also indicate that the destination is unreachable and payment might therefore fail (you will get a refund in that case)!"
+      />
+      <SwapStepAlert
         show={isCreated && nonCustodialWarning && props.type === 'swap'}
-        variant="success"
-      >
-        <strong>Non-custodial wallet info</strong>
-        <label>
-          Please make sure your lightning wallet is online & running to be able to receive a
-          lightning network payment, otherwise the payment will fail (you will get a refund in that
-          case)!
-        </label>
-      </Alert>
+        type="info"
+        icon={ic_check_circle}
+        title="Non-custodial wallet info"
+        description="Please make sure your lightning wallet is online & running to be able to receive a lightning network payment, otherwise the payment will fail (you will get a refund in that case)!"
+      />
       {isInitiated ? (
         <div className="swap-panel__card">
           <StepByStep
@@ -381,70 +374,61 @@ export function ToBTCQuoteSummary(props: {
             destinationWallet={destinationWallet}
           />
           {isSuccess ? (
-            <div className="swap-steps__alert is-success">
-              <div className="swap-steps__alert__icon">
-                <Icon size={20} icon={ic_check_circle} />
-              </div>
-
-              <strong className="swap-steps__alert__title">Swap success</strong>
-
-              <label className="swap-steps__alert__description">
-                Your swap was executed successfully!
-              </label>
-
-              {props.quote.getType() === SwapType.TO_BTC ? (
-                <a
-                  href={FEConstants.btcBlockExplorer + props.quote.getOutputTxId()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="swap-steps__alert__action"
-                >
-                  <div className="sc-text">View transaction</div>
-                  <div className="icon icon-new-window"></div>
-                </a>
-              ) : (
-                ''
-              )}
-            </div>
+            <SwapStepAlert
+              type="success"
+              icon={ic_check_circle}
+              title="Swap success"
+              description="Your swap was executed successfully!"
+              action={
+                props.quote.getType() === SwapType.TO_BTC
+                  ? {
+                      type: 'link',
+                      text: 'View transaction',
+                      href: FEConstants.btcBlockExplorer + props.quote.getOutputTxId(),
+                    }
+                  : undefined
+              }
+            />
           ) : null}
+
+          {continueError ? (
+            <SwapStepAlert
+              type="error"
+              icon={ic_warning}
+              title="Swap initialization error"
+              description={continueError?.message || continueError?.toString()}
+              error={continueError}
+              action={{
+                type: 'button',
+                text: 'Retry',
+                onClick: props.refreshQuote,
+                icon: <i className={'icon icon-refund'}></i>,
+                variant: 'secondary',
+              }}
+            />
+          ) : null}
+
+          <SwapStepAlert
+            show={!!notEnoughBalanceError}
+            type="danger"
+            icon={ic_error_outline_outline}
+            title="Not enough funds"
+            description={notEnoughBalanceError || ''}
+          />
         </div>
       ) : null}
-      <Alert
-        className="text-center mb-3"
-        show={!!notEnoughBalanceError}
-        variant="danger"
-        closeVariant="white"
-      >
-        <strong>Not enough funds</strong>
-        <label>{notEnoughBalanceError}</label>
-      </Alert>
-      {/*<SwapExpiryProgressBar*/}
-      {/*  expired={isExpired}*/}
-      {/*  timeRemaining={quoteTimeRemaining}*/}
-      {/*  totalTime={totalQuoteTime}*/}
-      {/*  show={*/}
-      {/*    (isExpired || isCreated) &&*/}
-      {/*    !continueLoading &&*/}
-      {/*    !props.notEnoughForGas &&*/}
-      {/*    signer !== undefined &&*/}
-      {/*    !notEnoughBalanceError*/}
-      {/*  }*/}
-      {/*/>*/}
-      <ErrorAlert className="mb-3" title="Swap initialization error" error={continueError} />
+
       {(isCreated && !notEnoughBalanceError) || isPaying ? (
         <>
-          <Alert
-            className="text-center mb-3"
-            show={!!props.notEnoughForGas && signer != null}
-            variant="danger"
-            closeVariant="white"
-          >
-            <strong>Not enough {feeNeeded?.nativeToken?.ticker} for fees</strong>
-            <label>
-              You need at least {feeNeeded?.amount} {feeNeeded?.nativeToken?.ticker} to pay for fees
-              and deposits!
-            </label>
-          </Alert>
+          <div className="swap-panel__card">
+            <SwapStepAlert
+              show={!!props.notEnoughForGas && signer != null}
+              type="danger"
+              icon={ic_error_outline_outline}
+              title={`Not enough ${feeNeeded?.nativeToken?.ticker || 'tokens'} for fees`}
+              description={`You need at least ${feeNeeded?.amount || ''} ${feeNeeded?.nativeToken?.ticker || ''} to pay for fees and deposits!`}
+            />
+          </div>
 
           {!isPaying && !continueLoading && !isInitiated ? (
             <ButtonWithWallet
@@ -477,13 +461,16 @@ export function ToBTCQuoteSummary(props: {
       )}
       {isRefundable || isRefunding ? (
         <>
-          <Alert variant="danger" className="mb-3">
-            <strong>Swap failed</strong>
-            <label>Swap failed, you can refund your prior deposit</label>
-          </Alert>
+          <div className="swap-panel__card">
+            <SwapStepAlert
+              type="danger"
+              icon={ic_error_outline_outline}
+              title="Swap failed"
+              description="Swap failed, you can refund your prior deposit"
+            />
 
-          <ErrorAlert className="mb-3" title="Refund error" error={refundError} />
-
+            <ErrorAlert className="mb-3" title="Refund error" error={refundError} />
+          </div>
           <ButtonWithWallet
             requiredWalletAddress={props.quote._getInitiator()}
             chainId={props.quote.chainIdentifier}
@@ -498,11 +485,14 @@ export function ToBTCQuoteSummary(props: {
       ) : (
         ''
       )}
-      <Alert variant="danger" className="mb-3" show={isRefunded}>
-        <strong>Swap failed</strong>
-        <label>Funds refunded successfully!</label>
-      </Alert>
-      {isRefunded || isExpired || !!notEnoughBalanceError ? (
+      <SwapStepAlert
+        show={isRefunded}
+        type="info"
+        icon={ic_settings_backup_restore_outline}
+        title="Swap failed"
+        description="Funds refunded successfully!"
+      />
+      {(isRefunded || isExpired || !!notEnoughBalanceError) && !continueError ? (
         <Button onClick={props.refreshQuote} variant="secondary" className="swap-panel__action">
           New quote
         </Button>
