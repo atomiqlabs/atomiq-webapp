@@ -458,6 +458,7 @@ export function SwapNew(props) {
                                                     : 'd-flex'), children: _jsx("div", { className: "swap-panel__card__body", children: _jsxs("div", { className: "wallet-address", children: [_jsxs("div", { className: "wallet-address__body", children: [_jsxs("div", { className: "wallet-address__title", children: [outputChainData?.chain?.name ?? outputToken?.chain ?? 'Wallet', ' ', "Destination Address"] }), _jsx(ValidatedInput, { type: 'text', className: 'wallet-address__form with-inline-icon ' +
                                                                         (webLnForOutput && addressData?.address == null ? 'd-none' : ''), onChange: (val, forcedChange) => {
                                                                         setAddress(val);
+                                                                        console.log(forcedChange);
                                                                         if (!forcedChange)
                                                                             leaveExistingSwap(true);
                                                                     }, value: outputAddress, inputRef: addressRef, placeholder: 'Enter destination address', onValidate: addressValidator, validated: isOutputWalletAddress || outputAddress !== address

@@ -62,37 +62,35 @@ function MultichainWalletDisplay(props: { wallet: MultichainWallet; className?: 
         popperConfig={{ strategy: 'absolute' }}
         className={'wallet-connections__dropdown'}
       >
-        {chains.map((value) => {
-          return (
-            <>
-              <Dropdown.Header>
-                <div className="sc-title">{props.wallet.name}</div>
-                <div className="sc-subtitle">
-                  <img width={24} height={24} src={value.icon} className="sc-icon" />
-                  <div className="sc-text">{value.name}</div>
-                  {/*  TODO add copy address*/}
-                </div>
-              </Dropdown.Header>
-              <div className="dropdown-list">
-                <Dropdown.Item onClick={() => chainWalletData.disconnectWallet(value.chainId)}>
-                  <div className="icon icon-disconnect"></div>
-                  Disconnect Wallet
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => chainWalletData.changeWallet(value.chainId)}>
-                  <div className="icon icon-change-wallet"></div>
-                  Change Wallet
-                </Dropdown.Item>
+        {chains.map((value) => (
+          <div key={value.chainId}>
+            <Dropdown.Header>
+              <div className="sc-title">{props.wallet.name}</div>
+              <div className="sc-subtitle">
+                <img width={24} height={24} src={value.icon} className="sc-icon" />
+                <div className="sc-text">{value.name}</div>
+                {/*  TODO add copy address*/}
               </div>
-            </>
-          );
-        })}
+            </Dropdown.Header>
+            <div className="dropdown-list">
+              <Dropdown.Item onClick={() => chainWalletData.disconnectWallet(value.chainId)}>
+                <div className="icon icon-disconnect"></div>
+                Disconnect Wallet
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => chainWalletData.changeWallet(value.chainId)}>
+                <div className="icon icon-change-wallet"></div>
+                Change Wallet
+              </Dropdown.Item>
+            </div>
+          </div>
+        ))}
       </Dropdown.Menu>
     </Dropdown>
   );
 }
 
 export function WalletConnections() {
-  const {chains} = useContext(ChainDataContext);
+  const { chains } = useContext(ChainDataContext);
 
   const connectedWallets: {
     [walletName: string]: MultichainWallet;
@@ -108,7 +106,7 @@ export function WalletConnections() {
     connectedWallets[chainData.wallet.name].chains[chain] = {
       name: chainData.chain.name,
       icon: chainData.chain.icon,
-      chainId: chain
+      chainId: chain,
     };
   }
 
@@ -149,7 +147,7 @@ export function WalletConnections() {
               customIcon="connect"
               bsPrefix="none"
             >
-              Connect Walletisko
+              Connect Wallet
             </Dropdown.Toggle>
           ) : (
             <Dropdown.Toggle

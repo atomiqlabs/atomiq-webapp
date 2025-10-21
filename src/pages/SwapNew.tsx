@@ -741,6 +741,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                   }
                 >
                   <div className="swap-panel__card__body">
+                    {/* TODO move to separate component */}
                     <div className="wallet-address">
                       <div className="wallet-address__body">
                         <div className="wallet-address__title">
@@ -755,6 +756,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                           }
                           onChange={(val, forcedChange) => {
                             setAddress(val);
+                            console.log(forcedChange);
                             if (!forcedChange) leaveExistingSwap(true);
                           }}
                           value={outputAddress}
