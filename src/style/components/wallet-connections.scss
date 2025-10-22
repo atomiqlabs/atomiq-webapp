@@ -168,6 +168,18 @@
   }
 
   &__simple {
-    @apply gap-2;
+    @apply gap-1;
+
+    &__disconnect {
+      @apply ml-4;
+
+      .icon {
+        @apply hover:opacity-100 opacity-50 transition-all cursor-pointer;
+      }
+    }
+  }
+
+  &__amount {
+    @apply opacity-75 text-[14px];
   }
 }

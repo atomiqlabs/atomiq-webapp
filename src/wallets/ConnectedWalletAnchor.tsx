@@ -1,4 +1,4 @@
-import { Dropdown } from 'react-bootstrap';
+import { Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import * as React from 'react';
 import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
 import Icon from 'react-icons-kit';
@@ -9,7 +9,7 @@ import { WalletBalanceResult } from './hooks/useWalletBalance';
 import { useContext } from 'react';
 import { ChainDataContext } from './context/ChainDataContext';
 
-const ConnectedWallet = React.forwardRef<any, any>(({ name, onClick, noText }, ref) => (
+const ConnectedWallet = React.forwardRef<any, any>(({ name, onClick, noText }) => (
   <BaseButton
     icon={<Icon size={12} icon={ic_brightness_1} className="wallet-connections__indicator" />}
     variant="transparent"
@@ -48,9 +48,16 @@ export function ConnectedWalletAnchor({
       <div className="wallet-connections wallet-connections__simple">
         <img width={16} height={16} src={wallet.icon} alt={wallet.name} />
         {maxSpendable?.balance?.amount && (
-          <div className="wallet-connections__amount">{maxSpendable.balance.amount}</div>
+          <div className="wallet-connections__amount">
+            {maxSpendable.balance.amount} {currency.ticker}
+          </div>
         )}
-        {/* TODO implement this */}
+        <div className="wallet-connections__simple__disconnect">
+          <OverlayTrigger overlay={<Tooltip>Disconnect wallet</Tooltip>}>
+            <div className="icon icon-disconnect" onClick={() => disconnectWallet(chainId)}></div>
+          </OverlayTrigger>
+        </div>
+        {/* TODO implement this - max button */}
         {/*<Button*/}
         {/*  variant="outline-light"*/}
         {/*  style={{ marginBottom: '2px' }}*/}

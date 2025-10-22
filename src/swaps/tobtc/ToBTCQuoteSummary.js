@@ -234,15 +234,6 @@ export function ToBTCQuoteSummary(props) {
             text: 'Quote expired',
             type: 'failed',
         };
-    // console.log('🎨 RENDER STATE:', {
-    //   state,
-    //   isInitiated,
-    //   isCreated,
-    //   isContinueCancelled,
-    //   continueError: continueError?.message,
-    //   continueLoading,
-    //   executionSteps: executionSteps[0],
-    // });
     if (props.quote.getType() === SwapType.TO_BTCLN) {
         executionSteps[1] = {
             icon: ic_flash_on_outline,
