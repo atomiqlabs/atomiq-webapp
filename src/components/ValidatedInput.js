@@ -4,7 +4,6 @@ import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import { copy } from 'react-icons-kit/fa/copy';
-import { exclamationTriangle } from 'react-icons-kit/fa/exclamationTriangle';
 import Icon from 'react-icons-kit';
 export function numberValidator(props, allowEmpty) {
     return (value) => {
@@ -43,6 +42,20 @@ function ValidatedInput(props) {
     const inputRef = useRef(null);
     const inputTextAreaRef = useRef(null);
     const textEndRef = useRef(null);
+    const [isFocused, setIsFocused] = useState(false);
+    useEffect(() => {
+        const current = props.type === 'textarea' ? inputTextAreaRef.current : inputRef.current;
+        if (!current)
+            return;
+        const handleFocus = () => setIsFocused(true);
+        const handleBlur = () => setIsFocused(false);
+        current.addEventListener('focus', handleFocus);
+        current.addEventListener('blur', handleBlur);
+        return () => {
+            current.removeEventListener('focus', handleFocus);
+            current.removeEventListener('blur', handleBlur);
+        };
+    }, [props.type]);
     const [textEndLeftPosition, setTextEndLeftPosition] = useState(null);
     // Function to measure text width
     const measureTextWidth = useCallback((text, font) => {
@@ -103,8 +116,9 @@ function ValidatedInput(props) {
             },
             setValue: changeValueHandler.bind(null, true),
             input: props.type === 'textarea' ? inputTextAreaRef : inputRef,
+            isFocused,
         };
-    }, [props.type, changeValueHandler]);
+    }, [props.type, changeValueHandler, isFocused]);
     useEffect(() => {
         refObj.validate();
     }, [props.onValidate]);
@@ -142,7 +156,7 @@ function ValidatedInput(props) {
                 props.onSubmit();
         }, children: _jsxs(Form.Group, { controlId: props.inputId == null ? 'validationCustom01' : undefined, children: [props.label ? _jsx(Form.Label, { className: props.labelClassName, children: props.label }) : '', _jsxs(InputGroup, { className: 'has-validation', children: [props.type === 'checkbox' ? (_jsx(Form.Check, { disabled: props.disabled, ref: inputRef, isInvalid: isInvalid, isValid: !!props.successFeedback, type: 'checkbox', readOnly: props.readOnly, label: props.placeholder, defaultValue: props.defaultValue, id: props.inputId, onChange: (evnt) => changeValueHandler(false, evnt.target.checked), checked: value })) : (_jsxs(_Fragment, { children: [props.elementStart || '', props.textStart ? _jsx(InputGroup.Text, { children: props.textStart }) : '', mainElement, props.floatingLabel == null ? ('') : (_jsx("label", { className: props.floatingLabelClassName, children: props.floatingLabel })), props.elementEnd || '', props.textEnd ? (_jsx(InputGroup.Text, { ref: textEndRef, style: props.dynamicTextEndPosition && textEndLeftPosition !== null
                                         ? { left: `${textEndLeftPosition}px` }
-                                        : undefined, children: props.textEnd })) : ('')] })), _jsx(Form.Control.Feedback, { type: props.successFeedback ? 'valid' : 'invalid', children: _jsxs("div", { className: "d-flex align-items-center", children: [props.successFeedback == null ? (_jsx(Icon, { className: "mb-1 me-1", icon: exclamationTriangle })) : (''), _jsx("span", { children: props.successFeedback ||
+                                        : undefined, children: props.textEnd })) : ('')] })), _jsx(Form.Control.Feedback, { type: props.successFeedback ? 'valid' : 'invalid', children: _jsxs("div", { className: "d-flex align-items-center", children: [_jsx("span", { children: props.successFeedback ||
                                             (props.validated === undefined ? state.validated : props.validated) }), props.feedbackEndElement ?? ''] }) })] })] }) }));
 }
 export default ValidatedInput;

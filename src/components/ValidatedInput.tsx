@@ -14,6 +14,7 @@ export type ValidatedInputRef = {
   input: {
     current: HTMLInputElement | HTMLTextAreaElement;
   };
+  isFocused?: boolean;
 };
 
 export function numberValidator(props: { min?: BigNumber; max?: BigNumber }, allowEmpty?: boolean) {
@@ -101,6 +102,21 @@ function ValidatedInput(props: {
   const inputTextAreaRef = useRef<HTMLTextAreaElement>(null);
   const textEndRef = useRef<HTMLDivElement>(null);
 
+  const [isFocused, setIsFocused] = useState(false);
+
+  useEffect(() => {
+    const current = props.type === 'textarea' ? inputTextAreaRef.current : inputRef.current;
+    if (!current) return;
+    const handleFocus = () => setIsFocused(true);
+    const handleBlur = () => setIsFocused(false);
+    current.addEventListener('focus', handleFocus);
+    current.addEventListener('blur', handleBlur);
+    return () => {
+      current.removeEventListener('focus', handleFocus);
+      current.removeEventListener('blur', handleBlur);
+    };
+  }, [props.type]);
+
   const [textEndLeftPosition, setTextEndLeftPosition] = useState<number | null>(null);
 
   // Function to measure text width
@@ -172,8 +188,9 @@ function ValidatedInput(props: {
       },
       setValue: changeValueHandler.bind(null, true),
       input: props.type === 'textarea' ? inputTextAreaRef : inputRef,
+      isFocused,
     };
-  }, [props.type, changeValueHandler]);
+  }, [props.type, changeValueHandler, isFocused]);
 
   useEffect(() => {
     refObj.validate();
@@ -356,11 +373,6 @@ function ValidatedInput(props: {
           )}
           <Form.Control.Feedback type={props.successFeedback ? 'valid' : 'invalid'}>
             <div className="d-flex align-items-center">
-              {props.successFeedback == null ? (
-                <Icon className="mb-1 me-1" icon={exclamationTriangle} />
-              ) : (
-                ''
-              )}
               <span>
                 {props.successFeedback ||
                   (props.validated === undefined ? state.validated : props.validated)}

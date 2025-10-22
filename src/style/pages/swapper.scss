@@ -34,6 +34,10 @@
     &__body {
       @apply flex justify-between gap-5 w-full;
     }
+
+    &:has(.wallet-address):has(.form-control.is-invalid) {
+      @apply bg-red/10;
+    }
   }
 
   &__toggle {
@@ -120,83 +124,5 @@
 
   img {
     @apply h-[16px] ml-[5px];
-  }
-}
-
-.wallet-address {
-  & {
-    @apply flex gap-6 w-full items-center;
-  }
-
-  &__title {
-    @apply font-semibold text-xs leading-[16px] text-center uppercase opacity-50;
-    letter-spacing: 0.07em;
-  }
-
-  &__body {
-    @apply flex flex-col gap-1 items-start flex-1;
-  }
-
-  &__form {
-    @apply w-full;
-
-    input {
-      @apply border-0 p-0 bg-transparent;
-      &::placeholder {
-        @apply text-white/30;
-      }
-      &:focus {
-        outline: none;
-        box-shadow: none !important;
-        background-color: transparent;
-      }
-    }
-  }
-
-  &__form.with-inline-icon {
-    .input-group {
-      position: relative;
-    }
-
-    /* Add space for the icon inside the input */
-    .form-control {
-      padding-right: 1.75rem !important;
-    }
-
-    /* Render the input-group-text (our icon wrapper) inside the input field */
-    .input-group-text {
-      @apply text-green p-0 absolute border border-green border-solid flex items-center justify-center;
-
-      background-color: rgba(49, 73, 58, 0.8) !important;
-      border-radius: 100% !important;
-      border-color: rgba(64, 231, 45, 0.8) !important;
-      font-size: 7px;
-      width: 17px;
-      height: 17px;
-      top: 3px;
-      line-height: 1;
-      pointer-events: none;
-    }
-
-    /* Make sure the icon itself is centered nicely */
-    .input-group-text .icon {
-      display: inline-block;
-    }
-  }
-
-  &__action__button {
-    @apply bg-white/10 hover:bg-white/20 text-white/50 p-[10px] no-underline rounded-lg w-[40px] h-[40px] flex items-center justify-center transition-all;
-
-    .icon-disconnect {
-      @apply text-[18px];
-    }
-  }
-
-  .form-control:disabled {
-    @apply bg-transparent;
-  }
-
-  .valid-feedback {
-    @apply text-green;
   }
 }

@@ -70,6 +70,7 @@ export function SwapNew(props) {
     }, [swapper]);
     const [address, setAddress] = useState(null);
     let [addressData, addressLoading, addressError] = useAddressData(address, (addressData) => {
+        console.log('addressError from hook:', addressError);
         if (addressData?.type == null)
             return;
         let token;
@@ -126,7 +127,7 @@ export function SwapNew(props) {
             swapType: null,
         };
         addressLoading = false;
-        addressError = null;
+        // addressError = null; // Do not overwrite error from hook
     }
     const isFixedAmount = addressData?.amount != null;
     //Amounts
@@ -220,6 +221,20 @@ export function SwapNew(props) {
     }, [inputAmountValidator, outputAmountValidator, amount, exactIn]);
     //Quote
     const [refreshQuote, quote, randomQuote, quoteLoading, quoteError] = useQuote(validatedAmount, exactIn, inputToken, outputToken, addressData?.lnurl ?? addressData?.address, gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined, maxSpendable?.feeRate, addressLoading);
+    // Warnings for destination address
+    const destinationWarnings = useMemo(() => {
+        const warnings = [];
+        if (quote && 'willLikelyFail' in quote && quote.willLikelyFail?.()) {
+            warnings.push('Destination is likely not payable.');
+        }
+        if (quote &&
+            'isPayingToNonCustodialWallet' in quote &&
+            quote.isPayingToNonCustodialWallet?.()) {
+            // TODO this should not be warning
+            warnings.push('Please make sure your receiving wallet is online.');
+        }
+        return warnings;
+    }, [quote]);
     useEffect(() => {
         if (quote == null ||
             maxSpendable?.feeRate == null ||
@@ -463,9 +478,9 @@ export function SwapNew(props) {
                                                                             leaveExistingSwap(true);
                                                                     }, value: outputAddress, inputRef: addressRef, placeholder: 'Enter destination address', onValidate: addressValidator, validated: isOutputWalletAddress || outputAddress !== address
                                                                         ? null
-                                                                        : addressError?.message, disabled: locked || outputChainData?.wallet != null, textEnd: isOutputWalletAddress ? _jsx("span", { className: "icon icon-check" }) : null, textStart: addressLoading ? _jsx(Spinner, { className: "text-white" }) : null, successFeedback: isOutputWalletAddress
+                                                                        : addressError?.message, disabled: locked || outputChainData?.wallet != null, textEnd: isOutputWalletAddress ? (_jsx("span", { className: "icon icon-check" })) : addressError?.message === 'Invalid address' && address ? (_jsx("span", { className: "icon icon-invalid-error" })) : null, textStart: addressLoading ? _jsx(Spinner, { className: "text-white" }) : null, successFeedback: isOutputWalletAddress
                                                                         ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
-                                                                        : null, dynamicTextEndPosition: true })] }), _jsx("div", { className: "wallet-address__action", children: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", className: "wallet-address__action__button", onClick: (e) => {
+                                                                        : null, dynamicTextEndPosition: true }), destinationWarnings.map((warning, index) => (_jsx(Alert, { variant: "warning", className: "mt-2 mb-0 text-center", children: warning }, index)))] }), _jsx("div", { className: "wallet-address__action", children: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", className: "wallet-address__action__button", onClick: (e) => {
                                                                         e.preventDefault();
                                                                         if (outputChainData == null)
                                                                             return;

@@ -15,7 +15,6 @@ import { useAddressData } from '../swaps/hooks/useAddressData';
 import ValidatedInput, { numberValidator, ValidatedInputRef } from '../components/ValidatedInput';
 import { useAmountConstraints } from '../swaps/hooks/useAmountConstraints';
 import { useWalletBalance } from '../wallets/hooks/useWalletBalance';
-import { SwapTopbar } from './SwapTopbar';
 import { QRScannerModal } from '../qr/QRScannerModal';
 import { Alert, Button, Card, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import {
@@ -109,6 +108,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   );
   const [address, setAddress] = useState<string>(null);
   let [addressData, addressLoading, addressError] = useAddressData(address, (addressData) => {
+    console.log('addressError from hook:', addressError);
     if (addressData?.type == null) return;
     let token: Token;
     switch (addressData.type) {
@@ -161,7 +161,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       swapType: null,
     };
     addressLoading = false;
-    addressError = null;
+    // addressError = null; // Do not overwrite error from hook
   }
 
   const isFixedAmount = addressData?.amount != null;
@@ -289,6 +289,22 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
     maxSpendable?.feeRate,
     addressLoading
   );
+  // Warnings for destination address
+  const destinationWarnings = useMemo(() => {
+    const warnings: string[] = [];
+    if (quote && 'willLikelyFail' in quote && (quote as any).willLikelyFail?.()) {
+      warnings.push('Destination is likely not payable.');
+    }
+    if (
+      quote &&
+      'isPayingToNonCustodialWallet' in quote &&
+      (quote as any).isPayingToNonCustodialWallet?.()
+    ) {
+      // TODO this should not be warning
+      warnings.push('Please make sure your receiving wallet is online.');
+    }
+    return warnings;
+  }, [quote]);
   useEffect(() => {
     if (
       quote == null ||
@@ -772,7 +788,11 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                           }
                           disabled={locked || outputChainData?.wallet != null}
                           textEnd={
-                            isOutputWalletAddress ? <span className="icon icon-check"></span> : null
+                            isOutputWalletAddress ? (
+                              <span className="icon icon-check"></span>
+                            ) : addressError?.message === 'Invalid address' && address ? (
+                              <span className="icon icon-invalid-error"></span>
+                            ) : null
                           }
                           textStart={addressLoading ? <Spinner className="text-white" /> : null}
                           successFeedback={
@@ -782,6 +802,11 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                           }
                           dynamicTextEndPosition={true}
                         />
+                        {destinationWarnings.map((warning, index) => (
+                          <Alert key={index} variant="warning" className="mt-2 mb-0 text-center">
+                            {warning}
+                          </Alert>
+                        ))}
                       </div>
 
                       <div className="wallet-address__action">
