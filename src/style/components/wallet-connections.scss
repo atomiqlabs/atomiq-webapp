@@ -168,8 +168,6 @@
   }
 
   &__simple {
-    @apply gap-1;
-
     &__disconnect {
       @apply ml-4;
 
@@ -177,9 +175,13 @@
         @apply hover:opacity-100 opacity-50 transition-all cursor-pointer;
       }
     }
+    .wallet-connections__simple__max.base-button {
+      @apply py-[6px] px-[8px] text-[12px] uppercase leading-none ml-3 h-[20px];
+      --bs-border-radius: 4px;
+    }
   }
 
   &__amount {
-    @apply opacity-75 text-[14px];
+    @apply opacity-75 text-[14px] ml-1;
   }
 }

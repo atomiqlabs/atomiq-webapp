@@ -1,6 +1,6 @@
 .currency-dropdown {
   &__toggle.dropdown-toggle {
-    @apply pl-[16px] py-[12px] border-none w-[211px] pr-6;
+    @apply pl-[16px] py-[12px] border-none w-[211px] pr-6 rounded-lg;
 
     background-color: rgba(255, 255, 255, 0.1) !important;
 

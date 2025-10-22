@@ -2,7 +2,12 @@ import { Button, Spinner } from 'react-bootstrap';
 import * as React from 'react';
 import classNames from 'classnames';
 
-export type BaseButtonVariantProps = 'primary' | 'secondary' | 'transparent' | 'clear';
+export type BaseButtonVariantProps =
+  | 'primary'
+  | 'secondary'
+  | 'transparent'
+  | 'clear'
+  | 'border-only';
 
 interface BaseButtonProps {
   children: React.ReactNode;
@@ -42,6 +47,7 @@ export const BaseButton = React.forwardRef<HTMLButtonElement, BaseButtonProps>(f
       'base-button--secondary': variant === 'secondary',
       'base-button--transparent': variant === 'transparent',
       'base-button--clear': variant === 'clear',
+      'base-button--border-only': variant === 'border-only',
       'base-button--icon-only': !children,
     },
     className

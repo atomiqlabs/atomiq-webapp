@@ -14,6 +14,13 @@
     @apply bg-white border-0 text-[18px] hover:bg-white/80 font-semibold;
   }
 
+  &--border-only {
+    @apply bg-transparent border border-solid  hover:bg-white/10 px-[6px] py-[8px];
+
+    color: rgba(255, 255, 255, 0.75);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
   &--small {
     @apply h-12;
   }

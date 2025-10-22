@@ -28,6 +28,7 @@ export function ConnectedWalletAnchor({
   variantButton = 'transparent',
   simple = false,
   maxSpendable,
+  inputRef,
 }: {
   className?: string;
   noText?: boolean;
@@ -35,6 +36,7 @@ export function ConnectedWalletAnchor({
   currency: Token;
   variantButton?: BaseButtonVariantProps;
   maxSpendable?: WalletBalanceResult;
+  inputRef?: React.RefObject<{ setValue: (value: string) => void }>;
 }) {
   const { wallet, hasWallets, chainId } = useChain(currency);
   const { connectWallet, disconnectWallet, changeWallet } = useContext(ChainDataContext);
@@ -52,26 +54,22 @@ export function ConnectedWalletAnchor({
             {maxSpendable.balance.amount} {currency.ticker}
           </div>
         )}
+        {inputRef ? (
+          <BaseButton
+            variant="border-only"
+            className="wallet-connections__simple__max"
+            onClick={() => {
+              inputRef.current.setValue(maxSpendable?.balance?.amount);
+            }}
+          >
+            max
+          </BaseButton>
+        ) : null}
         <div className="wallet-connections__simple__disconnect">
           <OverlayTrigger overlay={<Tooltip>Disconnect wallet</Tooltip>}>
             <div className="icon icon-disconnect" onClick={() => disconnectWallet(chainId)}></div>
           </OverlayTrigger>
         </div>
-        {/* TODO implement this - max button */}
-        {/*<Button*/}
-        {/*  variant="outline-light"*/}
-        {/*  style={{ marginBottom: '2px' }}*/}
-        {/*  className="py-0 px-1"*/}
-        {/*  disabled={locked || amountsLocked}*/}
-        {/*  onClick={() => {*/}
-        {/*    setExactIn(true);*/}
-        {/*    inputRef.current.setValue(maxSpendable?.balance?.amount);*/}
-        {/*  }}*/}
-        {/*>*/}
-        {/*  <small className="font-smallest" style={{ marginBottom: '-2px' }}>*/}
-        {/*    MAX*/}
-        {/*  </small>*/}
-        {/*</Button>*/}
       </div>
     );
   }
