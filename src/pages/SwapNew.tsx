@@ -510,7 +510,6 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       <ConnectedWalletAnchor
                         noText={false}
                         simple={true}
-                        inputRef={outputRef}
                         currency={inputToken}
                         maxSpendable={maxSpendable}
                         variantButton="clear"
