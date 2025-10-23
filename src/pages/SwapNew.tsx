@@ -245,6 +245,16 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
     minBtcTxFee
   );
 
+  // Output wallet balance for display
+  const outputMaxSpendable = useWalletBalance(
+    outputToken,
+    swapType,
+    scCurrency.chainId,
+    false,
+    locked,
+    null
+  );
+
   const inputLimits = useMemo(() => {
     if (maxSpendable?.balance == null) return swapInputLimits;
     return {
@@ -626,6 +636,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                         simple={true}
                         currency={outputToken}
                         variantButton="clear"
+                        maxSpendable={outputMaxSpendable}
                       />
                     </div>
                   </div>

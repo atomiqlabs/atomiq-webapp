@@ -194,6 +194,8 @@ export function SwapNew(props) {
     //Max spendable
     const [minBtcTxFee, setMinBtcTxFee] = useState(null);
     const maxSpendable = useWalletBalance(inputToken, swapType, scCurrency.chainId, gasDropTokenAmount != null && gasDropChecked, locked, minBtcTxFee);
+    // Output wallet balance for display
+    const outputMaxSpendable = useWalletBalance(outputToken, swapType, scCurrency.chainId, false, locked, null);
     const inputLimits = useMemo(() => {
         if (maxSpendable?.balance == null)
             return swapInputLimits;
@@ -428,7 +430,7 @@ export function SwapNew(props) {
                                         }, size: "lg", className: "swap-panel__toggle__button", style: {
                                             transition: 'transform 0.35s ease',
                                             transform: reversed ? 'rotate(180deg)' : 'rotate(0deg)',
-                                        }, children: _jsx("div", { className: "icon icon-swap" }) }) }), _jsxs("div", { className: "swap-panel__group", children: [_jsxs("div", { className: "swap-panel__card", children: [_jsxs("div", { className: "swap-panel__card__header", children: [_jsx("div", { className: "swap-panel__card__title", children: "You receive" }), _jsx("div", { className: "swap-panel__card__wallet", children: _jsx(ConnectedWalletAnchor, { noText: false, simple: true, currency: outputToken, variantButton: "clear" }) })] }), _jsxs("div", { className: "swap-panel__card__body", children: [_jsx(CurrencyDropdown, { currencyList: outputTokens, onSelect: (val) => {
+                                        }, children: _jsx("div", { className: "icon icon-swap" }) }) }), _jsxs("div", { className: "swap-panel__group", children: [_jsxs("div", { className: "swap-panel__card", children: [_jsxs("div", { className: "swap-panel__card__header", children: [_jsx("div", { className: "swap-panel__card__title", children: "You receive" }), _jsx("div", { className: "swap-panel__card__wallet", children: _jsx(ConnectedWalletAnchor, { noText: false, simple: true, currency: outputToken, variantButton: "clear", maxSpendable: outputMaxSpendable }) })] }), _jsxs("div", { className: "swap-panel__card__body", children: [_jsx(CurrencyDropdown, { currencyList: outputTokens, onSelect: (val) => {
                                                                 if (locked)
                                                                     return;
                                                                 leaveExistingSwap();
