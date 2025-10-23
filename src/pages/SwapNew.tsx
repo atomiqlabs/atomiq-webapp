@@ -1,5 +1,4 @@
 import {
-  fromHumanReadableString,
   isBtcToken,
   isSCToken,
   SCToken,
@@ -16,7 +15,7 @@ import ValidatedInput, { numberValidator, ValidatedInputRef } from '../component
 import { useAmountConstraints } from '../swaps/hooks/useAmountConstraints';
 import { useWalletBalance } from '../wallets/hooks/useWalletBalance';
 import { QRScannerModal } from '../qr/QRScannerModal';
-import { Alert, Button, Card, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import { Button, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import {
   fromTokenIdentifier,
   getChainIdentifierForCurrency,
@@ -33,21 +32,16 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { useQuote } from '../swaps/hooks/useQuote';
 import { usePricing } from '../tokens/hooks/usePricing';
 import { useLocation, useNavigate } from 'react-router-dom';
-
-import Icon from 'react-icons-kit';
-import { ic_qr_code_scanner } from 'react-icons-kit/md/ic_qr_code_scanner';
-import { lock } from 'react-icons-kit/fa/lock';
-import { ic_power_off_outline } from 'react-icons-kit/md/ic_power_off_outline';
 import { useExistingSwap } from '../swaps/hooks/useExistingSwap';
 import { ConnectedWalletAnchor } from '../wallets/ConnectedWalletAnchor';
 import { useStateWithOverride } from '../utils/hooks/useStateWithOverride';
 import { useChain } from '../wallets/hooks/useChain';
-import { WebLNProvider } from 'webln';
 import { useSupportedTokens } from '../swaps/hooks/useSupportedTokens';
 import { useDecimalNumberState } from '../utils/hooks/useDecimalNumberState';
 import { ChainDataContext } from '../wallets/context/ChainDataContext';
 import { ChainWalletData } from '../wallets/ChainDataProvider';
 import { AuditedBy } from '../components/AuditedBy';
+import { WalletDestinationAddress } from '../components/WalletDestinationAddress';
 
 export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   const navigate = useNavigate();
@@ -758,149 +752,29 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                   }
                 >
                   <div className="swap-panel__card__body">
-                    {/* TODO move to separate component */}
-                    <div className="wallet-address">
-                      <div className="wallet-address__body">
-                        <div className="wallet-address__title">
-                          {outputChainData?.chain?.name ?? outputToken?.chain ?? 'Wallet'}{' '}
-                          Destination Address
-                        </div>
-                        <ValidatedInput
-                          type={'text'}
-                          className={
-                            'wallet-address__form with-inline-icon ' +
-                            (webLnForOutput && addressData?.address == null ? 'd-none' : '')
-                          }
-                          onChange={(val, forcedChange) => {
-                            setAddress(val);
-                            console.log(forcedChange);
-                            if (!forcedChange) leaveExistingSwap(true);
-                          }}
-                          value={outputAddress}
-                          inputRef={addressRef}
-                          placeholder={'Enter destination address'}
-                          onValidate={addressValidator}
-                          validated={
-                            isOutputWalletAddress || outputAddress !== address
-                              ? null
-                              : addressError?.message
-                          }
-                          disabled={locked || outputChainData?.wallet != null}
-                          textEnd={
-                            isOutputWalletAddress ? (
-                              <span className="icon icon-check"></span>
-                            ) : addressError?.message === 'Invalid address' && address ? (
-                              <span className="icon icon-invalid-error"></span>
-                            ) : null
-                          }
-                          textStart={addressLoading ? <Spinner className="text-white" /> : null}
-                          successFeedback={
-                            isOutputWalletAddress
-                              ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
-                              : null
-                          }
-                          dynamicTextEndPosition={true}
-                        />
-                        {destinationWarnings.map((warning, index) => (
-                          <Alert key={index} variant="warning" className="mt-2 mb-0 text-center">
-                            {warning}
-                          </Alert>
-                        ))}
-                      </div>
-
-                      <div className="wallet-address__action">
-                        {locked ? null : outputChainData?.wallet != null ? (
-                          <OverlayTrigger
-                            placement="top"
-                            overlay={
-                              <Tooltip id="scan-qr-tooltip">
-                                Disconnect wallet & use external wallet
-                              </Tooltip>
-                            }
-                          >
-                            <a
-                              href="#"
-                              className="wallet-address__action__button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                if (outputChainData == null) return;
-                                disconnectWallet(outputChainData.chainId);
-                              }}
-                            >
-                              <span className="icon icon-disconnect"></span>
-                            </a>
-                          </OverlayTrigger>
-                        ) : (
-                          <OverlayTrigger
-                            placement="top"
-                            overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
-                          >
-                            <a
-                              href="#"
-                              className="wallet-address__action__button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setQrScanning(true);
-                              }}
-                            >
-                              <span className="icon icon-qr-scan"></span>
-                            </a>
-                          </OverlayTrigger>
-                        )}
-                      </div>
-                      {webLnForOutput ? (
-                        <>
-                          {addressData?.address == null && validatedAmount != null ? (
-                            <div className="mt-2">
-                              <a
-                                href="#"
-                                onClick={async (e) => {
-                                  e.preventDefault();
-                                  if (validatedAmount == null) return;
-                                  const webln: WebLNProvider = outputChainData.wallet.instance;
-                                  try {
-                                    const res = await webln.makeInvoice(
-                                      Number(
-                                        fromHumanReadableString(
-                                          validatedAmount,
-                                          Tokens.BITCOIN.BTCLN
-                                        )
-                                      )
-                                    );
-                                    addressRef.current.setValue(res.paymentRequest);
-                                  } catch (e) {
-                                    console.error(e);
-                                  }
-                                }}
-                              >
-                                Fetch invoice from WebLN
-                              </a>
-                            </div>
-                          ) : (
-                            ''
-                          )}
-                        </>
-                      ) : (
-                        ''
-                      )}
-
-                      <Alert
-                        variant={'success'}
-                        className="mt-3 mb-0 text-center"
-                        show={
-                          !locked &&
-                          outputChainData?.wallet == null &&
-                          isBtcToken(outputToken) &&
-                          outputToken.lightning &&
-                          addressData == null
-                        }
-                      >
-                        <label>
-                          Only lightning invoices with pre-set amount are supported! Use lightning
-                          address/LNURL for variable amount.
-                        </label>
-                      </Alert>
-                    </div>
+                    <WalletDestinationAddress
+                      outputChainData={outputChainData}
+                      outputToken={outputToken}
+                      addressState={{
+                        value: outputAddress,
+                        userInput: address,
+                        data: addressData,
+                        loading: addressLoading,
+                        error: addressError,
+                      }}
+                      addressRef={addressRef}
+                      addressValidator={addressValidator}
+                      locked={locked}
+                      webLnForOutput={webLnForOutput}
+                      validatedAmount={validatedAmount}
+                      destinationWarnings={destinationWarnings}
+                      onAddressChange={(val, isManualChange) => {
+                        setAddress(val);
+                        if (isManualChange) leaveExistingSwap(true);
+                      }}
+                      disconnectWallet={disconnectWallet}
+                      setQrScanning={setQrScanning}
+                    />
                   </div>
                 </div>
               </div>

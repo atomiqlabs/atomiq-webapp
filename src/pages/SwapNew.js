@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { fromHumanReadableString, isBtcToken, isSCToken, SpvFromBTCSwap, SwapType, toTokenAmount, } from '@atomiqlabs/sdk';
+import { isBtcToken, isSCToken, SpvFromBTCSwap, SwapType, toTokenAmount, } from '@atomiqlabs/sdk';
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { SwapsContext } from '../swaps/context/SwapsContext';
 import { useAddressData } from '../swaps/hooks/useAddressData';
@@ -7,7 +7,7 @@ import ValidatedInput, { numberValidator } from '../components/ValidatedInput';
 import { useAmountConstraints } from '../swaps/hooks/useAmountConstraints';
 import { useWalletBalance } from '../wallets/hooks/useWalletBalance';
 import { QRScannerModal } from '../qr/QRScannerModal';
-import { Alert, Button, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import { Button, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import { fromTokenIdentifier, getChainIdentifierForCurrency, includesToken, smartChainTokenArray, toTokenIdentifier, } from '../tokens/Tokens';
 import { FEConstants, Tokens } from '../FEConstants';
 import BigNumber from 'bignumber.js';
@@ -26,6 +26,7 @@ import { useSupportedTokens } from '../swaps/hooks/useSupportedTokens';
 import { useDecimalNumberState } from '../utils/hooks/useDecimalNumberState';
 import { ChainDataContext } from '../wallets/context/ChainDataContext';
 import { AuditedBy } from '../components/AuditedBy';
+import { WalletDestinationAddress } from '../components/WalletDestinationAddress';
 export function SwapNew(props) {
     const navigate = useNavigate();
     const { swapper } = useContext(SwapsContext);
@@ -470,41 +471,17 @@ export function SwapNew(props) {
                                                         }, placeholder: _jsx("span", { children: _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: 'fee-tooltip-gas-drop', children: _jsxs("span", { children: ["Swap some amount of BTC to ", gasDropTokenAmount?.token.ticker, " (gas token on the destination chain), so that you can transact on", ' ', gasDropTokenAmount?.token.chainId] }) }), children: _jsxs("span", { className: "dottedUnderline", children: ["Request gas drop of ", gasDropTokenAmount?._amount.toString(10), ' ', gasDropTokenAmount?.token.ticker] }) }) }), value: gasDropChecked, onValidate: () => null, disabled: locked }) })] }), quoteError != null ? (_jsx(Button, { variant: "light", className: "mt-3", onClick: refreshQuote, children: "Retry" })) : (''), _jsx("div", { className: 'swap-panel__card ' +
                                                 (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
                                                     ? 'd-none'
-                                                    : 'd-flex'), children: _jsx("div", { className: "swap-panel__card__body", children: _jsxs("div", { className: "wallet-address", children: [_jsxs("div", { className: "wallet-address__body", children: [_jsxs("div", { className: "wallet-address__title", children: [outputChainData?.chain?.name ?? outputToken?.chain ?? 'Wallet', ' ', "Destination Address"] }), _jsx(ValidatedInput, { type: 'text', className: 'wallet-address__form with-inline-icon ' +
-                                                                        (webLnForOutput && addressData?.address == null ? 'd-none' : ''), onChange: (val, forcedChange) => {
-                                                                        setAddress(val);
-                                                                        console.log(forcedChange);
-                                                                        if (!forcedChange)
-                                                                            leaveExistingSwap(true);
-                                                                    }, value: outputAddress, inputRef: addressRef, placeholder: 'Enter destination address', onValidate: addressValidator, validated: isOutputWalletAddress || outputAddress !== address
-                                                                        ? null
-                                                                        : addressError?.message, disabled: locked || outputChainData?.wallet != null, textEnd: isOutputWalletAddress ? (_jsx("span", { className: "icon icon-check" })) : addressError?.message === 'Invalid address' && address ? (_jsx("span", { className: "icon icon-invalid-error" })) : null, textStart: addressLoading ? _jsx(Spinner, { className: "text-white" }) : null, successFeedback: isOutputWalletAddress
-                                                                        ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
-                                                                        : null, dynamicTextEndPosition: true }), destinationWarnings.map((warning, index) => (_jsx(Alert, { variant: "warning", className: "mt-2 mb-0 text-center", children: warning }, index)))] }), _jsx("div", { className: "wallet-address__action", children: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", className: "wallet-address__action__button", onClick: (e) => {
-                                                                        e.preventDefault();
-                                                                        if (outputChainData == null)
-                                                                            return;
-                                                                        disconnectWallet(outputChainData.chainId);
-                                                                    }, children: _jsx("span", { className: "icon icon-disconnect" }) }) })) : (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Scan QR code" }), children: _jsx("a", { href: "#", className: "wallet-address__action__button", onClick: (e) => {
-                                                                        e.preventDefault();
-                                                                        setQrScanning(true);
-                                                                    }, children: _jsx("span", { className: "icon icon-qr-scan" }) }) })) }), webLnForOutput ? (_jsx(_Fragment, { children: addressData?.address == null && validatedAmount != null ? (_jsx("div", { className: "mt-2", children: _jsx("a", { href: "#", onClick: async (e) => {
-                                                                        e.preventDefault();
-                                                                        if (validatedAmount == null)
-                                                                            return;
-                                                                        const webln = outputChainData.wallet.instance;
-                                                                        try {
-                                                                            const res = await webln.makeInvoice(Number(fromHumanReadableString(validatedAmount, Tokens.BITCOIN.BTCLN)));
-                                                                            addressRef.current.setValue(res.paymentRequest);
-                                                                        }
-                                                                        catch (e) {
-                                                                            console.error(e);
-                                                                        }
-                                                                    }, children: "Fetch invoice from WebLN" }) })) : ('') })) : (''), _jsx(Alert, { variant: 'success', className: "mt-3 mb-0 text-center", show: !locked &&
-                                                                outputChainData?.wallet == null &&
-                                                                isBtcToken(outputToken) &&
-                                                                outputToken.lightning &&
-                                                                addressData == null, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] }) }) })] })] })), quote != null || existingSwap != null || quoteLoading ? (_jsxs(_Fragment, { children: [!isSwapInitiated ? (_jsx("div", { className: "mt-3", children: _jsx(SimpleFeeSummaryScreen, { swap: existingSwap ?? quote, btcFeeRate: inputToken.chain === 'BTC' ? maxSpendable?.feeRate : null, onRefreshQuote: () => {
+                                                    : 'd-flex'), children: _jsx("div", { className: "swap-panel__card__body", children: _jsx(WalletDestinationAddress, { outputChainData: outputChainData, outputToken: outputToken, addressState: {
+                                                        value: outputAddress,
+                                                        userInput: address,
+                                                        data: addressData,
+                                                        loading: addressLoading,
+                                                        error: addressError,
+                                                    }, addressRef: addressRef, addressValidator: addressValidator, locked: locked, webLnForOutput: webLnForOutput, validatedAmount: validatedAmount, destinationWarnings: destinationWarnings, onAddressChange: (val, isManualChange) => {
+                                                        setAddress(val);
+                                                        if (isManualChange)
+                                                            leaveExistingSwap(true);
+                                                    }, disconnectWallet: disconnectWallet, setQrScanning: setQrScanning }) }) })] })] })), quote != null || existingSwap != null || quoteLoading ? (_jsxs(_Fragment, { children: [!isSwapInitiated ? (_jsx("div", { className: "mt-3", children: _jsx(SimpleFeeSummaryScreen, { swap: existingSwap ?? quote, btcFeeRate: inputToken.chain === 'BTC' ? maxSpendable?.feeRate : null, onRefreshQuote: () => {
                                             if (existingSwap != null) {
                                                 leaveExistingSwap(false, true);
                                                 setExactIn(existingSwap.exactIn);
