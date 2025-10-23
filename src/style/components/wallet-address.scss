@@ -57,10 +57,16 @@
     .input-group-text .icon {
       display: inline-block;
     }
+
     &:has(.form-control.is-invalid) .input-group-text {
       @apply p-0 border-0 text-[15px] text-red top-1;
       background-color: transparent !important;
     }
+  }
+
+  &:has(.wallet-address__feedback.is-warning) .input-group-text {
+    @apply p-0 border-0 text-[15px] text-yellow top-1;
+    background-color: transparent !important;
   }
 
   &__action__button {
@@ -81,5 +87,9 @@
 
   .valid-feedback {
     @apply text-green;
+  }
+
+  &__feedback {
+    @apply text-yellow text-sm mt-1;
   }
 }

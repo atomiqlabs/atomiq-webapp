@@ -30,7 +30,7 @@ interface WalletDestinationAddressProps {
   locked: boolean;
   webLnForOutput: boolean;
   validatedAmount: string | null;
-  destinationWarnings: string[];
+  quote: any; // Quote object to check destination validity
 
   // Callbacks
   onAddressChange: (address: string, isManualChange: boolean) => void;
@@ -47,7 +47,7 @@ export function WalletDestinationAddress({
   locked,
   webLnForOutput,
   validatedAmount,
-  destinationWarnings,
+  quote,
   onAddressChange,
   disconnectWallet,
   setQrScanning,
@@ -57,6 +57,34 @@ export function WalletDestinationAddress({
     () => outputChainData?.wallet?.address === addressState.value,
     [outputChainData?.wallet?.address, addressState.value]
   );
+
+  // Validation error (actual errors that make the input invalid)
+  const validationError = useMemo(() => {
+    if (!addressState.userInput || addressState.userInput.trim() === '') return null;
+    if (isOutputWalletAddress || addressState.value !== addressState.userInput) return null;
+
+    // Only return actual address parsing errors, not warnings
+    return addressState.error?.message;
+  }, [addressState, isOutputWalletAddress]);
+
+  // Warning message for valid addresses with potential issues
+  const warningMessage = useMemo(() => {
+    if (!addressState.userInput || addressState.userInput.trim() === '') return null;
+    if (isOutputWalletAddress || addressState.value !== addressState.userInput) return null;
+    if (!quote || !addressState.data) return null; // Only show warnings if address is valid (has data)
+    if (addressState.error) return null; // Don't show warnings if there's a validation error
+
+    // TODO not really tested, just estimated once it will return true
+    if (quote.willLikelyFail?.()) {
+      return 'This destination is likely not payable.';
+    }
+
+    if (quote.isPayingToNonCustodialWallet?.()) {
+      return 'Please make sure your receiving wallet is online';
+    }
+
+    return null;
+  }, [addressState, isOutputWalletAddress, quote]);
 
   // Check if we should show the lightning alert
   const showLightningAlert = useMemo(
@@ -87,20 +115,15 @@ export function WalletDestinationAddress({
           inputRef={addressRef}
           placeholder={'Enter destination address'}
           onValidate={addressValidator}
-          validated={
-            isOutputWalletAddress ||
-            addressState.value !== addressState.userInput ||
-            !addressState.userInput ||
-            addressState.userInput.trim() === ''
-              ? null
-              : addressState.error?.message
-          }
+          validated={validationError}
           disabled={locked || outputChainData?.wallet != null}
           textEnd={
             isOutputWalletAddress ? (
               <span className="icon icon-check"></span>
-            ) : addressState.error?.message === 'Invalid address' && addressState.userInput ? (
+            ) : validationError && addressState.userInput ? (
               <span className="icon icon-invalid-error"></span>
+            ) : warningMessage ? (
+              <span className="icon icon-info"></span>
             ) : null
           }
           textStart={addressState.loading ? <Spinner className="text-white" /> : null}
@@ -111,11 +134,9 @@ export function WalletDestinationAddress({
           }
           dynamicTextEndPosition={true}
         />
-        {destinationWarnings.map((warning, index) => (
-          <Alert key={index} variant="warning" className="mt-2 mb-0 text-center">
-            {warning}
-          </Alert>
-        ))}
+        {warningMessage && (
+          <div className="wallet-address__feedback is-warning">{warningMessage}</div>
+        )}
       </div>
 
       <div className="wallet-address__action">

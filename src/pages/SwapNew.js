@@ -64,14 +64,12 @@ export function SwapNew(props) {
                 return 'Invalid address';
         }
         catch (e) {
-            console.log('Address parsing error: ', e);
             return e.message;
         }
         return null;
     }, [swapper]);
     const [address, setAddress] = useState(null);
     let [addressData, addressLoading, addressError] = useAddressData(address, (addressData) => {
-        console.log('addressError from hook:', addressError);
         if (addressData?.type == null)
             return;
         let token;
@@ -224,20 +222,6 @@ export function SwapNew(props) {
     }, [inputAmountValidator, outputAmountValidator, amount, exactIn]);
     //Quote
     const [refreshQuote, quote, randomQuote, quoteLoading, quoteError] = useQuote(validatedAmount, exactIn, inputToken, outputToken, addressData?.lnurl ?? addressData?.address, gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined, maxSpendable?.feeRate, addressLoading);
-    // Warnings for destination address
-    const destinationWarnings = useMemo(() => {
-        const warnings = [];
-        if (quote && 'willLikelyFail' in quote && quote.willLikelyFail?.()) {
-            warnings.push('Destination is likely not payable.');
-        }
-        if (quote &&
-            'isPayingToNonCustodialWallet' in quote &&
-            quote.isPayingToNonCustodialWallet?.()) {
-            // TODO this should not be warning
-            warnings.push('Please make sure your receiving wallet is online.');
-        }
-        return warnings;
-    }, [quote]);
     useEffect(() => {
         if (quote == null ||
             maxSpendable?.feeRate == null ||
@@ -479,7 +463,7 @@ export function SwapNew(props) {
                                                         data: addressData,
                                                         loading: addressLoading,
                                                         error: addressError,
-                                                    }, addressRef: addressRef, addressValidator: addressValidator, locked: locked, webLnForOutput: webLnForOutput, validatedAmount: validatedAmount, destinationWarnings: destinationWarnings, onAddressChange: (val, isManualChange) => {
+                                                    }, addressRef: addressRef, addressValidator: addressValidator, locked: locked, webLnForOutput: webLnForOutput, validatedAmount: validatedAmount, quote: quote, onAddressChange: (val, isManualChange) => {
                                                         setAddress(val);
                                                         if (isManualChange)
                                                             leaveExistingSwap(true);

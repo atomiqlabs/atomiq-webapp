@@ -93,7 +93,6 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
         const addressParseResult = swapper.Utils.parseAddressSync(val);
         if (addressParseResult == null) return 'Invalid address';
       } catch (e) {
-        console.log('Address parsing error: ', e);
         return e.message;
       }
       return null;
@@ -102,7 +101,6 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   );
   const [address, setAddress] = useState<string>(null);
   let [addressData, addressLoading, addressError] = useAddressData(address, (addressData) => {
-    console.log('addressError from hook:', addressError);
     if (addressData?.type == null) return;
     let token: Token;
     switch (addressData.type) {
@@ -293,22 +291,6 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
     maxSpendable?.feeRate,
     addressLoading
   );
-  // Warnings for destination address
-  const destinationWarnings = useMemo(() => {
-    const warnings: string[] = [];
-    if (quote && 'willLikelyFail' in quote && (quote as any).willLikelyFail?.()) {
-      warnings.push('Destination is likely not payable.');
-    }
-    if (
-      quote &&
-      'isPayingToNonCustodialWallet' in quote &&
-      (quote as any).isPayingToNonCustodialWallet?.()
-    ) {
-      // TODO this should not be warning
-      warnings.push('Please make sure your receiving wallet is online.');
-    }
-    return warnings;
-  }, [quote]);
   useEffect(() => {
     if (
       quote == null ||
@@ -778,7 +760,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       locked={locked}
                       webLnForOutput={webLnForOutput}
                       validatedAmount={validatedAmount}
-                      destinationWarnings={destinationWarnings}
+                      quote={quote}
                       onAddressChange={(val, isManualChange) => {
                         setAddress(val);
                         if (isManualChange) leaveExistingSwap(true);

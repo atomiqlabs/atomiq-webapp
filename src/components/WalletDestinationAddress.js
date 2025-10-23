@@ -5,9 +5,37 @@ import ValidatedInput from './ValidatedInput';
 import { isBtcToken } from '@atomiqlabs/sdk';
 import { fromHumanReadableString } from '@atomiqlabs/sdk';
 import { Tokens } from '../FEConstants';
-export function WalletDestinationAddress({ outputChainData, outputToken, addressState, addressRef, addressValidator, locked, webLnForOutput, validatedAmount, destinationWarnings, onAddressChange, disconnectWallet, setQrScanning, }) {
+export function WalletDestinationAddress({ outputChainData, outputToken, addressState, addressRef, addressValidator, locked, webLnForOutput, validatedAmount, quote, onAddressChange, disconnectWallet, setQrScanning, }) {
     // Compute whether the address is from a connected wallet
     const isOutputWalletAddress = useMemo(() => outputChainData?.wallet?.address === addressState.value, [outputChainData?.wallet?.address, addressState.value]);
+    // Validation error (actual errors that make the input invalid)
+    const validationError = useMemo(() => {
+        if (!addressState.userInput || addressState.userInput.trim() === '')
+            return null;
+        if (isOutputWalletAddress || addressState.value !== addressState.userInput)
+            return null;
+        // Only return actual address parsing errors, not warnings
+        return addressState.error?.message;
+    }, [addressState, isOutputWalletAddress]);
+    // Warning message for valid addresses with potential issues
+    const warningMessage = useMemo(() => {
+        if (!addressState.userInput || addressState.userInput.trim() === '')
+            return null;
+        if (isOutputWalletAddress || addressState.value !== addressState.userInput)
+            return null;
+        if (!quote || !addressState.data)
+            return null; // Only show warnings if address is valid (has data)
+        if (addressState.error)
+            return null; // Don't show warnings if there's a validation error
+        // TODO not really tested, just estimated once it will return true
+        if (quote.willLikelyFail?.()) {
+            return 'This destination is likely not payable.';
+        }
+        if (quote.isPayingToNonCustodialWallet?.()) {
+            return 'Please make sure your receiving wallet is online';
+        }
+        return null;
+    }, [addressState, isOutputWalletAddress, quote]);
     // Check if we should show the lightning alert
     const showLightningAlert = useMemo(() => !locked &&
         outputChainData?.wallet == null &&
@@ -17,14 +45,9 @@ export function WalletDestinationAddress({ outputChainData, outputToken, address
     return (_jsxs("div", { className: "wallet-address", children: [_jsxs("div", { className: "wallet-address__body", children: [_jsxs("div", { className: "wallet-address__title", children: [outputChainData?.chain?.name ?? outputToken?.chain ?? 'Wallet', " Destination Address"] }), _jsx(ValidatedInput, { type: 'text', className: 'wallet-address__form with-inline-icon ' +
                             (webLnForOutput && addressState.data?.address == null ? 'd-none' : ''), onChange: (val, forcedChange) => {
                             onAddressChange(val, !forcedChange);
-                        }, value: addressState.value, inputRef: addressRef, placeholder: 'Enter destination address', onValidate: addressValidator, validated: isOutputWalletAddress ||
-                            addressState.value !== addressState.userInput ||
-                            !addressState.userInput ||
-                            addressState.userInput.trim() === ''
-                            ? null
-                            : addressState.error?.message, disabled: locked || outputChainData?.wallet != null, textEnd: isOutputWalletAddress ? (_jsx("span", { className: "icon icon-check" })) : addressState.error?.message === 'Invalid address' && addressState.userInput ? (_jsx("span", { className: "icon icon-invalid-error" })) : null, textStart: addressState.loading ? _jsx(Spinner, { className: "text-white" }) : null, successFeedback: isOutputWalletAddress
+                        }, value: addressState.value, inputRef: addressRef, placeholder: 'Enter destination address', onValidate: addressValidator, validated: validationError, disabled: locked || outputChainData?.wallet != null, textEnd: isOutputWalletAddress ? (_jsx("span", { className: "icon icon-check" })) : validationError && addressState.userInput ? (_jsx("span", { className: "icon icon-invalid-error" })) : warningMessage ? (_jsx("span", { className: "icon icon-info" })) : null, textStart: addressState.loading ? _jsx(Spinner, { className: "text-white" }) : null, successFeedback: isOutputWalletAddress
                             ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
-                            : null, dynamicTextEndPosition: true }), destinationWarnings.map((warning, index) => (_jsx(Alert, { variant: "warning", className: "mt-2 mb-0 text-center", children: warning }, index)))] }), _jsx("div", { className: "wallet-address__action", children: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", className: "wallet-address__action__button", onClick: (e) => {
+                            : null, dynamicTextEndPosition: true }), warningMessage && (_jsx("div", { className: "wallet-address__feedback is-warning", children: warningMessage }))] }), _jsx("div", { className: "wallet-address__action", children: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", className: "wallet-address__action__button", onClick: (e) => {
                             e.preventDefault();
                             if (outputChainData == null)
                                 return;

@@ -38,6 +38,10 @@
     &:has(.wallet-address):has(.form-control.is-invalid) {
       @apply bg-red/10;
     }
+
+    &:has(.wallet-address__feedback.is-warning) {
+      @apply bg-yellow/10;
+    }
   }
 
   &__toggle {
