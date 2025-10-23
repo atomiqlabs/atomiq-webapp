@@ -1,10 +1,10 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { SolanaWalletWrapper } from './chains/useSolanaWalletData';
 import { ChainDataContext } from './context/ChainDataContext';
-import { GenericWalletModal } from "./shared/GenericWalletModal";
-import { useChainWalletSystem } from "./hooks/useChainWalletSystem";
-import { FEConstants } from "../FEConstants";
-import { useCallback, useMemo, useState } from "react";
+import { GenericWalletModal } from './shared/GenericWalletModal';
+import { useChainWalletSystem } from './hooks/useChainWalletSystem';
+import { FEConstants } from '../FEConstants';
+import { useCallback, useMemo, useState } from 'react';
 function WrappedChainDataProvider(props) {
     const chainsData = useChainWalletSystem(FEConstants.chainsConfiguration);
     const [modalOpen, setModalOpen] = useState(false);
@@ -32,13 +32,18 @@ function WrappedChainDataProvider(props) {
             chains: chainsData,
             connectWallet,
             disconnectWallet,
-            changeWallet
+            changeWallet,
         }, children: [_jsx(GenericWalletModal, { visible: modalOpen, onClose: () => setModalOpen(false), title: `Select a ${modalSelectedChainData?.chain.name ?? modalChainId} Wallet`, installedWallets: modalSelectedChainData?.installedWallets ?? [], notInstalledWallets: modalSelectedChainData?.nonInstalledWallets ?? [], onWalletClick: (wallet) => {
                     if (modalSelectedChainData == null)
                         return;
                     (async () => {
-                        await modalSelectedChainData._connectWallet(wallet.name);
-                        setModalOpen(false);
+                        try {
+                            await modalSelectedChainData._connectWallet(wallet.name);
+                            setModalOpen(false);
+                        }
+                        catch (e) {
+                            alert(`Failed to connect to ${wallet.name}. This wallet may not be available or compatible with the ${modalSelectedChainData.chain.name} network.`);
+                        }
                     })();
                 } }), props.children] }));
 }
