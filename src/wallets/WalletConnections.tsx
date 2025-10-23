@@ -62,10 +62,12 @@ function MultichainWalletDisplay(props: { wallet: MultichainWallet; className?: 
         popperConfig={{ strategy: 'absolute' }}
         className={'wallet-connections__dropdown'}
       >
+        <Dropdown.Header>
+          <div className="sc-title">{props.wallet.name}</div>
+        </Dropdown.Header>
         {chains.map((value) => (
           <div key={value.chainId}>
             <Dropdown.Header>
-              <div className="sc-title">{props.wallet.name}</div>
               <div className="sc-subtitle">
                 <img width={24} height={24} src={value.icon} className="sc-icon" />
                 <div className="sc-text">{value.name}</div>
