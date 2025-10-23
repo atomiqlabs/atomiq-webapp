@@ -49,22 +49,26 @@ export function ConnectedWalletAnchor({
     return (
       <div className="wallet-connections wallet-connections__simple">
         <img width={16} height={16} src={wallet.icon} alt={wallet.name} />
-        {maxSpendable?.balance?.amount && (
-          <div className="wallet-connections__amount">
-            {maxSpendable.balance.amount} {currency.ticker}
-          </div>
+        {maxSpendable?.balance?.amount ? (
+          <>
+            <div className="wallet-connections__amount">
+              {maxSpendable.balance.amount} {currency.ticker}
+            </div>
+            {inputRef ? (
+              <BaseButton
+                variant="border-only"
+                className="wallet-connections__simple__max"
+                onClick={() => {
+                  inputRef.current.setValue(maxSpendable?.balance?.amount);
+                }}
+              >
+                max
+              </BaseButton>
+            ) : null}
+          </>
+        ) : (
+          <div className="wallet-connections__amount is-loading"></div>
         )}
-        {inputRef ? (
-          <BaseButton
-            variant="border-only"
-            className="wallet-connections__simple__max"
-            onClick={() => {
-              inputRef.current.setValue(maxSpendable?.balance?.amount);
-            }}
-          >
-            max
-          </BaseButton>
-        ) : null}
         <div className="wallet-connections__simple__disconnect">
           <OverlayTrigger overlay={<Tooltip>Disconnect wallet</Tooltip>}>
             <div className="icon icon-disconnect" onClick={() => disconnectWallet(chainId)}></div>

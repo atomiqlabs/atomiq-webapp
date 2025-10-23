@@ -169,19 +169,23 @@
 
   &__simple {
     &__disconnect {
-      @apply ml-4;
+      @apply ml-1;
 
       .icon {
         @apply hover:opacity-100 opacity-50 transition-all cursor-pointer;
       }
     }
     .wallet-connections__simple__max.base-button {
-      @apply py-[6px] px-[8px] text-[12px] uppercase leading-none ml-3 h-[20px];
+      @apply py-[6px] px-[8px] text-[12px] uppercase leading-none ml-3 h-[20px] mr-3;
       --bs-border-radius: 4px;
     }
   }
 
   &__amount {
     @apply opacity-75 text-[14px] ml-1;
+
+    &.is-loading {
+      @apply w-24 h-[16px] animate-pulse rounded bg-white/20;
+    }
   }
 }
