@@ -1,12 +1,8 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Badge, Dropdown } from 'react-bootstrap';
 import { ChainDataContext } from './context/ChainDataContext';
 import { BaseButton } from '../components/BaseButton';
-import { ConnectedWalletAnchor } from './ConnectedWalletAnchor';
-import { useStateWithOverride } from '../utils/hooks/useStateWithOverride';
-import { smartChainTokenArray } from '../tokens/Tokens';
-import { Tokens } from '../FEConstants';
 function MultichainWalletDisplay(props) {
     const chainWalletData = useContext(ChainDataContext);
     const chains = Object.keys(props.wallet.chains).map((chain) => props.wallet.chains[chain]);
@@ -16,42 +12,33 @@ function MultichainWalletDisplay(props) {
                                 })] }) }), _jsx("div", { className: "icon icon-dropdown" })] }), _jsxs(Dropdown.Menu, { popperConfig: { strategy: 'absolute' }, className: 'wallet-connections__dropdown', children: [_jsx(Dropdown.Header, { children: _jsx("div", { className: "sc-title", children: props.wallet.name }) }), chains.map((value) => (_jsxs("div", { children: [_jsx(Dropdown.Header, { children: _jsxs("div", { className: "sc-subtitle", children: [_jsx("img", { width: 24, height: 24, src: value.icon, className: "sc-icon" }), _jsx("div", { className: "sc-text", children: value.name })] }) }), _jsxs("div", { className: "dropdown-list", children: [_jsxs(Dropdown.Item, { onClick: () => chainWalletData.disconnectWallet(value.chainId), children: [_jsx("div", { className: "icon icon-disconnect" }), "Disconnect Wallet"] }), _jsxs(Dropdown.Item, { onClick: () => chainWalletData.changeWallet(value.chainId), children: [_jsx("div", { className: "icon icon-change-wallet" }), "Change Wallet"] })] })] }, value.chainId)))] })] }));
 }
 export function WalletConnections() {
-    var _a;
-    const { chains } = useContext(ChainDataContext);
-    const connectedWallets = {};
-    for (let chain in chains) {
-        const chainData = chains[chain];
-        if (chainData.wallet == null)
-            continue;
-        connectedWallets[_a = chainData.wallet.name] ?? (connectedWallets[_a] = {
-            name: chainData.wallet.name,
-            icon: chainData.wallet.icon,
-            chains: {},
-        });
-        connectedWallets[chainData.wallet.name].chains[chain] = {
-            name: chainData.chain.name,
-            icon: chainData.chain.icon,
-            chainId: chain,
-        };
-    }
-    const walletsArr = Object.keys(connectedWallets).map((key) => connectedWallets[key]);
-    // <img className="social-footer__icon" src={`/icons/socials/${image}`} alt={title}/>
-    const [solanaToken, setSolanaToken] = useStateWithOverride(smartChainTokenArray[0], null);
-    const [bitcoinToken, setBitcoinToken] = useStateWithOverride(Tokens.BITCOIN.BTC, null);
-    const connections = [
-        {
-            name: 'Solana',
-            code: 'solana',
-            icon: '/icons/chains/solana.svg',
-            token: solanaToken,
-        },
-        {
-            name: 'Bitcoin',
-            code: 'bitcoin',
-            icon: '/icons/chains/bitcoin.svg',
-            token: bitcoinToken,
-        },
-    ];
-    return (_jsxs("div", { className: "wallet-connections", children: [walletsArr &&
-                walletsArr.map((value) => _jsx(MultichainWalletDisplay, { wallet: value }, value.name)), walletsArr.length < 2 ? (_jsxs(Dropdown, { align: "end", children: [walletsArr.length == 0 ? (_jsx(Dropdown.Toggle, { as: BaseButton, className: "wallet-connections__button is-main is-full", variant: "transparent", customIcon: "connect", bsPrefix: "none", children: "Connect Wallet" })) : (_jsx(Dropdown.Toggle, { as: BaseButton, className: "wallet-connections__button", variant: "clear", customIcon: "connect", bsPrefix: "none" })), _jsx(Dropdown.Menu, { className: "wallet-connections__dropdown", children: connections.map((value) => (_jsxs("div", { className: "wallet-connections__item", children: [_jsxs("div", { className: "wallet-connections__item__header", children: [_jsx("img", { src: value.icon, alt: value.name, width: 24, height: 24 }), _jsx("span", { className: "wallet-connections__item__header__name", children: value.name })] }), _jsx(ConnectedWalletAnchor, { noText: false, currency: value.token })] }, value.code))) })] })) : null] }));
+    const { chains, connectWallet } = useContext(ChainDataContext);
+    const [connectedWallets, nonConnectedChains] = useMemo(() => {
+        var _a;
+        const nonConnectedChains = [];
+        const connectedWallets = {};
+        for (let chain in chains) {
+            const chainData = chains[chain];
+            if (chainData.wallet == null) {
+                nonConnectedChains.push(chainData);
+                continue;
+            }
+            connectedWallets[_a = chainData.wallet.name] ?? (connectedWallets[_a] = {
+                name: chainData.wallet.name,
+                icon: chainData.wallet.icon,
+                chains: {},
+            });
+            connectedWallets[chainData.wallet.name].chains[chain] = {
+                name: chainData.chain.name,
+                icon: chainData.chain.icon,
+                chainId: chain,
+            };
+        }
+        return [
+            Object.keys(connectedWallets).map(key => connectedWallets[key]),
+            nonConnectedChains
+        ];
+    }, [chains, connectWallet]);
+    return (_jsxs("div", { className: "wallet-connections", children: [connectedWallets &&
+                connectedWallets.map((value) => _jsx(MultichainWalletDisplay, { wallet: value }, value.name)), nonConnectedChains.length > 0 ? (_jsxs(Dropdown, { align: "end", children: [connectedWallets.length == 0 ? (_jsx(Dropdown.Toggle, { as: BaseButton, className: "wallet-connections__button is-main is-full", variant: "transparent", customIcon: "connect", bsPrefix: "none", children: "Connect Wallet" })) : (_jsx(Dropdown.Toggle, { as: BaseButton, className: "wallet-connections__button", variant: "clear", customIcon: "connect", bsPrefix: "none" })), _jsx(Dropdown.Menu, { className: "wallet-connections__dropdown", children: nonConnectedChains.map((value) => (_jsxs("div", { className: "wallet-connections__item", children: [_jsxs("div", { className: "wallet-connections__item__header", children: [_jsx("img", { src: value.chain.icon, alt: value.chain.name, width: 24, height: 24 }), _jsx("span", { className: "wallet-connections__item__header__name", children: value.chain.name })] }), _jsx(BaseButton, { customIcon: "connect", onClick: () => connectWallet(value.chainId), variant: "transparent", size: "smaller", className: "wallet-connections__item__button", children: "Connect Wallet" })] }, value.chainId))) })] })) : null] }));
 }
