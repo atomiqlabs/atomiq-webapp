@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import {useContext, useMemo, useState} from 'react';
 import { Badge, Dropdown } from 'react-bootstrap';
 import * as React from 'react';
 import { ChainDataContext } from './context/ChainDataContext';
@@ -8,6 +8,7 @@ import { ConnectedWalletAnchor } from './ConnectedWalletAnchor';
 import { useStateWithOverride } from '../utils/hooks/useStateWithOverride';
 import { smartChainTokenArray } from '../tokens/Tokens';
 import { Tokens } from '../FEConstants';
+import {Token} from "@atomiqlabs/sdk";
 
 type MultichainWallet = {
   name: string;
@@ -19,13 +20,6 @@ type MultichainWallet = {
       chainId: string;
     };
   };
-};
-
-type WalletConnection = {
-  name: string;
-  code: string;
-  icon: string;
-  token: any;
 };
 
 function MultichainWalletDisplay(props: { wallet: MultichainWallet; className?: string }) {
@@ -62,10 +56,12 @@ function MultichainWalletDisplay(props: { wallet: MultichainWallet; className?: 
         popperConfig={{ strategy: 'absolute' }}
         className={'wallet-connections__dropdown'}
       >
+        <Dropdown.Header>
+          <div className="sc-title">{props.wallet.name}</div>
+        </Dropdown.Header>
         {chains.map((value) => (
           <div key={value.chainId}>
             <Dropdown.Header>
-              <div className="sc-title">{props.wallet.name}</div>
               <div className="sc-subtitle">
                 <img width={24} height={24} src={value.icon} className="sc-icon" />
                 <div className="sc-text">{value.name}</div>
@@ -90,56 +86,45 @@ function MultichainWalletDisplay(props: { wallet: MultichainWallet; className?: 
 }
 
 export function WalletConnections() {
-  const { chains } = useContext(ChainDataContext);
+  const { chains, connectWallet } = useContext(ChainDataContext);
 
-  const connectedWallets: {
-    [walletName: string]: MultichainWallet;
-  } = {};
-  for (let chain in chains) {
-    const chainData: ChainWalletData<any> = chains[chain];
-    if (chainData.wallet == null) continue;
-    connectedWallets[chainData.wallet.name] ??= {
-      name: chainData.wallet.name,
-      icon: chainData.wallet.icon,
-      chains: {},
-    };
-    connectedWallets[chainData.wallet.name].chains[chain] = {
-      name: chainData.chain.name,
-      icon: chainData.chain.icon,
-      chainId: chain,
-    };
-  }
+  const [connectedWallets, nonConnectedChains] = useMemo(() => {
+    const nonConnectedChains: ChainWalletData<any>[] = [];
+    const connectedWallets: {
+      [walletName: string]: MultichainWallet;
+    } = {};
+    for (let chain in chains) {
+      const chainData: ChainWalletData<any> = chains[chain];
+      if (chainData.wallet == null) {
+        nonConnectedChains.push(chainData);
+        continue;
+      }
+      connectedWallets[chainData.wallet.name] ??= {
+        name: chainData.wallet.name,
+        icon: chainData.wallet.icon,
+        chains: {},
+      };
+      connectedWallets[chainData.wallet.name].chains[chain] = {
+        name: chainData.chain.name,
+        icon: chainData.chain.icon,
+        chainId: chain,
+      };
+    }
 
-  const walletsArr: MultichainWallet[] = Object.keys(connectedWallets).map(
-    (key) => connectedWallets[key]
-  );
-  // <img className="social-footer__icon" src={`/icons/socials/${image}`} alt={title}/>
-  const [solanaToken, setSolanaToken] = useStateWithOverride(smartChainTokenArray[0], null);
-  const [bitcoinToken, setBitcoinToken] = useStateWithOverride(Tokens.BITCOIN.BTC, null);
-
-  const connections: WalletConnection[] = [
-    {
-      name: 'Solana',
-      code: 'solana',
-      icon: '/icons/chains/solana.svg',
-      token: solanaToken,
-    },
-    {
-      name: 'Bitcoin',
-      code: 'bitcoin',
-      icon: '/icons/chains/bitcoin.svg',
-      token: bitcoinToken,
-    },
-  ];
+    return [
+      Object.keys(connectedWallets).map(key => connectedWallets[key]),
+      nonConnectedChains
+    ];
+  }, [chains, connectWallet]);
 
   return (
     <div className="wallet-connections">
-      {walletsArr &&
-        walletsArr.map((value) => <MultichainWalletDisplay key={value.name} wallet={value} />)}
+      {connectedWallets &&
+        connectedWallets.map((value) => <MultichainWalletDisplay key={value.name} wallet={value} />)}
 
-      {walletsArr.length < 2 ? (
+      {nonConnectedChains.length > 0 ? (
         <Dropdown align="end">
-          {walletsArr.length == 0 ? (
+          {connectedWallets.length == 0 ? (
             <Dropdown.Toggle
               as={BaseButton}
               className="wallet-connections__button is-main is-full"
@@ -159,13 +144,21 @@ export function WalletConnections() {
             ></Dropdown.Toggle>
           )}
           <Dropdown.Menu className="wallet-connections__dropdown">
-            {connections.map((value) => (
-              <div key={value.code} className="wallet-connections__item">
+            {nonConnectedChains.map((value) => (
+              <div key={value.chainId} className="wallet-connections__item">
                 <div className="wallet-connections__item__header">
-                  <img src={value.icon} alt={value.name} width={24} height={24} />
-                  <span className="wallet-connections__item__header__name">{value.name}</span>
+                  <img src={value.chain.icon} alt={value.chain.name} width={24} height={24} />
+                  <span className="wallet-connections__item__header__name">{value.chain.name}</span>
                 </div>
-                <ConnectedWalletAnchor noText={false} currency={value.token} />
+                <BaseButton
+                  customIcon="connect"
+                  onClick={() => connectWallet(value.chainId)}
+                  variant="transparent"
+                  size="smaller"
+                  className="wallet-connections__item__button"
+                >
+                  Connect Wallet
+                </BaseButton>
               </div>
             ))}
           </Dropdown.Menu>
