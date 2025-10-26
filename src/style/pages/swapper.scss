@@ -68,9 +68,15 @@
     &::placeholder {
       @apply opacity-30;
     }
+
     &:focus {
       @apply bg-transparent shadow-none;
     }
+
+    &:disabled {
+      @apply bg-transparent opacity-75;
+    }
+
     &.is-invalid {
       @apply text-red;
     }
