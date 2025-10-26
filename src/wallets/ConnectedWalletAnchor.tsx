@@ -2,7 +2,7 @@ import { Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import * as React from 'react';
 import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
 import Icon from 'react-icons-kit';
-import { Token } from '@atomiqlabs/sdk';
+import { Token, isBtcToken } from '@atomiqlabs/sdk';
 import { useChain } from './hooks/useChain';
 import { BaseButton, BaseButtonVariantProps } from '../components/BaseButton';
 import { WalletBalanceResult } from './hooks/useWalletBalance';
@@ -44,30 +44,35 @@ export function ConnectedWalletAnchor({
   if (wallet == null && hasWallets == null) {
     return <></>;
   }
+  const isLightning = isBtcToken(currency) && currency.lightning;
 
   if (simple && wallet != null) {
     return (
       <div className="wallet-connections wallet-connections__simple">
         <img width={16} height={16} src={wallet.icon} alt={wallet.name} />
-        {maxSpendable?.balance?.amount ? (
+        {!isLightning && (
           <>
-            <div className="wallet-connections__amount">
-              {maxSpendable.balance.amount} {currency.ticker}
-            </div>
-            {inputRef ? (
-              <BaseButton
-                variant="border-only"
-                className="wallet-connections__simple__max"
-                onClick={() => {
-                  inputRef.current.setValue(maxSpendable?.balance?.amount);
-                }}
-              >
-                max
-              </BaseButton>
-            ) : null}
+            {maxSpendable?.balance?.amount ? (
+              <>
+                <div className="wallet-connections__amount">
+                  {maxSpendable.balance.amount} {currency.ticker}
+                </div>
+                {inputRef ? (
+                  <BaseButton
+                    variant="border-only"
+                    className="wallet-connections__simple__max"
+                    onClick={() => {
+                      inputRef.current.setValue(maxSpendable?.balance?.amount);
+                    }}
+                  >
+                    max
+                  </BaseButton>
+                ) : null}
+              </>
+            ) : (
+              <div className="wallet-connections__amount is-loading"></div>
+            )}
           </>
-        ) : (
-          <div className="wallet-connections__amount is-loading"></div>
         )}
         <div className="wallet-connections__simple__disconnect">
           <OverlayTrigger overlay={<Tooltip>Disconnect wallet</Tooltip>}>
