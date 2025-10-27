@@ -119,6 +119,10 @@
       @apply h-[64px] font-semibold;
     }
   }
+
+  &__error {
+    @apply w-full;
+  }
 }
 
 .swap-connected-wallet {

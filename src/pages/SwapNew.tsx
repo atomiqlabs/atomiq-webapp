@@ -28,7 +28,7 @@ import BigNumber from 'bignumber.js';
 import { CurrencyDropdown } from '../tokens/CurrencyDropdown';
 import { SimpleFeeSummaryScreen } from '../fees/SimpleFeeScreen';
 import { QuoteSummary } from '../swaps/QuoteSummary';
-import { ErrorAlert } from '../components/ErrorAlert';
+import { SwapStepAlert } from '../swaps/components/SwapStepAlert';
 import { useQuote } from '../swaps/hooks/useQuote';
 import { usePricing } from '../tokens/hooks/usePricing';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -42,6 +42,7 @@ import { ChainDataContext } from '../wallets/context/ChainDataContext';
 import { ChainWalletData } from '../wallets/ChainDataProvider';
 import { AuditedBy } from '../components/AuditedBy';
 import { WalletDestinationAddress } from '../components/WalletDestinationAddress';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 
 export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
   const navigate = useNavigate();
@@ -456,7 +457,6 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
       />
       <div className="d-flex flex-column align-items-center text-white">
         <div className="swap-panel">
-          <ErrorAlert title="Quote error" error={quoteError} className="swap-panel__error" />
           {isSwapInitiated ? null : (
             <>
               <div className="swap-panel__card">
@@ -475,21 +475,6 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                           maxSpendable={maxSpendable}
                         />
                       </div>
-                      {/* TODO implement this */}
-                      {/*<Button*/}
-                      {/*  variant="outline-light"*/}
-                      {/*  style={{ marginBottom: '2px' }}*/}
-                      {/*  className="py-0 px-1"*/}
-                      {/*  disabled={locked || amountsLocked}*/}
-                      {/*  onClick={() => {*/}
-                      {/*    setExactIn(true);*/}
-                      {/*    inputRef.current.setValue(maxSpendable?.balance?.amount);*/}
-                      {/*  }}*/}
-                      {/*>*/}
-                      {/*  <small className="font-smallest" style={{ marginBottom: '-2px' }}>*/}
-                      {/*    MAX*/}
-                      {/*  </small>*/}
-                      {/*</Button>*/}
                     </div>
                   ) : (
                     <div className="swap-panel__card__wallet">
@@ -728,13 +713,6 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                     />
                   </div>
                 </div>
-                {quoteError != null ? (
-                  <Button variant="light" className="mt-3" onClick={refreshQuote}>
-                    Retry
-                  </Button>
-                ) : (
-                  ''
-                )}
 
                 {!(webLnForOutput && validatedAmount == null) && (
                   <div
@@ -832,6 +810,21 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
           ) : (
             ''
           )}
+          <SwapStepAlert
+            type="error"
+            icon={ic_warning}
+            title="Quote error"
+            description={quoteError?.message || 'An error occurred while fetching the quote'}
+            error={quoteError}
+            show={quoteError != null}
+            className="swap-panel__error"
+            action={{
+              type: 'button',
+              text: 'Retry',
+              onClick: refreshQuote,
+              variant: 'secondary',
+            }}
+          />
         </div>
       </div>
 
