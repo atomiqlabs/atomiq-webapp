@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { ChainDataContext } from './context/ChainDataContext';
 import { ChainWalletData } from './ChainDataProvider';
-import { BaseButton } from '../components/BaseButton';
+import { BaseButton, BaseButtonVariantProps } from '../components/BaseButton';
 
 export function ButtonWithWallet(props: {
   chainId: string;
@@ -9,7 +9,7 @@ export function ButtonWithWallet(props: {
   onClick?: () => void;
   disabled?: boolean;
   size?: 'smaller' | 'small' | 'large' | 'lg' | 'sm' | 'md';
-  variant?: 'primary' | 'secondary' | 'danger' | 'warning' | 'info';
+  variant?: BaseButtonVariantProps;
   children?: (JSX.Element | string) | (JSX.Element | string)[];
   className?: string;
 }) {
@@ -31,7 +31,7 @@ export function ButtonWithWallet(props: {
       }}
       disabled={(isWalletConnected && !isCorrectWalletConnected) || props.disabled}
       size={props.size}
-      variant="primary"
+      variant={props.variant || 'primary'}
       className={props.className}
     >
       {!isWalletConnected

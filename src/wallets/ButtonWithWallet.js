@@ -15,7 +15,7 @@ export function ButtonWithWallet(props) {
             else {
                 props.onClick();
             }
-        }, disabled: (isWalletConnected && !isCorrectWalletConnected) || props.disabled, size: props.size, variant: "primary", className: props.className, children: !isWalletConnected
+        }, disabled: (isWalletConnected && !isCorrectWalletConnected) || props.disabled, size: props.size, variant: props.variant || 'primary', className: props.className, children: !isWalletConnected
             ? 'Connect ' +
                 props.chainId.charAt(0) +
                 props.chainId.substring(1).toLowerCase() +

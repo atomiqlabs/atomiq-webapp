@@ -25,6 +25,7 @@ interface SwapStepAlertProps {
   onCopyError?: () => void;
   show?: boolean;
   className?: string;
+  actionElement?: (JSX.Element | string) | (JSX.Element | string)[];
 }
 
 export function SwapStepAlert(props: SwapStepAlertProps) {
@@ -116,6 +117,7 @@ export function SwapStepAlert(props: SwapStepAlertProps) {
           )}
         </>
       )}
+      {props.actionElement ?? null}
     </div>
   );
 }

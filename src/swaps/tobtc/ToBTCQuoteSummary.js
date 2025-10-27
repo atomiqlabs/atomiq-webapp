@@ -254,8 +254,8 @@ export function ToBTCQuoteSummary(props) {
             };
         if (isRefundable || isRefunding || isRefunded)
             executionSteps[1] = {
-                icon: ic_error_outline_outline,
-                text: 'Lightning payout failed',
+                icon: ic_warning,
+                text: 'Payout failed',
                 type: 'failed',
             };
     }
@@ -284,20 +284,14 @@ export function ToBTCQuoteSummary(props) {
                 type: 'failed',
             };
     }
-    if (isRefundable)
-        executionSteps[2] = {
-            icon: ic_settings_backup_restore_outline,
-            text: 'Refundable',
-            type: 'loading',
-        };
     if (isRefunding)
-        executionSteps[2] = {
+        executionSteps[1] = {
             icon: ic_hourglass_empty_outline,
             text: 'Sending refund transaction',
             type: 'loading',
         };
     if (isRefunded)
-        executionSteps[2] = {
+        executionSteps[1] = {
             icon: ic_check_outline,
             text: 'Refunded',
             type: 'success',
@@ -314,5 +308,5 @@ export function ToBTCQuoteSummary(props) {
                                     onClick: props.refreshQuote,
                                     icon: _jsx("i", { className: 'icon icon-refund' }),
                                     variant: 'secondary',
-                                } })) : null, _jsx(SwapStepAlert, { show: !!notEnoughBalanceError, type: "danger", icon: ic_error_outline_outline, title: "Not enough funds", description: notEnoughBalanceError || '' })] })) : null, (isCreated && !notEnoughBalanceError) || isPaying ? (_jsx(_Fragment, { children: _jsx(SwapStepAlert, { show: !!props.notEnoughForGas && signer != null, type: "danger", icon: ic_error_outline_outline, title: `Not enough ${feeNeeded?.nativeToken?.ticker || 'tokens'} for fees`, description: `You need at least ${feeNeeded?.amount || ''} ${feeNeeded?.nativeToken?.ticker || ''} to pay for fees and deposits!` }) })) : null, isPayError ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: "Swap error", error: paymentError }), _jsx(Button, { onClick: () => retryWaitForPayment(), variant: "secondary", children: "Retry" })] })) : null, isRefundable || isRefunding ? (_jsxs(_Fragment, { children: [_jsx(SwapStepAlert, { type: "danger", icon: ic_error_outline_outline, title: "Swap failed", description: "Swap failed, you can refund your prior deposit" }), _jsx(ErrorAlert, { className: "mb-3", title: "Refund error", error: refundError })] })) : null, _jsx(SwapStepAlert, { show: isRefunded, type: "info", icon: ic_settings_backup_restore_outline, title: "Swap failed", description: "Funds refunded successfully!" }), isSuccess && props.type !== 'payment' ? null : null] }), (isRefunded || isExpired || !!notEnoughBalanceError) && !continueError ? (_jsx(BaseButton, { onClick: props.refreshQuote, variant: "secondary", className: "swap-panel__action", children: "New quote" })) : null, isSuccess && props.type !== 'payment' ? (_jsx(BaseButton, { onClick: props.refreshQuote, variant: "primary", className: "swap-panel__action", children: "New Swap" })) : null, (isCreated && !notEnoughBalanceError) || isPaying ? (!isPaying && !continueLoading && !isInitiated ? (_jsx(ButtonWithWallet, { className: "swap-panel__action", requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote.chainIdentifier, onClick: () => onContinue(), disabled: isPaying || continueLoading || !!props.notEnoughForGas, size: "lg", children: props.type === 'payment' ? 'Pay' : 'Swap' })) : null) : null, isRefundable || isRefunding ? (_jsxs(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote.chainIdentifier, onClick: onRefund, disabled: refundLoading, variant: "secondary", children: [refundLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : '', "Refund deposit"] })) : null] }));
+                                } })) : null, _jsx(SwapStepAlert, { show: !!notEnoughBalanceError, type: "danger", icon: ic_error_outline_outline, title: "Not enough funds", description: notEnoughBalanceError || '' })] })) : null, (isCreated && !notEnoughBalanceError) || isPaying ? (_jsx(_Fragment, { children: _jsx(SwapStepAlert, { show: !!props.notEnoughForGas && signer != null, type: "danger", icon: ic_error_outline_outline, title: `Not enough ${feeNeeded?.nativeToken?.ticker || 'tokens'} for fees`, description: `You need at least ${feeNeeded?.amount || ''} ${feeNeeded?.nativeToken?.ticker || ''} to pay for fees and deposits!` }) })) : null, isPayError ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: "Swap error", error: paymentError }), _jsx(Button, { onClick: () => retryWaitForPayment(), variant: "secondary", children: "Retry" })] })) : null, isRefundable || isRefunding ? (_jsxs(_Fragment, { children: [_jsx(SwapStepAlert, { type: "danger", icon: ic_error_outline_outline, title: "Swap failed", description: "Swap failed, you can refund your prior deposit", actionElement: _jsxs(ButtonWithWallet, { className: "swap-step-alert__button", requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote.chainIdentifier, onClick: onRefund, disabled: refundLoading, variant: "secondary", children: [_jsx("div", { className: "base-button__icon", children: refundLoading ? (_jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" })) : (_jsx("i", { className: 'icon icon-refund' })) }), "Refund"] }) }), _jsx(ErrorAlert, { className: "mb-3", title: "Refund error", error: refundError })] })) : null, _jsx(SwapStepAlert, { show: isRefunded, type: "info", icon: ic_settings_backup_restore_outline, title: "Funds returning", description: "Funds refunded successfully!" }), isSuccess && props.type !== 'payment' ? null : null] }), (isRefunded || isExpired || !!notEnoughBalanceError) && !continueError ? (_jsx(BaseButton, { onClick: props.refreshQuote, variant: "secondary", className: "swap-panel__action", children: "New quote" })) : null, isSuccess && props.type !== 'payment' ? (_jsx(BaseButton, { onClick: props.refreshQuote, variant: "primary", className: "swap-panel__action", children: "New Swap" })) : null, (isCreated && !notEnoughBalanceError) || isPaying ? (!isPaying && !continueLoading && !isInitiated ? (_jsx(ButtonWithWallet, { className: "swap-panel__action", requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote.chainIdentifier, onClick: () => onContinue(), disabled: isPaying || continueLoading || !!props.notEnoughForGas, size: "lg", children: props.type === 'payment' ? 'Pay' : 'Swap' })) : null) : null] }));
 }

@@ -55,7 +55,7 @@
   }
 
   &__content {
-    @apply transition-all;
+    @apply transition-all flex items-center;
   }
 
   &__icon {

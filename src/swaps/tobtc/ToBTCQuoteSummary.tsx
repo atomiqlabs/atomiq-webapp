@@ -291,8 +291,8 @@ export function ToBTCQuoteSummary(props: {
       };
     if (isRefundable || isRefunding || isRefunded)
       executionSteps[1] = {
-        icon: ic_error_outline_outline,
-        text: 'Lightning payout failed',
+        icon: ic_warning,
+        text: 'Payout failed',
         type: 'failed',
       };
   } else {
@@ -320,20 +320,14 @@ export function ToBTCQuoteSummary(props: {
         type: 'failed',
       };
   }
-  if (isRefundable)
-    executionSteps[2] = {
-      icon: ic_settings_backup_restore_outline,
-      text: 'Refundable',
-      type: 'loading',
-    };
   if (isRefunding)
-    executionSteps[2] = {
+    executionSteps[1] = {
       icon: ic_hourglass_empty_outline,
       text: 'Sending refund transaction',
       type: 'loading',
     };
   if (isRefunded)
-    executionSteps[2] = {
+    executionSteps[1] = {
       icon: ic_check_outline,
       text: 'Refunded',
       type: 'success',
@@ -435,6 +429,25 @@ export function ToBTCQuoteSummary(props: {
               icon={ic_error_outline_outline}
               title="Swap failed"
               description="Swap failed, you can refund your prior deposit"
+              actionElement={
+                <ButtonWithWallet
+                  className="swap-step-alert__button"
+                  requiredWalletAddress={props.quote._getInitiator()}
+                  chainId={props.quote.chainIdentifier}
+                  onClick={onRefund}
+                  disabled={refundLoading}
+                  variant="secondary"
+                >
+                  <div className="base-button__icon">
+                    {refundLoading ? (
+                      <Spinner animation="border" size="sm" className="mr-2" />
+                    ) : (
+                      <i className={'icon icon-refund'}></i>
+                    )}
+                  </div>
+                  Refund
+                </ButtonWithWallet>
+              }
             />
             <ErrorAlert className="mb-3" title="Refund error" error={refundError} />
           </>
@@ -443,7 +456,7 @@ export function ToBTCQuoteSummary(props: {
           show={isRefunded}
           type="info"
           icon={ic_settings_backup_restore_outline}
-          title="Swap failed"
+          title="Funds returning"
           description="Funds refunded successfully!"
         />
         {isSuccess && props.type !== 'payment' ? null : null}
@@ -474,20 +487,6 @@ export function ToBTCQuoteSummary(props: {
             {props.type === 'payment' ? 'Pay' : 'Swap'}
           </ButtonWithWallet>
         ) : null
-      ) : null}
-
-      {/* Refund ButtonWithWallet should remain outside the .swap-panel__card */}
-      {isRefundable || isRefunding ? (
-        <ButtonWithWallet
-          requiredWalletAddress={props.quote._getInitiator()}
-          chainId={props.quote.chainIdentifier}
-          onClick={onRefund}
-          disabled={refundLoading}
-          variant="secondary"
-        >
-          {refundLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
-          Refund deposit
-        </ButtonWithWallet>
       ) : null}
     </>
   );
