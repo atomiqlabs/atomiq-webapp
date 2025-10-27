@@ -96,93 +96,16 @@ export function WalletDestinationAddress({
       addressState.data == null,
     [locked, outputChainData?.wallet, outputToken, addressState.data]
   );
+
   return (
     <div className="wallet-address">
-      <div className="wallet-address__body">
-        <div className="wallet-address__title">
-          {outputChainData?.chain?.name ?? outputToken?.chain ?? 'Wallet'} Destination Address
-        </div>
-        <ValidatedInput
-          type={'text'}
-          className={
-            'wallet-address__form with-inline-icon ' +
-            (webLnForOutput && addressState.data?.address == null ? 'd-none' : '')
-          }
-          onChange={(val, forcedChange) => {
-            onAddressChange(val, !forcedChange);
-          }}
-          value={addressState.value}
-          inputRef={addressRef}
-          placeholder={'Enter destination address'}
-          onValidate={addressValidator}
-          validated={validationError}
-          disabled={locked || outputChainData?.wallet != null}
-          textEnd={
-            isOutputWalletAddress ? (
-              <span className="icon icon-check"></span>
-            ) : validationError && addressState.userInput ? (
-              <span className="icon icon-invalid-error"></span>
-            ) : warningMessage ? (
-              <span className="icon icon-info"></span>
-            ) : null
-          }
-          textStart={addressState.loading ? <Spinner className="text-white" /> : null}
-          successFeedback={
-            isOutputWalletAddress
-              ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
-              : null
-          }
-          dynamicTextEndPosition={true}
-        />
-        {warningMessage && (
-          <div className="wallet-address__feedback is-warning">{warningMessage}</div>
-        )}
-      </div>
-
-      <div className="wallet-address__action">
-        {locked ? null : outputChainData?.wallet != null ? (
-          <OverlayTrigger
-            placement="top"
-            overlay={
-              <Tooltip id="scan-qr-tooltip">Disconnect wallet & use external wallet</Tooltip>
-            }
-          >
-            <a
-              href="#"
-              className="wallet-address__action__button"
-              onClick={(e) => {
-                e.preventDefault();
-                if (outputChainData == null) return;
-                disconnectWallet(outputChainData.chainId);
-              }}
-            >
-              <span className="icon icon-disconnect"></span>
-            </a>
-          </OverlayTrigger>
-        ) : (
-          <OverlayTrigger
-            placement="top"
-            overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
-          >
-            <a
-              href="#"
-              className="wallet-address__action__button"
-              onClick={(e) => {
-                e.preventDefault();
-                setQrScanning(true);
-              }}
-            >
-              <span className="icon icon-qr-scan"></span>
-            </a>
-          </OverlayTrigger>
-        )}
-      </div>
-      {webLnForOutput ? (
+      {!(webLnForOutput && validatedAmount == null) && (
         <>
-          {addressState.data?.address == null && validatedAmount != null ? (
-            <div className="mt-2">
+          {webLnForOutput ? (
+            <div className="wallet-address__body">
               <a
                 href="#"
+                className="wallet-address__invoice-button"
                 onClick={async (e) => {
                   e.preventDefault();
                   if (validatedAmount == null) return;
@@ -197,15 +120,96 @@ export function WalletDestinationAddress({
                   }
                 }}
               >
-                Fetch invoice from WebLN
+                <i className="icon icon-Lightning-invoice"></i>
+                <span className="sc-text">Fetch invoice from WebLN</span>
               </a>
             </div>
           ) : (
-            ''
+            <>
+              <div className="wallet-address__body">
+                <div className="wallet-address__title">
+                  {outputChainData?.chain?.name ?? outputToken?.chain ?? 'Wallet'} Destination
+                  Address
+                </div>
+                <ValidatedInput
+                  type={'text'}
+                  className={'wallet-address__form with-inline-icon'}
+                  onChange={(val, forcedChange) => {
+                    onAddressChange(val, !forcedChange);
+                  }}
+                  value={addressState.value}
+                  inputRef={addressRef}
+                  placeholder={'Enter destination address'}
+                  onValidate={addressValidator}
+                  validated={validationError}
+                  disabled={locked || outputChainData?.wallet != null}
+                  textEnd={
+                    isOutputWalletAddress || addressState.data?.amount != null ? (
+                      <span className="icon icon-check"></span>
+                    ) : validationError && addressState.userInput ? (
+                      <span className="icon icon-invalid-error"></span>
+                    ) : warningMessage ? (
+                      <span className="icon icon-info"></span>
+                    ) : null
+                  }
+                  textStart={addressState.loading ? <Spinner className="text-white" /> : null}
+                  successFeedback={
+                    addressState.data?.amount != null
+                      ? 'Swap amount imported from lightning network invoice.'
+                      : isOutputWalletAddress
+                        ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
+                        : null
+                  }
+                  dynamicTextEndPosition={true}
+                />
+                {warningMessage && (
+                  <div className="wallet-address__feedback is-warning">{warningMessage}</div>
+                )}
+              </div>
+
+              <div className="wallet-address__action">
+                {locked ? null : outputChainData?.wallet != null ? (
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={
+                      <Tooltip id="scan-qr-tooltip">
+                        Disconnect wallet & use external wallet
+                      </Tooltip>
+                    }
+                  >
+                    <a
+                      href="#"
+                      className="wallet-address__action__button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (outputChainData == null) return;
+                        disconnectWallet(outputChainData.chainId);
+                      }}
+                    >
+                      <span className="icon icon-disconnect"></span>
+                    </a>
+                  </OverlayTrigger>
+                ) : (
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={<Tooltip id="scan-qr-tooltip">Scan QR code</Tooltip>}
+                  >
+                    <a
+                      href="#"
+                      className="wallet-address__action__button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setQrScanning(true);
+                      }}
+                    >
+                      <span className="icon icon-qr-scan"></span>
+                    </a>
+                  </OverlayTrigger>
+                )}
+              </div>
+            </>
           )}
         </>
-      ) : (
-        ''
       )}
 
       <Alert

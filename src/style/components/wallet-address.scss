@@ -81,7 +81,8 @@
     @apply bg-transparent;
   }
 
-  .form-control.is-invalid {
+  .form-control.is-invalid,
+  .form-control.is-valid {
     @apply bg-none;
   }
 
@@ -95,5 +96,9 @@
 
   &__alert {
     @apply basis-full;
+  }
+
+  &__invoice-button {
+    @apply font-semibold text-white no-underline w-full text-center gap-2 flex items-center justify-center;
   }
 }

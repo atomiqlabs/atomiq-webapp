@@ -736,40 +736,42 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                   ''
                 )}
 
-                <div
-                  className={
-                    'swap-panel__card ' +
-                    (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
-                      ? 'd-none'
-                      : 'd-flex')
-                  }
-                >
-                  <div className="swap-panel__card__body">
-                    <WalletDestinationAddress
-                      outputChainData={outputChainData}
-                      outputToken={outputToken}
-                      addressState={{
-                        value: outputAddress,
-                        userInput: address,
-                        data: addressData,
-                        loading: addressLoading,
-                        error: addressError,
-                      }}
-                      addressRef={addressRef}
-                      addressValidator={addressValidator}
-                      locked={locked}
-                      webLnForOutput={webLnForOutput}
-                      validatedAmount={validatedAmount}
-                      quote={quote}
-                      onAddressChange={(val, isManualChange) => {
-                        setAddress(val);
-                        if (isManualChange) leaveExistingSwap(true);
-                      }}
-                      disconnectWallet={disconnectWallet}
-                      setQrScanning={setQrScanning}
-                    />
+                {!(webLnForOutput && validatedAmount == null) && (
+                  <div
+                    className={
+                      'swap-panel__card ' +
+                      (swapper == null || swapper?.SwapTypeInfo[swapType].requiresOutputWallet
+                        ? 'd-none'
+                        : 'd-flex')
+                    }
+                  >
+                    <div className="swap-panel__card__body">
+                      <WalletDestinationAddress
+                        outputChainData={outputChainData}
+                        outputToken={outputToken}
+                        addressState={{
+                          value: outputAddress,
+                          userInput: address,
+                          data: addressData,
+                          loading: addressLoading,
+                          error: addressError,
+                        }}
+                        addressRef={addressRef}
+                        addressValidator={addressValidator}
+                        locked={locked}
+                        webLnForOutput={webLnForOutput}
+                        validatedAmount={validatedAmount}
+                        quote={quote}
+                        onAddressChange={(val, isManualChange) => {
+                          setAddress(val);
+                          if (isManualChange) leaveExistingSwap(true);
+                        }}
+                        disconnectWallet={disconnectWallet}
+                        setQrScanning={setQrScanning}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </>
           )}
