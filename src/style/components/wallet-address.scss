@@ -1,6 +1,6 @@
 .wallet-address {
   & {
-    @apply flex gap-6 w-full items-center;
+    @apply flex gap-6 w-full items-center flex-wrap;
   }
 
   &__title {
@@ -91,5 +91,9 @@
 
   &__feedback {
     @apply text-yellow text-sm mt-1;
+  }
+
+  &__alert {
+    @apply basis-full;
   }
 }

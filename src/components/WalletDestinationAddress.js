@@ -67,5 +67,5 @@ export function WalletDestinationAddress({ outputChainData, outputToken, address
                             catch (e) {
                                 console.error(e);
                             }
-                        }, children: "Fetch invoice from WebLN" }) })) : ('') })) : (''), _jsx(Alert, { variant: 'success', className: "mt-3 mb-0 text-center", show: showLightningAlert, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] }));
+                        }, children: "Fetch invoice from WebLN" }) })) : ('') })) : (''), _jsx(Alert, { variant: 'success', className: "wallet-address__alert mb-0 text-center", show: showLightningAlert, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] }));
 }

@@ -208,7 +208,11 @@ export function WalletDestinationAddress({
         ''
       )}
 
-      <Alert variant={'success'} className="mt-3 mb-0 text-center" show={showLightningAlert}>
+      <Alert
+        variant={'success'}
+        className="wallet-address__alert mb-0 text-center"
+        show={showLightningAlert}
+      >
         <label>
           Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for
           variable amount.
