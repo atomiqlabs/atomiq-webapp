@@ -54,7 +54,9 @@ export function WalletDestinationAddress({
 }: WalletDestinationAddressProps) {
   // Compute whether the address is from a connected wallet
   const isOutputWalletAddress = useMemo(
-    () => outputChainData?.wallet?.address === addressState.value || (webLnForOutput && !!addressState.value),
+    () =>
+      outputChainData?.wallet?.address === addressState.value ||
+      (webLnForOutput && !!addressState.value),
     [outputChainData?.wallet?.address, addressState.value, webLnForOutput]
   );
 
@@ -144,7 +146,9 @@ export function WalletDestinationAddress({
                   validated={validationError}
                   disabled={locked || outputChainData?.wallet != null}
                   textEnd={
-                    isOutputWalletAddress || addressState.data?.amount != null ? (
+                    addressState.loading ? (
+                      <Spinner className="text-white" />
+                    ) : isOutputWalletAddress || addressState.data?.amount != null ? (
                       <span className="icon icon-check"></span>
                     ) : validationError && addressState.userInput ? (
                       <span className="icon icon-invalid-error"></span>
@@ -152,7 +156,6 @@ export function WalletDestinationAddress({
                       <span className="icon icon-info"></span>
                     ) : null
                   }
-                  textStart={addressState.loading ? <Spinner className="text-white" /> : null}
                   successFeedback={
                     isOutputWalletAddress
                       ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'

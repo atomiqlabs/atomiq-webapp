@@ -62,6 +62,13 @@
       @apply p-0 border-0 text-[15px] text-red top-1;
       background-color: transparent !important;
     }
+    .spinner-border {
+      @apply w-4 h-4;
+    }
+    .input-group-text:has(.spinner-border) {
+      background-color: transparent !important;
+      border: none !important;
+    }
   }
 
   &:has(.wallet-address__feedback.is-warning) .input-group-text {
