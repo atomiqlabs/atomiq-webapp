@@ -55,8 +55,27 @@
   }
 
   &__input-wrapper {
+    @apply flex-1;
+
     .invalid-feedback div {
       @apply justify-end flex-wrap;
+    }
+
+    .input-group-text {
+      @apply border-0 absolute right-0 opacity-75;
+
+      background-color: transparent !important;
+
+      .spinner-border {
+        @apply border-3 h-[38px] w-[38px];
+      }
+    }
+
+    &:has(.spinner-border) {
+      .swap-panel__input,
+      .swap-panel__label {
+        display: none;
+      }
     }
   }
 

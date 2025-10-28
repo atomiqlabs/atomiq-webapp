@@ -443,7 +443,7 @@ export function SwapNew(props) {
                                                                     }
                                                                     setInputToken(token);
                                                                 }
-                                                            }, value: outputToken, className: "round-right text-white bg-black bg-opacity-10" }), _jsx(ValidatedInput, { disabled: locked || amountsLocked, inputRef: outputRef, className: "flex-fill strip-group-text currency-field", type: "number", value: outputAmount, size: 'lg', textStart: exactIn && quoteLoading ? _jsx(Spinner, { className: "text-white" }) : null, onChange: (val, forcedChange) => {
+                                                            }, value: outputToken, className: "round-right text-white bg-black bg-opacity-10" }), _jsx(ValidatedInput, { disabled: locked || amountsLocked, inputRef: outputRef, className: "swap-panel__input-wrapper", type: "number", value: outputAmount, size: 'lg', textStart: exactIn && quoteLoading ? _jsx(Spinner, { className: "text-white" }) : null, onChange: (val, forcedChange) => {
                                                                 setAmount(val);
                                                                 setExactIn(false);
                                                                 if (webLnForOutput)

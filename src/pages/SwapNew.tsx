@@ -645,7 +645,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                     <ValidatedInput
                       disabled={locked || amountsLocked}
                       inputRef={outputRef}
-                      className="flex-fill strip-group-text currency-field"
+                      className="swap-panel__input-wrapper"
                       type="number"
                       value={outputAmount}
                       size={'lg'}
