@@ -54,8 +54,8 @@ export function WalletDestinationAddress({
 }: WalletDestinationAddressProps) {
   // Compute whether the address is from a connected wallet
   const isOutputWalletAddress = useMemo(
-    () => outputChainData?.wallet?.address === addressState.value,
-    [outputChainData?.wallet?.address, addressState.value]
+    () => outputChainData?.wallet?.address === addressState.value || (webLnForOutput && !!addressState.value),
+    [outputChainData?.wallet?.address, addressState.value, webLnForOutput]
   );
 
   // Validation error (actual errors that make the input invalid)
@@ -101,7 +101,7 @@ export function WalletDestinationAddress({
     <div className="wallet-address">
       {!(webLnForOutput && validatedAmount == null) && (
         <>
-          {webLnForOutput ? (
+          {webLnForOutput && !isOutputWalletAddress ? (
             <div className="wallet-address__body">
               <a
                 href="#"
@@ -154,10 +154,10 @@ export function WalletDestinationAddress({
                   }
                   textStart={addressState.loading ? <Spinner className="text-white" /> : null}
                   successFeedback={
-                    addressState.data?.amount != null
-                      ? 'Swap amount imported from lightning network invoice.'
-                      : isOutputWalletAddress
-                        ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
+                    isOutputWalletAddress
+                      ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
+                      : addressState.data?.amount != null
+                        ? 'Swap amount imported from lightning network invoice.'
                         : null
                   }
                   dynamicTextEndPosition={true}
