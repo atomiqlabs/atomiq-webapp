@@ -24,7 +24,7 @@
 
   &__indicator {
     background-color: rgb(255 255 255 / 0.05);
-    @apply py-6 rounded-lg flex justify-around items-center gap-4 relative;
+    @apply py-6 rounded-lg flex justify-around items-start gap-4 relative;
 
     &__text {
       @apply mt-[12px];

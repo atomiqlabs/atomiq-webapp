@@ -21,7 +21,7 @@ import { ic_gavel_outline } from 'react-icons-kit/md/ic_gavel_outline';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
 import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empty_outline';
-import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outline';
+import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_pending_outline } from 'react-icons-kit/md/ic_pending_outline';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
@@ -267,7 +267,7 @@ export function FromBTCQuoteSummary(props: {
      */
   const executionSteps: SingleStep[] = [
     {
-      icon: ic_check_circle_outline,
+      icon: ic_check_outline,
       text: 'Swap address opened',
       type: 'success',
     },
@@ -313,12 +313,12 @@ export function FromBTCQuoteSummary(props: {
   if (isReceived)
     executionSteps[1] = {
       icon: ic_hourglass_top_outline,
-      text: 'Waiting bitcoin confirmations',
+      text: 'Awaiting bitcoin payment',
       type: 'loading',
     };
   if (isClaimable || isClaiming || isSuccess)
     executionSteps[1] = {
-      icon: ic_check_circle_outline,
+      icon: ic_check_outline,
       text: 'Bitcoin confirmed',
       type: 'success',
     };
@@ -628,7 +628,7 @@ export function FromBTCQuoteSummary(props: {
         <SwapStepAlert
           show={isSuccess}
           type="success"
-          icon={ic_check_circle_outline}
+          icon={ic_check_outline}
           title="Swap success"
           description="Your swap was executed successfully!"
         />
