@@ -37,6 +37,9 @@ import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { BaseButton } from '../../components/BaseButton';
 import { useChain } from '../../wallets/hooks/useChain';
+import { SwapStepAlert } from '../components/SwapStepAlert';
+import { TokenIcons } from '../../tokens/Tokens';
+import { usePricing } from '../../tokens/hooks/usePricing';
 /*
 Steps:
 1. Opening swap address -> Swap address opened
@@ -143,6 +146,50 @@ export function FromBTCQuoteSummary(props) {
                 setAmountLockRef.current(false);
         }
     }, [isSuccess, isFailed, isExpired, isQuoteExpired, isCommitCancelled, isClaimCancelled]);
+    // Source wallet data (input token - Bitcoin)
+    const inputAmount = props.quote.getInput().amount;
+    const inputToken = props.quote.getInput().token;
+    const inputValue = usePricing(inputAmount, inputToken);
+    const sourceWallet = useMemo(() => {
+        if (!inputToken)
+            return null;
+        const chainIcon = '/icons/chains/bitcoin.svg';
+        // Get string representation and remove trailing zeros
+        const amountStr = props.quote.getInput().toString();
+        const [numPart, tickerPart] = amountStr.split(' ');
+        const cleanedAmount = parseFloat(numPart).toString();
+        return {
+            icon: TokenIcons[inputToken.ticker],
+            chainIcon,
+            amount: `${cleanedAmount} ${tickerPart}`,
+            dollarValue: inputValue ? `$${inputValue.toFixed(2)}` : undefined,
+        };
+    }, [inputToken, inputAmount, inputValue]);
+    // Destination wallet data (output token)
+    const outputAmount = props.quote.getOutput().amount;
+    const outputToken = props.quote.getOutput().token;
+    const outputValue = usePricing(outputAmount, outputToken);
+    const outputAddress = props.quote.getOutputAddress();
+    const destinationWallet = useMemo(() => {
+        if (!outputToken)
+            return null;
+        const chainIcon = props.quote.chainIdentifier?.includes('SOLANA')
+            ? '/icons/chains/solana.svg'
+            : props.quote.chainIdentifier?.includes('STARKNET')
+                ? '/icons/chains/STARKNET.svg'
+                : undefined;
+        // Get string representation and remove trailing zeros
+        const amountStr = props.quote.getOutput().toString();
+        const [numPart, tickerPart] = amountStr.split(' ');
+        const cleanedAmount = parseFloat(numPart).toString();
+        return {
+            icon: TokenIcons[outputToken.ticker],
+            chainIcon,
+            amount: `${cleanedAmount} ${tickerPart}`,
+            dollarValue: outputValue ? `$${outputValue.toFixed(2)}` : undefined,
+            address: outputAddress,
+        };
+    }, [outputToken, outputAmount, outputValue, outputAddress, props.quote.chainIdentifier]);
     /*
       Steps:
       1. Opening swap address -> Swap address opened
@@ -247,14 +294,10 @@ export function FromBTCQuoteSummary(props) {
                 }, inputRef: textFieldRef }), _jsx("div", { className: "d-flex justify-content-center mt-2", children: _jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center justify-content-center", onClick: () => {
                         window.location.href = props.quote.getHyperlink();
                     }, children: [_jsx(Icon, { icon: externalLink, className: "d-flex align-items-center me-2" }), " Open in BTC wallet app"] }) })] })), [props.quote]);
-    return (_jsxs(_Fragment, { children: [_jsx(OnchainAddressCopyModal, { openRef: openModalRef, amountBtc: props.quote?.getInput()?.amount, setShowCopyWarning: setShowCopyWarning }), isInitiated ? _jsx(StepByStep, { steps: executionSteps }) : '', _jsx(SwapExpiryProgressBar, { expired: isQuoteExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: (isCreated || isQuoteExpired) &&
-                    !commitLoading &&
-                    !props.notEnoughForGas &&
-                    smartChainWallet !== undefined &&
-                    hasEnoughBalance }), _jsx(ErrorAlert, { className: "mb-3", title: "Swap initialization error", error: commitError }), isCreated && hasEnoughBalance ? (smartChainWallet === undefined ? (_jsx(ButtonWithWallet, { chainId: props.quote.chainIdentifier, requiredWalletAddress: props.quote._getInitiator(), size: "lg" })) : (_jsxs(_Fragment, { children: [_jsx(SwapForGasAlert, { notEnoughForGas: props.notEnoughForGas, quote: props.quote }), _jsxs(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote.chainIdentifier, onClick: onCommit, disabled: commitLoading || !!props.notEnoughForGas || !hasEnoughBalance, size: "lg", className: "d-flex flex-row", children: [commitLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : '', "Initiate swap"] })] }))) : (''), isCommited ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "mb-3 tab-accent", children: bitcoinChainData.wallet != null ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-2", title: "Sending BTC failed", error: payError }), _jsx("div", { className: "d-flex flex-column align-items-center justify-content-center", children: payTxId != null ? (_jsxs("div", { className: "d-flex flex-column align-items-center p-2", children: [_jsx(Spinner, {}), _jsx("label", { children: "Sending Bitcoin transaction..." })] })) : (_jsxs(_Fragment, { children: [_jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center", disabled: payLoading, onClick: payBitcoin, children: [payLoading ? (_jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" })) : (''), "Pay with", ' ', _jsx("img", { width: 20, height: 20, src: bitcoinChainData.wallet?.icon, className: "ms-2 me-1" }), ' ', bitcoinChainData.wallet?.name] }), _jsx("small", { className: "mt-2", children: _jsx("a", { href: "#", onClick: (e) => {
-                                                        e.preventDefault();
-                                                        disconnectWallet('BITCOIN');
-                                                    }, children: "Or use a QR code/wallet address" }) })] })) })] })) : (_jsx(CopyOverlay, { placement: 'top', children: addressContent })) }), _jsx(SwapExpiryProgressBar, { timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, expiryText: "Swap address expired, please do not send any funds!", quoteAlias: "Swap address" }), waitPaymentError == null ? (_jsx(Button, { onClick: props.abortSwap, variant: "danger", children: "Abort swap" })) : (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: "Wait payment error", error: waitPaymentError }), _jsx(Button, { onClick: onWaitForPayment, variant: "secondary", children: "Retry" })] }))] })) : (''), isReceived ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx("small", { className: "mb-2", children: "Transaction successfully received, waiting for confirmations..." }), _jsx(Spinner, {}), _jsxs("label", { children: [txData.confirmations, " / ", txData.confTarget] }), _jsx("label", { style: { marginTop: '-6px' }, children: "Confirmations" }), _jsx("a", { className: "mb-2 text-overflow-ellipsis text-nowrap overflow-hidden", style: { width: '100%' }, target: "_blank", href: FEConstants.btcBlockExplorer + txData.txId, children: _jsx("small", { children: txData.txId }) }), _jsxs(Badge, { className: 'text-black' + (txData.txEtaMs == null ? ' d-none' : ''), bg: "light", pill: true, children: ["ETA:", ' ', txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
-                                ? '>1 hour'
-                                : '~' + getDeltaText(txData.txEtaMs)] })] })) : (''), isClaimable && !(claimable || isAlreadyClaimable) ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx(Spinner, {}), _jsx("small", { className: "mt-2", children: "Transaction received & confirmed, waiting for claim by watchtowers..." })] })) : (''), (isClaimable || isClaiming) && (claimable || isAlreadyClaimable) ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "d-flex flex-column align-items-center tab-accent mb-3", children: _jsx("label", { children: "Transaction received & confirmed, you can claim your funds manually now!" }) }), _jsx(ErrorAlert, { className: "mb-3", title: "Claim error", error: claimError }), _jsxs(ButtonWithWallet, { chainId: props.quote.chainIdentifier, onClick: onClaim, disabled: claimLoading, size: "lg", children: [claimLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : '', "Finish swap (claim funds)"] })] })) : (''), isSuccess ? (_jsxs(Alert, { variant: "success", className: "mb-3", children: [_jsx("strong", { children: "Swap success" }), _jsx("label", { children: "Your swap was executed successfully!" })] })) : (''), isExpired ? (_jsx(SwapExpiryProgressBar, { expired: true, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, expiryText: "Swap address expired, please do not send any funds!", quoteAlias: "Swap address" })) : (''), isFailed ? (_jsxs(Alert, { variant: "danger", className: "mb-3", children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Swap address expired without receiving the required funds!" })] })) : (''), isQuoteExpired || isExpired || isFailed || isSuccess ? (_jsx(BaseButton, { onClick: props.refreshQuote, variant: "primary", size: "large", children: "New quote" })) : (''), _jsx(ScrollAnchor, { trigger: isCommited })] }));
+    return (_jsxs(_Fragment, { children: [_jsx(OnchainAddressCopyModal, { openRef: openModalRef, amountBtc: props.quote?.getInput()?.amount, setShowCopyWarning: setShowCopyWarning }), _jsxs("div", { className: "swap-panel__card", children: [isInitiated ? (_jsx(StepByStep, { steps: executionSteps, sourceWallet: sourceWallet, destinationWallet: destinationWallet })) : null, _jsx(SwapStepAlert, { show: !!commitError, type: "error", icon: ic_warning, title: "Swap initialization error", description: commitError?.message || commitError?.toString(), error: commitError }), isCreated && hasEnoughBalance ? (smartChainWallet === undefined ? null : (_jsx(SwapForGasAlert, { notEnoughForGas: props.notEnoughForGas, quote: props.quote }))) : null, isCommited ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "mb-3 tab-accent", children: bitcoinChainData.wallet != null ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-2", title: "Sending BTC failed", error: payError }), _jsx("div", { className: "d-flex flex-column align-items-center justify-content-center", children: payTxId != null ? (_jsxs("div", { className: "d-flex flex-column align-items-center p-2", children: [_jsx(Spinner, {}), _jsx("label", { children: "Sending Bitcoin transaction..." })] })) : (_jsxs(_Fragment, { children: [_jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center", disabled: payLoading, onClick: payBitcoin, children: [payLoading ? (_jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" })) : (''), "Pay with", ' ', _jsx("img", { width: 20, height: 20, src: bitcoinChainData.wallet?.icon, className: "ms-2 me-1" }), ' ', bitcoinChainData.wallet?.name] }), _jsx("small", { className: "mt-2", children: _jsx("a", { href: "#", onClick: (e) => {
+                                                                e.preventDefault();
+                                                                disconnectWallet('BITCOIN');
+                                                            }, children: "Or use a QR code/wallet address" }) })] })) })] })) : (_jsx(CopyOverlay, { placement: 'top', children: addressContent })) }), _jsx(SwapExpiryProgressBar, { timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, expiryText: "Swap address expired, please do not send any funds!", quoteAlias: "Swap address" }), waitPaymentError == null ? (_jsx(Button, { onClick: props.abortSwap, variant: "danger", children: "Abort swap" })) : (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: "Wait payment error", error: waitPaymentError }), _jsx(Button, { onClick: onWaitForPayment, variant: "secondary", children: "Retry" })] }))] })) : (''), isReceived ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx("small", { className: "mb-2", children: "Transaction successfully received, waiting for confirmations..." }), _jsx(Spinner, {}), _jsxs("label", { children: [txData.confirmations, " / ", txData.confTarget] }), _jsx("label", { style: { marginTop: '-6px' }, children: "Confirmations" }), _jsx("a", { className: "mb-2 text-overflow-ellipsis text-nowrap overflow-hidden", style: { width: '100%' }, target: "_blank", href: FEConstants.btcBlockExplorer + txData.txId, children: _jsx("small", { children: txData.txId }) }), _jsxs(Badge, { className: 'text-black' + (txData.txEtaMs == null ? ' d-none' : ''), bg: "light", pill: true, children: ["ETA:", ' ', txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
+                                        ? '>1 hour'
+                                        : '~' + getDeltaText(txData.txEtaMs)] })] })) : (''), isClaimable && !(claimable || isAlreadyClaimable) ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx(Spinner, {}), _jsx("small", { className: "mt-2", children: "Transaction received & confirmed, waiting for claim by watchtowers..." })] })) : (''), (isClaimable || isClaiming) && (claimable || isAlreadyClaimable) ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "d-flex flex-column align-items-center tab-accent mb-3", children: _jsx("label", { children: "Transaction received & confirmed, you can claim your funds manually now!" }) }), _jsx(ErrorAlert, { className: "mb-3", title: "Claim error", error: claimError }), _jsxs(ButtonWithWallet, { chainId: props.quote.chainIdentifier, onClick: onClaim, disabled: claimLoading, size: "lg", children: [claimLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : '', "Finish swap (claim funds)"] })] })) : (''), _jsx(SwapStepAlert, { show: isSuccess, type: "success", icon: ic_check_circle_outline, title: "Swap success", description: "Your swap was executed successfully!" }), isExpired ? (_jsx(SwapExpiryProgressBar, { expired: true, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, expiryText: "Swap address expired, please do not send any funds!", quoteAlias: "Swap address" })) : null, _jsx(SwapStepAlert, { show: isFailed, type: "danger", icon: ic_warning, title: "Swap failed", description: "Swap address expired without receiving the required funds!" })] }), isCreated && hasEnoughBalance ? (smartChainWallet === undefined ? (_jsx(ButtonWithWallet, { chainId: props.quote.chainIdentifier, requiredWalletAddress: props.quote._getInitiator(), size: "lg", className: "swap-panel__action" })) : (_jsxs(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote.chainIdentifier, onClick: onCommit, disabled: commitLoading || !!props.notEnoughForGas || !hasEnoughBalance, size: "lg", className: "swap-panel__action", children: [commitLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : '', "Initiate swap"] }))) : null, isQuoteExpired || isExpired || isFailed || isSuccess ? (_jsx(BaseButton, { onClick: props.refreshQuote, variant: "primary", className: "swap-panel__action", children: "New quote" })) : null, _jsx(ScrollAnchor, { trigger: isCommited })] }));
 }

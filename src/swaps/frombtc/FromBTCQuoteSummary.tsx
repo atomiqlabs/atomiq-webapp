@@ -38,6 +38,10 @@ import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { BaseButton } from '../../components/BaseButton';
 import { useChain } from '../../wallets/hooks/useChain';
+import { WalletData } from '../../components/StepByStep';
+import { SwapStepAlert } from '../components/SwapStepAlert';
+import { TokenIcons } from '../../tokens/Tokens';
+import { usePricing } from '../../tokens/hooks/usePricing';
 
 /*
 Steps:
@@ -208,6 +212,52 @@ export function FromBTCQuoteSummary(props: {
       if (setAmountLockRef.current != null) setAmountLockRef.current(false);
     }
   }, [isSuccess, isFailed, isExpired, isQuoteExpired, isCommitCancelled, isClaimCancelled]);
+
+  // Source wallet data (input token - Bitcoin)
+  const inputAmount = props.quote.getInput().amount;
+  const inputToken = props.quote.getInput().token;
+  const inputValue = usePricing(inputAmount, inputToken);
+
+  const sourceWallet: WalletData = useMemo(() => {
+    if (!inputToken) return null;
+    const chainIcon = '/icons/chains/bitcoin.svg';
+    // Get string representation and remove trailing zeros
+    const amountStr = props.quote.getInput().toString();
+    const [numPart, tickerPart] = amountStr.split(' ');
+    const cleanedAmount = parseFloat(numPart).toString();
+    return {
+      icon: TokenIcons[inputToken.ticker],
+      chainIcon,
+      amount: `${cleanedAmount} ${tickerPart}`,
+      dollarValue: inputValue ? `$${inputValue.toFixed(2)}` : undefined,
+    };
+  }, [inputToken, inputAmount, inputValue]);
+
+  // Destination wallet data (output token)
+  const outputAmount = props.quote.getOutput().amount;
+  const outputToken = props.quote.getOutput().token;
+  const outputValue = usePricing(outputAmount, outputToken);
+  const outputAddress = props.quote.getOutputAddress();
+
+  const destinationWallet: WalletData = useMemo(() => {
+    if (!outputToken) return null;
+    const chainIcon = props.quote.chainIdentifier?.includes('SOLANA')
+      ? '/icons/chains/solana.svg'
+      : props.quote.chainIdentifier?.includes('STARKNET')
+        ? '/icons/chains/STARKNET.svg'
+        : undefined;
+    // Get string representation and remove trailing zeros
+    const amountStr = props.quote.getOutput().toString();
+    const [numPart, tickerPart] = amountStr.split(' ');
+    const cleanedAmount = parseFloat(numPart).toString();
+    return {
+      icon: TokenIcons[outputToken.ticker],
+      chainIcon,
+      amount: `${cleanedAmount} ${tickerPart}`,
+      dollarValue: outputValue ? `$${outputValue.toFixed(2)}` : undefined,
+      address: outputAddress,
+    };
+  }, [outputToken, outputAmount, outputValue, outputAddress, props.quote.chainIdentifier]);
 
   /*
     Steps:
@@ -387,237 +437,250 @@ export function FromBTCQuoteSummary(props: {
         setShowCopyWarning={setShowCopyWarning}
       />
 
-      {isInitiated ? <StepByStep steps={executionSteps} /> : ''}
+      <div className="swap-panel__card">
+        {isInitiated ? (
+          <StepByStep
+            steps={executionSteps}
+            sourceWallet={sourceWallet}
+            destinationWallet={destinationWallet}
+          />
+        ) : null}
 
-      <SwapExpiryProgressBar
-        expired={isQuoteExpired}
-        timeRemaining={quoteTimeRemaining}
-        totalTime={totalQuoteTime}
-        show={
-          (isCreated || isQuoteExpired) &&
-          !commitLoading &&
-          !props.notEnoughForGas &&
-          smartChainWallet !== undefined &&
-          hasEnoughBalance
-        }
-      />
+        {/*<SwapExpiryProgressBar*/}
+        {/*  expired={isQuoteExpired}*/}
+        {/*  timeRemaining={quoteTimeRemaining}*/}
+        {/*  totalTime={totalQuoteTime}*/}
+        {/*  show={*/}
+        {/*    (isCreated || isQuoteExpired) &&*/}
+        {/*    !commitLoading &&*/}
+        {/*    !props.notEnoughForGas &&*/}
+        {/*    smartChainWallet !== undefined &&*/}
+        {/*    hasEnoughBalance*/}
+        {/*  }*/}
+        {/*/>*/}
 
-      <ErrorAlert className="mb-3" title="Swap initialization error" error={commitError} />
+        <SwapStepAlert
+          show={!!commitError}
+          type="error"
+          icon={ic_warning}
+          title="Swap initialization error"
+          description={commitError?.message || commitError?.toString()}
+          error={commitError}
+        />
 
+        {isCreated && hasEnoughBalance ? (
+          smartChainWallet === undefined ? null : (
+            <SwapForGasAlert notEnoughForGas={props.notEnoughForGas} quote={props.quote} />
+          )
+        ) : null}
+
+        {isCommited ? (
+          <>
+            <div className="mb-3 tab-accent">
+              {bitcoinChainData.wallet != null ? (
+                <>
+                  <ErrorAlert className="mb-2" title="Sending BTC failed" error={payError} />
+
+                  <div className="d-flex flex-column align-items-center justify-content-center">
+                    {payTxId != null ? (
+                      <div className="d-flex flex-column align-items-center p-2">
+                        <Spinner />
+                        <label>Sending Bitcoin transaction...</label>
+                      </div>
+                    ) : (
+                      <>
+                        <Button
+                          variant="light"
+                          className="d-flex flex-row align-items-center"
+                          disabled={payLoading}
+                          onClick={payBitcoin}
+                        >
+                          {payLoading ? (
+                            <Spinner animation="border" size="sm" className="mr-2" />
+                          ) : (
+                            ''
+                          )}
+                          Pay with{' '}
+                          <img
+                            width={20}
+                            height={20}
+                            src={bitcoinChainData.wallet?.icon}
+                            className="ms-2 me-1"
+                          />{' '}
+                          {bitcoinChainData.wallet?.name}
+                        </Button>
+
+                        <small className="mt-2">
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              disconnectWallet('BITCOIN');
+                            }}
+                          >
+                            Or use a QR code/wallet address
+                          </a>
+                        </small>
+                      </>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <CopyOverlay placement={'top'}>{addressContent}</CopyOverlay>
+              )}
+            </div>
+
+            <SwapExpiryProgressBar
+              timeRemaining={quoteTimeRemaining}
+              totalTime={totalQuoteTime}
+              expiryText="Swap address expired, please do not send any funds!"
+              quoteAlias="Swap address"
+            />
+
+            {waitPaymentError == null ? (
+              <Button onClick={props.abortSwap} variant="danger">
+                Abort swap
+              </Button>
+            ) : (
+              <>
+                <ErrorAlert className="mb-3" title="Wait payment error" error={waitPaymentError} />
+                <Button onClick={onWaitForPayment} variant="secondary">
+                  Retry
+                </Button>
+              </>
+            )}
+          </>
+        ) : (
+          ''
+        )}
+
+        {isReceived ? (
+          <div className="d-flex flex-column align-items-center tab-accent">
+            <small className="mb-2">
+              Transaction successfully received, waiting for confirmations...
+            </small>
+
+            <Spinner />
+            <label>
+              {txData.confirmations} / {txData.confTarget}
+            </label>
+            <label style={{ marginTop: '-6px' }}>Confirmations</label>
+
+            <a
+              className="mb-2 text-overflow-ellipsis text-nowrap overflow-hidden"
+              style={{ width: '100%' }}
+              target="_blank"
+              href={FEConstants.btcBlockExplorer + txData.txId}
+            >
+              <small>{txData.txId}</small>
+            </a>
+
+            <Badge
+              className={'text-black' + (txData.txEtaMs == null ? ' d-none' : '')}
+              bg="light"
+              pill
+            >
+              ETA:{' '}
+              {txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
+                ? '>1 hour'
+                : '~' + getDeltaText(txData.txEtaMs)}
+            </Badge>
+          </div>
+        ) : (
+          ''
+        )}
+
+        {isClaimable && !(claimable || isAlreadyClaimable) ? (
+          <div className="d-flex flex-column align-items-center tab-accent">
+            <Spinner />
+            <small className="mt-2">
+              Transaction received & confirmed, waiting for claim by watchtowers...
+            </small>
+          </div>
+        ) : (
+          ''
+        )}
+
+        {(isClaimable || isClaiming) && (claimable || isAlreadyClaimable) ? (
+          <>
+            <div className="d-flex flex-column align-items-center tab-accent mb-3">
+              <label>
+                Transaction received & confirmed, you can claim your funds manually now!
+              </label>
+            </div>
+
+            <ErrorAlert className="mb-3" title="Claim error" error={claimError} />
+
+            <ButtonWithWallet
+              chainId={props.quote.chainIdentifier}
+              onClick={onClaim}
+              disabled={claimLoading}
+              size="lg"
+            >
+              {claimLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
+              Finish swap (claim funds)
+            </ButtonWithWallet>
+          </>
+        ) : (
+          ''
+        )}
+
+        <SwapStepAlert
+          show={isSuccess}
+          type="success"
+          icon={ic_check_circle_outline}
+          title="Swap success"
+          description="Your swap was executed successfully!"
+        />
+
+        {isExpired ? (
+          <SwapExpiryProgressBar
+            expired={true}
+            timeRemaining={quoteTimeRemaining}
+            totalTime={totalQuoteTime}
+            expiryText="Swap address expired, please do not send any funds!"
+            quoteAlias="Swap address"
+          />
+        ) : null}
+
+        <SwapStepAlert
+          show={isFailed}
+          type="danger"
+          icon={ic_warning}
+          title="Swap failed"
+          description="Swap address expired without receiving the required funds!"
+        />
+      </div>
+
+      {/* Action buttons outside the card */}
       {isCreated && hasEnoughBalance ? (
         smartChainWallet === undefined ? (
           <ButtonWithWallet
             chainId={props.quote.chainIdentifier}
             requiredWalletAddress={props.quote._getInitiator()}
             size="lg"
+            className="swap-panel__action"
           />
         ) : (
-          <>
-            <SwapForGasAlert notEnoughForGas={props.notEnoughForGas} quote={props.quote} />
-
-            <ButtonWithWallet
-              requiredWalletAddress={props.quote._getInitiator()}
-              chainId={props.quote.chainIdentifier}
-              onClick={onCommit}
-              disabled={commitLoading || !!props.notEnoughForGas || !hasEnoughBalance}
-              size="lg"
-              className="d-flex flex-row"
-            >
-              {commitLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
-              Initiate swap
-            </ButtonWithWallet>
-          </>
-        )
-      ) : (
-        ''
-      )}
-
-      {isCommited ? (
-        <>
-          <div className="mb-3 tab-accent">
-            {bitcoinChainData.wallet != null ? (
-              <>
-                <ErrorAlert className="mb-2" title="Sending BTC failed" error={payError} />
-
-                <div className="d-flex flex-column align-items-center justify-content-center">
-                  {payTxId != null ? (
-                    <div className="d-flex flex-column align-items-center p-2">
-                      <Spinner />
-                      <label>Sending Bitcoin transaction...</label>
-                    </div>
-                  ) : (
-                    <>
-                      <Button
-                        variant="light"
-                        className="d-flex flex-row align-items-center"
-                        disabled={payLoading}
-                        onClick={payBitcoin}
-                      >
-                        {payLoading ? (
-                          <Spinner animation="border" size="sm" className="mr-2" />
-                        ) : (
-                          ''
-                        )}
-                        Pay with{' '}
-                        <img
-                          width={20}
-                          height={20}
-                          src={bitcoinChainData.wallet?.icon}
-                          className="ms-2 me-1"
-                        />{' '}
-                        {bitcoinChainData.wallet?.name}
-                      </Button>
-
-                      <small className="mt-2">
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            disconnectWallet('BITCOIN');
-                          }}
-                        >
-                          Or use a QR code/wallet address
-                        </a>
-                      </small>
-                    </>
-                  )}
-                </div>
-              </>
-            ) : (
-              <CopyOverlay placement={'top'}>{addressContent}</CopyOverlay>
-            )}
-          </div>
-
-          <SwapExpiryProgressBar
-            timeRemaining={quoteTimeRemaining}
-            totalTime={totalQuoteTime}
-            expiryText="Swap address expired, please do not send any funds!"
-            quoteAlias="Swap address"
-          />
-
-          {waitPaymentError == null ? (
-            <Button onClick={props.abortSwap} variant="danger">
-              Abort swap
-            </Button>
-          ) : (
-            <>
-              <ErrorAlert className="mb-3" title="Wait payment error" error={waitPaymentError} />
-              <Button onClick={onWaitForPayment} variant="secondary">
-                Retry
-              </Button>
-            </>
-          )}
-        </>
-      ) : (
-        ''
-      )}
-
-      {isReceived ? (
-        <div className="d-flex flex-column align-items-center tab-accent">
-          <small className="mb-2">
-            Transaction successfully received, waiting for confirmations...
-          </small>
-
-          <Spinner />
-          <label>
-            {txData.confirmations} / {txData.confTarget}
-          </label>
-          <label style={{ marginTop: '-6px' }}>Confirmations</label>
-
-          <a
-            className="mb-2 text-overflow-ellipsis text-nowrap overflow-hidden"
-            style={{ width: '100%' }}
-            target="_blank"
-            href={FEConstants.btcBlockExplorer + txData.txId}
-          >
-            <small>{txData.txId}</small>
-          </a>
-
-          <Badge
-            className={'text-black' + (txData.txEtaMs == null ? ' d-none' : '')}
-            bg="light"
-            pill
-          >
-            ETA:{' '}
-            {txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
-              ? '>1 hour'
-              : '~' + getDeltaText(txData.txEtaMs)}
-          </Badge>
-        </div>
-      ) : (
-        ''
-      )}
-
-      {isClaimable && !(claimable || isAlreadyClaimable) ? (
-        <div className="d-flex flex-column align-items-center tab-accent">
-          <Spinner />
-          <small className="mt-2">
-            Transaction received & confirmed, waiting for claim by watchtowers...
-          </small>
-        </div>
-      ) : (
-        ''
-      )}
-
-      {(isClaimable || isClaiming) && (claimable || isAlreadyClaimable) ? (
-        <>
-          <div className="d-flex flex-column align-items-center tab-accent mb-3">
-            <label>Transaction received & confirmed, you can claim your funds manually now!</label>
-          </div>
-
-          <ErrorAlert className="mb-3" title="Claim error" error={claimError} />
-
           <ButtonWithWallet
+            requiredWalletAddress={props.quote._getInitiator()}
             chainId={props.quote.chainIdentifier}
-            onClick={onClaim}
-            disabled={claimLoading}
+            onClick={onCommit}
+            disabled={commitLoading || !!props.notEnoughForGas || !hasEnoughBalance}
             size="lg"
+            className="swap-panel__action"
           >
-            {claimLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
-            Finish swap (claim funds)
+            {commitLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
+            Initiate swap
           </ButtonWithWallet>
-        </>
-      ) : (
-        ''
-      )}
-
-      {isSuccess ? (
-        <Alert variant="success" className="mb-3">
-          <strong>Swap success</strong>
-          <label>Your swap was executed successfully!</label>
-        </Alert>
-      ) : (
-        ''
-      )}
-
-      {isExpired ? (
-        <SwapExpiryProgressBar
-          expired={true}
-          timeRemaining={quoteTimeRemaining}
-          totalTime={totalQuoteTime}
-          expiryText="Swap address expired, please do not send any funds!"
-          quoteAlias="Swap address"
-        />
-      ) : (
-        ''
-      )}
-
-      {isFailed ? (
-        <Alert variant="danger" className="mb-3">
-          <strong>Swap failed</strong>
-          <label>Swap address expired without receiving the required funds!</label>
-        </Alert>
-      ) : (
-        ''
-      )}
+        )
+      ) : null}
 
       {isQuoteExpired || isExpired || isFailed || isSuccess ? (
-        <BaseButton onClick={props.refreshQuote} variant="primary" size="large">
+        <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
           New quote
         </BaseButton>
-      ) : (
-        ''
-      )}
+      ) : null}
 
       <ScrollAnchor trigger={isCommited} />
     </>
