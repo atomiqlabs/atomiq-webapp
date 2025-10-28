@@ -536,19 +536,6 @@ export function FromBTCQuoteSummary(props: {
               expiryText="Swap address expired, please do not send any funds!"
               quoteAlias="Swap address"
             />
-
-            {waitPaymentError == null ? (
-              <Button onClick={props.abortSwap} variant="danger">
-                Abort swap
-              </Button>
-            ) : (
-              <>
-                <ErrorAlert className="mb-3" title="Wait payment error" error={waitPaymentError} />
-                <Button onClick={onWaitForPayment} variant="secondary">
-                  Retry
-                </Button>
-              </>
-            )}
           </>
         ) : (
           ''
@@ -653,27 +640,13 @@ export function FromBTCQuoteSummary(props: {
       </div>
 
       {/* Action buttons outside the card */}
-      {isCreated && hasEnoughBalance ? (
-        smartChainWallet === undefined ? (
-          <ButtonWithWallet
-            chainId={props.quote.chainIdentifier}
-            requiredWalletAddress={props.quote._getInitiator()}
-            size="lg"
-            className="swap-panel__action"
-          />
-        ) : (
-          <ButtonWithWallet
-            requiredWalletAddress={props.quote._getInitiator()}
-            chainId={props.quote.chainIdentifier}
-            onClick={onCommit}
-            disabled={commitLoading || !!props.notEnoughForGas || !hasEnoughBalance}
-            size="lg"
-            className="swap-panel__action"
-          >
-            {commitLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
-            Initiate swap
-          </ButtonWithWallet>
-        )
+      {isCreated && hasEnoughBalance && smartChainWallet === undefined ? (
+        <ButtonWithWallet
+          chainId={props.quote.chainIdentifier}
+          requiredWalletAddress={props.quote._getInitiator()}
+          size="lg"
+          className="swap-panel__action"
+        />
       ) : null}
 
       {isQuoteExpired || isExpired || isFailed || isSuccess ? (
@@ -681,6 +654,23 @@ export function FromBTCQuoteSummary(props: {
           New quote
         </BaseButton>
       ) : null}
+
+      {waitPaymentError == null ? (
+        <BaseButton
+          onClick={props.abortSwap}
+          variant="danger"
+          className="swap-panel__action is-large"
+        >
+          Abort swap
+        </BaseButton>
+      ) : (
+        <>
+          <ErrorAlert className="mb-3" title="Wait payment error" error={waitPaymentError} />
+          <Button onClick={onWaitForPayment} variant="secondary">
+            Retry
+          </Button>
+        </>
+      )}
 
       <ScrollAnchor trigger={isCommited} />
     </>

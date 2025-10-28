@@ -50,6 +50,11 @@
     }
   }
 
+  &--danger {
+    @apply bg-red/10 hover:bg-red/60 border border-solid border-red text-red;
+    --bs-border-color: rgba(255, 20, 20, 0.2);
+  }
+
   &--clear {
     @apply text-white font-medium;
   }

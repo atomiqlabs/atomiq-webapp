@@ -10,6 +10,7 @@ export const BaseButton = React.forwardRef(function BaseButton({ children, class
         'base-button--primary': variant === 'primary',
         'base-button--secondary': variant === 'secondary',
         'base-button--transparent': variant === 'transparent',
+        'base-button--danger': variant === 'danger',
         'base-button--clear': variant === 'clear',
         'base-button--border-only': variant === 'border-only',
         'base-button--icon-only': !children,

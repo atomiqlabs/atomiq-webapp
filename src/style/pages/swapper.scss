@@ -137,6 +137,13 @@
     &.btn-primary {
       @apply h-[64px] font-semibold;
     }
+
+    .base-button__content {
+      @apply gap-1;
+    }
+    &.is-large {
+      @apply h-[64px] text-[18px];
+    }
   }
 
   &__error {
