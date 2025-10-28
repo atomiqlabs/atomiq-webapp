@@ -640,13 +640,26 @@ export function FromBTCQuoteSummary(props: {
       </div>
 
       {/* Action buttons outside the card */}
-      {isCreated && hasEnoughBalance && smartChainWallet === undefined ? (
-        <ButtonWithWallet
-          chainId={props.quote.chainIdentifier}
-          requiredWalletAddress={props.quote._getInitiator()}
-          size="lg"
-          className="swap-panel__action"
-        />
+      {isCreated && hasEnoughBalance && !commitLoading ? (
+        smartChainWallet === undefined ? (
+          <ButtonWithWallet
+            chainId={props.quote.chainIdentifier}
+            requiredWalletAddress={props.quote._getInitiator()}
+            size="lg"
+            className="swap-panel__action"
+          />
+        ) : (
+          <ButtonWithWallet
+            requiredWalletAddress={props.quote._getInitiator()}
+            chainId={props.quote.chainIdentifier}
+            onClick={onCommit}
+            disabled={!!props.notEnoughForGas || !hasEnoughBalance}
+            size="lg"
+            className="swap-panel__action"
+          >
+            Swap
+          </ButtonWithWallet>
+        )
       ) : null}
 
       {isQuoteExpired || isExpired || isFailed || isSuccess ? (
@@ -655,22 +668,27 @@ export function FromBTCQuoteSummary(props: {
         </BaseButton>
       ) : null}
 
-      {waitPaymentError == null ? (
-        <BaseButton
-          onClick={props.abortSwap}
-          variant="danger"
-          className="swap-panel__action is-large"
-        >
-          Abort swap
-        </BaseButton>
-      ) : (
-        <>
-          <ErrorAlert className="mb-3" title="Wait payment error" error={waitPaymentError} />
-          <Button onClick={onWaitForPayment} variant="secondary">
-            Retry
-          </Button>
-        </>
-      )}
+      {(isCommited || isReceived) &&
+        (waitPaymentError == null ? (
+          <BaseButton
+            onClick={props.abortSwap}
+            variant="danger"
+            className="swap-panel__action is-large"
+          >
+            Abort swap
+          </BaseButton>
+        ) : (
+          <>
+            <ErrorAlert className="mb-3" title="Wait payment error" error={waitPaymentError} />
+            <BaseButton
+              onClick={onWaitForPayment}
+              variant="secondary"
+              className="swap-panel__action"
+            >
+              Retry
+            </BaseButton>
+          </>
+        ))}
 
       <ScrollAnchor trigger={isCommited} />
     </>
