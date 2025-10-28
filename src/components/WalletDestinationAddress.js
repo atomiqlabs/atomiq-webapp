@@ -7,7 +7,7 @@ import { fromHumanReadableString } from '@atomiqlabs/sdk';
 import { Tokens } from '../FEConstants';
 export function WalletDestinationAddress({ outputChainData, outputToken, addressState, addressRef, addressValidator, locked, webLnForOutput, validatedAmount, quote, onAddressChange, disconnectWallet, setQrScanning, }) {
     // Compute whether the address is from a connected wallet
-    const isOutputWalletAddress = useMemo(() => outputChainData?.wallet?.address === addressState.value, [outputChainData?.wallet?.address, addressState.value]);
+    const isOutputWalletAddress = useMemo(() => outputChainData?.wallet?.address === addressState.value || (webLnForOutput && !!addressState.value), [outputChainData?.wallet?.address, addressState.value, webLnForOutput]);
     // Validation error (actual errors that make the input invalid)
     const validationError = useMemo(() => {
         if (!addressState.userInput || addressState.userInput.trim() === '')
@@ -42,7 +42,7 @@ export function WalletDestinationAddress({ outputChainData, outputToken, address
         isBtcToken(outputToken) &&
         outputToken.lightning &&
         addressState.data == null, [locked, outputChainData?.wallet, outputToken, addressState.data]);
-    return (_jsxs("div", { className: "wallet-address", children: [!(webLnForOutput && validatedAmount == null) && (_jsx(_Fragment, { children: webLnForOutput ? (_jsx("div", { className: "wallet-address__body", children: _jsxs("a", { href: "#", className: "wallet-address__invoice-button", onClick: async (e) => {
+    return (_jsxs("div", { className: "wallet-address", children: [!(webLnForOutput && validatedAmount == null) && (_jsx(_Fragment, { children: webLnForOutput && !isOutputWalletAddress ? (_jsx("div", { className: "wallet-address__body", children: _jsxs("a", { href: "#", className: "wallet-address__invoice-button", onClick: async (e) => {
                             e.preventDefault();
                             if (validatedAmount == null)
                                 return;
@@ -56,10 +56,10 @@ export function WalletDestinationAddress({ outputChainData, outputToken, address
                             }
                         }, children: [_jsx("i", { className: "icon icon-Lightning-invoice" }), _jsx("span", { className: "sc-text", children: "Fetch invoice from WebLN" })] }) })) : (_jsxs(_Fragment, { children: [_jsxs("div", { className: "wallet-address__body", children: [_jsxs("div", { className: "wallet-address__title", children: [outputChainData?.chain?.name ?? outputToken?.chain ?? 'Wallet', " Destination Address"] }), _jsx(ValidatedInput, { type: 'text', className: 'wallet-address__form with-inline-icon', onChange: (val, forcedChange) => {
                                         onAddressChange(val, !forcedChange);
-                                    }, value: addressState.value, inputRef: addressRef, placeholder: 'Enter destination address', onValidate: addressValidator, validated: validationError, disabled: locked || outputChainData?.wallet != null, textEnd: isOutputWalletAddress || addressState.data?.amount != null ? (_jsx("span", { className: "icon icon-check" })) : validationError && addressState.userInput ? (_jsx("span", { className: "icon icon-invalid-error" })) : warningMessage ? (_jsx("span", { className: "icon icon-info" })) : null, textStart: addressState.loading ? _jsx(Spinner, { className: "text-white" }) : null, successFeedback: addressState.data?.amount != null
-                                        ? 'Swap amount imported from lightning network invoice.'
-                                        : isOutputWalletAddress
-                                            ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
+                                    }, value: addressState.value, inputRef: addressRef, placeholder: 'Enter destination address', onValidate: addressValidator, validated: validationError, disabled: locked || outputChainData?.wallet != null, textEnd: isOutputWalletAddress || addressState.data?.amount != null ? (_jsx("span", { className: "icon icon-check" })) : validationError && addressState.userInput ? (_jsx("span", { className: "icon icon-invalid-error" })) : warningMessage ? (_jsx("span", { className: "icon icon-info" })) : null, textStart: addressState.loading ? _jsx(Spinner, { className: "text-white" }) : null, successFeedback: isOutputWalletAddress
+                                        ? 'Wallet address fetched from ' + outputChainData?.wallet.name + '.'
+                                        : addressState.data?.amount != null
+                                            ? 'Swap amount imported from lightning network invoice.'
                                             : null, dynamicTextEndPosition: true }), warningMessage && (_jsx("div", { className: "wallet-address__feedback is-warning", children: warningMessage }))] }), _jsx("div", { className: "wallet-address__action", children: locked ? null : outputChainData?.wallet != null ? (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Disconnect wallet & use external wallet" }), children: _jsx("a", { href: "#", className: "wallet-address__action__button", onClick: (e) => {
                                         e.preventDefault();
                                         if (outputChainData == null)
