@@ -16,6 +16,14 @@ export function StepByStep(props) {
                                         }), children: step.text })] }), index < props.steps.length - 1 && (_jsx("div", { className: classNames('swap-steps__dots', {
                                     'is-loading': step.type === 'loading',
                                     'is-success': step.type === 'success',
-                                }), children: [...Array(8)].map((_, dotIndex) => (_jsx("div", { className: "swap-steps__dot" }, dotIndex))) }))] }, index.toString()));
+                                }), style: props.steps.length > 2
+                                    ? index === 0
+                                        ? {
+                                            left: `23%`,
+                                        }
+                                        : {
+                                            right: `24%`,
+                                        }
+                                    : {}, children: [...Array(props.steps.length > 2 ? 5 : 8)].map((_, dotIndex) => (_jsx("div", { className: "swap-steps__dot" }, dotIndex))) }))] }, index.toString()));
                 }) })] }));
 }

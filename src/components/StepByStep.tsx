@@ -136,8 +136,19 @@ export function StepByStep(props: {
                     'is-loading': step.type === 'loading',
                     'is-success': step.type === 'success',
                   })}
+                  style={
+                    props.steps.length > 2
+                      ? index === 0
+                        ? {
+                            left: `23%`,
+                          }
+                        : {
+                            right: `24%`,
+                          }
+                      : {}
+                  }
                 >
-                  {[...Array(8)].map((_, dotIndex) => (
+                  {[...Array(props.steps.length > 2 ? 5 : 8)].map((_, dotIndex) => (
                     <div key={dotIndex} className="swap-steps__dot"></div>
                   ))}
                 </div>
