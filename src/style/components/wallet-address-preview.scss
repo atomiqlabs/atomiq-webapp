@@ -1,0 +1,45 @@
+.wallet-address-preview {
+  @apply flex items-center justify-between py-4 gap-6;
+
+  &__content {
+    @apply flex flex-col gap-1 items-start flex-1;
+  }
+
+  &__title {
+    @apply text-[12px] font-medium opacity-50 uppercase;
+  }
+
+  &__address {
+    @apply flex items-center gap-[8px] w-full justify-between;
+
+    .sc-text {
+      @apply text-[14px] font-mono;
+      color: rgba(255, 255, 255, 0.9);
+      word-break: break-all;
+    }
+  }
+
+  &__indicator {
+    @apply w-[14px] h-[14px] rounded-full flex-shrink-0 bg-green;
+    border: 2px solid transparent;
+    box-shadow: 0 0 0 1px rgba(64, 231, 45, 0.5);
+    background-clip: padding-box; // 👈 prevents the background from painting under the border
+  }
+
+  &__action {
+    @apply text-[16px] font-medium w-[40px] h-[40px] cursor-pointer rounded-lg transition-all duration-200 flex items-center justify-center;
+    @apply transition-all duration-200;
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}

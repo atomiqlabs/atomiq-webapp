@@ -16,6 +16,7 @@ export type WalletData = {
   amount: string;
   dollarValue?: string;
   address?: string;
+  chainName?: string;
 };
 
 export function StepByStep(props: {
@@ -90,7 +91,7 @@ export function StepByStep(props: {
       </div>
       {props.destinationWallet.address && (
         <div className="swap-steps__address">
-          <div>Destination Bitcoin Wallet Address:</div>
+          <div>Destination {props.destinationWallet.chainName ?? ''} Wallet Address:</div>
           <div>
             {props.destinationWallet.address.slice(0, 5)}...
             {props.destinationWallet.address.slice(-5)}

@@ -3,10 +3,8 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 import { Badge, Button, Spinner } from 'react-bootstrap';
 import { AlertMessage } from '../../components/AlertMessage';
 import { QRCodeSVG } from 'qrcode.react';
-import ValidatedInput from '../../components/ValidatedInput';
 import { FromBTCSwapState } from '@atomiqlabs/sdk';
 import Icon from 'react-icons-kit';
-import { clipboard } from 'react-icons-kit/fa/clipboard';
 import { externalLink } from 'react-icons-kit/fa/externalLink';
 import { getDeltaText } from '../../utils/Utils';
 import { FEConstants, Tokens } from '../../FEConstants';
@@ -23,7 +21,6 @@ import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outlin
 import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empty_outline';
 import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
-import { ic_pending_outline } from 'react-icons-kit/md/ic_pending_outline';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
@@ -41,6 +38,7 @@ import { useChain } from '../../wallets/hooks/useChain';
 import { SwapStepAlert } from '../components/SwapStepAlert';
 import { TokenIcons } from '../../tokens/Tokens';
 import { usePricing } from '../../tokens/hooks/usePricing';
+import { WalletAddressPreview } from '../../components/WalletAddressPreview';
 /*
 Steps:
 1. Opening swap address -> Swap address opened
@@ -166,6 +164,19 @@ export function FromBTCQuoteSummary(props) {
             dollarValue: inputValue ? `$${inputValue.toFixed(2)}` : undefined,
         };
     }, [inputToken, inputAmount, inputValue]);
+    // Helper function to map token ticker to full chain name
+    const getChainName = (ticker) => {
+        if (!ticker)
+            return 'Bitcoin';
+        const chainNames = {
+            BTC: 'Bitcoin',
+            ETH: 'Ethereum',
+            SOL: 'Solana',
+            USDC: 'USDC',
+            USDT: 'USDT',
+        };
+        return chainNames[ticker] || ticker;
+    };
     // Destination wallet data (output token)
     const outputAmount = props.quote.getOutput().amount;
     const outputToken = props.quote.getOutput().token;
@@ -189,6 +200,7 @@ export function FromBTCQuoteSummary(props) {
             amount: `${cleanedAmount} ${tickerPart}`,
             dollarValue: outputValue ? `$${outputValue.toFixed(2)}` : undefined,
             address: outputAddress,
+            chainName: getChainName(outputToken.ticker),
         };
     }, [outputToken, outputAmount, outputValue, outputAddress, props.quote.chainIdentifier]);
     /*
@@ -236,7 +248,7 @@ export function FromBTCQuoteSummary(props) {
         };
     if (isCommited)
         executionSteps[1] = {
-            icon: ic_pending_outline,
+            icon: bitcoin,
             text: 'Awaiting bitcoin payment',
             type: 'loading',
         };
@@ -283,18 +295,14 @@ export function FromBTCQuoteSummary(props) {
             type: 'success',
         };
     const [_, setShowCopyWarning, showCopyWarningRef] = useLocalStorage('crossLightning-copywarning', true);
-    const addressContent = useCallback((show) => (_jsxs(_Fragment, { children: [_jsxs(AlertMessage, { variant: "warning", className: "mb-3", children: ["Send", ' ', _jsxs("strong", { children: ["EXACTLY ", props.quote.getInput().amount, " ", Tokens.BITCOIN.BTC.ticker] }), ' ', "to the address below."] }), _jsx("div", { className: "mb-2", children: _jsx(QRCodeSVG, { value: props.quote.getHyperlink(), size: 240, includeMargin: true, className: "cursor-pointer", onClick: (event) => {
-                        show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
-                    } }) }), _jsxs("label", { children: ["Please send exactly ", _jsx("strong", { children: props.quote.getInput().amount }), ' ', Tokens.BITCOIN.BTC.ticker, " to the address"] }), _jsx(ValidatedInput, { type: 'text', value: props.quote.getAddress(), textEnd: _jsx("a", { href: "#", onClick: (event) => {
-                        event.preventDefault();
-                        show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
-                    }, children: _jsx(Icon, { icon: clipboard }) }), onCopy: () => {
-                    //Direct call to open the modal here breaks the copying, this is a workaround
+    const addressContent = useCallback((show) => (_jsxs(_Fragment, { children: [_jsxs(AlertMessage, { variant: "warning", className: "mb-3", children: ["Send", ' ', _jsxs("strong", { children: ["EXACTLY ", props.quote.getInput().amount, " ", Tokens.BITCOIN.BTC.ticker] }), ' ', "to the address below."] }), _jsx(QRCodeSVG, { value: props.quote.getHyperlink(), size: 240, includeMargin: true, className: "cursor-pointer", onClick: (event) => {
+                    show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
+                } }), _jsx(WalletAddressPreview, { address: props.quote.getAddress(), chainName: getChainName(inputToken?.ticker), onCopy: () => {
                     if (showCopyWarningRef.current)
                         setTimeout(openModalRef.current, 100);
-                }, inputRef: textFieldRef }), _jsx("div", { className: "d-flex justify-content-center mt-2", children: _jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center justify-content-center", onClick: () => {
+                } }), _jsx("div", { className: "d-flex justify-content-center mt-2", children: _jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center justify-content-center", onClick: () => {
                         window.location.href = props.quote.getHyperlink();
-                    }, children: [_jsx(Icon, { icon: externalLink, className: "d-flex align-items-center me-2" }), " Open in BTC wallet app"] }) })] })), [props.quote]);
+                    }, children: [_jsx(Icon, { icon: externalLink, className: "d-flex align-items-center me-2" }), " Open in BTC wallet app"] }) })] })), [props.quote, inputToken]);
     return (_jsxs(_Fragment, { children: [_jsx(OnchainAddressCopyModal, { openRef: openModalRef, amountBtc: props.quote?.getInput()?.amount, setShowCopyWarning: setShowCopyWarning }), _jsxs("div", { className: "swap-panel__card", children: [isInitiated ? (_jsx(StepByStep, { steps: executionSteps, sourceWallet: sourceWallet, destinationWallet: destinationWallet })) : null, _jsx(SwapStepAlert, { show: !!commitError, type: "error", icon: ic_warning, title: "Swap initialization error", description: commitError?.message || commitError?.toString(), error: commitError }), isCreated && hasEnoughBalance ? (smartChainWallet === undefined ? null : (_jsx(SwapForGasAlert, { notEnoughForGas: props.notEnoughForGas, quote: props.quote }))) : null, isCommited ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "swap-panel__card__group", children: bitcoinChainData.wallet != null ? (_jsx(_Fragment, { children: _jsx("div", { className: "d-flex flex-column align-items-center justify-content-center", children: payTxId != null ? (_jsxs("div", { className: "d-flex flex-column align-items-center p-2", children: [_jsx(Spinner, {}), _jsx("label", { children: "Sending Bitcoin transaction..." })] })) : (_jsxs(_Fragment, { children: [_jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center", disabled: payLoading, onClick: payBitcoin, children: [payLoading ? (_jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" })) : (''), "Pay with", ' ', _jsx("img", { width: 20, height: 20, src: bitcoinChainData.wallet?.icon, className: "ms-2 me-1" }), ' ', bitcoinChainData.wallet?.name] }), _jsx("small", { className: "mt-2", children: _jsx("a", { href: "#", onClick: (e) => {
                                                             e.preventDefault();
                                                             disconnectWallet('BITCOIN');

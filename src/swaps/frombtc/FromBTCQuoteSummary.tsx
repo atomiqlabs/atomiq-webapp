@@ -43,6 +43,7 @@ import { WalletData } from '../../components/StepByStep';
 import { SwapStepAlert } from '../components/SwapStepAlert';
 import { TokenIcons } from '../../tokens/Tokens';
 import { usePricing } from '../../tokens/hooks/usePricing';
+import { WalletAddressPreview } from '../../components/WalletAddressPreview';
 
 /*
 Steps:
@@ -234,6 +235,19 @@ export function FromBTCQuoteSummary(props: {
     };
   }, [inputToken, inputAmount, inputValue]);
 
+  // Helper function to map token ticker to full chain name
+  const getChainName = (ticker?: string): string => {
+    if (!ticker) return 'Bitcoin';
+    const chainNames: Record<string, string> = {
+      BTC: 'Bitcoin',
+      ETH: 'Ethereum',
+      SOL: 'Solana',
+      USDC: 'USDC',
+      USDT: 'USDT',
+    };
+    return chainNames[ticker] || ticker;
+  };
+
   // Destination wallet data (output token)
   const outputAmount = props.quote.getOutput().amount;
   const outputToken = props.quote.getOutput().token;
@@ -247,6 +261,7 @@ export function FromBTCQuoteSummary(props: {
       : props.quote.chainIdentifier?.includes('STARKNET')
         ? '/icons/chains/STARKNET.svg'
         : undefined;
+
     // Get string representation and remove trailing zeros
     const amountStr = props.quote.getOutput().toString();
     const [numPart, tickerPart] = amountStr.split(' ');
@@ -257,6 +272,7 @@ export function FromBTCQuoteSummary(props: {
       amount: `${cleanedAmount} ${tickerPart}`,
       dollarValue: outputValue ? `$${outputValue.toFixed(2)}` : undefined,
       address: outputAddress,
+      chainName: getChainName(outputToken.ticker),
     };
   }, [outputToken, outputAmount, outputValue, outputAddress, props.quote.chainIdentifier]);
 
@@ -307,7 +323,7 @@ export function FromBTCQuoteSummary(props: {
 
   if (isCommited)
     executionSteps[1] = {
-      icon: ic_pending_outline,
+      icon: bitcoin,
       text: 'Awaiting bitcoin payment',
       type: 'loading',
     };
@@ -359,6 +375,7 @@ export function FromBTCQuoteSummary(props: {
     'crossLightning-copywarning',
     true
   );
+
   const addressContent = useCallback(
     (show) => (
       <>
@@ -370,46 +387,47 @@ export function FromBTCQuoteSummary(props: {
           to the address below.
         </AlertMessage>
 
-        <div className="mb-2">
-          <QRCodeSVG
-            value={props.quote.getHyperlink()}
-            size={240}
-            includeMargin={true}
-            className="cursor-pointer"
-            onClick={(event) => {
-              show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
-            }}
-          />
-        </div>
-
-        <label>
-          Please send exactly <strong>{props.quote.getInput().amount}</strong>{' '}
-          {Tokens.BITCOIN.BTC.ticker} to the address
-        </label>
-        <ValidatedInput
-          type={'text'}
-          value={props.quote.getAddress()}
-          textEnd={
-            <a
-              href="#"
-              onClick={(event) => {
-                event.preventDefault();
-                show(
-                  event.target as HTMLElement,
-                  props.quote.getAddress(),
-                  textFieldRef.current?.input?.current
-                );
-              }}
-            >
-              <Icon icon={clipboard} />
-            </a>
-          }
+        <QRCodeSVG
+          value={props.quote.getHyperlink()}
+          size={240}
+          includeMargin={true}
+          className="cursor-pointer"
+          onClick={(event) => {
+            show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
+          }}
+        />
+        <WalletAddressPreview
+          address={props.quote.getAddress()}
+          chainName={getChainName(inputToken?.ticker)}
           onCopy={() => {
-            //Direct call to open the modal here breaks the copying, this is a workaround
             if (showCopyWarningRef.current) setTimeout(openModalRef.current, 100);
           }}
-          inputRef={textFieldRef}
         />
+        {/* TODO remove if it will be not really needed */}
+        {/*<ValidatedInput*/}
+        {/*  type={'text'}*/}
+        {/*  value={props.quote.getAddress()}*/}
+        {/*  textEnd={*/}
+        {/*    <a*/}
+        {/*      href="#"*/}
+        {/*      onClick={(event) => {*/}
+        {/*        event.preventDefault();*/}
+        {/*        show(*/}
+        {/*          event.target as HTMLElement,*/}
+        {/*          props.quote.getAddress(),*/}
+        {/*          textFieldRef.current?.input?.current*/}
+        {/*        );*/}
+        {/*      }}*/}
+        {/*    >*/}
+        {/*      <Icon icon={clipboard} />*/}
+        {/*    </a>*/}
+        {/*  }*/}
+        {/*  onCopy={() => {*/}
+        {/*    //Direct call to open the modal here breaks the copying, this is a workaround*/}
+        {/*    if (showCopyWarningRef.current) setTimeout(openModalRef.current, 100);*/}
+        {/*  }}*/}
+        {/*  inputRef={textFieldRef}*/}
+        {/*/>*/}
 
         <div className="d-flex justify-content-center mt-2">
           <Button
@@ -425,7 +443,7 @@ export function FromBTCQuoteSummary(props: {
         </div>
       </>
     ),
-    [props.quote]
+    [props.quote, inputToken]
   );
 
   return (
