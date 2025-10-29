@@ -42,6 +42,10 @@
     &:has(.wallet-address__feedback.is-warning) {
       @apply bg-yellow/10;
     }
+
+    &__group {
+      @apply bg-white/5 p-[20px] rounded-lg mt-[12px];
+    }
   }
 
   &__toggle {

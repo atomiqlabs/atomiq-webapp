@@ -373,7 +373,7 @@ export function FromBTCQuoteSummary(props: {
         <div className="mb-2">
           <QRCodeSVG
             value={props.quote.getHyperlink()}
-            size={300}
+            size={240}
             includeMargin={true}
             className="cursor-pointer"
             onClick={(event) => {
@@ -475,17 +475,7 @@ export function FromBTCQuoteSummary(props: {
 
         {isCommited ? (
           <>
-            <SwapStepAlert
-              show={!!payError}
-              type="error"
-              icon={ic_warning}
-              title="Sending BTC failed"
-              description={payError?.message || payError?.toString()}
-              error={payError}
-              className="mb-2"
-            />
-
-            <div className="mb-3 tab-accent">
+            <div className="swap-panel__card__group">
               {bitcoinChainData.wallet != null ? (
                 <>
                   <div className="d-flex flex-column align-items-center justify-content-center">
@@ -675,6 +665,18 @@ export function FromBTCQuoteSummary(props: {
         </BaseButton>
       ) : null}
 
+      {isCommited ? (
+        <SwapStepAlert
+          show={!!payError}
+          type="error"
+          icon={ic_warning}
+          title="Sending BTC failed"
+          description={payError?.message || payError?.toString()}
+          error={payError}
+          className="mb-2"
+        />
+      ) : null}
+
       {(isCommited || isReceived) &&
         (waitPaymentError == null ? (
           <BaseButton
@@ -685,16 +687,20 @@ export function FromBTCQuoteSummary(props: {
             Abort swap
           </BaseButton>
         ) : (
-          <>
-            <ErrorAlert className="mb-3" title="Wait payment error" error={waitPaymentError} />
-            <BaseButton
-              onClick={onWaitForPayment}
-              variant="secondary"
-              className="swap-panel__action"
-            >
-              Retry
-            </BaseButton>
-          </>
+          <SwapStepAlert
+            show={!!waitPaymentError}
+            type="error"
+            icon={ic_warning}
+            title="Wait payment error"
+            description={waitPaymentError?.message || waitPaymentError?.toString()}
+            error={waitPaymentError}
+            action={{
+              type: 'button',
+              text: 'Retry',
+              onClick: onWaitForPayment,
+              variant: 'secondary',
+            }}
+          />
         ))}
 
       <ScrollAnchor trigger={isCommited} />
