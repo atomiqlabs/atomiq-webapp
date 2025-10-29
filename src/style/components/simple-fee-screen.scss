@@ -58,23 +58,6 @@
     @apply mr-2 opacity-50;
   }
 
-  // Circular progress bar
-  .circular-progress-wrapper {
-    @apply flex items-center justify-center;
-  }
-
-  .circular-progress {
-    transform: rotate(0deg);
-
-    &__retry {
-      @apply underline font-medium;
-    }
-  }
-
-  .circular-progress-bar {
-    transition: stroke-dashoffset 0.5s ease-in-out;
-  }
-
   &__skeleton {
     @apply animate-pulse h-[10px];
 

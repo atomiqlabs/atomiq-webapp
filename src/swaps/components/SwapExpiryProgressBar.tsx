@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Button } from 'react-bootstrap';
 
 export function SwapExpiryProgressBar(props: {
   timeRemaining: number;
@@ -7,11 +6,29 @@ export function SwapExpiryProgressBar(props: {
   expired?: boolean;
   show?: boolean;
   expiryText?: string;
+  type?: 'circle' | 'bar';
   quoteAlias?: string;
   onRefreshQuote?: () => void;
 }) {
   const timeRemaining = Math.max(0, props.timeRemaining ?? 0);
   const progress = props.totalTime > 0 ? (timeRemaining / props.totalTime) * 100 : 0;
+  const type = props.type ?? 'circle';
+
+  // Format time remaining (timeRemaining is in seconds)
+  const formatTime = (seconds: number) => {
+    const totalSeconds = Math.floor(seconds);
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours > 0) {
+      return `${hours}h : ${minutes}m`;
+    }
+    if (minutes > 0) {
+      return `${minutes}m`;
+    }
+    return `${totalSeconds}s`;
+  };
 
   // Circle properties
   const size = 20;
@@ -20,12 +37,35 @@ export function SwapExpiryProgressBar(props: {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
 
+  if (type === 'bar') {
+    return (
+      <div className={props.show === false ? 'd-none' : 'progress-bar-wrapper'}>
+        {props.expired && props.expiryText ? (
+          <div className="progress-bar__expired-text">{props.expiryText}</div>
+        ) : (
+          <>
+            {props.quoteAlias && (
+              <div className="progress-bar__text">
+                {props.quoteAlias} expires in {formatTime(timeRemaining)}
+              </div>
+            )}
+            <div className="progress-bar__container">
+              <div
+                className="progress-bar__fill"
+                style={{
+                  width: `${progress}%`,
+                  backgroundColor: props.expired ? '#ff6c6c' : '#FF2E8C',
+                }}
+              />
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={
-        props.show === false ? 'd-none' : 'd-flex flex-row align-items-center gap-2 tab-accent'
-      }
-    >
+    <div className={props.show === false ? 'd-none' : 'd-flex flex-row align-items-center gap-2'}>
       <div className="circular-progress-wrapper">
         {props.expired && props.onRefreshQuote ? (
           <div

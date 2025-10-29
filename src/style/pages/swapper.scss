@@ -44,7 +44,22 @@
     }
 
     &__group {
-      @apply bg-white/5 p-[20px] rounded-lg mt-[12px];
+      @apply bg-white/5 p-[20px] mt-[12px] rounded-none;
+
+      /* First group: no previous .swap-panel__card__group sibling */
+      &:not(.swap-panel__card__group + .swap-panel__card__group) {
+        @apply rounded-t-lg;
+      }
+
+      /* Last group: no next .swap-panel__card__group sibling */
+      &:not(:has(+ .swap-panel__card__group)) {
+        @apply rounded-b-lg;
+      }
+
+      /* Remove margin between adjacent groups */
+      & + & {
+        @apply mt-1;
+      }
     }
   }
 

@@ -1,0 +1,39 @@
+// Circular progress bar
+.circular-progress-wrapper {
+  @apply flex items-center justify-center;
+}
+
+.circular-progress {
+  transform: rotate(0deg);
+
+  &__retry {
+    @apply underline font-medium;
+  }
+}
+
+.circular-progress-bar {
+  transition: stroke-dashoffset 0.5s ease-in-out;
+}
+
+// Progress bar
+.progress-bar-wrapper {
+  @apply w-full flex items-center justify-between gap-2;
+}
+
+.progress-bar__container {
+  @apply w-full h-[4px] rounded-full overflow-hidden max-w-[227px];
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar__fill {
+  @apply h-full rounded-full transition-all;
+  transition: width 0.3s ease-in-out;
+}
+
+.progress-bar__text {
+  @apply text-center mt-2 text-[12px] opacity-75;
+}
+
+.progress-bar__expired-text {
+  @apply text-center text-red text-[14px];
+}

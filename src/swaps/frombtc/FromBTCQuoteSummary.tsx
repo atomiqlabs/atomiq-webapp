@@ -526,13 +526,15 @@ export function FromBTCQuoteSummary(props: {
                 <CopyOverlay placement={'top'}>{addressContent}</CopyOverlay>
               )}
             </div>
-
-            <SwapExpiryProgressBar
-              timeRemaining={quoteTimeRemaining}
-              totalTime={totalQuoteTime}
-              expiryText="Swap address expired, please do not send any funds!"
-              quoteAlias="Swap address"
-            />
+            <div className="swap-panel__card__group">
+              <SwapExpiryProgressBar
+                timeRemaining={quoteTimeRemaining}
+                totalTime={totalQuoteTime}
+                type="bar"
+                expiryText="Swap address expired, please do not send any funds!"
+                quoteAlias="Swap address"
+              />
+            </div>
           </>
         ) : (
           ''
