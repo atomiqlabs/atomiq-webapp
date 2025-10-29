@@ -24,9 +24,9 @@ export function SwapExpiryProgressBar(props) {
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (progress / 100) * circumference;
     if (type === 'bar') {
-        return (_jsx("div", { className: props.show === false ? 'd-none' : 'progress-bar-wrapper', children: props.expired && props.expiryText ? (_jsx("div", { className: "progress-bar__expired-text", children: props.expiryText })) : (_jsxs(_Fragment, { children: [props.quoteAlias && (_jsxs("div", { className: "progress-bar__text", children: [props.quoteAlias, " expires in ", formatTime(timeRemaining)] })), _jsx("div", { className: "progress-bar__container", children: _jsx("div", { className: "progress-bar__fill", style: {
+        return (_jsx("div", { className: props.show === false ? 'd-none' : 'progress-bar-wrapper', children: props.expired && props.expiryText ? (_jsx("div", { className: "progress-bar__expired-text", children: props.expiryText })) : (_jsxs(_Fragment, { children: [props.quoteAlias && (_jsxs("div", { className: "progress-bar__text", children: [props.quoteAlias, " expires in ", _jsx("strong", { children: formatTime(timeRemaining) })] })), _jsx("div", { className: "progress-bar__container", children: _jsx("div", { className: "progress-bar__fill", style: {
                                 width: `${progress}%`,
-                                backgroundColor: props.expired ? '#ff6c6c' : '#FF2E8C',
+                                backgroundColor: props.expired ? '#ff6c6c' : '#EB568C',
                             } }) })] })) }));
     }
     return (_jsx("div", { className: props.show === false ? 'd-none' : 'd-flex flex-row align-items-center gap-2', children: _jsx("div", { className: "circular-progress-wrapper", children: props.expired && props.onRefreshQuote ? (_jsx("div", { onClick: (e) => {

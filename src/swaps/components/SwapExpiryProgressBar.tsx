@@ -46,7 +46,7 @@ export function SwapExpiryProgressBar(props: {
           <>
             {props.quoteAlias && (
               <div className="progress-bar__text">
-                {props.quoteAlias} expires in {formatTime(timeRemaining)}
+                {props.quoteAlias} expires in <strong>{formatTime(timeRemaining)}</strong>
               </div>
             )}
             <div className="progress-bar__container">
@@ -54,7 +54,7 @@ export function SwapExpiryProgressBar(props: {
                 className="progress-bar__fill"
                 style={{
                   width: `${progress}%`,
-                  backgroundColor: props.expired ? '#ff6c6c' : '#FF2E8C',
+                  backgroundColor: props.expired ? '#ff6c6c' : '#EB568C',
                 }}
               />
             </div>

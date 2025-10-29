@@ -21,17 +21,39 @@
 }
 
 .progress-bar__container {
-  @apply w-full h-[4px] rounded-full overflow-hidden max-w-[227px];
+  @apply w-full h-[12px] rounded-full overflow-hidden max-w-[227px];
   background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .progress-bar__fill {
-  @apply h-full rounded-full transition-all;
+  @apply h-full transition-all rounded-l-full;
   transition: width 0.3s ease-in-out;
+
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.1) 0,
+    rgba(255, 255, 255, 0.1) 3px,
+    /* pruh – 2px */ transparent 3px,
+    transparent 11px /* medzera – 9px */
+  );
+  background-color: #eb568c;
+  background-size: 30px 30px;
+  animation: progress-stripes 2s linear infinite;
+  box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+@keyframes progress-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -30px 0; /* rovnaké ako background-size pre seamless loop */
+  }
 }
 
 .progress-bar__text {
-  @apply text-center mt-2 text-[12px] opacity-75;
+  @apply text-center text-[14px];
 }
 
 .progress-bar__expired-text {
