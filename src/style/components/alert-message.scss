@@ -1,0 +1,35 @@
+.alert-message {
+  @apply rounded-lg py-[16px] px-[20px] flex gap-[12px] items-center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  &__icon {
+    @apply text-[18px];
+  }
+
+  &.is-success {
+    @apply text-green;
+    background-color: rgba(64, 231, 45, 0.1);
+    border-color: rgba(64, 231, 45, 0.2);
+  }
+
+  &.is-warning {
+    @apply text-white border-yellow;
+    background-color: rgba(245, 245, 5, 0.1);
+
+    .alert-message__icon {
+      @apply text-yellow;
+    }
+  }
+
+  &.is-danger {
+    @apply text-red;
+    background-color: rgba(255, 108, 108, 0.1);
+    border-color: rgba(255, 108, 108, 0.2);
+  }
+
+  &.is-info {
+    @apply text-blue;
+    background-color: rgba(96, 165, 250, 0.1);
+    border-color: rgba(96, 165, 250, 0.2);
+  }
+}

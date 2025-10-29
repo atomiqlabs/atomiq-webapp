@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Badge, Button, Spinner } from 'react-bootstrap';
+import { Badge, Button, Spinner } from 'react-bootstrap';
+import { AlertMessage } from '../../components/AlertMessage';
 import { QRCodeSVG } from 'qrcode.react';
 import ValidatedInput, { ValidatedInputRef } from '../../components/ValidatedInput';
 import { FromBTCSwap, FromBTCSwapState } from '@atomiqlabs/sdk';
@@ -361,15 +362,13 @@ export function FromBTCQuoteSummary(props: {
   const addressContent = useCallback(
     (show) => (
       <>
-        <Alert variant="warning" className="mb-3">
-          <label>
-            Please make sure that you send an{' '}
-            <b>
-              <u>EXACT</u>
-            </b>{' '}
-            amount in BTC, different amount wouldn't be accepted and you might lose funds!
-          </label>
-        </Alert>
+        <AlertMessage variant="warning" className="mb-3">
+          Send{' '}
+          <strong>
+            EXACTLY {props.quote.getInput().amount} {Tokens.BITCOIN.BTC.ticker}
+          </strong>{' '}
+          to the address below.
+        </AlertMessage>
 
         <div className="mb-2">
           <QRCodeSVG
@@ -476,11 +475,19 @@ export function FromBTCQuoteSummary(props: {
 
         {isCommited ? (
           <>
+            <SwapStepAlert
+              show={!!payError}
+              type="error"
+              icon={ic_warning}
+              title="Sending BTC failed"
+              description={payError?.message || payError?.toString()}
+              error={payError}
+              className="mb-2"
+            />
+
             <div className="mb-3 tab-accent">
               {bitcoinChainData.wallet != null ? (
                 <>
-                  <ErrorAlert className="mb-2" title="Sending BTC failed" error={payError} />
-
                   <div className="d-flex flex-column align-items-center justify-content-center">
                     {payTxId != null ? (
                       <div className="d-flex flex-column align-items-center p-2">
