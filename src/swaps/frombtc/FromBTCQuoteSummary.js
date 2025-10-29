@@ -20,9 +20,9 @@ import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_d
 import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
 import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empty_outline';
 import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
+import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
-import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { StepByStep } from '../../components/StepByStep';
@@ -217,7 +217,7 @@ export function FromBTCQuoteSummary(props) {
         },
         { icon: bitcoin, text: 'Bitcoin payment', type: 'disabled' },
         {
-            icon: ic_swap_horizontal_circle_outline,
+            icon: ic_receipt,
             text: 'Claim transaction',
             type: 'disabled',
         },
@@ -272,7 +272,7 @@ export function FromBTCQuoteSummary(props) {
         };
     if (isClaimable)
         executionSteps[2] = {
-            icon: ic_swap_horizontal_circle_outline,
+            icon: ic_receipt,
             text: 'Claim transaction',
             type: 'loading',
         };

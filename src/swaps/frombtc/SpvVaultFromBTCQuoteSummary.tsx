@@ -14,14 +14,13 @@ import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empt
 import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outline';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
-import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
+import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { SingleStep, StepByStep } from '../../components/StepByStep';
 import { useStateRef } from '../../utils/hooks/useStateRef';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
-import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
 import { useChain } from '../../wallets/hooks/useChain';
@@ -164,7 +163,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
   const executionSteps: SingleStep[] = [
     { icon: bitcoin, text: 'Bitcoin payment', type: 'loading' },
     {
-      icon: ic_swap_horizontal_circle_outline,
+      icon: ic_receipt,
       text: 'Claim transaction',
       type: 'disabled',
     },
@@ -209,7 +208,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
 
   if (isClaimable)
     executionSteps[1] = {
-      icon: ic_swap_horizontal_circle_outline,
+      icon: ic_receipt,
       text: 'Claim transaction',
       type: 'loading',
     };
