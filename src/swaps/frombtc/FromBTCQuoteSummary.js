@@ -4,8 +4,6 @@ import { Badge, Button, Spinner } from 'react-bootstrap';
 import { AlertMessage } from '../../components/AlertMessage';
 import { QRCodeSVG } from 'qrcode.react';
 import { FromBTCSwapState } from '@atomiqlabs/sdk';
-import Icon from 'react-icons-kit';
-import { externalLink } from 'react-icons-kit/fa/externalLink';
 import { getDeltaText } from '../../utils/Utils';
 import { FEConstants, Tokens } from '../../FEConstants';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
@@ -300,9 +298,9 @@ export function FromBTCQuoteSummary(props) {
                 } }), _jsx(WalletAddressPreview, { address: props.quote.getAddress(), chainName: getChainName(inputToken?.ticker), onCopy: () => {
                     if (showCopyWarningRef.current)
                         setTimeout(openModalRef.current, 100);
-                } }), _jsx("div", { className: "d-flex justify-content-center mt-2", children: _jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center justify-content-center", onClick: () => {
+                } }), _jsx("div", { className: "payment-awaiting-buttons", children: _jsxs(BaseButton, { variant: "secondary", onClick: () => {
                         window.location.href = props.quote.getHyperlink();
-                    }, children: [_jsx(Icon, { icon: externalLink, className: "d-flex align-items-center me-2" }), " Open in BTC wallet app"] }) })] })), [props.quote, inputToken]);
+                    }, children: [_jsx("i", { className: "icon icon-new-window" }), _jsx("div", { className: "sc-text", children: "Pay via Browser Wallet" })] }) })] })), [props.quote, inputToken]);
     return (_jsxs(_Fragment, { children: [_jsx(OnchainAddressCopyModal, { openRef: openModalRef, amountBtc: props.quote?.getInput()?.amount, setShowCopyWarning: setShowCopyWarning }), _jsxs("div", { className: "swap-panel__card", children: [isInitiated ? (_jsx(StepByStep, { steps: executionSteps, sourceWallet: sourceWallet, destinationWallet: destinationWallet })) : null, _jsx(SwapStepAlert, { show: !!commitError, type: "error", icon: ic_warning, title: "Swap initialization error", description: commitError?.message || commitError?.toString(), error: commitError }), isCreated && hasEnoughBalance ? (smartChainWallet === undefined ? null : (_jsx(SwapForGasAlert, { notEnoughForGas: props.notEnoughForGas, quote: props.quote }))) : null, isCommited ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "swap-panel__card__group", children: bitcoinChainData.wallet != null ? (_jsx(_Fragment, { children: _jsx("div", { className: "d-flex flex-column align-items-center justify-content-center", children: payTxId != null ? (_jsxs("div", { className: "d-flex flex-column align-items-center p-2", children: [_jsx(Spinner, {}), _jsx("label", { children: "Sending Bitcoin transaction..." })] })) : (_jsxs(_Fragment, { children: [_jsxs(Button, { variant: "light", className: "d-flex flex-row align-items-center", disabled: payLoading, onClick: payBitcoin, children: [payLoading ? (_jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" })) : (''), "Pay with", ' ', _jsx("img", { width: 20, height: 20, src: bitcoinChainData.wallet?.icon, className: "ms-2 me-1" }), ' ', bitcoinChainData.wallet?.name] }), _jsx("small", { className: "mt-2", children: _jsx("a", { href: "#", onClick: (e) => {
                                                             e.preventDefault();
                                                             disconnectWallet('BITCOIN');

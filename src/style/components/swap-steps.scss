@@ -84,6 +84,18 @@
   }
 }
 
+.payment-awaiting-buttons {
+  @apply flex justify-center;
+
+  .base-button {
+    @apply text-[16px] flex-1 rounded-lg;
+
+    .icon {
+      @apply text-[14px];
+    }
+  }
+}
+
 .swap-steps-wallet {
   @apply flex items-center gap-3;
 

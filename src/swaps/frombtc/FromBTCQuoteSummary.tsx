@@ -427,17 +427,16 @@ export function FromBTCQuoteSummary(props: {
         {/*  inputRef={textFieldRef}*/}
         {/*/>*/}
 
-        <div className="d-flex justify-content-center mt-2">
-          <Button
-            variant="light"
-            className="d-flex flex-row align-items-center justify-content-center"
+        <div className="payment-awaiting-buttons">
+          <BaseButton
+            variant="secondary"
             onClick={() => {
               window.location.href = props.quote.getHyperlink();
             }}
           >
-            <Icon icon={externalLink} className="d-flex align-items-center me-2" /> Open in BTC
-            wallet app
-          </Button>
+            <i className="icon icon-new-window"></i>
+            <div className="sc-text">Pay via Browser Wallet</div>
+          </BaseButton>
         </div>
       </>
     ),
