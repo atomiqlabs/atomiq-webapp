@@ -294,6 +294,30 @@ td {
   @extend .bg-opacity-10;
 }
 
+.form-check {
+  @apply p-0 gap-3 flex;
+
+  .form-check-input {
+    @apply bg-white/10  w-6 h-6 m-0 mr-3 ml-0 rounded transition;
+    box-shadow: none !important;
+
+    &,
+    &:focus {
+      @apply border-white/20;
+    }
+    &:hover {
+      @apply border-white/50;
+    }
+  }
+}
+
+.form-check-input:checked[type='checkbox'] {
+  @apply text-pink border-white;
+
+  background-size: 18px;
+  --bs-form-check-bg-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 20 20%27%3e%3cpath fill=%27none%27 stroke=%27%23FF2E8C%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%273%27 d=%27m6 10 3 3 6-6%27/%3e%3c/svg%3e');
+}
+
 .round-right {
   border-top-right-radius: var(--bs-btn-border-radius) !important;
   border-bottom-right-radius: var(--bs-btn-border-radius) !important;

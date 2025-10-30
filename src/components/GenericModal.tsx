@@ -9,6 +9,9 @@ export interface GenericModalProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  size?: 'sm' | 'md' | 'lg';
+  icon?: string;
+  enableClose?: boolean;
 }
 
 export const GenericModal: FC<GenericModalProps> = ({
@@ -18,6 +21,9 @@ export const GenericModal: FC<GenericModalProps> = ({
   onClose,
   title,
   children,
+  size = 'md',
+  icon,
+  enableClose = true,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [fadeIn, setFadeIn] = useState(false);
@@ -30,10 +36,11 @@ export const GenericModal: FC<GenericModalProps> = ({
 
   const handleClose = useCallback(
     (event: MouseEvent) => {
+      if (!enableClose) return;
       event.preventDefault();
       hideModal();
     },
-    [hideModal]
+    [hideModal, enableClose]
   );
 
   const handleTabKey = useCallback(
@@ -70,6 +77,7 @@ export const GenericModal: FC<GenericModalProps> = ({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' || event.key === 'Esc') {
+        if (!enableClose) return;
         event.stopPropagation();
         event.preventDefault();
         hideModal();
@@ -92,7 +100,7 @@ export const GenericModal: FC<GenericModalProps> = ({
       document.body.style.overflow = overflow;
       document.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [visible, hideModal, handleTabKey]);
+  }, [visible, hideModal, handleTabKey, enableClose]);
 
   useLayoutEffect(() => setPortal(document.querySelector(container)), [container]);
 
@@ -104,17 +112,20 @@ export const GenericModal: FC<GenericModalProps> = ({
       <div
         aria-labelledby="generic-modal-title"
         aria-modal="true"
-        className={`generic-modal ${fadeIn && 'generic-modal-fade-in'} ${className}`}
+        className={`generic-modal ${fadeIn && 'generic-modal-fade-in'} generic-modal--${size} ${className}`}
         ref={ref}
         role="dialog"
       >
         <div className="generic-modal-container">
           <div className="generic-modal-wrapper">
-            <button onClick={handleClose} className="generic-modal-button-close">
-              <svg width="14" height="14">
-                <path d="M14 12.461 8.3 6.772l5.234-5.233L12.006 0 6.772 5.234 1.54 0 0 1.539l5.234 5.233L0 12.006l1.539 1.528L6.772 8.3l5.69 5.7L14 12.461z" />
-              </svg>
-            </button>
+            {enableClose && (
+              <button onClick={handleClose} className="generic-modal-button-close">
+                <svg width="14" height="14">
+                  <path d="M14 12.461 8.3 6.772l5.234-5.233L12.006 0 6.772 5.234 1.54 0 0 1.539l5.234 5.233L0 12.006l1.539 1.528L6.772 8.3l5.69 5.7L14 12.461z" />
+                </svg>
+              </button>
+            )}
+            {icon && <div className={`generic-modal-icon icon icon-${icon}`}></div>}
             <h1 className="generic-modal-title" id="generic-modal-title">
               {title}
             </h1>

@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-export const GenericModal = ({ className = '', container = 'body', visible, onClose, title, children, }) => {
+export const GenericModal = ({ className = '', container = 'body', visible, onClose, title, children, size = 'md', icon, enableClose = true, }) => {
     const ref = useRef(null);
     const [fadeIn, setFadeIn] = useState(false);
     const [portal, setPortal] = useState(null);
@@ -10,9 +10,11 @@ export const GenericModal = ({ className = '', container = 'body', visible, onCl
         setTimeout(() => onClose(), 150);
     }, [onClose]);
     const handleClose = useCallback((event) => {
+        if (!enableClose)
+            return;
         event.preventDefault();
         hideModal();
-    }, [hideModal]);
+    }, [hideModal, enableClose]);
     const handleTabKey = useCallback((event) => {
         const node = ref.current;
         if (!node)
@@ -43,6 +45,8 @@ export const GenericModal = ({ className = '', container = 'body', visible, onCl
             return;
         const handleKeyDown = (event) => {
             if (event.key === 'Escape' || event.key === 'Esc') {
+                if (!enableClose)
+                    return;
                 event.stopPropagation();
                 event.preventDefault();
                 hideModal();
@@ -64,10 +68,10 @@ export const GenericModal = ({ className = '', container = 'body', visible, onCl
             document.body.style.overflow = overflow;
             document.removeEventListener('keydown', handleKeyDown, true);
         };
-    }, [visible, hideModal, handleTabKey]);
+    }, [visible, hideModal, handleTabKey, enableClose]);
     useLayoutEffect(() => setPortal(document.querySelector(container)), [container]);
     if (!visible)
         return null;
     return (portal &&
-        createPortal(_jsxs("div", { "aria-labelledby": "generic-modal-title", "aria-modal": "true", className: `generic-modal ${fadeIn && 'generic-modal-fade-in'} ${className}`, ref: ref, role: "dialog", children: [_jsx("div", { className: "generic-modal-container", children: _jsxs("div", { className: "generic-modal-wrapper", children: [_jsx("button", { onClick: handleClose, className: "generic-modal-button-close", children: _jsx("svg", { width: "14", height: "14", children: _jsx("path", { d: "M14 12.461 8.3 6.772l5.234-5.233L12.006 0 6.772 5.234 1.54 0 0 1.539l5.234 5.233L0 12.006l1.539 1.528L6.772 8.3l5.69 5.7L14 12.461z" }) }) }), _jsx("h1", { className: "generic-modal-title", id: "generic-modal-title", children: title }), children] }) }), _jsx("div", { className: "generic-modal-overlay", onMouseDown: handleClose })] }), portal));
+        createPortal(_jsxs("div", { "aria-labelledby": "generic-modal-title", "aria-modal": "true", className: `generic-modal ${fadeIn && 'generic-modal-fade-in'} generic-modal--${size} ${className}`, ref: ref, role: "dialog", children: [_jsx("div", { className: "generic-modal-container", children: _jsxs("div", { className: "generic-modal-wrapper", children: [enableClose && (_jsx("button", { onClick: handleClose, className: "generic-modal-button-close", children: _jsx("svg", { width: "14", height: "14", children: _jsx("path", { d: "M14 12.461 8.3 6.772l5.234-5.233L12.006 0 6.772 5.234 1.54 0 0 1.539l5.234 5.233L0 12.006l1.539 1.528L6.772 8.3l5.69 5.7L14 12.461z" }) }) })), icon && _jsx("div", { className: `generic-modal-icon icon icon-${icon}` }), _jsx("h1", { className: "generic-modal-title", id: "generic-modal-title", children: title }), children] }) }), _jsx("div", { className: "generic-modal-overlay", onMouseDown: handleClose })] }), portal));
 };

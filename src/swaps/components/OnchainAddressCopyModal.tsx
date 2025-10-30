@@ -1,9 +1,8 @@
-import * as React from "react";
-import { Button, CloseButton, Modal } from "react-bootstrap";
-import Icon from "react-icons-kit";
-import { info } from "react-icons-kit/fa/info";
-import { useState } from "react";
-import ValidatedInput from "../../components/ValidatedInput";
+import * as React from 'react';
+import { useState } from 'react';
+import { GenericModal } from '../../components/GenericModal';
+import { BaseButton } from '../../components/BaseButton';
+import ValidatedInput from '../../components/ValidatedInput';
 
 export function OnchainAddressCopyModal(props: {
   openRef: React.MutableRefObject<() => void>;
@@ -17,54 +16,33 @@ export function OnchainAddressCopyModal(props: {
   };
 
   return (
-    <Modal
-      contentClassName="text-white bg-dark"
+    <GenericModal
+      visible={openAppModalOpened}
       size="sm"
-      centered
-      show={openAppModalOpened}
-      onHide={() => setOpenAppModalOpened(false)}
-      dialogClassName="min-width-400px"
+      className="onchain-address-copy-modal"
+      icon="Notice"
+      onClose={() => setOpenAppModalOpened(false)}
+      title="Important notice"
+      enableClose={false}
     >
-      <Modal.Header className="border-0">
-        <Modal.Title
-          id="contained-modal-title-vcenter"
-          className="d-flex flex-grow-1"
-        >
-          <Icon icon={info} className="d-flex align-items-center me-2" />{" "}
-          Important notice
-          <CloseButton
-            className="ms-auto"
-            variant="white"
-            onClick={() => setOpenAppModalOpened(false)}
-          />
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <p>
-          Please make sure you send{" "}
-          <b>
-            <u>EXACTLY</u> {props.amountBtc} BTC
-          </b>
-          , sending different amount will not be accepted and you might loose
-          funds!
-        </p>
-        <ValidatedInput
-          type="checkbox"
-          placeholder="Don't show this warning again"
-          onChange={(checked: boolean) => props.setShowCopyWarning(!checked)}
-        />
-      </Modal.Body>
-      <Modal.Footer className="border-0 d-flex">
-        <Button
-          variant="primary"
-          className="flex-grow-1"
-          onClick={() => {
-            setOpenAppModalOpened(false);
-          }}
-        >
-          Understood, copy address
-        </Button>
-      </Modal.Footer>
-    </Modal>
+      <p className="onchain-address-copy-modal__text">
+        Make sure you send <b>EXACTLY {props.amountBtc} BTC</b>, as sending a different amount will
+        not be accepted, and you might lose your funds!
+      </p>
+      <ValidatedInput
+        type="checkbox"
+        placeholder="Don't show this warning again"
+        onChange={(checked: boolean) => props.setShowCopyWarning(!checked)}
+      />
+      <BaseButton
+        variant="secondary"
+        className="onchain-address-copy-modal__button"
+        onClick={() => {
+          setOpenAppModalOpened(false);
+        }}
+      >
+        Understood, copy address
+      </BaseButton>
+    </GenericModal>
   );
 }

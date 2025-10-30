@@ -39,6 +39,22 @@
   max-height: 90vh;
 }
 
+.generic-modal--sm .generic-modal-wrapper {
+  max-width: 437px;
+}
+
+.generic-modal--md .generic-modal-wrapper {
+  max-width: 80vw;
+}
+
+.generic-modal--lg .generic-modal-wrapper {
+  max-width: 900px;
+}
+
+.generic-modal-icon {
+  @apply mb-6 text-[24px] text-yellow flex items-center justify-center h-[56px] w-[56px] bg-yellow/10 rounded-full flex-shrink-0;
+}
+
 .generic-modal-overlay {
   @apply bg-transparent;
   position: fixed;
