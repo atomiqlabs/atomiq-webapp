@@ -67,7 +67,7 @@
     @apply m-auto flex justify-center h-2 relative -top-[18px];
 
     &__button {
-      @apply h-[44px] w-[44px] p-0 flex items-center justify-center rounded-full bg-black;
+      @apply h-[44px] w-[44px] p-0 flex items-center justify-center rounded-full bg-black hover:bg-pink hover:border-pink transition-all;
 
       border: 1px solid rgba(255, 255, 255, 0.2);
     }

@@ -80,4 +80,8 @@
       @apply m-0;
     }
   }
+
+  &--text-small {
+    @apply text-[16px];
+  }
 }

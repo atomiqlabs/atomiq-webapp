@@ -15,6 +15,7 @@ interface BaseButtonProps {
   className?: string;
   onClick?: () => void;
   size?: 'smaller' | 'small' | 'large' | 'lg' | 'sm' | 'md';
+  textSize?: 'lg' | 'sm' | 'md';
   variant?: BaseButtonVariantProps;
   disabled?: boolean;
   isLoading?: boolean;
@@ -35,6 +36,7 @@ export const BaseButton = React.forwardRef<HTMLButtonElement, BaseButtonProps>(f
     loadingText = 'Loading...',
     icon,
     customIcon,
+    textSize,
   },
   ref
 ) {
@@ -44,6 +46,7 @@ export const BaseButton = React.forwardRef<HTMLButtonElement, BaseButtonProps>(f
       'base-button--smaller': size === 'smaller',
       'base-button--small': size === 'small' || size === 'sm',
       'base-button--large': size === 'large' || size === 'lg',
+      'base-button--text-small': textSize === 'sm',
       'base-button--primary': variant === 'primary',
       'base-button--secondary': variant === 'secondary',
       'base-button--transparent': variant === 'transparent',

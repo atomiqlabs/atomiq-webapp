@@ -2,11 +2,12 @@ import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-run
 import { Button, Spinner } from 'react-bootstrap';
 import * as React from 'react';
 import classNames from 'classnames';
-export const BaseButton = React.forwardRef(function BaseButton({ children, className, onClick, size = 'small', variant = 'primary', disabled = false, isLoading = false, loadingText = 'Loading...', icon, customIcon, }, ref) {
+export const BaseButton = React.forwardRef(function BaseButton({ children, className, onClick, size = 'small', variant = 'primary', disabled = false, isLoading = false, loadingText = 'Loading...', icon, customIcon, textSize, }, ref) {
     const btnClass = classNames('base-button', {
         'base-button--smaller': size === 'smaller',
         'base-button--small': size === 'small' || size === 'sm',
         'base-button--large': size === 'large' || size === 'lg',
+        'base-button--text-small': textSize === 'sm',
         'base-button--primary': variant === 'primary',
         'base-button--secondary': variant === 'secondary',
         'base-button--transparent': variant === 'transparent',

@@ -510,9 +510,10 @@ export function FromBTCQuoteSummary(props: {
                         <label>Sending Bitcoin transaction...</label>
                       </div>
                     ) : (
-                      <>
-                        <Button
-                          variant="light"
+                      <div className="payment-awaiting-buttons">
+                        <BaseButton
+                          variant="secondary"
+                          textSize="sm"
                           className="d-flex flex-row align-items-center"
                           disabled={payLoading}
                           onClick={payBitcoin}
@@ -523,27 +524,21 @@ export function FromBTCQuoteSummary(props: {
                             ''
                           )}
                           Pay with{' '}
-                          <img
-                            width={20}
-                            height={20}
-                            src={bitcoinChainData.wallet?.icon}
-                            className="ms-2 me-1"
-                          />{' '}
+                          <img width={20} height={20} src={bitcoinChainData.wallet?.icon} />{' '}
                           {bitcoinChainData.wallet?.name}
-                        </Button>
+                        </BaseButton>
 
-                        <small className="mt-2">
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              disconnectWallet('BITCOIN');
-                            }}
-                          >
-                            Or use a QR code/wallet address
-                          </a>
-                        </small>
-                      </>
+                        <BaseButton
+                          variant="secondary"
+                          textSize="sm"
+                          className="d-flex flex-row align-items-center"
+                          onClick={() => {
+                            disconnectWallet('BITCOIN');
+                          }}
+                        >
+                          Use a QR/wallet address
+                        </BaseButton>
+                      </div>
                     )}
                   </div>
                 </>
