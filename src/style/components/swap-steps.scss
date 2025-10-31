@@ -85,10 +85,10 @@
 }
 
 .payment-awaiting-buttons {
-  @apply flex justify-center;
+  @apply flex justify-center gap-3;
 
   .base-button {
-    @apply text-[16px] flex-1 rounded-lg;
+    @apply text-[16px] flex-1 rounded-lg p-1;
 
     .icon {
       @apply text-[14px];

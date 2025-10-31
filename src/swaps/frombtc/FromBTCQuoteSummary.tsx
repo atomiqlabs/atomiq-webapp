@@ -431,6 +431,16 @@ export function FromBTCQuoteSummary(props: {
           <BaseButton
             variant="secondary"
             onClick={() => {
+              // TODO make this works
+              console.log('dont know what to do');
+            }}
+          >
+            <i className="icon icon-connect"></i>
+            <div className="sc-text">Pay with BTC Wallet</div>
+          </BaseButton>
+          <BaseButton
+            variant="secondary"
+            onClick={() => {
               window.location.href = props.quote.getHyperlink();
             }}
           >
