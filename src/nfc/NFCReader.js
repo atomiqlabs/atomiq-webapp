@@ -33,7 +33,7 @@ export class NFCReader {
                     return;
                 if (event.message.records.length === 0)
                     return;
-                console.log("NFC scanned, message: ", event.message);
+                console.log("NFCReader: onreading: NFC scanned, message: ", event.message);
                 const filteredRecords = event.message.records.filter(record => record.recordType === "url" || record.recordType === "text");
                 if (filteredRecords.length === 0)
                     return;

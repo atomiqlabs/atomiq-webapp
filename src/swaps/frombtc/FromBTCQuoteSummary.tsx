@@ -85,7 +85,6 @@ export function FromBTCQuoteSummary(props: {
 
     const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(
         () => props.quote.waitForBitcoinTransaction(
-            abortSignalRef.current, null,
             (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
                 if(txId==null) {
                     setTxData(null);
@@ -97,7 +96,8 @@ export function FromBTCQuoteSummary(props: {
                     confTarget: confirmationTarget,
                     txEtaMs
                 });
-            }
+            },
+            undefined, abortSignalRef.current
         ),
         [props.quote]
     );
@@ -126,7 +126,7 @@ export function FromBTCQuoteSummary(props: {
         if(state===FromBTCSwapState.BTC_TX_CONFIRMED) {
             timer = setTimeout(() => {
                 setClaimable(true);
-            }, 20*1000);
+            }, 60*1000);
         }
 
         return () => {
@@ -167,7 +167,7 @@ export function FromBTCQuoteSummary(props: {
     const executionSteps: SingleStep[] = [
         {icon: ic_check_circle_outline, text: "Swap address opened", type: "success"},
         {icon: bitcoin, text: "Bitcoin payment", type: "disabled"},
-        {icon: ic_swap_horizontal_circle_outline, text: "Claim transaction", type: "disabled"},
+        {icon: ic_swap_horizontal_circle_outline, text: "Automatic settlement", type: "disabled"},
     ];
 
     if(isCreated && !commitLoading) executionSteps[0] = {icon: ic_gavel_outline, text: "Open swap address", type: "loading"};
@@ -179,9 +179,15 @@ export function FromBTCQuoteSummary(props: {
     if(isClaimable || isClaiming || isSuccess) executionSteps[1] = {icon: ic_check_circle_outline, text: "Bitcoin confirmed", type: "success"};
     if(isExpired || isFailed) executionSteps[1] = {icon: ic_watch_later_outline, text: "Swap expired", type: "failed"};
 
-    if(isClaimable) executionSteps[2] = {icon: ic_swap_horizontal_circle_outline, text: "Claim transaction", type: "loading"};
+    if(isClaimable) {
+        if(claimable || isAlreadyClaimable) {
+            executionSteps[2] = {icon: ic_swap_horizontal_circle_outline, text: "Claim manually", type: "loading"};
+        } else {
+            executionSteps[2] = {icon: ic_hourglass_top_outline, text: "Waiting automatic settlement", type: "loading"};
+        }
+    }
     if(isClaiming) executionSteps[2] = {icon: ic_hourglass_empty_outline, text: "Sending claim transaction", type: "loading"};
-    if(isSuccess) executionSteps[2] = {icon: ic_verified_outline, text: "Claim success", type: "success"};
+    if(isSuccess) executionSteps[2] = {icon: ic_verified_outline, text: "Payout success", type: "success"};
 
     const [_, setShowCopyWarning, showCopyWarningRef] = useLocalStorage("crossLightning-copywarning", true);
     const addressContent = useCallback((show) => (

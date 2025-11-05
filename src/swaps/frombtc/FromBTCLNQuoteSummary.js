@@ -1,7 +1,7 @@
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Alert, Button, Spinner } from "react-bootstrap";
-import { FromBTCLNSwapState } from "@atomiqlabs/sdk";
+import { FromBTCLNSwapState, SwapType } from "@atomiqlabs/sdk";
 import { ButtonWithWallet } from "../../wallets/ButtonWithWallet";
 import { useSwapState } from "../hooks/useSwapState";
 import { ScrollAnchor } from "../../components/ScrollAnchor";
@@ -24,7 +24,6 @@ Steps:
 export function FromBTCLNQuoteSummary(props) {
     const lightningWallet = useContext(ChainDataContext).LIGHTNING?.wallet;
     const smartChainWallet = useSmartChainWallet(props.quote, true);
-    const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
     const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
     const [autoClaim, setAutoClaim] = useLocalStorage("crossLightning-autoClaim", false);
     const [initClicked, setInitClicked] = useState(false);
@@ -32,13 +31,15 @@ export function FromBTCLNQuoteSummary(props) {
     const onHyperlink = useCallback(() => {
         openModalRef.current();
     }, []);
-    const { waitForPayment, onCommit, onClaim, paymentWaiting, committing, claiming, paymentError, commitError, claimError, isQuoteExpired, isQuoteExpiredClaim, isFailed, isCreated, isClaimCommittable, isClaimClaimable, isClaimable, isSuccess, executionSteps } = useFromBtcLnQuote(props.quote, props.setAmountLock);
+    const { waitForPayment, onCommit, onClaim, paymentWaiting, committing, claiming, paymentError, commitError, claimError, isQuoteExpired, isQuoteExpiredClaim, isFailed, isCreated, isLpAutoCommiting, isClaimCommittable, isClaimClaimable, isClaimable, isSuccess, isWaitingForWatchtowerClaim, executionSteps, canClaimInOneShot, requiresDestinationWalletConnected } = useFromBtcLnQuote(props.quote, props.setAmountLock);
     useEffect(() => {
         if (props.quote != null && props.quote.isInitiated() && props.quote.state === FromBTCLNSwapState.PR_CREATED) {
             waitForPayment();
         }
     }, [props.quote]);
     useEffect(() => {
+        if (props.quote.getType() === SwapType.FROM_BTCLN_AUTO)
+            return;
         if (state === FromBTCLNSwapState.PR_PAID) {
             if (autoClaim || lightningWallet != null)
                 onCommit(true).then(() => {
@@ -47,10 +48,10 @@ export function FromBTCLNQuoteSummary(props) {
                 });
         }
     }, [state]);
-    return (_jsxs(_Fragment, { children: [_jsx(LightningHyperlinkModal, { openRef: openModalRef, hyperlink: props.quote.getHyperlink() }), isInitiated ? _jsx(StepByStep, { steps: executionSteps }) : "", isCreated && !paymentWaiting ? (smartChainWallet === undefined ? (_jsx(ButtonWithWallet, { chainId: props.quote.chainIdentifier, requiredWalletAddress: props.quote._getInitiator(), size: "lg" })) : (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: "Swap initialization error", error: paymentError }), _jsx(SwapForGasAlert, { notEnoughForGas: props.notEnoughForGas, quote: props.quote }), _jsx(SwapExpiryProgressBar, { timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime }), _jsx(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote?.chainIdentifier, onClick: () => {
+    return (_jsxs(_Fragment, { children: [_jsx(LightningHyperlinkModal, { openRef: openModalRef, hyperlink: props.quote.getHyperlink(), chainId: props.quote.chainIdentifier }), isInitiated ? _jsx(StepByStep, { steps: executionSteps }) : "", isCreated && !paymentWaiting ? (requiresDestinationWalletConnected && smartChainWallet === undefined ? (_jsx(ButtonWithWallet, { noRequireConnection: !requiresDestinationWalletConnected, chainId: props.quote.chainIdentifier, requiredWalletAddress: props.quote._getInitiator(), size: "lg" })) : (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: "Swap initialization error", error: paymentError }), _jsx(SwapForGasAlert, { notEnoughForGas: props.notEnoughForGas, quote: props.quote }), _jsx(SwapExpiryProgressBar, { timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime }), _jsx(ButtonWithWallet, { noRequireConnection: !requiresDestinationWalletConnected, requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote?.chainIdentifier, onClick: () => {
                             setInitClicked(true);
                             waitForPayment();
-                        }, disabled: !!props.notEnoughForGas, size: "lg", children: "Initiate swap" })] }))) : "", isCreated && paymentWaiting ? (_jsxs(_Fragment, { children: [_jsx(LightningQR, { quote: props.quote, payInstantly: initClicked, setAutoClaim: setAutoClaim, autoClaim: autoClaim, onHyperlink: onHyperlink }), _jsx(SwapExpiryProgressBar, { timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: true }), _jsx(Button, { onClick: props.abortSwap, variant: "danger", children: "Abort swap" })] })) : "", isClaimable ? (_jsxs(_Fragment, { children: [_jsxs("div", { className: "mb-3 tab-accent", children: [_jsx("label", { children: "Lightning network payment received" }), _jsx("label", { children: "Claim it below to finish the swap!" })] }), _jsx(ErrorAlert, { className: "mb-3", title: "Swap " + ((canClaimInOneShot || claimError != null) ? "claim" : " claim initialization") + " error", error: commitError ?? claimError }), _jsx(SwapExpiryProgressBar, { timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: state === FromBTCLNSwapState.PR_PAID && !claiming && !committing }), _jsxs(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote?.chainIdentifier, onClick: () => onCommit(), disabled: committing || (!canClaimInOneShot && !isClaimCommittable), size: canClaimInOneShot ? "lg" : isClaimCommittable ? "lg" : "sm", children: [committing ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", canClaimInOneShot ?
+                        }, disabled: !!props.notEnoughForGas, size: "lg", children: "Initiate swap" })] }))) : "", isCreated && paymentWaiting ? (_jsxs(_Fragment, { children: [_jsx(LightningQR, { quote: props.quote, payInstantly: initClicked, setAutoClaim: props.quote?.getType() === SwapType.FROM_BTCLN_AUTO ? null : setAutoClaim, autoClaim: autoClaim, onHyperlink: onHyperlink }), _jsx(SwapExpiryProgressBar, { timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: true }), _jsx(Button, { onClick: props.abortSwap, variant: "danger", children: "Abort swap" })] })) : "", isLpAutoCommiting ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx(Spinner, {}), _jsx("small", { className: "mt-2", children: "Lightning network payment received, waiting for LP to initiate..." })] })) : "", isClaimable && isWaitingForWatchtowerClaim ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx(Spinner, {}), _jsx("small", { className: "mt-2", children: "Lightning network payment received, waiting for claim by watchtowers..." })] })) : "", isClaimable && !isWaitingForWatchtowerClaim ? (_jsxs(_Fragment, { children: [_jsxs("div", { className: "mb-3 tab-accent", children: [_jsx("label", { children: "Lightning network payment received" }), _jsx("label", { children: "Claim it below to finish the swap!" })] }), _jsx(ErrorAlert, { className: "mb-3", title: "Swap " + ((canClaimInOneShot || claimError != null) ? "claim" : " claim initialization") + " error", error: commitError ?? claimError }), _jsx(SwapExpiryProgressBar, { timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: state === FromBTCLNSwapState.PR_PAID && !claiming && !committing }), _jsxs(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote?.chainIdentifier, onClick: () => props.quote?.getType() === SwapType.FROM_BTCLN ? onCommit() : onClaim(), disabled: committing || claiming || (!canClaimInOneShot && !isClaimCommittable), size: canClaimInOneShot ? "lg" : isClaimCommittable ? "lg" : "sm", children: [committing || claiming ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", canClaimInOneShot ?
                                 "Finish swap (claim funds)" :
                                 !isClaimCommittable ?
                                     "1. Initialized" :

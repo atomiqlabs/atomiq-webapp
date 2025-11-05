@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useContext, useEffect, useMemo, useState} from "react";
 import {Alert, Badge, Button, Spinner} from "react-bootstrap";
-import {SpvFromBTCSwap, SpvFromBTCSwapState} from "@atomiqlabs/sdk";
+import {BitcoinNetwork, SpvFromBTCSwap, SpvFromBTCSwapState} from "@atomiqlabs/sdk";
 import {getDeltaText} from "../../utils/Utils";
 import {FEConstants} from "../../FEConstants";
 import {ButtonWithWallet} from "../../wallets/ButtonWithWallet";
@@ -65,7 +65,6 @@ export function SpvVaultFromBTCQuoteSummary(props: {
 
     const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => {
         return props.quote.waitForBitcoinTransaction(
-            abortSignalRef.current, null,
             (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
                 if(txId==null) {
                     setTxData(null);
@@ -77,7 +76,8 @@ export function SpvVaultFromBTCQuoteSummary(props: {
                     confTarget: confirmationTarget,
                     txEtaMs
                 });
-            }
+            },
+            undefined, abortSignalRef.current
         );
     }, [props.quote]);
 
@@ -102,7 +102,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
         if(state===SpvFromBTCSwapState.BTC_TX_CONFIRMED) {
             timer = setTimeout(() => {
                 setClaimable(true);
-            }, 60*1000);
+            }, 5*60*1000);
         }
 
         return () => {
@@ -142,19 +142,25 @@ export function SpvVaultFromBTCQuoteSummary(props: {
      */
     const executionSteps: SingleStep[] = [
         {icon: bitcoin, text: "Bitcoin payment", type: "loading"},
-        {icon: ic_swap_horizontal_circle_outline, text: "Claim transaction", type: "disabled"},
+        {icon: ic_swap_horizontal_circle_outline, text: "Automatic settlement", type: "disabled"},
     ];
 
     if(isSending) executionSteps[0] = {icon: ic_hourglass_empty_outline, text: "Signing bitcoin transaction", type: "loading"};
-    if(isBroadcasting) executionSteps[0] = {icon: ic_hourglass_empty_outline, text: "Broadcasting bitcoin transaction", type: "loading"};
+    if(isBroadcasting) executionSteps[0] = {icon: ic_hourglass_empty_outline, text: "Awaiting bitcoin transaction", type: "loading"};
     if(isReceived) executionSteps[0] = {icon: ic_hourglass_top_outline, text: "Waiting bitcoin confirmations", type: "loading"};
     if(isQuoteExpired) executionSteps[0] = {icon: ic_hourglass_disabled_outline, text: "Quote expired", type: "failed"};
     if(isClaimable || isClaiming || isSuccess) executionSteps[0] = {icon: ic_check_circle_outline, text: "Bitcoin confirmed", type: "success"};
     if(isFailed) executionSteps[0] = {icon: ic_refresh, text: "Bitcoin payment reverted", type: "failed"};
 
-    if(isClaimable) executionSteps[1] = {icon: ic_swap_horizontal_circle_outline, text: "Claim transaction", type: "loading"};
+    if(isClaimable) {
+        if(claimable || isAlreadyClaimable) {
+            executionSteps[1] = {icon: ic_swap_horizontal_circle_outline, text: "Claim manually", type: "loading"};
+        } else {
+            executionSteps[1] = {icon: ic_hourglass_top_outline, text: "Waiting automatic settlement", type: "loading"};
+        }
+    }
     if(isClaiming) executionSteps[1] = {icon: ic_hourglass_empty_outline, text: "Sending claim transaction", type: "loading"};
-    if(isSuccess) executionSteps[1] = {icon: ic_verified_outline, text: "Claim success", type: "success"};
+    if(isSuccess) executionSteps[1] = {icon: ic_verified_outline, text: "Payout success", type: "success"};
 
     return (
         <>
@@ -187,29 +193,12 @@ export function SpvVaultFromBTCQuoteSummary(props: {
             {isBroadcasting ? (
                 <div className="d-flex flex-column align-items-center tab-accent">
                     <Spinner/>
-                    <small className="mt-2">Sending bitcoin transaction...</small>
+                    <small className="mt-2">Waiting for bitcoin transaction...</small>
                 </div>
             ) : ""}
 
             {isReceived ? (
                 <div className="d-flex flex-column align-items-center tab-accent">
-                    <small className="mb-2">Transaction successfully received, waiting for confirmations...</small>
-
-                    <Spinner/>
-                    <label>{txData.confirmations} / {txData.confTarget}</label>
-                    <label style={{marginTop: "-6px"}}>Confirmations</label>
-
-                    <a
-                        className="mb-2 text-overflow-ellipsis text-nowrap overflow-hidden"
-                        style={{width: "100%"}}
-                        target="_blank"
-                        href={FEConstants.btcBlockExplorer + txData.txId}
-                    ><small>{txData.txId}</small></a>
-
-                    <Badge
-                        className={"text-black"+(txData.txEtaMs==null ? " d-none" : "")} bg="light" pill
-                    >ETA: {txData.txEtaMs === -1 || txData.txEtaMs > (60 * 60 * 1000) ? ">1 hour" : "~" + getDeltaText(txData.txEtaMs)}</Badge>
-
                     {waitPaymentError!=null ? (
                         <>
                             <ErrorAlert className="my-3 width-fill" title="Wait payment error" error={waitPaymentError}/>
@@ -217,7 +206,30 @@ export function SpvVaultFromBTCQuoteSummary(props: {
                                 Retry
                             </Button>
                         </>
-                    ) : ""}
+                    ) : (
+                        <>
+                            <small className="mb-2">Transaction successfully received, waiting for confirmations...</small>
+
+                            <Spinner/>
+                            <label>{txData.confirmations} / {txData.confTarget}</label>
+                            <label style={{marginTop: "-6px"}}>Confirmations</label>
+
+                            <a
+                                className="mb-2 text-overflow-ellipsis text-nowrap overflow-hidden"
+                                style={{width: "100%"}}
+                                target="_blank"
+                                href={FEConstants.btcBlockExplorer + txData.txId}
+                            ><small>{txData.txId}</small></a>
+
+                            <Badge
+                                className={"text-black"+(txData.txEtaMs==null ? " d-none" : "")} bg="light" pill
+                            >ETA: {txData.txEtaMs === -1 || txData.txEtaMs > (60 * 60 * 1000) ? ">1 hour" : "~" + getDeltaText(txData.txEtaMs)}</Badge>
+
+                            {FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET4 ? <Alert variant="warning" className="mt-2 mb-0">
+                                <label>Transactions on Bitcoin testnet4 L1 take a long time to confirm due to long blocktimes, this can take up to a few hours!</label>
+                            </Alert> : ""}
+                        </>
+                    )}
                 </div>
             ) : ""}
 
@@ -256,7 +268,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
             {isFailed ? (
                 <Alert variant="danger" className="mb-3">
                     <strong>Swap failed</strong>
-                    <label>Swap transaction reverted, no funds were sent!</label>
+                    <label>Swap transaction reverted, no funds were sent! Please retry.</label>
                 </Alert>
             ) : ""}
 

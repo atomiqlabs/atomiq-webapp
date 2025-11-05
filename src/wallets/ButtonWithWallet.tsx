@@ -11,12 +11,13 @@ export function ButtonWithWallet(props: {
     size?: "lg" | "sm",
     variant?: "primary" | "secondary" | "danger" | "warning" | "info",
     children?: (JSX.Element | string) | (JSX.Element | string)[],
-    className?: string
+    className?: string,
+    noRequireConnection?: boolean
 }) {
     const chainData = useContext(ChainDataContext);
     const requestedChain: ChainWalletData<any> = chainData[props.chainId];
-    const isWalletConnected = requestedChain?.wallet!=null;
-    const isCorrectWalletConnected = props.requiredWalletAddress==null || requestedChain?.wallet?.address===props.requiredWalletAddress;
+    const isWalletConnected = props.noRequireConnection || requestedChain?.wallet!=null;
+    const isCorrectWalletConnected = requestedChain?.wallet==null || props.requiredWalletAddress==null || requestedChain?.wallet?.address===props.requiredWalletAddress;
 
     return (
         <Button onClick={() => {

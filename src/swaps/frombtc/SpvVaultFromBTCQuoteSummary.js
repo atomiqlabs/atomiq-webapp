@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Alert, Badge, Button, Spinner } from "react-bootstrap";
-import { SpvFromBTCSwapState } from "@atomiqlabs/sdk";
+import { BitcoinNetwork, SpvFromBTCSwapState } from "@atomiqlabs/sdk";
 import { getDeltaText } from "../../utils/Utils";
 import { FEConstants } from "../../FEConstants";
 import { ButtonWithWallet } from "../../wallets/ButtonWithWallet";
@@ -48,7 +48,7 @@ export function SpvVaultFromBTCQuoteSummary(props) {
     }, [props.quote, bitcoinWallet, props.feeRate]);
     const abortSignalRef = useAbortSignalRef([props.quote]);
     const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => {
-        return props.quote.waitForBitcoinTransaction(abortSignalRef.current, null, (txId, confirmations, confirmationTarget, txEtaMs) => {
+        return props.quote.waitForBitcoinTransaction((txId, confirmations, confirmationTarget, txEtaMs) => {
             if (txId == null) {
                 setTxData(null);
                 return;
@@ -59,7 +59,7 @@ export function SpvVaultFromBTCQuoteSummary(props) {
                 confTarget: confirmationTarget,
                 txEtaMs
             });
-        });
+        }, undefined, abortSignalRef.current);
     }, [props.quote]);
     const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
         return props.quote.claim(smartChainWallet.instance);
@@ -74,7 +74,7 @@ export function SpvVaultFromBTCQuoteSummary(props) {
         if (state === SpvFromBTCSwapState.BTC_TX_CONFIRMED) {
             timer = setTimeout(() => {
                 setClaimable(true);
-            }, 60 * 1000);
+            }, 5 * 60 * 1000);
         }
         return () => {
             if (timer != null)
@@ -108,12 +108,12 @@ export function SpvVaultFromBTCQuoteSummary(props) {
      */
     const executionSteps = [
         { icon: bitcoin, text: "Bitcoin payment", type: "loading" },
-        { icon: ic_swap_horizontal_circle_outline, text: "Claim transaction", type: "disabled" },
+        { icon: ic_swap_horizontal_circle_outline, text: "Automatic settlement", type: "disabled" },
     ];
     if (isSending)
         executionSteps[0] = { icon: ic_hourglass_empty_outline, text: "Signing bitcoin transaction", type: "loading" };
     if (isBroadcasting)
-        executionSteps[0] = { icon: ic_hourglass_empty_outline, text: "Broadcasting bitcoin transaction", type: "loading" };
+        executionSteps[0] = { icon: ic_hourglass_empty_outline, text: "Awaiting bitcoin transaction", type: "loading" };
     if (isReceived)
         executionSteps[0] = { icon: ic_hourglass_top_outline, text: "Waiting bitcoin confirmations", type: "loading" };
     if (isQuoteExpired)
@@ -122,13 +122,19 @@ export function SpvVaultFromBTCQuoteSummary(props) {
         executionSteps[0] = { icon: ic_check_circle_outline, text: "Bitcoin confirmed", type: "success" };
     if (isFailed)
         executionSteps[0] = { icon: ic_refresh, text: "Bitcoin payment reverted", type: "failed" };
-    if (isClaimable)
-        executionSteps[1] = { icon: ic_swap_horizontal_circle_outline, text: "Claim transaction", type: "loading" };
+    if (isClaimable) {
+        if (claimable || isAlreadyClaimable) {
+            executionSteps[1] = { icon: ic_swap_horizontal_circle_outline, text: "Claim manually", type: "loading" };
+        }
+        else {
+            executionSteps[1] = { icon: ic_hourglass_top_outline, text: "Waiting automatic settlement", type: "loading" };
+        }
+    }
     if (isClaiming)
         executionSteps[1] = { icon: ic_hourglass_empty_outline, text: "Sending claim transaction", type: "loading" };
     if (isSuccess)
-        executionSteps[1] = { icon: ic_verified_outline, text: "Claim success", type: "success" };
-    return (_jsxs(_Fragment, { children: [isInitiated || (isCreated && sendLoading) ? _jsx(StepByStep, { steps: executionSteps }) : "", _jsx(SwapExpiryProgressBar, { expired: isQuoteExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: (isCreated || isQuoteExpired) && !sendLoading && bitcoinWallet != null && hasEnoughBalance }), isCreated ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: "Sending BTC failed", error: sendError }), _jsxs(ButtonWithWallet, { chainId: "BITCOIN", onClick: onSend, disabled: sendLoading || !hasEnoughBalance, size: "lg", className: "d-flex flex-row", children: [sendLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Pay with ", _jsx("img", { width: 20, height: 20, src: bitcoinWallet?.icon, className: "ms-2 me-1" }), " ", bitcoinWallet?.name] })] })) : "", isBroadcasting ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx(Spinner, {}), _jsx("small", { className: "mt-2", children: "Sending bitcoin transaction..." })] })) : "", isReceived ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx("small", { className: "mb-2", children: "Transaction successfully received, waiting for confirmations..." }), _jsx(Spinner, {}), _jsxs("label", { children: [txData.confirmations, " / ", txData.confTarget] }), _jsx("label", { style: { marginTop: "-6px" }, children: "Confirmations" }), _jsx("a", { className: "mb-2 text-overflow-ellipsis text-nowrap overflow-hidden", style: { width: "100%" }, target: "_blank", href: FEConstants.btcBlockExplorer + txData.txId, children: _jsx("small", { children: txData.txId }) }), _jsxs(Badge, { className: "text-black" + (txData.txEtaMs == null ? " d-none" : ""), bg: "light", pill: true, children: ["ETA: ", txData.txEtaMs === -1 || txData.txEtaMs > (60 * 60 * 1000) ? ">1 hour" : "~" + getDeltaText(txData.txEtaMs)] }), waitPaymentError != null ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "my-3 width-fill", title: "Wait payment error", error: waitPaymentError }), _jsx(Button, { onClick: onWaitForPayment, className: "width-fill", variant: "secondary", children: "Retry" })] })) : ""] })) : "", isClaimable && !(claimable || isAlreadyClaimable) ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx(Spinner, {}), _jsx("small", { className: "mt-2", children: "Transaction received & confirmed, waiting for claim by watchtowers..." })] })) : "", (isClaimable || isClaiming) && (claimable || isAlreadyClaimable) ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "d-flex flex-column align-items-center tab-accent mb-3", children: _jsx("label", { children: "Transaction received & confirmed, you can claim your funds manually now!" }) }), _jsx(ErrorAlert, { className: "mb-3", title: "Claim error", error: claimError }), _jsxs(ButtonWithWallet, { chainId: props.quote.chainIdentifier, onClick: onClaim, disabled: claimLoading, size: "lg", children: [claimLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Finish swap (claim funds)"] })] })) : "", isSuccess ? (_jsxs(Alert, { variant: "success", className: "mb-3", children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was executed successfully" })] })) : "", isFailed ? (_jsxs(Alert, { variant: "danger", className: "mb-3", children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Swap transaction reverted, no funds were sent!" })] })) : "", (isQuoteExpired ||
+        executionSteps[1] = { icon: ic_verified_outline, text: "Payout success", type: "success" };
+    return (_jsxs(_Fragment, { children: [isInitiated || (isCreated && sendLoading) ? _jsx(StepByStep, { steps: executionSteps }) : "", _jsx(SwapExpiryProgressBar, { expired: isQuoteExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: (isCreated || isQuoteExpired) && !sendLoading && bitcoinWallet != null && hasEnoughBalance }), isCreated ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: "Sending BTC failed", error: sendError }), _jsxs(ButtonWithWallet, { chainId: "BITCOIN", onClick: onSend, disabled: sendLoading || !hasEnoughBalance, size: "lg", className: "d-flex flex-row", children: [sendLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Pay with ", _jsx("img", { width: 20, height: 20, src: bitcoinWallet?.icon, className: "ms-2 me-1" }), " ", bitcoinWallet?.name] })] })) : "", isBroadcasting ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx(Spinner, {}), _jsx("small", { className: "mt-2", children: "Waiting for bitcoin transaction..." })] })) : "", isReceived ? (_jsx("div", { className: "d-flex flex-column align-items-center tab-accent", children: waitPaymentError != null ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "my-3 width-fill", title: "Wait payment error", error: waitPaymentError }), _jsx(Button, { onClick: onWaitForPayment, className: "width-fill", variant: "secondary", children: "Retry" })] })) : (_jsxs(_Fragment, { children: [_jsx("small", { className: "mb-2", children: "Transaction successfully received, waiting for confirmations..." }), _jsx(Spinner, {}), _jsxs("label", { children: [txData.confirmations, " / ", txData.confTarget] }), _jsx("label", { style: { marginTop: "-6px" }, children: "Confirmations" }), _jsx("a", { className: "mb-2 text-overflow-ellipsis text-nowrap overflow-hidden", style: { width: "100%" }, target: "_blank", href: FEConstants.btcBlockExplorer + txData.txId, children: _jsx("small", { children: txData.txId }) }), _jsxs(Badge, { className: "text-black" + (txData.txEtaMs == null ? " d-none" : ""), bg: "light", pill: true, children: ["ETA: ", txData.txEtaMs === -1 || txData.txEtaMs > (60 * 60 * 1000) ? ">1 hour" : "~" + getDeltaText(txData.txEtaMs)] }), FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET4 ? _jsx(Alert, { variant: "warning", className: "mt-2 mb-0", children: _jsx("label", { children: "Transactions on Bitcoin testnet4 L1 take a long time to confirm due to long blocktimes, this can take up to a few hours!" }) }) : ""] })) })) : "", isClaimable && !(claimable || isAlreadyClaimable) ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx(Spinner, {}), _jsx("small", { className: "mt-2", children: "Transaction received & confirmed, waiting for claim by watchtowers..." })] })) : "", (isClaimable || isClaiming) && (claimable || isAlreadyClaimable) ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "d-flex flex-column align-items-center tab-accent mb-3", children: _jsx("label", { children: "Transaction received & confirmed, you can claim your funds manually now!" }) }), _jsx(ErrorAlert, { className: "mb-3", title: "Claim error", error: claimError }), _jsxs(ButtonWithWallet, { chainId: props.quote.chainIdentifier, onClick: onClaim, disabled: claimLoading, size: "lg", children: [claimLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : "", "Finish swap (claim funds)"] })] })) : "", isSuccess ? (_jsxs(Alert, { variant: "success", className: "mb-3", children: [_jsx("strong", { children: "Swap successful" }), _jsx("label", { children: "Swap was executed successfully" })] })) : "", isFailed ? (_jsxs(Alert, { variant: "danger", className: "mb-3", children: [_jsx("strong", { children: "Swap failed" }), _jsx("label", { children: "Swap transaction reverted, no funds were sent! Please retry." })] })) : "", (isQuoteExpired ||
                 isFailed ||
                 isSuccess) ? (_jsx(Button, { onClick: props.refreshQuote, variant: "secondary", children: "New quote" })) : ""] }));
 }

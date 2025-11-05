@@ -1,7 +1,9 @@
 import {
+    BitcoinNetwork,
     fromHumanReadableString,
     isBtcToken,
     isSCToken,
+    isSwapWithGasDrop,
     SCToken,
     SpvFromBTCSwap,
     SwapType,
@@ -49,6 +51,7 @@ import {useSupportedTokens} from "../swaps/hooks/useSupportedTokens";
 import {useDecimalNumberState} from "../utils/hooks/useDecimalNumberState";
 import {ChainDataContext} from "../wallets/context/ChainDataContext";
 import {ChainWalletData} from "../wallets/ChainDataProvider";
+import {ticket} from 'react-icons-kit/fa/ticket';
 
 
 export function SwapNew(props: {
@@ -167,9 +170,9 @@ export function SwapNew(props: {
         existingSwap instanceof SpvFromBTCSwap ? existingSwap.getGasDropOutput().rawAmount>0 : undefined
     );
     const gasDropTokenAmount = useMemo(() => {
-        if(existingSwap!=null && existingSwap.getType()===SwapType.SPV_VAULT_FROM_BTC && (existingSwap as SpvFromBTCSwap<any>).getGasDropOutput().rawAmount>0)
-            return (existingSwap as SpvFromBTCSwap<any>).getGasDropOutput?.();
-        if(swapper!=null && isSCToken(outputToken) && swapType===SwapType.SPV_VAULT_FROM_BTC) {
+        if(isSwapWithGasDrop(existingSwap) && existingSwap.getGasDropOutput().rawAmount>0)
+            return existingSwap.getGasDropOutput();
+        if(swapper!=null && isSCToken(outputToken) && swapper.SwapTypeInfo[swapType].supportsGasDrop) {
             const nativeToken = swapper.Utils.getNativeToken(outputToken.chainId);
             if(nativeToken.address===outputToken.address) return;
             return toTokenAmount(FEConstants.scBalances[toTokenIdentifier(nativeToken)]?.optimal, nativeToken, swapper.prices);
@@ -226,7 +229,7 @@ export function SwapNew(props: {
                 }
             }
         } catch (e) {
-            console.log("Address parsing error: ", e);
+            console.log("SwapNew: addressValidator(): Address parsing error: ", e);
             return e.message;
         }
         return null;
@@ -237,7 +240,7 @@ export function SwapNew(props: {
         validatedAmount, exactIn, inputToken, outputToken,
         addressData?.lnurl ?? addressData?.address,
         gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined, maxSpendable?.feeRate,
-        addressLoading
+        addressLoading || locked
     );
     useEffect(() => {
         if(quote==null || maxSpendable?.feeRate==null || swapType!==SwapType.SPV_VAULT_FROM_BTC || quote?.getType()!==SwapType.SPV_VAULT_FROM_BTC) return;
@@ -340,7 +343,7 @@ export function SwapNew(props: {
             <SwapTopbar selected={0} enabled={!locked}/>
 
             <QRScannerModal onScanned={(data: string) => {
-                console.log("QR scanned: ", data);
+                console.log("SwapNew: QRScannerModal: QR scanned: ", data);
                 addressRef.current.setValue(data);
                 setQrScanning(false);
             }} show={qrScanning} onHide={() => setQrScanning(false)}/>
@@ -542,7 +545,7 @@ export function SwapNew(props: {
                                 }}
                                 value={outputAddress}
                                 inputRef={addressRef}
-                                placeholder={"Destination wallet address"}
+                                placeholder={swapType===SwapType.TO_BTCLN ? "Lightning invoice, LNURL-pay link" : "Destination wallet address"}
                                 onValidate={addressValidator}
                                 validated={isOutputWalletAddress || outputAddress!==address ? null : addressError?.message}
                                 disabled={locked || outputChainData?.wallet!=null}
@@ -607,7 +610,7 @@ export function SwapNew(props: {
                             <Alert
                                 variant={"success"}
                                 className="mt-3 mb-0 text-center"
-                                show={!locked && outputChainData?.wallet == null && isBtcToken(outputToken) && outputToken.lightning && addressData == null}
+                                show={existingSwap==null && !locked && outputChainData?.wallet == null && isBtcToken(outputToken) && outputToken.lightning && addressData == null}
                             >
                                 <label>Only lightning invoices with pre-set amount are supported! Use lightning
                                     address/LNURL for variable amount.</label>
@@ -660,6 +663,19 @@ export function SwapNew(props: {
                 </Card>
             </div>
 
+            {FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET4 ? (
+                <div className="text-light mb-3 d-flex align-items-center justify-content-center">
+                    <Icon size={16} icon={ticket} style={{marginTop: "-0.5rem"}} className="me-1"/>
+                    <span>
+                        Faucets: <a href="https://faucet.testnet4.dev/" target="_blank">BTC</a>, <a href="https://lnbits-testnet4.atomiqlabs.org:12345/" target="_blank">BTC-Lightning</a>, {scCurrency?.chainId==="CITREA" ? (
+                            <a href="https://citrea.xyz/faucet" target="_blank">cBTC</a>
+                        ) : scCurrency?.chainId==="STARKNET" ? (
+                            <a href="https://starknet-faucet.vercel.app/" target="_blank">STRK</a>
+                        ) : ""}
+                    </span>
+                </div>
+            ) : ""}
+
             <div className="text-light text-opacity-50 d-flex flex-row align-items-center justify-content-center mb-3">
                 <div
                     className="cursor-pointer d-flex align-items-center justify-content-center"
@@ -667,7 +683,7 @@ export function SwapNew(props: {
                 >
                     <Icon size={18} icon={lock} style={{marginTop: "-0.5rem"}}/>
                     <small>Audited by</small>
-                    {scCurrency?.chainId==="STARKNET" ? (
+                    {scCurrency?.chainId!=="SOLANA" ? (
                         <img
                             className="d-block ms-1" height={18}
                             src="/csc-white-logo.png" style={{marginTop: "-0.075rem", opacity: 0.6}}

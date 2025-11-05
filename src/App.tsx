@@ -34,6 +34,8 @@ require('@solana/wallet-adapter-react-ui/styles.css');
 
 const noWalletPaths = new Set(["/about", "/faq", "/46jh456f45f"]);
 
+global.atomiqLogLevel = 5;
+
 function WrappedApp() {
     const navigateHref = useAnchorNavigate();
 
@@ -60,12 +62,15 @@ function WrappedApp() {
         if(abortController.current!=null) abortController.current.abort();
         abortController.current = new AbortController();
         try {
-            console.log("init start");
+            console.log("App: loadSwapper(): init start");
 
             const swapper = Factory.newSwapper({
                 chains: {
                     SOLANA: chainsData.SOLANA?.swapperOptions,
-                    STARKNET: chainsData.STARKNET?.swapperOptions
+                    STARKNET: chainsData.STARKNET?.swapperOptions,
+                    CITREA: chainsData.CITREA?.swapperOptions,
+                    BOTANIX: chainsData.BOTANIX?.swapperOptions,
+                    ALPEN: chainsData.ALPEN?.swapperOptions
                 },
                 intermediaryUrl: useLp,
                 getRequestTimeout: 15000,
@@ -77,15 +82,16 @@ function WrappedApp() {
                     feeOverrideCode: "frontend"
                 },
                 mempoolApi: FEConstants.mempoolApi,
-                defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp
+                defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
+                automaticClockDriftCorrection: true
             });
 
-            console.log("Swapper: ", swapper);
+            console.log("App: loadSwapper(): Swapper: ", swapper);
 
             await swapper.init();
             if(abortController.current.signal.aborted) return;
 
-            console.log("Swapper initialized!");
+            console.log("App: loadSwapper(): Swapper initialized!");
 
             setSwapper(swapper);
             setSwapperLoading(false);
@@ -115,8 +121,8 @@ function WrappedApp() {
                     <Navbar.Brand href="/" className="d-flex flex-column">
                         <div className="d-flex flex-row" style={{fontSize: "1.5rem"}}>
                             <img src="/icons/atomiq-flask.png" className="logo-img"/>
-                            <b>atomiq</b><span style={{fontWeight: 300}}>.exchange</span>
-                            {FEConstants.bitcoinNetwork!==BitcoinNetwork.MAINNET ? <Badge className="ms-2 d-flex align-items-center" bg="danger">DEVNET</Badge> : ""}
+                            <b>atomiq</b><span className={"d-sm-block " + (FEConstants.bitcoinNetwork !== BitcoinNetwork.MAINNET ? "d-none" : "")} style={{fontWeight: 300}}>.exchange</span>
+                            {FEConstants.bitcoinNetwork!==BitcoinNetwork.MAINNET ? <Badge className="ms-2 d-flex align-items-center" bg="danger">{FEConstants.bitcoinNetwork===BitcoinNetwork.TESTNET4 ? "TESTNET4" : "TESTNET"}</Badge> : ""}
                         </div>
                     </Navbar.Brand>
 

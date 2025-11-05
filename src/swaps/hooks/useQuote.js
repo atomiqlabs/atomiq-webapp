@@ -1,5 +1,5 @@
 import { useContext, useMemo } from "react";
-import { BitcoinNetwork, fromHumanReadableString, isBtcToken, isLNURLWithdraw, isSCToken, SwapType } from "@atomiqlabs/sdk";
+import { BitcoinNetwork, fromHumanReadableString, isBtcToken, isLNURLWithdraw, isSCToken } from "@atomiqlabs/sdk";
 import { SwapsContext } from "../context/SwapsContext";
 import { useWithAwait } from "../../utils/hooks/useWithAwait";
 import { useChainForCurrency } from "../../wallets/hooks/useChainForCurrency";
@@ -52,7 +52,8 @@ export function useQuote(amount, exactIn, inToken, outToken, address, gasDropAmo
         return swapper.swap(inToken, outToken, rawAmount, exactIn, inAddress, outAddress, {
             gasAmount: gasDropAmount,
             maxAllowedNetworkFeeRate: btcFeeRate == null ? null : btcFeeMaxOffset + (btcFeeRate * btcFeeMaxMultiple),
-            unsafeZeroWatchtowerFee: swapType === SwapType.SPV_VAULT_FROM_BTC
+            // unsafeZeroWatchtowerFee: swapType===SwapType.SPV_VAULT_FROM_BTC,
+            // unsafeSkipLnNodeCheck: true
         }).then(quote => { return { quote, random: address == null }; });
     }, [swapper, amount, exactIn, toTokenIdentifier(inToken), toTokenIdentifier(outToken), inputAddress, address, gasDropAmount], false, null, pause);
     return [refresh, result?.quote, result?.random, loading, error];

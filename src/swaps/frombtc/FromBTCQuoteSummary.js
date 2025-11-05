@@ -60,7 +60,7 @@ export function FromBTCQuoteSummary(props) {
         return commitTxId;
     }, [props.quote, smartChainWallet, payBitcoin]);
     const abortSignalRef = useAbortSignalRef([props.quote]);
-    const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => props.quote.waitForBitcoinTransaction(abortSignalRef.current, null, (txId, confirmations, confirmationTarget, txEtaMs) => {
+    const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => props.quote.waitForBitcoinTransaction((txId, confirmations, confirmationTarget, txEtaMs) => {
         if (txId == null) {
             setTxData(null);
             return;
@@ -71,7 +71,7 @@ export function FromBTCQuoteSummary(props) {
             confTarget: confirmationTarget,
             txEtaMs
         });
-    }), [props.quote]);
+    }, undefined, abortSignalRef.current), [props.quote]);
     const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
         return props.quote.claim(smartChainWallet.instance);
     }, [props.quote, smartChainWallet]);
@@ -87,7 +87,7 @@ export function FromBTCQuoteSummary(props) {
         if (state === FromBTCSwapState.BTC_TX_CONFIRMED) {
             timer = setTimeout(() => {
                 setClaimable(true);
-            }, 20 * 1000);
+            }, 60 * 1000);
         }
         return () => {
             if (timer != null)
@@ -122,7 +122,7 @@ export function FromBTCQuoteSummary(props) {
     const executionSteps = [
         { icon: ic_check_circle_outline, text: "Swap address opened", type: "success" },
         { icon: bitcoin, text: "Bitcoin payment", type: "disabled" },
-        { icon: ic_swap_horizontal_circle_outline, text: "Claim transaction", type: "disabled" },
+        { icon: ic_swap_horizontal_circle_outline, text: "Automatic settlement", type: "disabled" },
     ];
     if (isCreated && !commitLoading)
         executionSteps[0] = { icon: ic_gavel_outline, text: "Open swap address", type: "loading" };
@@ -138,12 +138,18 @@ export function FromBTCQuoteSummary(props) {
         executionSteps[1] = { icon: ic_check_circle_outline, text: "Bitcoin confirmed", type: "success" };
     if (isExpired || isFailed)
         executionSteps[1] = { icon: ic_watch_later_outline, text: "Swap expired", type: "failed" };
-    if (isClaimable)
-        executionSteps[2] = { icon: ic_swap_horizontal_circle_outline, text: "Claim transaction", type: "loading" };
+    if (isClaimable) {
+        if (claimable || isAlreadyClaimable) {
+            executionSteps[2] = { icon: ic_swap_horizontal_circle_outline, text: "Claim manually", type: "loading" };
+        }
+        else {
+            executionSteps[2] = { icon: ic_hourglass_top_outline, text: "Waiting automatic settlement", type: "loading" };
+        }
+    }
     if (isClaiming)
         executionSteps[2] = { icon: ic_hourglass_empty_outline, text: "Sending claim transaction", type: "loading" };
     if (isSuccess)
-        executionSteps[2] = { icon: ic_verified_outline, text: "Claim success", type: "success" };
+        executionSteps[2] = { icon: ic_verified_outline, text: "Payout success", type: "success" };
     const [_, setShowCopyWarning, showCopyWarningRef] = useLocalStorage("crossLightning-copywarning", true);
     const addressContent = useCallback((show) => (_jsxs(_Fragment, { children: [_jsx(Alert, { variant: "warning", className: "mb-3", children: _jsxs("label", { children: ["Please make sure that you send an ", _jsx("b", { children: _jsx("u", { children: "EXACT" }) }), " amount in BTC, different amount wouldn't be accepted and you might lose funds!"] }) }), _jsx("div", { className: "mb-2", children: _jsx(QRCodeSVG, { value: props.quote.getHyperlink(), size: 300, includeMargin: true, className: "cursor-pointer", onClick: (event) => {
                         show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);

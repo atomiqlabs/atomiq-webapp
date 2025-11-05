@@ -3,7 +3,8 @@ import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { constants, RpcProvider } from "starknet";
 import { BitcoinNetwork, MempoolApi, MempoolBitcoinRpc, SwapperFactory } from "@atomiqlabs/sdk";
 import { SolanaInitializer } from "@atomiqlabs/chain-solana";
-import { StarknetInitializer } from "@atomiqlabs/chain-starknet";
+import { StarknetInitializer, WebSocketChannelWithRetries } from "@atomiqlabs/chain-starknet";
+import { AlpenInitializer, BotanixInitializer, CitreaInitializer, JsonRpcProviderWithRetries, WebSocketProviderWithRetries } from "@atomiqlabs/chain-evm";
 const solanaRpcUrl = process.env.REACT_APP_SOLANA_RPC_URL;
 const solanaChain = process.env.REACT_APP_SOLANA_NETWORK; //DEVNET or MAINNET
 const btcBlockExplorer = process.env.REACT_APP_BTC_BLOCK_EXPLORER;
@@ -12,8 +13,18 @@ const statsUrl = process.env.REACT_APP_STATS_URL;
 const dappUrl = process.env.REACT_APP_DAPP_URL;
 const affiliateUrl = process.env.REACT_APP_AFFILIATE_URL;
 const starknetRpcUrl = process.env.REACT_APP_STARKNET_RPC_URL;
+const starknetWsUrl = process.env.REACT_APP_STARKNET_WS_URL;
 const starknetChain = process.env.REACT_APP_STARKNET_NETWORK; //SEPOLIA or MAIN
 const starknetBlockExplorer = process.env.REACT_APP_STARKNET_BLOCK_EXPLORER;
+const citreaRpcUrl = process.env.REACT_APP_CITREA_RPC_URL;
+const citreaChain = process.env.REACT_APP_CITREA_NETWORK;
+const citreaBlockExplorer = process.env.REACT_APP_CITREA_BLOCK_EXPLORER;
+const botanixRpcUrl = process.env.REACT_APP_BOTANIX_RPC_URL;
+const botanixChain = process.env.REACT_APP_BOTANIX_NETWORK;
+const botanixBlockExplorer = process.env.REACT_APP_BOTANIX_BLOCK_EXPLORER;
+const alpenRpcUrl = process.env.REACT_APP_ALPEN_RPC_URL;
+const alpenChain = process.env.REACT_APP_ALPEN_NETWORK;
+const alpenBlockExplorer = process.env.REACT_APP_ALPEN_BLOCK_EXPLORER;
 const bitcoinNetwork = process.env.REACT_APP_BITCOIN_NETWORK;
 const mempoolApi = new MempoolApi(bitcoinNetwork === "MAINNET" ?
     [
@@ -36,15 +47,17 @@ const mempoolApi = new MempoolApi(bitcoinNetwork === "MAINNET" ?
     "https://mempool.tk7.mempool.space/testnet/api/"
 ]);
 const bitcoinRpc = new MempoolBitcoinRpc(mempoolApi);
-export const Factory = new SwapperFactory([SolanaInitializer, StarknetInitializer]);
-console.log("Factory: ", Factory);
+export const Factory = new SwapperFactory([SolanaInitializer, StarknetInitializer, CitreaInitializer, BotanixInitializer, AlpenInitializer]);
 export const Tokens = Factory.Tokens;
 export const TokenResolver = Factory.TokenResolver;
 export const FEConstants = {
     btcBlockExplorer,
     blockExplorers: {
         SOLANA: solBlockExplorer,
-        STARKNET: starknetBlockExplorer
+        STARKNET: starknetBlockExplorer,
+        CITREA: citreaBlockExplorer,
+        BOTANIX: botanixBlockExplorer,
+        ALPEN: alpenBlockExplorer
     },
     scBalances: {
         "SOLANA:So11111111111111111111111111111111111111112": {
@@ -58,19 +71,47 @@ export const FEConstants = {
         "STARKNET:0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d": {
             optimal: 1000000000000000000n,
             minimum: 500000000000000000n
+        },
+        "CITREA:0x0000000000000000000000000000000000000000": {
+            optimal: 10000000000000n,
+            minimum: 5000000000000n
+        },
+        "BOTANIX:0x0000000000000000000000000000000000000000": {
+            optimal: 5000000000000n,
+            minimum: 2000000000000n
+        },
+        "ALPEN:0x0000000000000000000000000000000000000000": {
+            optimal: 5000000000000n,
+            minimum: 2000000000000n
         }
     },
     mempoolApi,
     bitcoinRpc,
     allowedChains: new Set([
         solanaRpcUrl != null ? "SOLANA" : undefined,
-        starknetRpcUrl != null ? "STARKNET" : undefined
+        starknetRpcUrl != null ? "STARKNET" : undefined,
+        citreaRpcUrl != null ? "CITREA" : undefined,
+        botanixRpcUrl != null ? "BOTANIX" : undefined,
+        alpenRpcUrl != null ? "ALPEN" : undefined
     ]),
     statsUrl,
     solanaChain: solanaChain === "MAINNET" ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet,
     solanaRpcUrl,
     starknetChainId: starknetChain == null ? null : (starknetChain === "MAIN" ? constants.StarknetChainId.SN_MAIN : constants.StarknetChainId.SN_SEPOLIA),
     starknetRpc: starknetRpcUrl == null ? null : new RpcProvider({ nodeUrl: starknetRpcUrl }),
+    starknetWs: starknetWsUrl == null ? null : new WebSocketChannelWithRetries({ nodeUrl: starknetWsUrl, reconnectOptions: { retries: Infinity, delay: 5000 } }),
+    citreaChainType: citreaChain,
+    citreaRpc: citreaRpcUrl == null ? null : (citreaRpcUrl.startsWith("ws")
+        ? new WebSocketProviderWithRetries(citreaRpcUrl)
+        : new JsonRpcProviderWithRetries(citreaRpcUrl)),
+    botanixChainType: botanixChain,
+    botanixRpc: botanixRpcUrl == null ? null : (botanixRpcUrl.startsWith("ws")
+        ? new WebSocketProviderWithRetries(botanixRpcUrl)
+        : new JsonRpcProviderWithRetries(botanixRpcUrl)),
+    alpenChainType: alpenChain,
+    alpenRpc: alpenRpcUrl == null ? null : (alpenRpcUrl.startsWith("ws")
+        ? new WebSocketProviderWithRetries(alpenRpcUrl)
+        : new JsonRpcProviderWithRetries(alpenRpcUrl)),
     bitcoinNetwork: bitcoinNetwork === "TESTNET" ? BitcoinNetwork.TESTNET : bitcoinNetwork === "TESTNET4" ? BitcoinNetwork.TESTNET4 : BitcoinNetwork.MAINNET,
     url: null,
     satsPerBitcoin: new BigNumber(100000000),
