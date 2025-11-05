@@ -23,7 +23,9 @@ export function useFromBtcLnQuote(
     setAmountLock: (isLocked: boolean) => void,
 ) {
     const smartChainWallet = useSmartChainWallet(quote, true);
-    const canClaimInOneShot = quote?.getType()===SwapType.FROM_BTCLN_AUTO || (quote as FromBTCLNSwap)?.canCommitAndClaimInOneShot();
+    const canClaimInOneShot = quote?.getType()===SwapType.FROM_BTCLN_AUTO || (
+        (quote as FromBTCLNSwap)?.canCommitAndClaimInOneShot() && !(quote?.getOutput().token.chainId==="SOLANA" && smartChainWallet?.name==="MetaMask")
+    );
 
     const {state, totalQuoteTime, quoteTimeRemaining, isInitiated} = useSwapState(quote as ISwap);
 
@@ -49,7 +51,7 @@ export function useFromBtcLnQuote(
                 if(quote.chainIdentifier==="STARKNET") await timeoutPromise(5000);
             }
         },
-        [quote, smartChainWallet]
+        [quote, smartChainWallet, canClaimInOneShot]
     );
 
     const [onClaim, claiming, claimSuccess, claimError] = useAsync(

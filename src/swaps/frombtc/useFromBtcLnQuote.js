@@ -17,7 +17,7 @@ import { timeoutPromise } from "../../utils/Utils";
 import { useSmartChainWallet } from "../../wallets/hooks/useSmartChainWallet";
 export function useFromBtcLnQuote(quote, setAmountLock) {
     const smartChainWallet = useSmartChainWallet(quote, true);
-    const canClaimInOneShot = quote?.getType() === SwapType.FROM_BTCLN_AUTO || quote?.canCommitAndClaimInOneShot();
+    const canClaimInOneShot = quote?.getType() === SwapType.FROM_BTCLN_AUTO || (quote?.canCommitAndClaimInOneShot() && !(quote?.getOutput().token.chainId === "SOLANA" && smartChainWallet?.name === "MetaMask"));
     const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote);
     const setAmountLockRef = useStateRef(setAmountLock);
     const abortSignalRef = useAbortSignalRef([quote]);
@@ -42,7 +42,7 @@ export function useFromBtcLnQuote(quote, setAmountLock) {
             if (quote.chainIdentifier === "STARKNET")
                 await timeoutPromise(5000);
         }
-    }, [quote, smartChainWallet]);
+    }, [quote, smartChainWallet, canClaimInOneShot]);
     const [onClaim, claiming, claimSuccess, claimError] = useAsync(() => quote.claim(smartChainWallet.instance), [quote, smartChainWallet]);
     const isQuoteExpired = state === FromBTCLNSwapState.QUOTE_EXPIRED ||
         (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !committing && !paymentWaiting);
