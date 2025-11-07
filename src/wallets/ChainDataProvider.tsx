@@ -3,7 +3,7 @@ import { ChainDataContext } from './context/ChainDataContext';
 import { GenericWalletModal } from './shared/GenericWalletModal';
 import { useChainWalletSystem } from './hooks/useChainWalletSystem';
 import { FEConstants } from '../FEConstants';
-import { useCallback, useMemo, useState } from 'react';
+import {useCallback, useMemo, useRef, useState} from 'react';
 
 export type WalletListData = {
   name: string;
@@ -38,10 +38,16 @@ function WrappedChainDataProvider(props: { children: React.ReactNode }) {
   const [modalChainId, setModalChainId] = useState<string>();
   const modalSelectedChainData = useMemo(() => chainsData[modalChainId], [modalChainId]);
 
-  const connectWallet: (chainIdentifier: string) => void = useCallback(
+  const connectWalletPromiseCbk = useRef<(success: boolean) => void>();
+
+  const connectWallet: (chainIdentifier: string) => Promise<boolean> = useCallback(
     (chainIdentifier: string) => {
       setModalOpen(true);
       setModalChainId(chainIdentifier);
+      if(connectWalletPromiseCbk.current) connectWalletPromiseCbk.current(false);
+      return new Promise<boolean>((resolve) => {
+          connectWalletPromiseCbk.current = resolve;
+      });
     },
     [chainsData]
   );
@@ -75,7 +81,13 @@ function WrappedChainDataProvider(props: { children: React.ReactNode }) {
     >
       <GenericWalletModal
         visible={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+            setModalOpen(false);
+            if(connectWalletPromiseCbk.current) {
+                connectWalletPromiseCbk.current(false);
+                connectWalletPromiseCbk.current = null;
+            }
+        }}
         title={`Select a ${modalSelectedChainData?.chain.name ?? modalChainId} Wallet`}
         installedWallets={modalSelectedChainData?.installedWallets ?? []}
         notInstalledWallets={modalSelectedChainData?.nonInstalledWallets ?? []}
@@ -85,6 +97,10 @@ function WrappedChainDataProvider(props: { children: React.ReactNode }) {
             try {
               await modalSelectedChainData._connectWallet(wallet.name);
               setModalOpen(false);
+                if(connectWalletPromiseCbk.current) {
+                    connectWalletPromiseCbk.current(true);
+                    connectWalletPromiseCbk.current = null;
+                }
             } catch (e) {
               alert(
                 `Failed to connect to ${wallet.name}. This wallet may not be available or compatible with the ${modalSelectedChainData.chain.name} network.`

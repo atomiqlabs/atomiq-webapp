@@ -18,7 +18,7 @@ export const ChainDataContext: React.Context<{
   chains: {
     [chain in ChainIdentifiers]?: ChainWalletData<WalletTypes[chain]>
   };
-  connectWallet: (chainIdentifier: string) => void;
+  connectWallet: (chainIdentifier: string) => Promise<boolean>;
   disconnectWallet: (chainIdentifier: string) => Promise<void>;
   changeWallet: (chainIdentifier: string) => Promise<void>;
 }> = createContext(undefined);

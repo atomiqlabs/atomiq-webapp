@@ -60,7 +60,7 @@ export function FromBTCQuoteSummary(props: {
   feeRate?: number;
   balance?: bigint;
 }) {
-  const { disconnectWallet } = useContext(ChainDataContext);
+  const { disconnectWallet, connectWallet } = useContext(ChainDataContext);
   const bitcoinChainData = useChain('BITCOIN');
   const smartChainWallet = useSmartChainWallet(props.quote, true);
 
@@ -74,6 +74,14 @@ export function FromBTCQuoteSummary(props: {
       ),
     [bitcoinChainData.wallet, props.feeRate, props.quote]
   );
+
+  const [callPayFlag, setCallPayFlag] = useState<boolean>(false);
+  useEffect(() => {
+    if(!callPayFlag) return;
+    setCallPayFlag(false);
+    if(!bitcoinChainData.wallet) return;
+    payBitcoin();
+  }, [callPayFlag, bitcoinChainData.wallet, payBitcoin]);
 
   const isAlreadyClaimable = useMemo(
     () => (props.quote != null ? props.quote.isClaimable() : false),
@@ -431,8 +439,7 @@ export function FromBTCQuoteSummary(props: {
           <BaseButton
             variant="secondary"
             onClick={() => {
-              // TODO make this works
-              console.log('dont know what to do');
+              window.location.href = props.quote.getHyperlink();
             }}
           >
             <i className="icon icon-connect"></i>
@@ -441,7 +448,10 @@ export function FromBTCQuoteSummary(props: {
           <BaseButton
             variant="secondary"
             onClick={() => {
-              window.location.href = props.quote.getHyperlink();
+              connectWallet("BITCOIN").then(success => {
+                //Call payBitcoin on next state update
+                if(success) setCallPayFlag(true);
+              });
             }}
           >
             <i className="icon icon-new-window"></i>

@@ -44,11 +44,20 @@ Steps:
 3. Claim transaction -> Sending claim transaction -> Claim success
  */
 export function FromBTCQuoteSummary(props) {
-    const { disconnectWallet } = useContext(ChainDataContext);
+    const { disconnectWallet, connectWallet } = useContext(ChainDataContext);
     const bitcoinChainData = useChain('BITCOIN');
     const smartChainWallet = useSmartChainWallet(props.quote, true);
     const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
     const [payBitcoin, payLoading, payTxId, payError] = useAsync(() => props.quote.sendBitcoinTransaction(bitcoinChainData.wallet.instance, props.feeRate === 0 ? null : props.feeRate), [bitcoinChainData.wallet, props.feeRate, props.quote]);
+    const [callPayFlag, setCallPayFlag] = useState(false);
+    useEffect(() => {
+        if (!callPayFlag)
+            return;
+        setCallPayFlag(false);
+        if (!bitcoinChainData.wallet)
+            return;
+        payBitcoin();
+    }, [callPayFlag, bitcoinChainData.wallet, payBitcoin]);
     const isAlreadyClaimable = useMemo(() => (props.quote != null ? props.quote.isClaimable() : false), [props.quote]);
     const setAmountLockRef = useStateRef(props.setAmountLock);
     const [onCommit, commitLoading, commitSuccess, commitError] = useAsync(async () => {
@@ -299,10 +308,13 @@ export function FromBTCQuoteSummary(props) {
                     if (showCopyWarningRef.current)
                         setTimeout(openModalRef.current, 100);
                 } }), _jsxs("div", { className: "payment-awaiting-buttons", children: [_jsxs(BaseButton, { variant: "secondary", onClick: () => {
-                            // TODO make this works
-                            console.log('dont know what to do');
-                        }, children: [_jsx("i", { className: "icon icon-connect" }), _jsx("div", { className: "sc-text", children: "Pay with BTC Wallet" })] }), _jsxs(BaseButton, { variant: "secondary", onClick: () => {
                             window.location.href = props.quote.getHyperlink();
+                        }, children: [_jsx("i", { className: "icon icon-connect" }), _jsx("div", { className: "sc-text", children: "Pay with BTC Wallet" })] }), _jsxs(BaseButton, { variant: "secondary", onClick: () => {
+                            connectWallet("BITCOIN").then(success => {
+                                //Call payBitcoin on next state update
+                                if (success)
+                                    setCallPayFlag(true);
+                            });
                         }, children: [_jsx("i", { className: "icon icon-new-window" }), _jsx("div", { className: "sc-text", children: "Pay via Browser Wallet" })] })] })] })), [props.quote, inputToken]);
     return (_jsxs(_Fragment, { children: [_jsx(OnchainAddressCopyModal, { openRef: openModalRef, amountBtc: props.quote?.getInput()?.amount, setShowCopyWarning: setShowCopyWarning }), _jsxs("div", { className: "swap-panel__card", children: [isInitiated ? (_jsx(StepByStep, { steps: executionSteps, sourceWallet: sourceWallet, destinationWallet: destinationWallet })) : null, _jsx(SwapStepAlert, { show: !!commitError, type: "error", icon: ic_warning, title: "Swap initialization error", description: commitError?.message || commitError?.toString(), error: commitError }), isCreated && hasEnoughBalance ? (smartChainWallet === undefined ? null : (_jsx(SwapForGasAlert, { notEnoughForGas: props.notEnoughForGas, quote: props.quote }))) : null, isCommited ? (_jsxs(_Fragment, { children: [_jsx("div", { className: "swap-panel__card__group", children: bitcoinChainData.wallet != null ? (_jsx(_Fragment, { children: _jsx("div", { className: "d-flex flex-column align-items-center justify-content-center", children: payTxId != null ? (_jsxs("div", { className: "d-flex flex-column align-items-center p-2", children: [_jsx(Spinner, {}), _jsx("label", { children: "Sending Bitcoin transaction..." })] })) : (_jsxs("div", { className: "payment-awaiting-buttons", children: [_jsxs(BaseButton, { variant: "secondary", textSize: "sm", className: "d-flex flex-row align-items-center", disabled: payLoading, onClick: payBitcoin, children: [payLoading ? (_jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" })) : (''), "Pay with", ' ', _jsx("img", { width: 20, height: 20, src: bitcoinChainData.wallet?.icon }), ' ', bitcoinChainData.wallet?.name] }), _jsx(BaseButton, { variant: "secondary", textSize: "sm", className: "d-flex flex-row align-items-center", onClick: () => {
                                                         disconnectWallet('BITCOIN');
