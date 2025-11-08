@@ -10,7 +10,6 @@ import {
 } from '@atomiqlabs/sdk';
 import { ToBTCQuoteSummary } from './tobtc/ToBTCQuoteSummary';
 import { LNURLWithdrawQuoteSummary } from './frombtc/LNURLWithdrawQuoteSummary';
-import { FromBTCLNQuoteSummary } from './frombtc/FromBTCLNQuoteSummary';
 import { FromBTCQuoteSummary } from './frombtc/FromBTCQuoteSummary';
 import * as React from 'react';
 import { useContext } from 'react';
@@ -20,7 +19,7 @@ import { useWithAwait } from '../utils/hooks/useWithAwait';
 import { ChainDataContext } from '../wallets/context/ChainDataContext';
 import { ChainWalletData } from '../wallets/ChainDataProvider';
 import { getChainIdentifierForCurrency, toTokenIdentifier } from '../tokens/Tokens';
-import {FromBTCLNQuoteSummary2} from "./frombtc/FromBTCLNQuoteSummary2";
+import { FromBTCLNQuoteSummary2 } from './frombtc/FromBTCLNQuoteSummary2';
 
 export function QuoteSummary(props: {
   quote: ISwap;
@@ -70,7 +69,7 @@ export function QuoteSummary(props: {
   }
 
   let swapElement: JSX.Element;
-
+  console.log(props.quote.getType());
   switch (props.quote.getType()) {
     case SwapType.TO_BTC:
     case SwapType.TO_BTCLN:

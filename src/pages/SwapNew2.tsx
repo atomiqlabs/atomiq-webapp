@@ -247,7 +247,7 @@ export function SwapNew2() {
                   <div className={swapPage.output.gasDrop != null ? 'd-flex' : 'd-none'}>
                     <ValidatedInput
                       type={'checkbox'}
-                      className="swap-panel__input-wrapper"
+                      className="swap-panel__input-wrapper is-checkbox"
                       onChange={swapPage.output.gasDrop?.onChange}
                       placeholder={
                         <span>

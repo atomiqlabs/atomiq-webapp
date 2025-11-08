@@ -79,6 +79,7 @@ export function LNURLWithdrawQuoteSummary(props: {
       {isCreated || isClaimable ? (
         smartChainWallet === undefined ? (
           <ButtonWithWallet
+            className="swap-panel__action"
             chainId={props.quote.chainIdentifier}
             requiredWalletAddress={props.quote._getInitiator()}
             size="lg"
@@ -98,6 +99,7 @@ export function LNURLWithdrawQuoteSummary(props: {
             <ButtonWithWallet
               requiredWalletAddress={props.quote._getInitiator()}
               chainId={props.quote?.chainIdentifier}
+              className="swap-panel__action"
               onClick={() => (isClaimable ? onCommit() : waitForPayment())}
               disabled={committing || paymentWaiting || (!canClaimInOneShot && isClaimClaimable)}
               size={canClaimInOneShot ? 'lg' : isClaimClaimable ? 'sm' : 'lg'}
@@ -122,7 +124,7 @@ export function LNURLWithdrawQuoteSummary(props: {
                 onClick={() => onClaim()}
                 disabled={claiming || !isClaimClaimable}
                 size={isClaimClaimable ? 'lg' : 'sm'}
-                className="mt-2"
+                className="swap-panel__action"
               >
                 {claiming ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
                 {claiming ? '2. Claiming funds...' : '2. Finish swap (claim funds)'}

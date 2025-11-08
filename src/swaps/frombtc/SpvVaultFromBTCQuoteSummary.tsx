@@ -244,9 +244,9 @@ export function SpvVaultFromBTCQuoteSummary(props: {
           <ButtonWithWallet
             chainId="BITCOIN"
             onClick={onSend}
+            className="swap-panel__action"
             disabled={sendLoading || !hasEnoughBalance}
             size="lg"
-            className="d-flex flex-row"
           >
             {sendLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
             Pay with <img width={20} height={20} src={bitcoinWallet?.icon} /> {bitcoinWallet?.name}
@@ -335,6 +335,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
 
           <ButtonWithWallet
             chainId={props.quote.chainIdentifier}
+            className="swap-panel__action"
             onClick={onClaim}
             disabled={claimLoading}
             size="lg"
@@ -366,7 +367,12 @@ export function SpvVaultFromBTCQuoteSummary(props: {
       )}
 
       {isQuoteExpired || isFailed || isSuccess ? (
-        <BaseButton onClick={props.refreshQuote} variant="primary" size="large">
+        <BaseButton
+          onClick={props.refreshQuote}
+          className="swap-panel__action"
+          variant="primary"
+          size="large"
+        >
           New quote
         </BaseButton>
       ) : (

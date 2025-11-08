@@ -103,6 +103,17 @@
         display: none;
       }
     }
+
+    &.is-checkbox {
+      @apply mt-3 text-[14px];
+
+      .form-check {
+        @apply m-0 gap-[12px] flex items-center;
+      }
+      .dottedUnderline {
+        text-decoration-color: #c84d81;
+      }
+    }
   }
 
   &__input {
