@@ -176,15 +176,13 @@ export function FromBTCLNQuoteSummary(props: {
 
         {isCreated && paymentWaiting ? (
           <>
-            <div className="swap-panel__card__group">
-              <LightningQR
-                quote={props.quote}
-                payInstantly={initClicked}
-                setAutoClaim={setAutoClaim}
-                autoClaim={autoClaim}
-                onHyperlink={onHyperlink}
-              />
-            </div>
+            <LightningQR
+              quote={props.quote}
+              payInstantly={initClicked}
+              setAutoClaim={setAutoClaim}
+              autoClaim={autoClaim}
+              onHyperlink={onHyperlink}
+            />
             <div className="swap-panel__card__group">
               <SwapExpiryProgressBar
                 timeRemaining={quoteTimeRemaining}

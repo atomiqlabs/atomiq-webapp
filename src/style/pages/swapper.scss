@@ -65,7 +65,7 @@
 
       /* Remove margin between adjacent groups */
       & + & {
-        @apply mt-1;
+        @apply mt-[2px];
       }
     }
   }
@@ -194,5 +194,17 @@
 
   &__text {
     @apply text-[14px];
+  }
+}
+
+.auto-claim {
+  @apply flex justify-between;
+
+  &__label {
+    @apply flex items-center gap-2;
+
+    .icon {
+      @apply opacity-30;
+    }
   }
 }

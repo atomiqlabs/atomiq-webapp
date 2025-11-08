@@ -67,7 +67,7 @@ export function LightningQR(props: {
   const qrContent = useCallback(
     (show) => {
       return (
-        <>
+        <div className="swap-panel__card__group">
           <div className="swap-panel__card__subtitle">
             <i className="ico icon-arrow-down"></i>
             <div className="sc-text">Initiate payment to this lightning network invoice</div>
@@ -129,14 +129,14 @@ export function LightningQR(props: {
               Pay via WebLN
             </BaseButton>
           </div>
-        </>
+        </div>
       );
     },
     [props.quote, props.onHyperlink, NFCScanning, connectWallet, setCallPayFlag]
   );
 
   return (
-    <div>
+    <>
       {payingWithLNURL ? (
         <div className="d-flex flex-column align-items-center justify-content-center">
           <Spinner animation="border" />
@@ -185,32 +185,34 @@ export function LightningQR(props: {
       )}
 
       {lightningChainData.wallet == null && props.setAutoClaim != null ? (
-        <Form className="text-start d-flex align-items-center justify-content-center font-bigger mt-3">
-          <Form.Check // prettier-ignore
-            id="autoclaim"
-            type="switch"
-            onChange={(val) => props.setAutoClaim(val.target.checked)}
-            checked={props.autoClaim}
-          />
-          <label title="" htmlFor="autoclaim" className="form-check-label me-2">
-            Auto-claim
-          </label>
-          <OverlayTrigger
-            overlay={
-              <Tooltip id="autoclaim-pay-tooltip">
-                Automatically requests authorization of the claim transaction through your wallet as
-                soon as the lightning payment arrives.
-              </Tooltip>
-            }
-          >
-            <Badge bg="primary" className="pill-round" pill>
-              ?
-            </Badge>
-          </OverlayTrigger>
-        </Form>
+        <div className="swap-panel__card__group">
+          <Form className="auto-claim">
+            <div className="auto-claim__label">
+              <label title="" htmlFor="autoclaim" className="form-check-label">
+                Auto-claim
+              </label>
+              <OverlayTrigger
+                overlay={
+                  <Tooltip id="autoclaim-pay-tooltip">
+                    Automatically requests authorization of the claim transaction through your
+                    wallet as soon as the lightning payment arrives.
+                  </Tooltip>
+                }
+              >
+                <i className="icon icon-info"></i>
+              </OverlayTrigger>
+            </div>
+            <Form.Check // prettier-ignore
+              id="autoclaim"
+              type="switch"
+              onChange={(val) => props.setAutoClaim(val.target.checked)}
+              checked={props.autoClaim}
+            />
+          </Form>
+        </div>
       ) : (
         ''
       )}
-    </div>
+    </>
   );
 }

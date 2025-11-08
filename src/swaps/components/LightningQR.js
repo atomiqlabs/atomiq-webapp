@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { Badge, Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import { Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import { CopyOverlay } from '../../components/CopyOverlay';
 import { QRCodeSVG } from 'qrcode.react';
 import { useCallback, useContext, useEffect, useState } from 'react';
@@ -51,7 +51,7 @@ export function LightningQR(props) {
             pay();
     }, [props.quote, props.payInstantly]);
     const qrContent = useCallback((show) => {
-        return (_jsxs(_Fragment, { children: [_jsxs("div", { className: "swap-panel__card__subtitle", children: [_jsx("i", { className: "ico icon-arrow-down" }), _jsx("div", { className: "sc-text", children: "Initiate payment to this lightning network invoice" }), _jsx("i", { className: "ico icon-arrow-down" })] }), _jsx(QRCodeSVG, { value: props.quote.getHyperlink(), size: 240, includeMargin: true, className: "cursor-pointer", onClick: (event) => {
+        return (_jsxs("div", { className: "swap-panel__card__group", children: [_jsxs("div", { className: "swap-panel__card__subtitle", children: [_jsx("i", { className: "ico icon-arrow-down" }), _jsx("div", { className: "sc-text", children: "Initiate payment to this lightning network invoice" }), _jsx("i", { className: "ico icon-arrow-down" })] }), _jsx(QRCodeSVG, { value: props.quote.getHyperlink(), size: 240, includeMargin: true, className: "cursor-pointer", onClick: (event) => {
                         show(event.target, props.quote.getAddress());
                     }, imageSettings: NFCScanning === NFCStartResult.OK
                         ? {
@@ -73,10 +73,10 @@ export function LightningQR(props) {
                                 });
                             }, children: [_jsx("img", { width: 20, height: 20, src: "/wallets/WebLN.png", className: "ms-2 me-1" }), "Pay via WebLN"] })] })] }));
     }, [props.quote, props.onHyperlink, NFCScanning, connectWallet, setCallPayFlag]);
-    return (_jsxs("div", { children: [payingWithLNURL ? (_jsxs("div", { className: "d-flex flex-column align-items-center justify-content-center", children: [_jsx(Spinner, { animation: "border" }), "Paying via NFC card..."] })) : lightningChainData.wallet != null ? (_jsxs(_Fragment, { children: [_jsx(SwapStepAlert, { show: !!payError, type: "error", icon: ic_warning, title: "Sending Lightning payment failed", description: payError?.message || payError?.toString(), error: payError, className: "mb-4 mt-0" }), _jsxs("div", { className: "payment-awaiting-buttons", children: [_jsxs(BaseButton, { variant: "secondary", textSize: "sm", className: "d-flex flex-row align-items-center", disabled: payLoading, onClick: () => {
+    return (_jsxs(_Fragment, { children: [payingWithLNURL ? (_jsxs("div", { className: "d-flex flex-column align-items-center justify-content-center", children: [_jsx(Spinner, { animation: "border" }), "Paying via NFC card..."] })) : lightningChainData.wallet != null ? (_jsxs(_Fragment, { children: [_jsx(SwapStepAlert, { show: !!payError, type: "error", icon: ic_warning, title: "Sending Lightning payment failed", description: payError?.message || payError?.toString(), error: payError, className: "mb-4 mt-0" }), _jsxs("div", { className: "payment-awaiting-buttons", children: [_jsxs(BaseButton, { variant: "secondary", textSize: "sm", className: "d-flex flex-row align-items-center", disabled: payLoading, onClick: () => {
                                     pay();
                                 }, children: [payLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : '', _jsx("img", { width: 20, height: 20, src: "/wallets/WebLN.png", className: "ms-2 me-1" }), "Pay via WebLN"] }), _jsx(BaseButton, { variant: "secondary", textSize: "sm", className: "d-flex flex-row align-items-center", onClick: () => {
                                     disconnectWallet('LIGHTNING');
-                                }, children: "Or use a QR code/LN invoice" })] })] })) : (_jsx(CopyOverlay, { placement: "top", children: qrContent })), lightningChainData.wallet == null && props.setAutoClaim != null ? (_jsxs(Form, { className: "text-start d-flex align-items-center justify-content-center font-bigger mt-3", children: [_jsx(Form.Check // prettier-ignore
-                    , { id: "autoclaim", type: "switch", onChange: (val) => props.setAutoClaim(val.target.checked), checked: props.autoClaim }), _jsx("label", { title: "", htmlFor: "autoclaim", className: "form-check-label me-2", children: "Auto-claim" }), _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "autoclaim-pay-tooltip", children: "Automatically requests authorization of the claim transaction through your wallet as soon as the lightning payment arrives." }), children: _jsx(Badge, { bg: "primary", className: "pill-round", pill: true, children: "?" }) })] })) : ('')] }));
+                                }, children: "Or use a QR code/LN invoice" })] })] })) : (_jsx(CopyOverlay, { placement: "top", children: qrContent })), lightningChainData.wallet == null && props.setAutoClaim != null ? (_jsx("div", { className: "swap-panel__card__group", children: _jsxs(Form, { className: "auto-claim", children: [_jsxs("div", { className: "auto-claim__label", children: [_jsx("label", { title: "", htmlFor: "autoclaim", className: "form-check-label", children: "Auto-claim" }), _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "autoclaim-pay-tooltip", children: "Automatically requests authorization of the claim transaction through your wallet as soon as the lightning payment arrives." }), children: _jsx("i", { className: "icon icon-info" }) })] }), _jsx(Form.Check // prettier-ignore
+                        , { id: "autoclaim", type: "switch", onChange: (val) => props.setAutoClaim(val.target.checked), checked: props.autoClaim })] }) })) : ('')] }));
 }
