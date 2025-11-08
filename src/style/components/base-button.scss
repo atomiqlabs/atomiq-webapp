@@ -1,4 +1,5 @@
 .base-button {
+  --bs-btn-disabled-opacity: 0.4;
   @apply font-bold px-6;
 
   &:has(.base-button__icon):not(.base-button--icon-only) {

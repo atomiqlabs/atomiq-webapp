@@ -7,14 +7,13 @@ import {
   FromBTCLNSwapState,
 } from '@atomiqlabs/sdk';
 import * as React from 'react';
-import { Accordion, Badge, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import { Accordion, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useMemo } from 'react';
-import Icon from 'react-icons-kit';
-import { ic_receipt_outline } from 'react-icons-kit/md/ic_receipt_outline';
 import { TokenIcon } from '../tokens/TokenIcon';
 import { FeeDetails, useSwapFees } from './hooks/useSwapFees';
 import { SwapExpiryProgressBar } from '../swaps/components/SwapExpiryProgressBar';
 import { useSwapState } from '../swaps/hooks/useSwapState';
+import { usePricing } from '../tokens/hooks/usePricing';
 
 function FeePart(props: FeeDetails) {
   return (
@@ -109,15 +108,51 @@ function FeePart(props: FeeDetails) {
 }
 
 export function SimpleFeeSummaryScreen(props: {
-  swap: ISwap;
+  swap: ISwap | null;
   btcFeeRate?: number;
   className?: string;
   onRefreshQuote?: () => void;
+  inputToken?: Token;
+  outputToken?: Token;
 }) {
-  const { fees, totalUsdFee } = useSwapFees(props.swap, props.btcFeeRate);
+  const { fees: swapFees, totalUsdFee } = useSwapFees(props.swap, props.btcFeeRate);
 
-  const inputToken: Token = props.swap?.getInput()?.token;
-  const outputToken: Token = props.swap?.getOutput()?.token;
+  const fees = useMemo(() => {
+    if (swapFees?.length > 0) return swapFees;
+    if (!props.inputToken || !props.outputToken) return [];
+
+    // Return default fees with 0 values when no swap
+    const zeroSrcAmount = {
+      token: props.inputToken,
+      amount: '0',
+      rawAmount: BigInt(0),
+      _amount: BigInt(0),
+      usdValue: async () => 0,
+    };
+
+    return [
+      {
+        text: 'Swap fee',
+        fee: {
+          amountInSrcToken: zeroSrcAmount,
+          amountInDstToken: null,
+          usdValue: async () => 0,
+        },
+        usdValue: 0,
+      },
+    ];
+  }, [swapFees, props.inputToken, props.outputToken]);
+
+  const inputToken: Token = props.swap?.getInput()?.token ?? props.inputToken;
+  const outputToken: Token = props.swap?.getOutput()?.token ?? props.outputToken;
+
+  const inputTokenUsdPrice = usePricing('1', inputToken);
+  const outputTokenUsdPrice = usePricing('1', outputToken);
+
+  const calculatedSwapPrice = useMemo(() => {
+    if (!inputTokenUsdPrice || !outputTokenUsdPrice || inputTokenUsdPrice === 0) return null;
+    return outputTokenUsdPrice / inputTokenUsdPrice;
+  }, [inputTokenUsdPrice, outputTokenUsdPrice]);
 
   const { totalQuoteTime, quoteTimeRemaining, state } = useSwapState(props.swap);
 
@@ -157,8 +192,16 @@ export function SimpleFeeSummaryScreen(props: {
                     <span className="icon icon-invalid-error"></span>
                     <span className="sc-text">Quote expired</span>
                   </span>
-                ) : !outputToken || !inputToken || !props.swap ? (
+                ) : !outputToken || !inputToken ? (
                   <div className="simple-fee-screen__skeleton"></div>
+                ) : !props.swap ? (
+                  <>
+                    1 {outputToken.ticker} ={' '}
+                    {calculatedSwapPrice != null
+                      ? calculatedSwapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals)
+                      : '-'}{' '}
+                    {inputToken.ticker}
+                  </>
                 ) : (
                   <>
                     1 {outputToken.ticker} ={' '}
@@ -181,7 +224,11 @@ export function SimpleFeeSummaryScreen(props: {
             <div className="icon icon-receipt-fees"></div>
             <span className="simple-fee-screen__fee">
               {totalUsdFee == null ? (
-                <div className="simple-fee-screen__skeleton"></div>
+                props.swap == null ? (
+                  '$0.00'
+                ) : (
+                  <div className="simple-fee-screen__skeleton"></div>
+                )
               ) : (
                 '$' + totalUsdFee.toFixed(2)
               )}

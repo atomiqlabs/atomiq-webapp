@@ -46,6 +46,7 @@ import { WalletDestinationAddress } from '../components/WalletDestinationAddress
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useSwapPage } from './useSwapPage';
 import { WebLNProvider } from 'webln';
+import { BaseButton } from '../components/BaseButton';
 
 export function SwapNew2() {
   const navigate = useNavigate();
@@ -438,7 +439,27 @@ export function SwapNew2() {
               )}
             </>
           ) : (
-            ''
+            <>
+              <div className="mt-3">
+                <SimpleFeeSummaryScreen
+                  swap={null}
+                  btcFeeRate={swapPage.input.wallet?.btcFeeRate}
+                  inputToken={swapPage.input.token.value}
+                  outputToken={swapPage.output.token.value}
+                  onRefreshQuote={() => {
+                    swapPage.quote.refresh();
+                  }}
+                />
+              </div>
+              <BaseButton
+                variant="primary"
+                className="swap-panel__action"
+                disabled={true}
+                size="lg"
+              >
+                Swap
+              </BaseButton>
+            </>
           )}
           <SwapStepAlert
             type="error"

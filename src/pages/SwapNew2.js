@@ -13,6 +13,7 @@ import { ConnectedWalletAnchor } from '../wallets/ConnectedWalletAnchor';
 import { AuditedBy } from '../components/AuditedBy';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useSwapPage } from './useSwapPage';
+import { BaseButton } from '../components/BaseButton';
 export function SwapNew2() {
     const navigate = useNavigate();
     const swapPage = useSwapPage();
@@ -87,7 +88,9 @@ export function SwapNew2() {
                                         }, abortSwap: () => {
                                             swapPage.input.amount.onChange('');
                                             navigate('/');
-                                        }, feeRate: swapPage.input.wallet?.btcFeeRate }) })) : ('')] })) : (''), _jsx(SwapStepAlert, { type: "error", icon: ic_warning, title: "Quote error", description: swapPage.quote.error?.message ?? 'An error occurred while fetching the quote', error: swapPage.quote.error, show: swapPage.quote.error != null, className: "swap-panel__error", action: {
+                                        }, feeRate: swapPage.input.wallet?.btcFeeRate }) })) : ('')] })) : (_jsxs(_Fragment, { children: [_jsx("div", { className: "mt-3", children: _jsx(SimpleFeeSummaryScreen, { swap: null, btcFeeRate: swapPage.input.wallet?.btcFeeRate, inputToken: swapPage.input.token.value, outputToken: swapPage.output.token.value, onRefreshQuote: () => {
+                                            swapPage.quote.refresh();
+                                        } }) }), _jsx(BaseButton, { variant: "primary", className: "swap-panel__action", disabled: true, size: "lg", children: "Swap" })] })), _jsx(SwapStepAlert, { type: "error", icon: ic_warning, title: "Quote error", description: swapPage.quote.error?.message ?? 'An error occurred while fetching the quote', error: swapPage.quote.error, show: swapPage.quote.error != null, className: "swap-panel__error", action: {
                                 type: 'button',
                                 text: 'Retry',
                                 onClick: swapPage.quote.refresh,

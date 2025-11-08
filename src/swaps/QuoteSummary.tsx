@@ -31,6 +31,7 @@ export function QuoteSummary(props: {
   balance?: bigint;
   autoContinue?: boolean;
   feeRate?: number;
+  disabled?: boolean;
 }) {
   const chainsData = useContext(ChainDataContext);
 
