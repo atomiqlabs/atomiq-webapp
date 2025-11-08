@@ -41,109 +41,112 @@ export function FromBTCLNQuoteSummary2(props: {
 }) {
   const page = useFromBtcLnQuote2(props.quote, props.setAmountLock);
 
-  const isInitiated = !page.step1init;
+  // Render card content (progress, alerts, etc.)
+  const renderCard = () => {
+    const isInitiated = !page.step1init;
+    if (!isInitiated) return null;
 
-  return (
-    <>
-      {isInitiated ? (
-        <div className="swap-panel__card">
-          {page.executionSteps ? (
-            <StepByStep quote={props.quote} steps={page.executionSteps} />
-          ) : null}
+    return (
+      <div className="swap-panel__card">
+        {page.executionSteps && <StepByStep quote={props.quote} steps={page.executionSteps} />}
 
-          {/* Step 1: Init */}
-          <SwapStepAlert
-            show={!!page.step1init?.error}
-            type="error"
-            icon={ic_warning}
-            title={page.step1init?.error?.title}
-            description={page.step1init?.error?.error.message}
-            error={page.step1init?.error?.error}
-          />
+        {/* Errors and status alerts */}
+        <SwapStepAlert
+          show={!!page.step1init?.error}
+          type="error"
+          icon={ic_warning}
+          title={page.step1init?.error?.title}
+          description={page.step1init?.error?.error.message}
+          error={page.step1init?.error?.error}
+        />
 
-          {/* Step 2: Payment Wait */}
-          {page.step2paymentWait?.walletDisconnected ? (
-            <>
-              <LightningQR
-                quote={props.quote}
-                setAutoClaim={page.step2paymentWait.walletDisconnected.autoClaim.onChange}
-                autoClaim={page.step2paymentWait.walletDisconnected.autoClaim.value}
-                onHyperlink={page.step2paymentWait.walletDisconnected.payWithLnWallet.onClick}
+        {page.step2paymentWait?.walletDisconnected && (
+          <>
+            <LightningQR
+              quote={props.quote}
+              setAutoClaim={page.step2paymentWait.walletDisconnected.autoClaim.onChange}
+              autoClaim={page.step2paymentWait.walletDisconnected.autoClaim.value}
+              onHyperlink={page.step2paymentWait.walletDisconnected.payWithLnWallet.onClick}
+            />
+            <div className="swap-panel__card__group">
+              <SwapExpiryProgressBar
+                timeRemaining={page.step2paymentWait.expiry.remaining}
+                totalTime={page.step2paymentWait.expiry.total}
+                show={true}
+                type="bar"
+                expiryText="Swap address expired, please do not send any funds!"
+                quoteAlias="Lightning invoice"
               />
-              <div className="swap-panel__card__group">
-                <SwapExpiryProgressBar
-                  timeRemaining={page.step2paymentWait.expiry.remaining}
-                  totalTime={page.step2paymentWait.expiry.total}
-                  show={true}
-                  type="bar"
-                  expiryText="Swap address expired, please do not send any funds!"
-                  quoteAlias="Lightning invoice"
-                />
-              </div>
-            </>
-          ) : null}
+            </div>
+          </>
+        )}
 
-          {/* Step 3: Claim */}
-          <SwapStepAlert
-            show={!!page.step3claim?.error}
-            type="error"
-            icon={ic_warning}
-            title={page.step3claim?.error?.title}
-            description={page.step3claim?.error?.error.message}
-            error={page.step3claim?.error?.error}
-          />
+        <SwapStepAlert
+          show={!!page.step3claim?.error}
+          type="error"
+          icon={ic_warning}
+          title={page.step3claim?.error?.title}
+          description={page.step3claim?.error?.error.message}
+          error={page.step3claim?.error?.error}
+        />
 
-          {/* Step 4: Completion */}
-          <SwapStepAlert
-            show={page.step4?.state === 'success'}
-            type="success"
-            icon={ic_check_circle}
-            title="Swap success"
-            description="Your swap was executed successfully!"
-          />
+        <SwapStepAlert
+          show={page.step4?.state === 'success'}
+          type="success"
+          icon={ic_check_circle}
+          title="Swap success"
+          description="Your swap was executed successfully!"
+        />
 
-          <SwapStepAlert
-            show={page.step4?.state === 'failed'}
-            type="danger"
-            icon={ic_warning}
-            title="Swap failed"
-            description="Swap HTLC expired, your lightning payment will be refunded shortly!"
-          />
-        </div>
-      ) : null}
+        <SwapStepAlert
+          show={page.step4?.state === 'failed'}
+          type="danger"
+          icon={ic_warning}
+          title="Swap failed"
+          description="Swap HTLC expired, your lightning payment will be refunded shortly!"
+        />
+      </div>
+    );
+  };
 
-      {/* Step 1: Init - Action buttons */}
-      {page.step1init ? (
-        page.step1init.invalidSmartChainWallet ? (
+  // Render action buttons based on current step
+  const renderActions = () => {
+    // Step 1: Init
+    if (page.step1init) {
+      if (page.step1init.invalidSmartChainWallet) {
+        return (
           <ButtonWithWallet
             chainId={props.quote.chainIdentifier}
             requiredWalletAddress={props.quote._getInitiator()}
             size="lg"
             className="swap-panel__action"
           />
-        ) : (
-          <>
-            <SwapForGasAlert
-              notEnoughForGas={page.step1init.additionalGasRequired?.rawAmount}
-              quote={props.quote}
-            />
+        );
+      }
 
-            <ButtonWithWallet
-              requiredWalletAddress={props.quote._getInitiator()}
-              chainId={props.quote?.chainIdentifier}
-              className="swap-panel__action"
-              onClick={page.step1init.init}
-              disabled={!!props.notEnoughForGas}
-              size="lg"
-            >
-              Swap
-            </ButtonWithWallet>
-          </>
-        )
-      ) : null}
+      return (
+        <>
+          <SwapForGasAlert
+            notEnoughForGas={page.step1init.additionalGasRequired?.rawAmount}
+            quote={props.quote}
+          />
+          <ButtonWithWallet
+            requiredWalletAddress={props.quote._getInitiator()}
+            chainId={props.quote?.chainIdentifier}
+            className="swap-panel__action"
+            onClick={page.step1init.init}
+            disabled={!!props.notEnoughForGas}
+            size="lg"
+          >
+            Swap
+          </ButtonWithWallet>
+        </>
+      );
+    }
 
-      {/* Step 2: Payment Wait - Action buttons */}
-      {page.step2paymentWait ? (
+    // Step 2: Payment Wait
+    if (page.step2paymentWait) {
+      return (
         <>
           <LightningHyperlinkModal
             opened={!!page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal}
@@ -153,7 +156,6 @@ export function FromBTCLNQuoteSummary2(props: {
                 .onChange
             }
           />
-
           <BaseButton
             onClick={props.abortSwap}
             variant="danger"
@@ -162,10 +164,12 @@ export function FromBTCLNQuoteSummary2(props: {
             Abort swap
           </BaseButton>
         </>
-      ) : null}
+      );
+    }
 
-      {/* Step 3: Claim - Action buttons */}
-      {page.step3claim ? (
+    // Step 3: Claim
+    if (page.step3claim) {
+      return (
         <>
           <ButtonWithWallet
             requiredWalletAddress={props.quote._getInitiator()}
@@ -175,14 +179,12 @@ export function FromBTCLNQuoteSummary2(props: {
             disabled={page.step3claim.commit.disabled}
             size={page.step3claim.commit.size}
           >
-            {page.step3claim.commit.loading ? (
+            {page.step3claim.commit.loading && (
               <Spinner animation="border" size="sm" className="mr-2" />
-            ) : (
-              ''
             )}
             {page.step3claim.commit.text}
           </ButtonWithWallet>
-          {page.step3claim.claim ? (
+          {page.step3claim.claim && (
             <ButtonWithWallet
               requiredWalletAddress={props.quote._getInitiator()}
               chainId={props.quote?.chainIdentifier}
@@ -191,25 +193,33 @@ export function FromBTCLNQuoteSummary2(props: {
               size={page.step3claim.claim.size}
               className="swap-panel__action"
             >
-              {page.step3claim.claim.loading ? (
+              {page.step3claim.claim.loading && (
                 <Spinner animation="border" size="sm" className="mr-2" />
-              ) : (
-                ''
               )}
               {page.step3claim.claim.text}
             </ButtonWithWallet>
-          ) : null}
+          )}
         </>
-      ) : null}
+      );
+    }
 
-      {/* Step 4: Completion - Action buttons */}
-      {page.step4 ? (
+    // Step 4: Completion
+    if (page.step4) {
+      return (
         <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
           New quote
         </BaseButton>
-      ) : null}
+      );
+    }
 
-      <ScrollAnchor trigger={page.step1init == null}></ScrollAnchor>
+    return null;
+  };
+
+  return (
+    <>
+      {renderCard()}
+      {renderActions()}
+      <ScrollAnchor trigger={page.step1init == null} />
     </>
   );
 }

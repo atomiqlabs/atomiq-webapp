@@ -1,5 +1,5 @@
-import {FromBTCLNSwap, FromBTCLNSwapState, TokenAmount} from '@atomiqlabs/sdk';
-import {useContext, useEffect, useMemo, useState} from 'react';
+import { FromBTCLNSwap, FromBTCLNSwapState, TokenAmount } from '@atomiqlabs/sdk';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useSwapState } from '../hooks/useSwapState';
 import { useStateRef } from '../../utils/hooks/useStateRef';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
@@ -12,111 +12,111 @@ import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
 import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outline';
-import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
+import { ic_swap_horiz } from 'react-icons-kit/md/ic_swap_horiz';
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { ic_download_outline } from 'react-icons-kit/md/ic_download_outline';
 import { timeoutPromise } from '../../utils/Utils';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
-import {useChain} from "../../wallets/hooks/useChain";
-import {useLocalStorage} from "../../utils/hooks/useLocalStorage";
-import {useCheckAdditionalGas} from "../useCheckAdditionalGas";
-import {ChainDataContext} from "../../wallets/context/ChainDataContext";
+import { useChain } from '../../wallets/hooks/useChain';
+import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { useCheckAdditionalGas } from '../useCheckAdditionalGas';
+import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 
 export type FromBtcLnQuotePage = {
-  executionSteps?: SingleStep[],
+  executionSteps?: SingleStep[];
   step1init?: {
-    invalidSmartChainWallet: boolean,
-    init: () => void,
+    invalidSmartChainWallet: boolean;
+    init: () => void;
     error?: {
-      title: string,
-      error: Error
-    },
-    additionalGasRequired?: TokenAmount,
+      title: string;
+      error: Error;
+    };
+    additionalGasRequired?: TokenAmount;
     expiry: {
-      remaining: number,
-      total: number
-    }
-  },
+      remaining: number;
+      total: number;
+    };
+  };
   step2paymentWait?: {
     error?: {
-      title: string,
-      error: Error
-    },
+      title: string;
+      error: Error;
+    };
     //Either wallet is connected and just these 2 buttons should be displayed
     walletConnected?: {
       payWithWebLn: {
-        loading: boolean,
-        onClick: () => void
-      },
+        loading: boolean;
+        onClick: () => void;
+      };
       useExternalWallet: {
-        onClick: () => void
-      }
-    },
+        onClick: () => void;
+      };
+    };
     //Or wallet is disconnected and a QR code should be shown, with 2 buttons and autoClaim switch
     walletDisconnected?: {
       address: {
-        value: string,
-        hyperlink: string
-      },
+        value: string;
+        hyperlink: string;
+      };
       addressComeBackWarningModal?: {
-        close: (accepted: boolean) => void,
+        close: (accepted: boolean) => void;
         showAgain: {
-          checked: boolean,
-          onChange: (checked: boolean) => void
-        }
-      },
+          checked: boolean;
+          onChange: (checked: boolean) => void;
+        };
+      };
       payWithLnWallet: {
-        onClick: () => void
-      },
+        onClick: () => void;
+      };
       payWithWebLn: {
-        loading: boolean,
-        onClick: () => void
-      },
+        loading: boolean;
+        onClick: () => void;
+      };
       autoClaim: {
-        value: boolean,
-        onChange: (val: boolean) => void
-      }
-    },
+        value: boolean;
+        onChange: (val: boolean) => void;
+      };
+    };
     expiry: {
-      remaining: number,
-      total: number
-    }
-  },
+      remaining: number;
+      total: number;
+    };
+  };
   step3claim?: {
     error?: {
-      title: string,
-      error: Error
-    },
+      title: string;
+      error: Error;
+    };
     expiry?: {
-      remaining: number,
-      total: number
-    },
+      remaining: number;
+      total: number;
+    };
     commit: {
-      text: string,
-      loading: boolean,
-      disabled: boolean,
-      size: "sm" | "lg",
-      onClick: () => void
-    },
+      text: string;
+      loading: boolean;
+      disabled: boolean;
+      size: 'sm' | 'lg';
+      onClick: () => void;
+    };
     claim?: {
-      text: string,
-      loading: boolean,
-      disabled: boolean,
-      size: "sm" | "lg",
-      onClick: () => void
-    }
-  },
+      text: string;
+      loading: boolean;
+      disabled: boolean;
+      size: 'sm' | 'lg';
+      onClick: () => void;
+    };
+  };
   step4?: {
-    state: "success" | "failed" | "expired",
-    expiryMessage?: string
-  }
+    state: 'success' | 'failed' | 'expired';
+    expiryMessage?: string;
+  };
 };
 
 export function useFromBtcLnQuote2(
   quote: FromBTCLNSwap<any>,
   setAmountLock: (isLocked: boolean) => void
 ): FromBtcLnQuotePage {
-  const {connectWallet, disconnectWallet} = useContext(ChainDataContext);
+  const { connectWallet, disconnectWallet } = useContext(ChainDataContext);
   const lightningWallet = useChain('LIGHTNING')?.wallet;
   const smartChainWallet = useSmartChainWallet(quote, true);
   const canClaimInOneShot = quote?.canCommitAndClaimInOneShot();
@@ -135,9 +135,8 @@ export function useFromBtcLnQuote2(
   const abortSignalRef = useAbortSignalRef([quote]);
 
   const [pay, payLoading, payResult, payError] = useAsync(
-    () =>
-      lightningWallet.instance.sendPayment(quote.getAddress()),
-    [lightningWallet, quote],
+    () => lightningWallet.instance.sendPayment(quote.getAddress()),
+    [lightningWallet, quote]
   );
 
   const [callPayFlag, setCallPayFlag] = useState<boolean>(false);
@@ -160,11 +159,7 @@ export function useFromBtcLnQuote2(
   }, [quote]);
 
   useEffect(() => {
-    if (
-      quote != null &&
-      quote.isInitiated() &&
-      quote.state === FromBTCLNSwapState.PR_CREATED
-    ) {
+    if (quote != null && quote.isInitiated() && quote.state === FromBTCLNSwapState.PR_CREATED) {
       waitForPayment();
     }
   }, [quote]);
@@ -235,7 +230,7 @@ export function useFromBtcLnQuote2(
       type: 'success',
     },
     {
-      icon: ic_swap_horizontal_circle_outline,
+      icon: ic_swap_horiz,
       text: 'Send claim transaction',
       type: 'disabled',
     },
@@ -285,7 +280,7 @@ export function useFromBtcLnQuote2(
     }
     if (isClaimable)
       executionSteps[1] = {
-        icon: ic_swap_horizontal_circle_outline,
+        icon: ic_swap_horiz,
         text: committing || claiming ? 'Sending claim transaction' : 'Send claim transaction',
         type: 'loading',
       };
@@ -309,7 +304,7 @@ export function useFromBtcLnQuote2(
     }
   } else {
     executionSteps[1] = {
-      icon: ic_swap_horizontal_circle_outline,
+      icon: ic_swap_horiz,
       text: 'Sending transaction',
       type: 'disabled',
     };
@@ -332,7 +327,7 @@ export function useFromBtcLnQuote2(
     }
     if (isClaimCommittable)
       executionSteps[1] = {
-        icon: ic_swap_horizontal_circle_outline,
+        icon: ic_swap_horiz,
         text: committing ? 'Sending initialization transaction' : 'Sending transaction',
         type: 'loading',
       };
@@ -380,24 +375,27 @@ export function useFromBtcLnQuote2(
   }
 
   const step1init = useMemo(() => {
-    if(!isCreated || paymentWaiting) return;
+    if (!isCreated || paymentWaiting) return;
     return {
-      invalidSmartChainWallet: smartChainWallet===undefined,
+      invalidSmartChainWallet: smartChainWallet === undefined,
       init: () => {
         waitForPayment();
-        if(lightningWallet==null) return;
+        if (lightningWallet == null) return;
         pay();
       },
-      error: paymentError!=null ? {
-        title: "Swap initialization error",
-        error: paymentError
-      } : undefined,
+      error:
+        paymentError != null
+          ? {
+              title: 'Swap initialization error',
+              error: paymentError,
+            }
+          : undefined,
       additionalGasRequired,
       expiry: {
         remaining: quoteTimeRemaining,
-        total: totalQuoteTime
-      }
-    }
+        total: totalQuoteTime,
+      },
+    };
   }, [
     isCreated,
     paymentWaiting,
@@ -407,73 +405,84 @@ export function useFromBtcLnQuote2(
     quoteTimeRemaining,
     totalQuoteTime,
     additionalGasRequired,
-    lightningWallet
+    lightningWallet,
   ]);
 
   const step2paymentWait = useMemo(() => {
-    if(!isCreated || !paymentWaiting) return;
+    if (!isCreated || !paymentWaiting) return;
     return {
-      error: lightningWallet!=null && payError!=null ? {
-        title: "Sending BTC error",
-        error: payError
-      } : undefined,
-      walletConnected: lightningWallet!=null ? {
-        payWithWebLn: {
-          onClick: () => {
-            pay();
-          },
-          loading: payLoading
-        },
-        useExternalWallet: {
-          onClick: () => {
-            disconnectWallet('LIGHTNING');
-          }
-        }
-      } : undefined,
-      walletDisconnected: lightningWallet==null ? {
-        autoClaim: {
-          value: autoClaim,
-          onChange: setAutoClaim
-        },
-        address: {
-          value: quote.getAddress(),
-          hyperlink: quote.getHyperlink()
-        },
-        addressComeBackWarningModal: addressWarningModalOpened ? {
-          close: (accepted: boolean) => {
-            if(accepted) window.location.href = quote.getHyperlink();
-            setAddressWarningModalOpened(false);
-          },
-          showAgain: {
-            checked: showHyperlinkWarning,
-            onChange: setShowHyperlinkWarning
-          }
-        } : undefined,
-        payWithLnWallet: {
-          onClick: () => {
-            if(!showHyperlinkWarning) {
-              window.location.href = quote.getHyperlink();
-              return;
+      error:
+        lightningWallet != null && payError != null
+          ? {
+              title: 'Sending BTC error',
+              error: payError,
             }
-            //Show dialog and then pay
-            setAddressWarningModalOpened(true);
-          }
-        },
-        payWithWebLn: {
-          onClick: () => {
-            connectWallet('LIGHTNING').then((success) => {
-              //Call pay on next state update
-              if (success) setCallPayFlag(true);
-            });
-          },
-          loading: payLoading
-        }
-      } : undefined,
+          : undefined,
+      walletConnected:
+        lightningWallet != null
+          ? {
+              payWithWebLn: {
+                onClick: () => {
+                  pay();
+                },
+                loading: payLoading,
+              },
+              useExternalWallet: {
+                onClick: () => {
+                  disconnectWallet('LIGHTNING');
+                },
+              },
+            }
+          : undefined,
+      walletDisconnected:
+        lightningWallet == null
+          ? {
+              autoClaim: {
+                value: autoClaim,
+                onChange: setAutoClaim,
+              },
+              address: {
+                value: quote.getAddress(),
+                hyperlink: quote.getHyperlink(),
+              },
+              addressComeBackWarningModal: addressWarningModalOpened
+                ? {
+                    close: (accepted: boolean) => {
+                      if (accepted) window.location.href = quote.getHyperlink();
+                      setAddressWarningModalOpened(false);
+                    },
+                    showAgain: {
+                      checked: showHyperlinkWarning,
+                      onChange: setShowHyperlinkWarning,
+                    },
+                  }
+                : undefined,
+              payWithLnWallet: {
+                onClick: () => {
+                  if (!showHyperlinkWarning) {
+                    window.location.href = quote.getHyperlink();
+                    return;
+                  }
+                  //Show dialog and then pay
+                  setAddressWarningModalOpened(true);
+                },
+              },
+              payWithWebLn: {
+                onClick: () => {
+                  connectWallet('LIGHTNING').then((success) => {
+                    //Call pay on next state update
+                    if (success) setCallPayFlag(true);
+                  });
+                },
+                loading: payLoading,
+              },
+            }
+          : undefined,
       expiry: {
         remaining: quoteTimeRemaining,
-        total: totalQuoteTime
-      }
-    }
+        total: totalQuoteTime,
+      },
+    };
   }, [
     isCreated,
     paymentWaiting,
@@ -486,47 +495,58 @@ export function useFromBtcLnQuote2(
     lightningWallet,
     pay,
     payLoading,
-    payError
+    payError,
   ]);
 
   const step3claim = useMemo(() => {
-    if(!isClaimable) return;
+    if (!isClaimable) return;
     return {
-      error: commitError || claimError ? {
-        title: canClaimInOneShot || claimError != null
-          ? 'Swap claim error'
-          : 'Swap claim initialization error',
-        error: commitError ?? claimError
-      } : undefined,
-      expiry: state === FromBTCLNSwapState.PR_PAID && !claiming && !committing ? {
-        remaining: quoteTimeRemaining,
-        total: totalQuoteTime
-      } : undefined,
-      commit: canClaimInOneShot ? {
-        text: "Finish swap (claim funds)",
-        loading: committing,
-        disabled: committing,
-        size: 'lg' as const,
-        onClick: () => onCommit()
-      } : {
-        text: !isClaimCommittable
-          ? '1. Initialized'
-          : committing
-            ? '1. Initializing...'
-            : '1. Finish swap (initialize)',
-        loading: committing,
-        disabled: committing || !isClaimCommittable,
-        size: isClaimCommittable ? 'lg' as const : 'sm' as const,
-        onClick: () => onCommit()
-      },
-      claim: !canClaimInOneShot ? {
-        text: claiming ? '2. Claiming funds...' : '2. Finish swap (claim funds)',
-        loading: claiming,
-        disabled: claiming || !isClaimClaimable,
-        size: isClaimClaimable ? 'lg' as const : 'sm' as const,
-        onClick: onClaim
-      } : undefined
-    }
+      error:
+        commitError || claimError
+          ? {
+              title:
+                canClaimInOneShot || claimError != null
+                  ? 'Swap claim error'
+                  : 'Swap claim initialization error',
+              error: commitError ?? claimError,
+            }
+          : undefined,
+      expiry:
+        state === FromBTCLNSwapState.PR_PAID && !claiming && !committing
+          ? {
+              remaining: quoteTimeRemaining,
+              total: totalQuoteTime,
+            }
+          : undefined,
+      commit: canClaimInOneShot
+        ? {
+            text: 'Finish swap (claim funds)',
+            loading: committing,
+            disabled: committing,
+            size: 'lg' as const,
+            onClick: () => onCommit(),
+          }
+        : {
+            text: !isClaimCommittable
+              ? '1. Initialized'
+              : committing
+                ? '1. Initializing...'
+                : '1. Finish swap (initialize)',
+            loading: committing,
+            disabled: committing || !isClaimCommittable,
+            size: isClaimCommittable ? ('lg' as const) : ('sm' as const),
+            onClick: () => onCommit(),
+          },
+      claim: !canClaimInOneShot
+        ? {
+            text: claiming ? '2. Claiming funds...' : '2. Finish swap (claim funds)',
+            loading: claiming,
+            disabled: claiming || !isClaimClaimable,
+            size: isClaimClaimable ? ('lg' as const) : ('sm' as const),
+            onClick: onClaim,
+          }
+        : undefined,
+    };
   }, [
     isClaimable,
     commitError,
@@ -540,33 +560,28 @@ export function useFromBtcLnQuote2(
     onCommit,
     isClaimCommittable,
     isClaimClaimable,
-    onClaim
+    onClaim,
   ]);
 
   const step4 = useMemo(() => {
-    if(!isSuccess && !isFailed && !isQuoteExpired) return;
+    if (!isSuccess && !isFailed && !isQuoteExpired) return;
     return {
       state: isSuccess
-        ? "success" as const
+        ? ('success' as const)
         : isFailed
-          ? "failed" as const
-          : "expired" as const,
+          ? ('failed' as const)
+          : ('expired' as const),
       expiryMessage: isInitiated
         ? 'Swap expired! Your lightning payment should refund shortly.'
-        : 'Swap expired!'
-    }
-  }, [
-    isSuccess,
-    isFailed,
-    isQuoteExpired,
-    isInitiated
-  ]);
+        : 'Swap expired!',
+    };
+  }, [isSuccess, isFailed, isQuoteExpired, isInitiated]);
 
   return {
     executionSteps,
     step1init,
     step2paymentWait,
     step3claim,
-    step4
-  }
+    step4,
+  };
 }
