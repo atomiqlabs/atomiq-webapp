@@ -1,12 +1,10 @@
-import { Overlay, Tooltip } from "react-bootstrap";
-import * as React from "react";
-import { Placement } from "react-bootstrap/types";
-import { useCallback, useEffect, useState } from "react";
+import { Overlay, Tooltip } from 'react-bootstrap';
+import * as React from 'react';
+import { Placement } from 'react-bootstrap/types';
+import { useCallback, useEffect, useState } from 'react';
 
 export function TemporaryOverlay(props: {
-  children?: (
-    show: (target: HTMLElement) => void,
-  ) => JSX.Element | JSX.Element[];
+  children?: (show: (target: HTMLElement) => void) => JSX.Element | JSX.Element[];
   text: string | JSX.Element;
   placement: Placement;
   timeout?: number;
@@ -31,11 +29,7 @@ export function TemporaryOverlay(props: {
 
   return (
     <>
-      <Overlay
-        target={showCopyOverlay}
-        show={showCopyOverlay != null}
-        placement={props.placement}
-      >
+      <Overlay target={showCopyOverlay} show={showCopyOverlay != null} placement={props.placement}>
         {(_props) => (
           <Tooltip id="overlay-example" {..._props}>
             {props.text}

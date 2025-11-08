@@ -1,14 +1,14 @@
-import { ButtonGroup, Card, ListGroup, Spinner } from "react-bootstrap";
-import * as React from "react";
-import { MutableRefObject, useCallback, useEffect, useRef } from "react";
-import Button from "react-bootstrap/Button";
+import { ButtonGroup, Card, ListGroup, Spinner } from 'react-bootstrap';
+import * as React from 'react';
+import { MutableRefObject, useCallback, useEffect, useRef } from 'react';
+import Button from 'react-bootstrap/Button';
 
-import { Icon } from "react-icons-kit";
-import { angleRight } from "react-icons-kit/fa/angleRight";
-import { angleLeft } from "react-icons-kit/fa/angleLeft";
-import { angleDoubleRight } from "react-icons-kit/fa/angleDoubleRight";
-import { angleDoubleLeft } from "react-icons-kit/fa/angleDoubleLeft";
-import { ic_not_interested } from "react-icons-kit/md/ic_not_interested";
+import { Icon } from 'react-icons-kit';
+import { angleRight } from 'react-icons-kit/fa/angleRight';
+import { angleLeft } from 'react-icons-kit/fa/angleLeft';
+import { angleDoubleRight } from 'react-icons-kit/fa/angleDoubleRight';
+import { angleDoubleLeft } from 'react-icons-kit/fa/angleDoubleLeft';
+import { ic_not_interested } from 'react-icons-kit/md/ic_not_interested';
 
 function PaginationButton(props: {
   page: number;
@@ -21,10 +21,10 @@ function PaginationButton(props: {
       onClick={() => {
         props.onClick(props.page);
       }}
-      key={"page-" + props.page}
-      variant={props.currentPage === props.page ? "light" : "outline-light"}
+      key={'page-' + props.page}
+      variant={props.currentPage === props.page ? 'light' : 'outline-light'}
       disabled={props.disabled}
-      className={"px-3"}
+      className={'px-3'}
       size="lg"
     >
       {props.page + 1}
@@ -43,10 +43,7 @@ export type GetPageResponse = {
 
 export function SingleColumnTable<T>(props: {
   className?: any;
-  getPage: (
-    page: number,
-    pageSize: number,
-  ) => Promise<GetPageResponse> | GetPageResponse;
+  getPage: (page: number, pageSize: number) => Promise<GetPageResponse> | GetPageResponse;
   itemsPerPage?: number;
   column: TableColumn<T>;
   numPageButtons?: number;
@@ -123,21 +120,21 @@ export function SingleColumnTable<T>(props: {
           key={i.toString()}
         >
           {props.column.renderer(obj)}
-        </ListGroup.Item>,
+        </ListGroup.Item>
       );
   }
 
   if (tbody.length === 0) {
     tbody.push(
       <ListGroup.Item
-        key={"0"}
+        key={'0'}
         className="bg-dark bg-opacity-25 border-light border-opacity-25 text-white"
       >
         <div className="d-flex align-items-center justify-content-center text-light text-opacity-75">
           <Icon size={24} className="pb-1 me-2" icon={ic_not_interested} />
           <h4 className="my-3">No data</h4>
         </div>
-      </ListGroup.Item>,
+      </ListGroup.Item>
     );
   }
 
@@ -160,11 +157,11 @@ export function SingleColumnTable<T>(props: {
       buttons.push(
         <PaginationButton
           page={i}
-          key={"page" + i}
+          key={'page' + i}
           currentPage={state.page}
           onClick={handlePageClick}
           disabled={loading}
-        />,
+        />
       );
     }
   } else if (state.page < numPageButtons / 2) {
@@ -172,57 +169,57 @@ export function SingleColumnTable<T>(props: {
       buttons.push(
         <PaginationButton
           page={i}
-          key={"page" + i}
+          key={'page' + i}
           currentPage={state.page}
           onClick={handlePageClick}
           disabled={loading}
-        />,
+        />
       );
     }
     buttons.push(
-      <Button key={"ellipsis2"} variant="outline-light px-2" size="lg">
+      <Button key={'ellipsis2'} variant="outline-light px-2" size="lg">
         ...
-      </Button>,
+      </Button>
     );
   } else if (numPages - state.page - 1 < numPageButtons / 2) {
     for (let i = 0; i < numPageButtons / 2 + 1; i++) {
       buttons.push(
         <PaginationButton
           page={numPages - i - 1}
-          key={"page" + (numPages - i - 1)}
+          key={'page' + (numPages - i - 1)}
           currentPage={state.page}
           onClick={handlePageClick}
           disabled={loading}
-        />,
+        />
       );
     }
     buttons.push(
-      <Button key={"ellipsis1"} variant="outline-light px-2" size="lg">
+      <Button key={'ellipsis1'} variant="outline-light px-2" size="lg">
         ...
-      </Button>,
+      </Button>
     );
     buttons.reverse();
   } else {
     buttons.push(
-      <Button key={"ellipsis1"} variant="outline-light px-2" size="lg">
+      <Button key={'ellipsis1'} variant="outline-light px-2" size="lg">
         ...
-      </Button>,
+      </Button>
     );
     for (let i = state.page - 1; i <= state.page + 1; i++) {
       buttons.push(
         <PaginationButton
           page={i}
-          key={"page" + i}
+          key={'page' + i}
           currentPage={state.page}
           onClick={handlePageClick}
           disabled={loading}
-        />,
+        />
       );
     }
     buttons.push(
-      <Button key={"ellipsis2"} variant="outline-light px-2" size="lg">
+      <Button key={'ellipsis2'} variant="outline-light px-2" size="lg">
         ...
-      </Button>,
+      </Button>
     );
   }
 
@@ -238,25 +235,18 @@ export function SingleColumnTable<T>(props: {
             <span>Loading...</span>
           </div>
         ) : (
-          ""
+          ''
         )}
       </div>
       <div className="d-flex align-items-center justify-content-center mt-2 mb-4">
-        <ButtonGroup
-          className="bg-dark bg-opacity-25"
-          aria-label="Second group"
-        >
+        <ButtonGroup className="bg-dark bg-opacity-25" aria-label="Second group">
           <Button
             variant="outline-light px-2"
             onClick={() => handlePageClick(0)}
             size="lg"
             disabled={loading}
           >
-            <Icon
-              size={20}
-              style={{ marginTop: "-8px" }}
-              icon={angleDoubleLeft}
-            />
+            <Icon size={20} style={{ marginTop: '-8px' }} icon={angleDoubleLeft} />
           </Button>
           <Button
             variant="outline-light px-2"
@@ -264,7 +254,7 @@ export function SingleColumnTable<T>(props: {
             size="lg"
             disabled={loading}
           >
-            <Icon size={20} style={{ marginTop: "-8px" }} icon={angleLeft} />
+            <Icon size={20} style={{ marginTop: '-8px' }} icon={angleLeft} />
           </Button>
           {buttons}
           <Button
@@ -273,7 +263,7 @@ export function SingleColumnTable<T>(props: {
             size="lg"
             disabled={loading}
           >
-            <Icon size={20} style={{ marginTop: "-8px" }} icon={angleRight} />
+            <Icon size={20} style={{ marginTop: '-8px' }} icon={angleRight} />
           </Button>
           <Button
             variant="outline-light px-2"
@@ -281,11 +271,7 @@ export function SingleColumnTable<T>(props: {
             size="lg"
             disabled={loading}
           >
-            <Icon
-              size={20}
-              style={{ marginTop: "-8px" }}
-              icon={angleDoubleRight}
-            />
+            <Icon size={20} style={{ marginTop: '-8px' }} icon={angleDoubleRight} />
           </Button>
         </ButtonGroup>
       </div>
@@ -314,14 +300,8 @@ export function SingleColumnStaticTable<T>(props: {
         maxPages: Math.ceil(props.data.length / pageSize),
       };
     },
-    [props.data],
+    [props.data]
   );
 
-  return (
-    <SingleColumnTable<T>
-      getPage={pageCbk}
-      refresh={props.refreshFunc}
-      {...props}
-    />
-  );
+  return <SingleColumnTable<T> getPage={pageCbk} refresh={props.refreshFunc} {...props} />;
 }

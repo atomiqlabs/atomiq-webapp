@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js";
+import BigNumber from 'bignumber.js';
 import {
   isBtcToken,
   isSCToken,
@@ -6,8 +6,8 @@ import {
   SwapType,
   toHumanReadableString,
   Token,
-} from "@atomiqlabs/sdk";
-import { FEConstants, TokenResolver, Tokens } from "../FEConstants";
+} from '@atomiqlabs/sdk';
+import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
 
 type TokensType = typeof Tokens;
 type TokenTickers = {
@@ -17,15 +17,15 @@ type TokenTickers = {
 export const TokenIcons: {
   [C in TokenTickers]: string;
 } = {
-  WBTC: "/icons/crypto/WBTC.png",
-  USDC: "/icons/crypto/USDC.svg",
+  WBTC: '/icons/crypto/WBTC.png',
+  USDC: '/icons/crypto/USDC.svg',
   USDT: null,
-  SOL: "/icons/crypto/SOL.svg",
-  BONK: "/icons/crypto/BONK.png",
-  BTC: "/icons/crypto/BTC.svg",
-  BTCLN: "/icons/crypto/BTC.svg",
-  ETH: "/icons/crypto/ETH.png",
-  STRK: "/icons/crypto/STRK.png",
+  SOL: '/icons/crypto/SOL.svg',
+  BONK: '/icons/crypto/BONK.png',
+  BTC: '/icons/crypto/BTC.svg',
+  BTCLN: '/icons/crypto/BTC.svg',
+  ETH: '/icons/crypto/ETH.png',
+  STRK: '/icons/crypto/STRK.png',
 };
 
 export const bitcoinTokenArray = [Tokens.BITCOIN.BTC, Tokens.BITCOIN.BTCLN];
@@ -49,58 +49,46 @@ export const allTokens = [...bitcoinTokenArray, ...smartChainTokenArray];
 
 export const excludeChainTokens: { [swapType in SwapType]?: Set<string> } = {
   [SwapType.TO_BTC]: new Set<string>(
-    [Tokens.STARKNET.STRK, Tokens.STARKNET.ETH].map((val) => val.address),
+    [Tokens.STARKNET.STRK, Tokens.STARKNET.ETH].map((val) => val.address)
   ),
 };
 
-export function toHumanReadable(
-  amount: bigint,
-  currencySpec: Token,
-): BigNumber {
+export function toHumanReadable(amount: bigint, currencySpec: Token): BigNumber {
   if (amount == null) return null;
   return new BigNumber(toHumanReadableString(amount, currencySpec));
 }
 
-export function fromHumanReadable(
-  amount: BigNumber,
-  currencySpec: Token,
-): bigint {
+export function fromHumanReadable(amount: BigNumber, currencySpec: Token): bigint {
   return BigInt(
-    amount
-      .multipliedBy(new BigNumber(10).pow(new BigNumber(currencySpec.decimals)))
-      .toFixed(0),
+    amount.multipliedBy(new BigNumber(10).pow(new BigNumber(currencySpec.decimals))).toFixed(0)
   );
 }
 
 export function includesToken(tokenList: Token[], token: Token): boolean {
-  return (
-    tokenList.find(
-      (val) => toTokenIdentifier(val) === toTokenIdentifier(token),
-    ) != null
-  );
+  return tokenList.find((val) => toTokenIdentifier(val) === toTokenIdentifier(token)) != null;
 }
 
 export function toTokenIdentifier(token: Token): string {
   if (token == null) return null;
   if (isBtcToken(token)) {
-    return token.lightning ? "LIGHTNING" : "BITCOIN";
+    return token.lightning ? 'LIGHTNING' : 'BITCOIN';
   } else if (isSCToken(token)) {
-    return token.chainId + ":" + token.address;
+    return token.chainId + ':' + token.address;
   }
 }
 
 export function fromTokenIdentifier(identifier: string): Token {
   if (identifier == null) return null;
   switch (identifier) {
-    case "LIGHTNING":
+    case 'LIGHTNING':
       return Tokens.BITCOIN.BTCLN;
-    case "BITCOIN":
+    case 'BITCOIN':
       return Tokens.BITCOIN.BTC;
     case null:
     case undefined:
       return null;
     default:
-      const [chainId, address] = identifier.split(":");
+      const [chainId, address] = identifier.split(':');
       return TokenResolver[chainId]?.getToken(address);
   }
 }
@@ -109,9 +97,9 @@ export function getChainIdentifierForCurrency(token: Token): string {
   if (token == null) return null;
   if (isBtcToken(token)) {
     if (token.lightning) {
-      return "LIGHTNING";
+      return 'LIGHTNING';
     } else {
-      return "BITCOIN";
+      return 'BITCOIN';
     }
   } else {
     return token.chainId;

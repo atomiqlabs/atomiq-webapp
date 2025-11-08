@@ -1,6 +1,6 @@
-import { ExtensionBitcoinWallet } from "./ExtensionBitcoinWallet";
-import { BitcoinWalletUtxo, CoinselectAddressTypes } from "@atomiqlabs/sdk";
-import { filterInscriptionUtxosOnlyConfirmed } from "../utils/InscriptionUtils";
+import { ExtensionBitcoinWallet } from './ExtensionBitcoinWallet';
+import { BitcoinWalletUtxo, CoinselectAddressTypes } from '@atomiqlabs/sdk';
+import { filterInscriptionUtxosOnlyConfirmed } from '../utils/InscriptionUtils';
 
 /**
  * Bitcoin wallet with no separation between addresses holding Ordinal assets & BTC
@@ -10,7 +10,7 @@ export abstract class BitcoinWalletNonSeparated extends ExtensionBitcoinWallet {
 
   protected async _getUtxoPool(
     sendingAddress: string,
-    sendingAddressType: CoinselectAddressTypes,
+    sendingAddressType: CoinselectAddressTypes
   ): Promise<BitcoinWalletUtxo[]> {
     let utxos = await super._getUtxoPool(sendingAddress, sendingAddressType);
     if (this._isOrdinalsAddress(sendingAddress))

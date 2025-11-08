@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from 'react';
 export function useAsync(executor, deps) {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(null);
@@ -22,7 +22,7 @@ export function useAsync(executor, deps) {
             return res;
         })
             .catch((err) => {
-            console.error("useAsync(): ", err);
+            console.error('useAsync(): ', err);
             executingRef.current = false;
             setLoading(false);
             setError(err);

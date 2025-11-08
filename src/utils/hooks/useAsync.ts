@@ -1,8 +1,8 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from 'react';
 
 export function useAsync<Args extends any[], Result>(
   executor: (...args: Args) => Promise<Result>,
-  deps: any[],
+  deps: any[]
 ): [(...args: Args) => Promise<Result>, boolean, Result, any] {
   const [loading, setLoading] = useState<boolean>(false);
   const [success, setSuccess] = useState<Result>(null);
@@ -25,7 +25,7 @@ export function useAsync<Args extends any[], Result>(
         return res;
       })
       .catch((err) => {
-        console.error("useAsync(): ", err);
+        console.error('useAsync(): ', err);
         executingRef.current = false;
         setLoading(false);
         setError(err);

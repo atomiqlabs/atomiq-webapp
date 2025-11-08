@@ -1,7 +1,7 @@
 import type { FC, MouseEvent } from 'react';
 import { WalletModal } from './WalletModal';
 import { WalletListItem } from './WalletListItem';
-import {WalletListData} from "../ChainDataProvider";
+import { WalletListData } from '../ChainDataProvider';
 
 export interface GenericWalletModalProps<T = any> {
   visible: boolean;

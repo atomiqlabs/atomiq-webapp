@@ -2,7 +2,7 @@ import { Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import * as React from 'react';
 import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
 import Icon from 'react-icons-kit';
-import {Token, isBtcToken, TokenAmount} from '@atomiqlabs/sdk';
+import { Token, isBtcToken, TokenAmount } from '@atomiqlabs/sdk';
 import { useChain } from './hooks/useChain';
 import { BaseButton, BaseButtonVariantProps } from '../components/BaseButton';
 import { WalletBalanceResult } from './hooks/useWalletBalance';

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { useSolanaWalletData } from "../chains/useSolanaWalletData";
-import { useStarknetWalletData } from "../chains/useStarknetWalletData";
-import { useLightningWalletData } from "../chains/useLightningWalletData";
-import { useBitcoinWalletData } from "../chains/useBitcoinWalletData";
+import { useSolanaWalletData } from '../chains/useSolanaWalletData';
+import { useStarknetWalletData } from '../chains/useStarknetWalletData';
+import { useLightningWalletData } from '../chains/useLightningWalletData';
+import { useBitcoinWalletData } from '../chains/useBitcoinWalletData';
 const DEFAULT_CONFIG = {
     enableSolana: true,
     enableStarknet: true,
@@ -17,7 +17,7 @@ export function useChainWalletSystem(config = DEFAULT_CONFIG) {
     const lightningResult = useLightningWalletData(config.enableLightning);
     const bitcoinResult = useBitcoinWalletData(config.enableBitcoin, {
         STARKNET: starknetResult?.wallet?.name,
-        SOLANA: solanaResult?.wallet?.name
+        SOLANA: solanaResult?.wallet?.name,
     });
     return useMemo(() => {
         const chainsData = {};

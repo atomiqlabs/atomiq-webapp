@@ -1,9 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useEffect, useState } from "react";
-import { NFCReader, NFCStartResult } from "./NFCReader";
-import Icon from "react-icons-kit";
-import { Form } from "react-bootstrap";
-import { ic_contactless } from "react-icons-kit/md/ic_contactless";
+import { useEffect, useState } from 'react';
+import { NFCReader, NFCStartResult } from './NFCReader';
+import Icon from 'react-icons-kit';
+import { Form } from 'react-bootstrap';
+import { ic_contactless } from 'react-icons-kit/md/ic_contactless';
 export function NFCSwitch() {
     const [nfcSupported, setNfcSupported] = useState(false);
     const [nfcEnabled, setNfcEnabled] = useState(true);

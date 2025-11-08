@@ -1,19 +1,14 @@
-import { fromHumanReadableString, Swapper, Token } from "@atomiqlabs/sdk";
-import { useContext } from "react";
-import { SwapsContext } from "../../swaps/context/SwapsContext";
-import { useWithAwait } from "../../utils/hooks/useWithAwait";
+import { fromHumanReadableString, Swapper, Token } from '@atomiqlabs/sdk';
+import { useContext } from 'react';
+import { SwapsContext } from '../../swaps/context/SwapsContext';
+import { useWithAwait } from '../../utils/hooks/useWithAwait';
 
 export function usePricing(amount: string, currency: Token<any>): number {
   const { swapper } = useContext(SwapsContext);
 
   const [value] = useWithAwait<number>(
     () => {
-      if (
-        swapper == null ||
-        currency == null ||
-        amount == null ||
-        amount === ""
-      )
+      if (swapper == null || currency == null || amount == null || amount === '')
         return Promise.resolve(null);
       try {
         const rawAmount = fromHumanReadableString(amount, currency);
@@ -24,7 +19,7 @@ export function usePricing(amount: string, currency: Token<any>): number {
       }
     },
     [amount, currency, swapper],
-    true,
+    true
   );
 
   return value;

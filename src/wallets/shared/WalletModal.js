@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-export const WalletModal = ({ className = '', container = 'body', visible, onClose, title, children }) => {
+export const WalletModal = ({ className = '', container = 'body', visible, onClose, title, children, }) => {
     const ref = useRef(null);
     const [fadeIn, setFadeIn] = useState(false);
     const [portal, setPortal] = useState(null);

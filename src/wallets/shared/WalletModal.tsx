@@ -17,7 +17,7 @@ export const WalletModal: FC<WalletModalProps> = ({
   visible,
   onClose,
   title,
-  children
+  children,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [fadeIn, setFadeIn] = useState(false);

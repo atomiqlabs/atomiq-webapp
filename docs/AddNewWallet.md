@@ -3,6 +3,7 @@
 ## Architecture Overview
 
 The wallet system uses a **configuration-driven** approach with **dependency injection**:
+
 - **`ChainConfig<TWallet, TSigner>`** - Configuration object defining chain behavior
 - **`useGenericChainWallet(config)`** - Generic hook that works with any config
 - **`Chain Registry`** - Central place where all chains are defined
@@ -40,11 +41,7 @@ interface EthereumWallet {
  * All chain-specific logic is defined here as injected functions.
  * The generic hook (useGenericChainWallet) handles everything else.
  */
-export const ethereumConfig: ChainConfig<
-  EthereumWallet,
-  EthereumSigner,
-  EthereumWalletType
-> = {
+export const ethereumConfig: ChainConfig<EthereumWallet, EthereumSigner, EthereumWalletType> = {
   // ========== Metadata ==========
   id: 'ETHEREUM',
   name: 'Ethereum',
@@ -69,10 +66,11 @@ export const ethereumConfig: ChainConfig<
             name: 'MetaMask',
             icon: '/wallets/metamask.svg',
             address: accounts[0],
-            signTransaction: (tx) => window.ethereum.request({
-              method: 'eth_sendTransaction',
-              params: [tx],
-            }),
+            signTransaction: (tx) =>
+              window.ethereum.request({
+                method: 'eth_sendTransaction',
+                params: [tx],
+              }),
           };
         },
       });
@@ -81,19 +79,21 @@ export const ethereumConfig: ChainConfig<
         name: 'MetaMask',
         iconUrl: '/wallets/metamask.svg',
         detect: async () => false,
-        connect: async () => { throw new Error('Not installed'); },
+        connect: async () => {
+          throw new Error('Not installed');
+        },
       });
     }
 
     // Add more wallets...
 
     return {
-      installed: installed.map(w => ({
+      installed: installed.map((w) => ({
         name: w.name,
         icon: w.iconUrl,
         data: w,
       })),
-      installable: installable.map(w => ({
+      installable: installable.map((w) => ({
         name: w.name,
         icon: w.iconUrl,
         data: w,
@@ -141,10 +141,11 @@ export const ethereumConfig: ChainConfig<
             name: 'MetaMask',
             icon: '/wallets/metamask.svg',
             address: savedAddress,
-            signTransaction: (tx) => window.ethereum.request({
-              method: 'eth_sendTransaction',
-              params: [tx],
-            }),
+            signTransaction: (tx) =>
+              window.ethereum.request({
+                method: 'eth_sendTransaction',
+                params: [tx],
+              }),
           };
         }
       }
@@ -197,6 +198,7 @@ export const ethereumConfig: ChainConfig<
 ```
 
 **Key Points:**
+
 - ✅ All chain-specific logic in **one config object**
 - ✅ Functions are **injected** (dependency injection pattern)
 - ✅ **~80-100 lines** instead of ~200 lines for manual hook
@@ -222,19 +224,14 @@ export function useEthereumWallet(): StandardChainHookResult<EthereumSigner> {
 Update `src/wallets/context/ChainDataContext.ts`:
 
 ```typescript
-export type ChainIdentifiers =
-  | "BITCOIN"
-  | "LIGHTNING"
-  | "SOLANA"
-  | "STARKNET"
-  | "ETHEREUM";  // Add this
+export type ChainIdentifiers = 'BITCOIN' | 'LIGHTNING' | 'SOLANA' | 'STARKNET' | 'ETHEREUM'; // Add this
 
 type WalletTypes = {
   BITCOIN: ExtensionBitcoinWallet;
   LIGHTNING: WebLNProvider;
   SOLANA: SolanaSigner;
   STARKNET: StarknetSigner;
-  ETHEREUM: EthereumSigner;  // Add this
+  ETHEREUM: EthereumSigner; // Add this
 };
 ```
 
@@ -285,7 +282,7 @@ export function useConfigurableWalletSystem(
 
     return {
       wallets,
-      walletSystemContext: { chains }
+      walletSystemContext: { chains },
     };
   }, [config, solanaResult, starknetResult, lightningResult, bitcoinResult, ethereumResult]);
 }
@@ -317,7 +314,9 @@ That's all! **No manual modal creation needed.**
 ## Key Components
 
 ### StandardChainHookResult Interface
+
 All wallet hooks must return this interface:
+
 ```typescript
 interface StandardChainHookResult<T> {
   chainData: ChainWalletData<T>;
@@ -331,14 +330,18 @@ interface StandardChainHookResult<T> {
 ```
 
 ### UnifiedWalletModal
+
 Single modal component that works for all chains:
+
 - Located at: `src/wallets/shared/UnifiedWalletModal.tsx`
 - Reads wallet data from `WalletSystemContext` based on `chainId`
 - Automatically rendered by `ChainDataProvider` for each chain
 - You never need to render it manually
 
 ### WalletSystemContext
+
 Global context storing all chain data:
+
 ```typescript
 {
   chains: {
@@ -372,13 +375,13 @@ Global context storing all chain data:
 
 ## Comparison: Old vs New
 
-| Aspect | Old Architecture | New Architecture |
-|--------|-----------------|------------------|
-| Hook return type | `[ChainWalletData, JSX.Element?]` | `StandardChainHookResult<T>` |
-| Modal creation | Manual in each hook | Automatic in `ChainDataProvider` |
-| Wallet lists | Hidden in hook internals | Exposed as `installedWallets`/`installableWallets` |
-| Modal access | Different for each chain | Unified through context |
-| Adding new chain | 3-4 files + modal code | 3 files, no modal code |
+| Aspect           | Old Architecture                  | New Architecture                                   |
+| ---------------- | --------------------------------- | -------------------------------------------------- |
+| Hook return type | `[ChainWalletData, JSX.Element?]` | `StandardChainHookResult<T>`                       |
+| Modal creation   | Manual in each hook               | Automatic in `ChainDataProvider`                   |
+| Wallet lists     | Hidden in hook internals          | Exposed as `installedWallets`/`installableWallets` |
+| Modal access     | Different for each chain          | Unified through context                            |
+| Adding new chain | 3-4 files + modal code            | 3 files, no modal code                             |
 
 ## Architecture Notes
 
@@ -395,6 +398,7 @@ Global context storing all chain data:
 ### React Rules of Hooks
 
 Due to React's Rules of Hooks:
+
 - All hooks must be called unconditionally in `useConfigurableWalletSystem`
 - Config flags control which results are included in the final output
 - You cannot dynamically call hooks in loops

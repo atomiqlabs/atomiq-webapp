@@ -6,10 +6,10 @@ export var NFCStartResult;
 })(NFCStartResult || (NFCStartResult = {}));
 export class NFCReader {
     static userDisable() {
-        localStorage.setItem("crossLightning-nfcReadEnabled", "false");
+        localStorage.setItem('crossLightning-nfcReadEnabled', 'false');
     }
     static isUserDisabled() {
-        return localStorage.getItem("crossLightning-nfcReadEnabled") !== "true";
+        return localStorage.getItem('crossLightning-nfcReadEnabled') !== 'true';
     }
     static isSupported() {
         try {
@@ -24,7 +24,7 @@ export class NFCReader {
         try {
             this.ndef = new window.NDEFReader();
             this.ndef.onreadingerror = () => {
-                console.error("Failed to read NFC tag!");
+                console.error('Failed to read NFC tag!');
             };
             this.ndef.onreading = (event) => {
                 if (event.message == null)
@@ -33,12 +33,12 @@ export class NFCReader {
                     return;
                 if (event.message.records.length === 0)
                     return;
-                console.log("NFC scanned, message: ", event.message);
-                const filteredRecords = event.message.records.filter((record) => record.recordType === "url" || record.recordType === "text");
+                console.log('NFC scanned, message: ', event.message);
+                const filteredRecords = event.message.records.filter((record) => record.recordType === 'url' || record.recordType === 'text');
                 if (filteredRecords.length === 0)
                     return;
                 if (this.callback != null)
-                    this.callback(filteredRecords.map((e) => Buffer.from(e.data.buffer).toString("ascii")));
+                    this.callback(filteredRecords.map((e) => Buffer.from(e.data.buffer).toString('ascii')));
             };
         }
         catch (e) {
@@ -66,10 +66,10 @@ export class NFCReader {
         }
         catch (e) {
             console.error(e);
-            localStorage.setItem("crossLightning-nfcReadEnabled", "false");
+            localStorage.setItem('crossLightning-nfcReadEnabled', 'false');
             return NFCStartResult.USER_DISABLED;
         }
-        localStorage.setItem("crossLightning-nfcReadEnabled", "true");
+        localStorage.setItem('crossLightning-nfcReadEnabled', 'true');
         return NFCStartResult.OK;
     }
     async stop() {

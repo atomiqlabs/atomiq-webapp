@@ -1,9 +1,9 @@
-import { SatsConnectBitcoinWallet } from "./base/SatsConnectBitcoinWallet";
+import { SatsConnectBitcoinWallet } from './base/SatsConnectBitcoinWallet';
 
 export class MagicEdenBitcoinWallet extends SatsConnectBitcoinWallet {
-  static installUrl: string = "https://wallet.magiceden.io/download";
-  static iconUrl: string = "wallets/btc/MagicEden.png";
-  static walletName: string = "Magic Eden";
+  static installUrl: string = 'https://wallet.magiceden.io/download';
+  static iconUrl: string = 'wallets/btc/MagicEden.png';
+  static walletName: string = 'Magic Eden';
 
   static async isInstalled(): Promise<boolean> {
     if (await SatsConnectBitcoinWallet.isInstalled()) {
@@ -17,7 +17,7 @@ export class MagicEdenBitcoinWallet extends SatsConnectBitcoinWallet {
       MagicEdenBitcoinWallet.walletName,
       MagicEdenBitcoinWallet.iconUrl,
       MagicEdenBitcoinWallet,
-      _data,
+      _data
     );
   }
 

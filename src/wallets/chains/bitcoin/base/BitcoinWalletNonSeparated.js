@@ -1,5 +1,5 @@
-import { ExtensionBitcoinWallet } from "./ExtensionBitcoinWallet";
-import { filterInscriptionUtxosOnlyConfirmed } from "../utils/InscriptionUtils";
+import { ExtensionBitcoinWallet } from './ExtensionBitcoinWallet';
+import { filterInscriptionUtxosOnlyConfirmed } from '../utils/InscriptionUtils';
 /**
  * Bitcoin wallet with no separation between addresses holding Ordinal assets & BTC
  */

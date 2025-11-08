@@ -1,9 +1,9 @@
-import { ExtensionBitcoinWallet } from "../base/ExtensionBitcoinWallet";
-import { PhantomBitcoinWallet } from "../PhantomBitcoinWallet";
-import { XverseBitcoinWallet } from "../XverseBitcoinWallet";
-import { UnisatBitcoinWallet } from "../UnisatBitcoinWallet";
-import { MagicEdenBitcoinWallet } from "../MagicEdenBitcoinWallet";
-import { KeplrBitcoinWallet } from "../KeplrBitcoinWallet";
+import { ExtensionBitcoinWallet } from '../base/ExtensionBitcoinWallet';
+import { PhantomBitcoinWallet } from '../PhantomBitcoinWallet';
+import { XverseBitcoinWallet } from '../XverseBitcoinWallet';
+import { UnisatBitcoinWallet } from '../UnisatBitcoinWallet';
+import { MagicEdenBitcoinWallet } from '../MagicEdenBitcoinWallet';
+import { KeplrBitcoinWallet } from '../KeplrBitcoinWallet';
 const bitcoinWalletList = [
     {
         iconUrl: PhantomBitcoinWallet.iconUrl,

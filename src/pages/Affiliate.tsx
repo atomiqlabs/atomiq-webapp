@@ -1,17 +1,17 @@
-import { Badge, Card, Col, Form, Placeholder, Row } from "react-bootstrap";
-import { bitcoinTokenArray } from "../tokens/Tokens";
-import { useContext, useEffect, useState } from "react";
-import * as React from "react";
-import ValidatedInput from "../components/ValidatedInput";
-import { FEConstants, TokenResolver, Tokens } from "../FEConstants";
-import { SingleColumnStaticTable } from "../table/SingleColumnTable";
-import { getTimeDeltaText } from "../utils/Utils";
-import { SwapsContext } from "../swaps/context/SwapsContext";
-import { TokenIcon } from "../tokens/TokenIcon";
-import { ButtonWithWallet } from "../wallets/ButtonWithWallet";
-import { ErrorAlert } from "../components/ErrorAlert";
-import { toHumanReadableString } from "@atomiqlabs/sdk";
-import { ChainDataContext } from "../wallets/context/ChainDataContext";
+import { Badge, Card, Col, Form, Placeholder, Row } from 'react-bootstrap';
+import { bitcoinTokenArray } from '../tokens/Tokens';
+import { useContext, useEffect, useState } from 'react';
+import * as React from 'react';
+import ValidatedInput from '../components/ValidatedInput';
+import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
+import { SingleColumnStaticTable } from '../table/SingleColumnTable';
+import { getTimeDeltaText } from '../utils/Utils';
+import { SwapsContext } from '../swaps/context/SwapsContext';
+import { TokenIcon } from '../tokens/TokenIcon';
+import { ButtonWithWallet } from '../wallets/ButtonWithWallet';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { toHumanReadableString } from '@atomiqlabs/sdk';
+import { ChainDataContext } from '../wallets/context/ChainDataContext';
 
 type AffiliatePayout = {
   timestamp: number;
@@ -19,10 +19,10 @@ type AffiliatePayout = {
   amountSats: string;
   amountToken: string;
   token: string;
-  state: "pending" | "fail" | "success";
+  state: 'pending' | 'fail' | 'success';
 };
 
-const chain = "SOLANA";
+const chain = 'SOLANA';
 
 export function Affiliate() {
   const { swapper } = useContext(SwapsContext);
@@ -47,8 +47,7 @@ export function Affiliate() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<any>();
 
-  const currencySpec =
-    data?.token == null ? null : TokenResolver[chain].getToken(data.token);
+  const currencySpec = data?.token == null ? null : TokenResolver[chain].getToken(data.token);
 
   const chains = useContext(ChainDataContext);
   const solanaWallet = chains?.[chain]?.wallet;
@@ -64,9 +63,7 @@ export function Affiliate() {
       setLoading(true);
       setError(null);
       setData(null);
-      fetch(
-        FEConstants.affiliateUrl + "?affiliate=" + encodeURIComponent(address),
-      )
+      fetch(FEConstants.affiliateUrl + '?affiliate=' + encodeURIComponent(address))
         .then((resp) => {
           return resp.json();
         })
@@ -94,54 +91,48 @@ export function Affiliate() {
         <Card className="px-3 pt-3 bg-dark bg-opacity-25 mb-3 border-0">
           <h3>How does it work?</h3>
           <p>
-            Invite your friends to use atomiq via your invite link, they can
-            enjoy reduced <strong>0.2%</strong> fee rate (instead of regular
-            0.3%), and you get a kickback for <strong>0.1%</strong> of their
-            swap volume.
+            Invite your friends to use atomiq via your invite link, they can enjoy reduced{' '}
+            <strong>0.2%</strong> fee rate (instead of regular 0.3%), and you get a kickback for{' '}
+            <strong>0.1%</strong> of their swap volume.
           </p>
           <p>
-            Your kickback is accrued in BTC and payed out automatically to your
-            Solana wallet address in {currencySpec?.ticker} every day.
+            Your kickback is accrued in BTC and payed out automatically to your Solana wallet
+            address in {currencySpec?.ticker} every day.
           </p>
           {data == null ? (
             <ButtonWithWallet className="mb-3" chainId={chain} />
           ) : (
             <>
               <p>
-                Minimum payout:{" "}
+                Minimum payout:{' '}
                 <strong>
                   {toHumanReadableString(
-                    data?.minPayoutSats == null
-                      ? 0n
-                      : BigInt(data?.minPayoutSats),
-                    Tokens.BITCOIN.BTC,
-                  )}{" "}
+                    data?.minPayoutSats == null ? 0n : BigInt(data?.minPayoutSats),
+                    Tokens.BITCOIN.BTC
+                  )}{' '}
                   BTC
                 </strong>
               </p>
               <p>
-                Next payout:{" "}
-                <strong>
-                  {new Date(data?.nextPayoutTimestamp).toLocaleString()}
-                </strong>{" "}
+                Next payout: <strong>{new Date(data?.nextPayoutTimestamp).toLocaleString()}</strong>{' '}
                 (in {getTimeDeltaText(data?.nextPayoutTimestamp || 0, true)})
               </p>
             </>
           )}
         </Card>
-        <div className={data == null ? "d-none" : ""}>
+        <div className={data == null ? 'd-none' : ''}>
           <Card className="px-3 pt-3 bg-dark bg-opacity-25 mb-3 pb-3 border-0">
             <h3>Your referral link</h3>
             {loading ? (
               <Placeholder xs={12} as={Form.Control} />
             ) : (
               <ValidatedInput
-                type={"text"}
+                type={'text'}
                 value={
                   data?.stats?.address == null
-                    ? ""
+                    ? ''
                     : FEConstants.dappUrl +
-                      "?affiliate=" +
+                      '?affiliate=' +
                       encodeURIComponent(data.stats.identifier)
                 }
                 copyEnabled={true}
@@ -165,16 +156,16 @@ export function Affiliate() {
                         data?.stats?.totalVolumeSats == null
                           ? 0n
                           : BigInt(data?.stats?.totalVolumeSats),
-                        Tokens.BITCOIN.BTC,
-                      ) + " BTC"}
+                        Tokens.BITCOIN.BTC
+                      ) + ' BTC'}
                     </>
                   )}
                 </h4>
-                <small className="mb-2" style={{ marginTop: "-6px" }}>
+                <small className="mb-2" style={{ marginTop: '-6px' }}>
                   {loading || currencySpec == null ? (
                     <Placeholder xs={6} />
                   ) : (
-                    "across " + data?.stats?.totalSwapCount + " swaps"
+                    'across ' + data?.stats?.totalSwapCount + ' swaps'
                   )}
                 </small>
               </Card>
@@ -192,11 +183,9 @@ export function Affiliate() {
                         className="currency-icon-medium pb-2"
                       />
                       {toHumanReadableString(
-                        data?.stats?.totalFeeSats == null
-                          ? 0n
-                          : BigInt(data?.stats?.totalFeeSats),
-                        bitcoinTokenArray[0],
-                      ) + " BTC"}
+                        data?.stats?.totalFeeSats == null ? 0n : BigInt(data?.stats?.totalFeeSats),
+                        bitcoinTokenArray[0]
+                      ) + ' BTC'}
                     </>
                   )}
                 </h4>
@@ -218,8 +207,8 @@ export function Affiliate() {
                         data?.stats?.unclaimedFeeSats == null
                           ? 0n
                           : BigInt(data?.stats?.unclaimedFeeSats),
-                        bitcoinTokenArray[0],
-                      ) + " BTC"}
+                        bitcoinTokenArray[0]
+                      ) + ' BTC'}
                     </>
                   )}
                 </h4>
@@ -232,14 +221,12 @@ export function Affiliate() {
                         tokenOrTicker={currencySpec}
                         className="currency-icon-small pb-2"
                       />
-                      {"~" +
+                      {'~' +
                         toHumanReadableString(
-                          data?.unclaimedUsdcValue == null
-                            ? 0n
-                            : BigInt(data?.unclaimedUsdcValue),
-                          currencySpec,
+                          data?.unclaimedUsdcValue == null ? 0n : BigInt(data?.unclaimedUsdcValue),
+                          currencySpec
                         ) +
-                        " " +
+                        ' ' +
                         currencySpec.ticker}
                     </>
                   )}
@@ -263,18 +250,14 @@ export function Affiliate() {
 
                 return (
                   <Row className="d-flex flex-row gx-1 gy-1">
-                    <Col
-                      xl={2}
-                      md={12}
-                      className="d-flex text-md-end text-start"
-                    >
+                    <Col xl={2} md={12} className="d-flex text-md-end text-start">
                       <Row className="gx-1 gy-0 width-fill">
                         <Col xl={12} md={4} xs={12}>
-                          {row.state === "pending" ? (
+                          {row.state === 'pending' ? (
                             <Badge bg="primary" className="width-fill">
                               Pending
                             </Badge>
-                          ) : row.state === "success" ? (
+                          ) : row.state === 'success' ? (
                             <Badge bg="success" className="width-fill">
                               Success
                             </Badge>
@@ -285,14 +268,10 @@ export function Affiliate() {
                           )}
                         </Col>
                         <Col xl={12} md={4} xs={6}>
-                          <small className="">
-                            {new Date(row.timestamp).toLocaleString()}
-                          </small>
+                          <small className="">{new Date(row.timestamp).toLocaleString()}</small>
                         </Col>
                         <Col xl={12} md={4} xs={6} className="text-end">
-                          <small className="">
-                            {getTimeDeltaText(row.timestamp)} ago
-                          </small>
+                          <small className="">{getTimeDeltaText(row.timestamp)} ago</small>
                         </Col>
                       </Row>
                     </Col>
@@ -308,17 +287,14 @@ export function Affiliate() {
                                 : FEConstants.blockExplorers[chain] + txIdInput
                             }
                           >
-                            {txIdInput || "None"}
+                            {txIdInput || 'None'}
                           </a>
                           <span className="d-flex align-items-center font-weight-500 my-1">
                             <TokenIcon
                               tokenOrTicker={outputCurrency}
                               className="currency-icon-medium"
                             />
-                            {toHumanReadableString(
-                              outputAmount,
-                              outputCurrency,
-                            )}{" "}
+                            {toHumanReadableString(outputAmount, outputCurrency)}{' '}
                             {outputCurrency.ticker}
                           </span>
                           <small className="d-flex align-items-center">
@@ -326,7 +302,7 @@ export function Affiliate() {
                               tokenOrTicker={inputCurrency}
                               className="currency-icon-small"
                             />
-                            {toHumanReadableString(inputAmount, inputCurrency)}{" "}
+                            {toHumanReadableString(inputAmount, inputCurrency)}{' '}
                             {inputCurrency.ticker}
                           </small>
                         </div>

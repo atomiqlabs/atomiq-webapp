@@ -1,8 +1,8 @@
-import { ExtensionBitcoinWallet } from "./base/ExtensionBitcoinWallet";
-import * as EventEmitter from "events";
-import { Address, OutScript, Transaction } from "@scure/btc-signer";
-import { CoinselectAddressTypes } from "@atomiqlabs/sdk";
-import { BitcoinWalletNonSeparated } from "./base/BitcoinWalletNonSeparated";
+import { ExtensionBitcoinWallet } from './base/ExtensionBitcoinWallet';
+import * as EventEmitter from 'events';
+import { Address, OutScript, Transaction } from '@scure/btc-signer';
+import { CoinselectAddressTypes } from '@atomiqlabs/sdk';
+import { BitcoinWalletNonSeparated } from './base/BitcoinWalletNonSeparated';
 
 const addressTypePriorities = {
   p2tr: 0,
@@ -12,25 +12,22 @@ const addressTypePriorities = {
 };
 
 const ADDRESS_FORMAT_MAP: { [key: string]: CoinselectAddressTypes } = {
-  p2tr: "p2tr",
-  p2wpkh: "p2wpkh",
-  p2sh: "p2sh-p2wpkh",
-  p2pkh: "p2pkh",
+  p2tr: 'p2tr',
+  p2wpkh: 'p2wpkh',
+  p2sh: 'p2sh-p2wpkh',
+  p2pkh: 'p2pkh',
 };
 
 type PhantomBtcAccount = {
   address: string;
-  addressType: "p2tr" | "p2wpkh" | "p2sh" | "p2pkh";
+  addressType: 'p2tr' | 'p2wpkh' | 'p2sh' | 'p2pkh';
   publicKey: string;
-  purpose: "payment" | "ordinals";
+  purpose: 'payment' | 'ordinals';
 };
 
 type PhantomBtcProvider = {
   requestAccounts: () => Promise<PhantomBtcAccount[]>;
-  signMessage: (
-    message: Uint8Array,
-    address: string,
-  ) => Promise<{ signature: Uint8Array }>;
+  signMessage: (message: Uint8Array, address: string) => Promise<{ signature: Uint8Array }>;
   signPSBT: (
     psbtHex: Uint8Array,
     options: {
@@ -39,35 +36,26 @@ type PhantomBtcProvider = {
         address: string;
         signingIndexes: number[];
       }[];
-    },
+    }
   ) => Promise<string>;
   isPhantom?: boolean;
 } & EventEmitter;
 
-function deduplicateAccounts(
-  accounts: PhantomBtcAccount[],
-): PhantomBtcAccount[] {
+function deduplicateAccounts(accounts: PhantomBtcAccount[]): PhantomBtcAccount[] {
   const accountMap: { [address: string]: PhantomBtcAccount } = {};
   accounts.forEach((acc) => {
     //Prefer payment accounts
-    if (
-      accountMap[acc.address] != null &&
-      accountMap[acc.address].purpose === "payment"
-    )
-      return;
+    if (accountMap[acc.address] != null && accountMap[acc.address].purpose === 'payment') return;
     accountMap[acc.address] = acc;
   });
   return Object.keys(accountMap).map((address) => accountMap[address]);
 }
 
 function getPaymentAccount(accounts: PhantomBtcAccount[]): PhantomBtcAccount {
-  const paymentAccounts = accounts.filter((e) => e.purpose === "payment");
-  if (paymentAccounts.length === 0)
-    throw new Error("No valid payment account found");
+  const paymentAccounts = accounts.filter((e) => e.purpose === 'payment');
+  if (paymentAccounts.length === 0) throw new Error('No valid payment account found');
   paymentAccounts.sort(
-    (a, b) =>
-      addressTypePriorities[a.addressType] -
-      addressTypePriorities[b.addressType],
+    (a, b) => addressTypePriorities[a.addressType] - addressTypePriorities[b.addressType]
   );
   return paymentAccounts[0];
 }
@@ -79,27 +67,17 @@ let currentAccount: PhantomBtcAccount = null;
 let ignoreAccountChange: boolean;
 
 if (provider != null)
-  provider.on("accountsChanged", (accounts: PhantomBtcAccount[]) => {
+  provider.on('accountsChanged', (accounts: PhantomBtcAccount[]) => {
     console.log(
-      "PhantomBitcoinWallet: accountsChanged, ignore: " +
-        ignoreAccountChange +
-        " accounts: ",
-      accounts,
+      'PhantomBitcoinWallet: accountsChanged, ignore: ' + ignoreAccountChange + ' accounts: ',
+      accounts
     );
     if (ignoreAccountChange) return;
     let btcWalletState = ExtensionBitcoinWallet.loadState();
-    if (
-      btcWalletState == null ||
-      btcWalletState.name !== PhantomBitcoinWallet.walletName
-    )
-      return;
+    if (btcWalletState == null || btcWalletState.name !== PhantomBitcoinWallet.walletName) return;
     if (accounts != null && accounts.length > 0) {
       const paymentAccount: PhantomBtcAccount = getPaymentAccount(accounts);
-      if (
-        currentAccount != null &&
-        paymentAccount.address == currentAccount.address
-      )
-        return;
+      if (currentAccount != null && paymentAccount.address == currentAccount.address) return;
 
       currentAccount = paymentAccount;
 
@@ -107,29 +85,23 @@ if (provider != null)
         accounts,
       });
       events.emit(
-        "newWallet",
-        new PhantomBitcoinWallet(
-          accounts,
-          btcWalletState.data.multichainConnected,
-        ),
+        'newWallet',
+        new PhantomBitcoinWallet(accounts, btcWalletState.data.multichainConnected)
       );
     } else {
-      events.emit("newWallet", null);
+      events.emit('newWallet', null);
     }
   });
 
 export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
-  static installUrl: string = "https://phantom.com/download";
-  static iconUrl: string = "wallets/btc/phantom.png";
-  static walletName: string = "Phantom";
+  static installUrl: string = 'https://phantom.com/download';
+  static iconUrl: string = 'wallets/btc/phantom.png';
+  static walletName: string = 'Phantom';
 
   readonly accounts: PhantomBtcAccount[];
   readonly account: PhantomBtcAccount;
 
-  constructor(
-    accounts: PhantomBtcAccount[],
-    wasAutomaticallyConnected: boolean,
-  ) {
+  constructor(accounts: PhantomBtcAccount[], wasAutomaticallyConnected: boolean) {
     super(wasAutomaticallyConnected);
     this.accounts = deduplicateAccounts(accounts);
     this.account = getPaymentAccount(accounts);
@@ -149,9 +121,8 @@ export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
       await new Promise((resolve) => setTimeout(resolve, 750));
     }
 
-    if (provider == null) throw new Error("Phantom bitcoin wallet not found");
-    if (provider.isPhantom == null)
-      throw new Error("Provider is not Phantom wallet");
+    if (provider == null) throw new Error('Phantom bitcoin wallet not found');
+    if (provider.isPhantom == null) throw new Error('Provider is not Phantom wallet');
     ignoreAccountChange = true;
     let accounts: PhantomBtcAccount[];
     try {
@@ -172,26 +143,22 @@ export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
 
   protected _isOrdinalsAddress(address: string): boolean {
     const acc = this.accounts.find((val) => val.address === address);
-    return acc?.purpose === "ordinals";
+    return acc?.purpose === 'ordinals';
   }
 
   async getBalance(): Promise<{
     confirmedBalance: bigint;
     unconfirmedBalance: bigint;
   }> {
-    const balances = await Promise.all(
-      this.accounts.map((acc) => super._getBalance(acc.address)),
-    );
+    const balances = await Promise.all(this.accounts.map((acc) => super._getBalance(acc.address)));
     return balances.reduce(
       (prevValue, currValue) => {
         return {
-          confirmedBalance:
-            prevValue.confirmedBalance + currValue.confirmedBalance,
-          unconfirmedBalance:
-            prevValue.confirmedBalance + currValue.unconfirmedBalance,
+          confirmedBalance: prevValue.confirmedBalance + currValue.confirmedBalance,
+          unconfirmedBalance: prevValue.confirmedBalance + currValue.unconfirmedBalance,
         };
       },
-      { confirmedBalance: 0n, unconfirmedBalance: 0n },
+      { confirmedBalance: 0n, unconfirmedBalance: 0n }
     );
   }
 
@@ -213,20 +180,16 @@ export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
     });
   }
 
-  async sendTransaction(
-    address: string,
-    amount: bigint,
-    feeRate?: number,
-  ): Promise<string> {
+  async sendTransaction(address: string, amount: bigint, feeRate?: number): Promise<string> {
     const { psbt, inputAddressIndexes } = await super._getPsbt(
       this.toBitcoinWalletAccounts(),
       address,
       Number(amount),
-      feeRate,
+      feeRate
     );
 
     if (psbt == null) {
-      throw new Error("Not enough balance!");
+      throw new Error('Not enough balance!');
     }
 
     const psbtBuffer = psbt.toPSBT(0);
@@ -241,12 +204,10 @@ export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
       }),
     });
 
-    const signedPsbt = Transaction.fromPSBT(
-      Buffer.from(resultSignedPsbtHex, "hex"),
-    );
+    const signedPsbt = Transaction.fromPSBT(Buffer.from(resultSignedPsbtHex, 'hex'));
     signedPsbt.finalize();
 
-    const btcTxHex = Buffer.from(signedPsbt.extract()).toString("hex");
+    const btcTxHex = Buffer.from(signedPsbt.extract()).toString('hex');
     return await super._sendTransaction(btcTxHex);
   }
 
@@ -259,17 +220,14 @@ export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
   }
 
   offWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
-    events.off("newWallet", cbk);
+    events.off('newWallet', cbk);
   }
 
   onWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {
-    events.on("newWallet", cbk);
+    events.on('newWallet', cbk);
   }
 
-  async signPsbt(
-    psbt: Transaction,
-    signInputs: number[],
-  ): Promise<Transaction> {
+  async signPsbt(psbt: Transaction, signInputs: number[]): Promise<Transaction> {
     const psbtBuffer = psbt.toPSBT(0);
 
     const inputAddressIndexes: { [address: string]: number[] } = {};
@@ -278,9 +236,7 @@ export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
       const prevOutScript: Uint8Array = input.witnessUtxo
         ? input.witnessUtxo.script
         : input.nonWitnessUtxo.outputs[input.index].script;
-      const address = Address(this.network).encode(
-        OutScript.decode(prevOutScript),
-      );
+      const address = Address(this.network).encode(OutScript.decode(prevOutScript));
       inputAddressIndexes[address] ??= [];
       inputAddressIndexes[address].push(index);
     });
@@ -295,6 +251,6 @@ export class PhantomBitcoinWallet extends BitcoinWalletNonSeparated {
       }),
     });
 
-    return Transaction.fromPSBT(Buffer.from(resultSignedPsbtHex, "hex"));
+    return Transaction.fromPSBT(Buffer.from(resultSignedPsbtHex, 'hex'));
   }
 }

@@ -1,7 +1,16 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from 'react';
 export function useWithAwait(executor, dependencies, parallel = true, callback, pause) {
-    const [latestProcessed, setLatestProcessed] = useState({ sequence: 0, value: null, error: null });
-    const latestProcessedRef = useRef({ sequence: 0, value: null, error: null, lastDeps: dependencies });
+    const [latestProcessed, setLatestProcessed] = useState({
+        sequence: 0,
+        value: null,
+        error: null,
+    });
+    const latestProcessedRef = useRef({
+        sequence: 0,
+        value: null,
+        error: null,
+        lastDeps: dependencies,
+    });
     const sequence = useRef(0);
     const currentPromise = useRef(null);
     const depsRef = useRef();

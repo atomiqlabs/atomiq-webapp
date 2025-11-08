@@ -1,26 +1,27 @@
-import { useMemo } from "react";
-import { FeeType, FromBTCLNSwap, FromBTCSwap, IToBTCSwap, SpvFromBTCSwap, } from "@atomiqlabs/sdk";
-import { useWithAwait } from "../../utils/hooks/useWithAwait";
-import { capitalizeFirstLetter } from "../../utils/Utils";
-import { getChainIdentifierForCurrency } from "../../tokens/Tokens";
-import { useChain } from "../../wallets/hooks/useChain";
+import { useMemo } from 'react';
+import { FeeType, FromBTCLNSwap, FromBTCSwap, IToBTCSwap, SpvFromBTCSwap, } from '@atomiqlabs/sdk';
+import { useWithAwait } from '../../utils/hooks/useWithAwait';
+import { capitalizeFirstLetter } from '../../utils/Utils';
+import { getChainIdentifierForCurrency } from '../../tokens/Tokens';
+import { useChain } from '../../wallets/hooks/useChain';
 export function useSwapFees(swap, btcFeeRate, fetchUsdAndNetworkFees = true) {
-    const bitcoinChainData = useChain("BITCOIN");
+    const bitcoinChainData = useChain('BITCOIN');
     const fees = useMemo(() => {
         if (swap == null)
             return null;
         const fees = swap.getFeeBreakdown().map((value) => {
             if (value.type === FeeType.SWAP) {
                 return {
-                    text: "Swap fee",
+                    text: 'Swap fee',
                     fee: value.fee,
                     composition: value.fee.composition,
                 };
             }
             if (value.type === FeeType.NETWORK_OUTPUT) {
                 return {
-                    text: capitalizeFirstLetter(getChainIdentifierForCurrency(value.fee.amountInDstToken.token)) + " network fee",
-                    description: "Transaction fees on the output network",
+                    text: capitalizeFirstLetter(getChainIdentifierForCurrency(value.fee.amountInDstToken.token)) +
+                        ' network fee',
+                    description: 'Transaction fees on the output network',
                     fee: value.fee,
                     composition: value.fee.composition,
                 };
@@ -29,8 +30,8 @@ export function useSwapFees(swap, btcFeeRate, fetchUsdAndNetworkFees = true) {
         if (swap instanceof FromBTCSwap) {
             const amount = swap.getClaimerBounty();
             fees.push({
-                text: "Watchtower fee",
-                description: "Fee paid to swap watchtowers which automatically claim the swap for you as soon as the bitcoin transaction confirms.",
+                text: 'Watchtower fee',
+                description: 'Fee paid to swap watchtowers which automatically claim the swap for you as soon as the bitcoin transaction confirms.',
                 fee: {
                     amountInSrcToken: amount,
                     amountInDstToken: null,
@@ -63,9 +64,8 @@ export function useSwapFees(swap, btcFeeRate, fetchUsdAndNetworkFees = true) {
                 if (val == null)
                     return null;
                 return {
-                    text: capitalizeFirstLetter(getChainIdentifierForCurrency(val.token)) +
-                        " network fee",
-                    description: "Transaction fees on the input network",
+                    text: capitalizeFirstLetter(getChainIdentifierForCurrency(val.token)) + ' network fee',
+                    description: 'Transaction fees on the input network',
                     fee: {
                         amountInSrcToken: val,
                         amountInDstToken: null,
@@ -83,8 +83,8 @@ export function useSwapFees(swap, btcFeeRate, fetchUsdAndNetworkFees = true) {
         if (networkFeeDst != null)
             promises.push(networkFeeDst.then(async (val) => {
                 return {
-                    text: "Claim network fee",
-                    description: "Transaction fees of the claim transaction on the output network",
+                    text: 'Claim network fee',
+                    description: 'Transaction fees of the claim transaction on the output network',
                     fee: {
                         amountInSrcToken: val,
                         amountInDstToken: null,
@@ -98,7 +98,7 @@ export function useSwapFees(swap, btcFeeRate, fetchUsdAndNetworkFees = true) {
     const totalUsdFee = useMemo(() => {
         if (feesWithUsdValue == null)
             return;
-        return feesWithUsdValue.reduce((value, e) => e.usdValue == null ? value : value + parseFloat(e.usdValue.toFixed(2)), 0);
+        return feesWithUsdValue.reduce((value, e) => (e.usdValue == null ? value : value + parseFloat(e.usdValue.toFixed(2))), 0);
     }, [feesWithUsdValue]);
     return {
         fees: feesWithUsdValue ?? fees ?? [],

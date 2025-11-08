@@ -1,5 +1,5 @@
-import { TokenIcons } from "./Tokens";
-import { Token } from "@atomiqlabs/sdk";
+import { TokenIcons } from './Tokens';
+import { Token } from '@atomiqlabs/sdk';
 
 export function TokenIcon(props: {
   tokenOrTicker: string | Token;
@@ -10,9 +10,7 @@ export function TokenIcon(props: {
     <img
       src={
         TokenIcons[
-          typeof props.tokenOrTicker === "string"
-            ? props.tokenOrTicker
-            : props.tokenOrTicker.ticker
+          typeof props.tokenOrTicker === 'string' ? props.tokenOrTicker : props.tokenOrTicker.ticker
         ]
       }
       className={props.className}

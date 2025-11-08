@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { useStateRef } from "../../utils/hooks/useStateRef";
-import { NFCReader } from "../NFCReader";
+import { useEffect, useRef, useState } from 'react';
+import { useStateRef } from '../../utils/hooks/useStateRef';
+import { NFCReader } from '../NFCReader';
 export function useNFCScanner(_callback, disable) {
     const callback = useStateRef(_callback);
     const [NFCScanning, setNFCScanning] = useState(null);

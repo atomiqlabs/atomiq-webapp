@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { wallet, WalletAccount } from "starknet";
-import { getStarknet } from "@starknet-io/get-starknet-core";
-import { StarknetFees, StarknetSigner } from "@atomiqlabs/chain-starknet";
-import { useLocalStorage } from "../../utils/hooks/useLocalStorage";
-import { FEConstants } from "../../FEConstants";
-import { timeoutPromise } from "../../utils/Utils";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { wallet, WalletAccount } from 'starknet';
+import { getStarknet } from '@starknet-io/get-starknet-core';
+import { StarknetFees, StarknetSigner } from '@atomiqlabs/chain-starknet';
+import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { FEConstants } from '../../FEConstants';
+import { timeoutPromise } from '../../utils/Utils';
 const starknet = getStarknet();
 function waitTillAddressPopulated(acc) {
     return new Promise((resolve) => {
         let interval;
         interval = setInterval(() => {
-            if (acc.address != "0x0000000000000000000000000000000000000000000000000000000000000000" && acc.address !== "") {
+            if (acc.address != '0x0000000000000000000000000000000000000000000000000000000000000000' &&
+                acc.address !== '') {
                 clearInterval(interval);
                 resolve();
             }
@@ -20,13 +21,13 @@ function waitTillAddressPopulated(acc) {
 export function useStarknetWalletData(enabled) {
     const [starknetSigner, setStarknetSigner] = useState();
     const [starknetWalletData, setStarknetWalletData] = useState();
-    const [defaultStarknetWallet, setStarknetAutoConnect] = useLocalStorage("starknet-wallet", null);
+    const [defaultStarknetWallet, setStarknetAutoConnect] = useLocalStorage('starknet-wallet', null);
     const [nonInstalledWallet, setNonInstalledWallet] = useState([]);
     const [availableWallets, setAvailableWallets] = useState([]);
     const currentSWORef = useRef();
     const setWallet = async (swo) => {
         if (currentSWORef.current != null) {
-            currentSWORef.current.swo.off("accountsChanged", currentSWORef.current.listener);
+            currentSWORef.current.swo.off('accountsChanged', currentSWORef.current.listener);
             currentSWORef.current = null;
         }
         if (swo == null) {
@@ -36,20 +37,20 @@ export function useStarknetWalletData(enabled) {
         }
         const walletAccount = await WalletAccount.connect(FEConstants.starknetRpc, swo);
         const chainId = await wallet.requestChainId(walletAccount.walletProvider);
-        console.log("useStarknetWalletContext(): connected wallet chainId: ", chainId);
+        console.log('useStarknetWalletContext(): connected wallet chainId: ', chainId);
         if (chainId != null && FEConstants.starknetChainId !== chainId) {
             setStarknetSigner(null);
             setStarknetWalletData(null);
-            console.log("useStarknetWalletContext(): Invalid chainId got from wallet...");
+            console.log('useStarknetWalletContext(): Invalid chainId got from wallet...');
             return;
         }
         currentSWORef.current = {
             swo,
             listener: (accounts) => {
-                console.log("useStarknetWalletContext(): accountsChanged listener, new accounts: ", accounts);
+                console.log('useStarknetWalletContext(): accountsChanged listener, new accounts: ', accounts);
                 const starknetSigner = new StarknetSigner(walletAccount);
-                wallet.requestChainId(walletAccount.walletProvider).then(chainId => {
-                    console.log("useStarknetWalletContext(): connected wallet chainId: ", chainId);
+                wallet.requestChainId(walletAccount.walletProvider).then((chainId) => {
+                    console.log('useStarknetWalletContext(): connected wallet chainId: ', chainId);
                     if (FEConstants.starknetChainId !== chainId) {
                         setStarknetSigner(null);
                     }
@@ -57,9 +58,9 @@ export function useStarknetWalletData(enabled) {
                         setStarknetSigner(starknetSigner);
                     }
                 });
-            }
+            },
         };
-        swo.on("accountsChanged", currentSWORef.current.listener);
+        swo.on('accountsChanged', currentSWORef.current.listener);
         await waitTillAddressPopulated(walletAccount);
         const starknetSigner = new StarknetSigner(walletAccount);
         setStarknetSigner(starknetSigner);
@@ -76,10 +77,10 @@ export function useStarknetWalletData(enabled) {
             if (cancelled)
                 return;
             setAvailableWallets(availableWallets);
-            setNonInstalledWallet(discoveryWallets.map(w => ({
+            setNonInstalledWallet(discoveryWallets.map((w) => ({
                 name: w.name,
                 icon: w.icon,
-                downloadLink: w.downloads[Object.keys(w.downloads)[0]]
+                downloadLink: w.downloads[Object.keys(w.downloads)[0]],
             })));
             if (defaultStarknetWallet == null)
                 return;
@@ -90,7 +91,7 @@ export function useStarknetWalletData(enabled) {
                 const swo = await starknet.enable(lastConnectedWallet, { silent_mode: true });
                 if (cancelled)
                     return;
-                console.log("useStarknetWalletContext(): Initial wallet connection: ", swo);
+                console.log('useStarknetWalletContext(): Initial wallet connection: ', swo);
                 setWallet(swo);
             }
         })();
@@ -101,7 +102,7 @@ export function useStarknetWalletData(enabled) {
     const _connect = useCallback(async (walletName) => {
         if (availableWallets == null)
             return;
-        const foundWallet = availableWallets.find(w => w.name === walletName);
+        const foundWallet = availableWallets.find((w) => w.name === walletName);
         if (foundWallet == null)
             return;
         const swo = await starknet.enable(foundWallet, { silent_mode: false });
@@ -109,39 +110,54 @@ export function useStarknetWalletData(enabled) {
         setWallet(swo);
     }, [availableWallets]);
     const _disconnect = useCallback(async () => {
-        await starknet.disconnect({ clearLastWallet: true }).catch(e => console.error("useStarknetWalletContext: error while disconnect", e));
-        Object.keys(window.localStorage).forEach(val => {
-            if (val.startsWith("gsw-last-"))
+        await starknet
+            .disconnect({ clearLastWallet: true })
+            .catch((e) => console.error('useStarknetWalletContext: error while disconnect', e));
+        Object.keys(window.localStorage).forEach((val) => {
+            if (val.startsWith('gsw-last-'))
                 window.localStorage.removeItem(val);
         });
         setStarknetAutoConnect(null);
         setWallet(null);
     }, []);
-    return useMemo(() => !enabled ? null : {
-        chain: {
-            name: "Starknet",
-            icon: "/icons/chains/STARKNET.svg"
-        },
-        wallet: starknetWalletData == null || starknetSigner == null ? null : {
-            name: starknetWalletData.name,
-            icon: typeof (starknetWalletData?.icon) !== "string" ? starknetWalletData?.icon?.dark : starknetWalletData?.icon,
-            instance: starknetSigner,
-            address: starknetSigner.getAddress()
-        },
-        installedWallets: availableWallets.map(w => ({
-            name: w.name,
-            icon: typeof (w.icon) === "string" ? w.icon : w.icon.dark,
-            isConnected: w.name === starknetWalletData?.name
-        })),
-        nonInstalledWallets: nonInstalledWallet,
-        chainId: "STARKNET",
-        _connectWallet: _connect,
+    return useMemo(() => !enabled
+        ? null
+        : {
+            chain: {
+                name: 'Starknet',
+                icon: '/icons/chains/STARKNET.svg',
+            },
+            wallet: starknetWalletData == null || starknetSigner == null
+                ? null
+                : {
+                    name: starknetWalletData.name,
+                    icon: typeof starknetWalletData?.icon !== 'string'
+                        ? starknetWalletData?.icon?.dark
+                        : starknetWalletData?.icon,
+                    instance: starknetSigner,
+                    address: starknetSigner.getAddress(),
+                },
+            installedWallets: availableWallets.map((w) => ({
+                name: w.name,
+                icon: typeof w.icon === 'string' ? w.icon : w.icon.dark,
+                isConnected: w.name === starknetWalletData?.name,
+            })),
+            nonInstalledWallets: nonInstalledWallet,
+            chainId: 'STARKNET',
+            _connectWallet: _connect,
+            _disconnect,
+            swapperOptions: {
+                rpcUrl: FEConstants.starknetRpc,
+                chainId: FEConstants.starknetChainId,
+                fees: new StarknetFees(FEConstants.starknetRpc),
+            },
+            hasWallets: availableWallets.length > 0 || nonInstalledWallet.length > 0,
+        }, [
+        starknetWalletData,
+        starknetSigner,
+        _connect,
         _disconnect,
-        swapperOptions: {
-            rpcUrl: FEConstants.starknetRpc,
-            chainId: FEConstants.starknetChainId,
-            fees: new StarknetFees(FEConstants.starknetRpc)
-        },
-        hasWallets: availableWallets.length > 0 || nonInstalledWallet.length > 0
-    }, [starknetWalletData, starknetSigner, _connect, _disconnect, availableWallets, nonInstalledWallet]);
+        availableWallets,
+        nonInstalledWallet,
+    ]);
 }

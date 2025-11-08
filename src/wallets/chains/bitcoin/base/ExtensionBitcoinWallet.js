@@ -1,9 +1,7 @@
-import { FEConstants } from "../../../../FEConstants";
-import { BitcoinNetwork, BitcoinWallet, } from "@atomiqlabs/sdk";
-import { NETWORK, TEST_NETWORK } from "@scure/btc-signer";
-const bitcoinNetwork = FEConstants.bitcoinNetwork === BitcoinNetwork.MAINNET
-    ? NETWORK
-    : TEST_NETWORK;
+import { FEConstants } from '../../../../FEConstants';
+import { BitcoinNetwork, BitcoinWallet } from '@atomiqlabs/sdk';
+import { NETWORK, TEST_NETWORK } from '@scure/btc-signer';
+const bitcoinNetwork = FEConstants.bitcoinNetwork === BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK;
 const feeMultiplier = 1.25;
 export class ExtensionBitcoinWallet extends BitcoinWallet {
     constructor(wasAutomaticallyInitiated) {
@@ -13,11 +11,11 @@ export class ExtensionBitcoinWallet extends BitcoinWallet {
         this.wasAutomaticallyInitiated = wasAutomaticallyInitiated;
     }
     static loadState() {
-        const txt = localStorage.getItem("btc-wallet");
+        const txt = localStorage.getItem('btc-wallet');
         if (txt == null)
             return null;
         try {
-            return JSON.parse(localStorage.getItem("btc-wallet"));
+            return JSON.parse(localStorage.getItem('btc-wallet'));
         }
         catch (e) {
             console.error(e);
@@ -25,13 +23,13 @@ export class ExtensionBitcoinWallet extends BitcoinWallet {
         }
     }
     static saveState(name, data) {
-        localStorage.setItem("btc-wallet", JSON.stringify({
+        localStorage.setItem('btc-wallet', JSON.stringify({
             name,
             data,
         }));
     }
     static clearState() {
-        localStorage.removeItem("btc-wallet");
+        localStorage.removeItem('btc-wallet');
     }
     async getTransactionFee(address, amount, feeRate) {
         const { psbt, fee } = await super._getPsbt(this.toBitcoinWalletAccounts(), address, Number(amount), feeRate);
@@ -51,7 +49,7 @@ export class ExtensionBitcoinWallet extends BitcoinWallet {
     async fundPsbt(inputPsbt, feeRate) {
         const { psbt } = await super._fundPsbt(this.toBitcoinWalletAccounts(), inputPsbt, feeRate);
         if (psbt == null) {
-            throw new Error("Not enough balance!");
+            throw new Error('Not enough balance!');
         }
         return psbt;
     }

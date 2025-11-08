@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 type AwaitLatestProcessedState<Result> = {
   sequence: number;
@@ -11,14 +11,19 @@ export function useWithAwait<Result>(
   dependencies: any[],
   parallel: boolean = true,
   callback?: (result: Result, error: any) => void,
-  pause?: boolean,
+  pause?: boolean
 ): [Result, boolean, any, () => void] {
-  const [latestProcessed, setLatestProcessed] = useState<
-    AwaitLatestProcessedState<Result>
-  >({ sequence: 0, value: null, error: null });
-  const latestProcessedRef = useRef<
-    AwaitLatestProcessedState<Result> & { lastDeps: any[] }
-  >({ sequence: 0, value: null, error: null, lastDeps: dependencies });
+  const [latestProcessed, setLatestProcessed] = useState<AwaitLatestProcessedState<Result>>({
+    sequence: 0,
+    value: null,
+    error: null,
+  });
+  const latestProcessedRef = useRef<AwaitLatestProcessedState<Result> & { lastDeps: any[] }>({
+    sequence: 0,
+    value: null,
+    error: null,
+    lastDeps: dependencies,
+  });
   const sequence = useRef<number>(0);
   const currentPromise = useRef<Promise<void>>(null);
 
@@ -28,7 +33,7 @@ export function useWithAwait<Result>(
       if (pause) return;
       depsRef.current = dependencies;
     },
-    dependencies.concat([pause]),
+    dependencies.concat([pause])
   );
 
   const runAction = useCallback<() => [Result, number, any]>(
@@ -103,14 +108,14 @@ export function useWithAwait<Result>(
                 value,
                 error,
                 lastDeps: dependencies,
-              }),
+              })
             );
         };
         currentPromise.current.then(_exec, _exec);
         return [null as Result, currSequence, null];
       }
     }) as () => [Result, number, any],
-    depsRef.current,
+    depsRef.current
   );
 
   const [refreshCount, setRefreshCount] = useState<number>(0);

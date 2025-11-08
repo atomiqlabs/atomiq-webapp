@@ -13,13 +13,19 @@ export const WalletListItem: FC<WalletListItemProps> = ({
   icon,
   isInstalled,
   onClick,
-  tabIndex = 0
+  tabIndex = 0,
 }) => {
   return (
     <li>
       <button className="wallet-modal__item" onClick={onClick} tabIndex={tabIndex}>
         {typeof icon === 'string' ? (
-          <img width={20} height={20} src={icon} className="wallet-modal__item__icon" alt={`${name} icon`} />
+          <img
+            width={20}
+            height={20}
+            src={icon}
+            className="wallet-modal__item__icon"
+            alt={`${name} icon`}
+          />
         ) : (
           <div className="wallet-modal__item__icon">{icon}</div>
         )}

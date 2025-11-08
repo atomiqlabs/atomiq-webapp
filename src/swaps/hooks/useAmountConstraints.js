@@ -1,6 +1,6 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import { toHumanReadable } from "../../tokens/Tokens";
-import { SwapsContext } from "../context/SwapsContext";
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { toHumanReadable } from '../../tokens/Tokens';
+import { SwapsContext } from '../context/SwapsContext';
 const defaultConstraints = {
     min: 1n,
     max: null,
@@ -22,12 +22,12 @@ export function useAmountConstraints(inCurrency, outCurrency) {
         if (swapper == null)
             return;
         let listener;
-        swapper.on("swapLimitsChanged", (listener = () => {
-            console.log("useAmountConstraints(): Swap limits changed!");
+        swapper.on('swapLimitsChanged', (listener = () => {
+            console.log('useAmountConstraints(): Swap limits changed!');
             setUpdateCounts((prevState) => prevState + 1);
         }));
         return () => {
-            swapper.removeListener("swapLimitsChanged", listener);
+            swapper.removeListener('swapLimitsChanged', listener);
         };
     }, [swapper]);
     return useMemo(() => {

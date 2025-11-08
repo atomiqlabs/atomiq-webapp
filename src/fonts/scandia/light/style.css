@@ -1,11 +1,11 @@
 @font-face {
-  font-family: "Scandia";
+  font-family: 'Scandia';
   src:
-    local("Scandia Light"),
-    local("Scandia-Light"),
-    url("Scandia-Light.woff2") format("woff2"),
-    url("Scandia-Light.woff") format("woff"),
-    url("Scandia-Light.ttf") format("truetype");
+    local('Scandia Light'),
+    local('Scandia-Light'),
+    url('Scandia-Light.woff2') format('woff2'),
+    url('Scandia-Light.woff') format('woff'),
+    url('Scandia-Light.ttf') format('truetype');
   font-weight: 300;
   font-style: normal;
 }

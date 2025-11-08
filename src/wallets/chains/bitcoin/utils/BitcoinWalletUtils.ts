@@ -1,9 +1,9 @@
-import { ExtensionBitcoinWallet } from "../base/ExtensionBitcoinWallet";
-import { PhantomBitcoinWallet } from "../PhantomBitcoinWallet";
-import { XverseBitcoinWallet } from "../XverseBitcoinWallet";
-import { UnisatBitcoinWallet } from "../UnisatBitcoinWallet";
-import { MagicEdenBitcoinWallet } from "../MagicEdenBitcoinWallet";
-import { KeplrBitcoinWallet } from "../KeplrBitcoinWallet";
+import { ExtensionBitcoinWallet } from '../base/ExtensionBitcoinWallet';
+import { PhantomBitcoinWallet } from '../PhantomBitcoinWallet';
+import { XverseBitcoinWallet } from '../XverseBitcoinWallet';
+import { UnisatBitcoinWallet } from '../UnisatBitcoinWallet';
+import { MagicEdenBitcoinWallet } from '../MagicEdenBitcoinWallet';
+import { KeplrBitcoinWallet } from '../KeplrBitcoinWallet';
 
 export type BitcoinWalletType = {
   iconUrl: string;
@@ -68,11 +68,10 @@ export async function getInstalledBitcoinWallets(): Promise<{
           if (detected) {
             _installedBitcoinWallets.push(wallet);
           } else {
-            if (wallet.installUrl != null)
-              _installableBitcoinWallets.push(wallet);
+            if (wallet.installUrl != null) _installableBitcoinWallets.push(wallet);
           }
-        }),
-      ),
+        })
+      )
     );
     installedBitcoinWallets = _installedBitcoinWallets;
     installableBitcoinWallets = _installableBitcoinWallets;
@@ -82,9 +81,7 @@ export async function getInstalledBitcoinWallets(): Promise<{
 
   const activeWallet = ExtensionBitcoinWallet.loadState();
   if (activeWallet != null) {
-    const walletType = bitcoinWalletList.find(
-      (e) => e.name === activeWallet.name,
-    );
+    const walletType = bitcoinWalletList.find((e) => e.name === activeWallet.name);
     if (walletType != null) {
       active = () => walletType.use(activeWallet.data);
     }

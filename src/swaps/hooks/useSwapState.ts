@@ -9,8 +9,8 @@ import {
   SpvFromBTCSwapState,
   SwapType,
   ToBTCSwapState,
-} from "@atomiqlabs/sdk";
-import { useEffect, useRef, useState } from "react";
+} from '@atomiqlabs/sdk';
+import { useEffect, useRef, useState } from 'react';
 
 function getStateToString(swapType: SwapType, state: number) {
   switch (swapType) {
@@ -58,21 +58,15 @@ export function useSwapState<S extends number>(quote: ISwap<any, S>) {
       expiryTime.current = quote.getQuoteExpiry();
       if (quote.getType() === SwapType.FROM_BTCLN) {
         if (state === FromBTCLNSwapState.PR_CREATED) {
-          expiryTime.current = (
-            quote as ISwap as FromBTCLNSwap<any>
-          ).getTimeoutTime();
+          expiryTime.current = (quote as ISwap as FromBTCLNSwap<any>).getTimeoutTime();
         }
         if (state === FromBTCLNSwapState.CLAIM_COMMITED) {
-          expiryTime.current = (
-            quote as ISwap as FromBTCLNSwap<any>
-          ).getHtlcTimeoutTime();
+          expiryTime.current = (quote as ISwap as FromBTCLNSwap<any>).getHtlcTimeoutTime();
         }
       }
       if (quote.getType() === SwapType.FROM_BTC) {
         if (state >= FromBTCSwapState.CLAIM_COMMITED) {
-          expiryTime.current = (
-            quote as ISwap as FromBTCSwap<any>
-          ).getTimeoutTime();
+          expiryTime.current = (quote as ISwap as FromBTCSwap<any>).getTimeoutTime();
         }
       }
 
@@ -87,30 +81,30 @@ export function useSwapState<S extends number>(quote: ISwap<any, S>) {
 
     let listener;
     quote.events.on(
-      "swapState",
+      'swapState',
       (listener = (quote: ISwap<any, S>) => {
         const state = quote.getState();
         checkExpiry(state);
         setState(state);
         setInitiated(quote.isInitiated());
         console.log(
-          "useSwapState(" +
+          'useSwapState(' +
             quote.getId() +
-            "): State changed to: " +
+            '): State changed to: ' +
             getStateToString(quote.getType(), state),
-          quote,
+          quote
         );
         if (quote.isFinished()) {
           setInitialQuoteTimeout(null);
           setQuoteTimeRemaining(null);
           clearInterval(interval);
         }
-      }),
+      })
     );
 
     return () => {
       clearInterval(interval);
-      quote.events.removeListener("swapState", listener);
+      quote.events.removeListener('swapState', listener);
     };
   }, [quote]);
 

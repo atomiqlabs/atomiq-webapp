@@ -1,4 +1,4 @@
-import { UnisatLikeBitcoinWallet } from "./base/UnisatLikeBitcoinWallet";
+import { UnisatLikeBitcoinWallet } from './base/UnisatLikeBitcoinWallet';
 const getProvider = () => window?.unisat;
 export class UnisatBitcoinWallet extends UnisatLikeBitcoinWallet {
     static async isInstalled() {
@@ -14,6 +14,6 @@ export class UnisatBitcoinWallet extends UnisatLikeBitcoinWallet {
         return UnisatBitcoinWallet.walletName;
     }
 }
-UnisatBitcoinWallet.installUrl = "https://unisat.io/download";
-UnisatBitcoinWallet.iconUrl = "wallets/btc/unisat.png";
-UnisatBitcoinWallet.walletName = "UniSat";
+UnisatBitcoinWallet.installUrl = 'https://unisat.io/download';
+UnisatBitcoinWallet.iconUrl = 'wallets/btc/unisat.png';
+UnisatBitcoinWallet.walletName = 'UniSat';

@@ -1,5 +1,5 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import { SwapsContext } from "../context/SwapsContext";
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { SwapsContext } from '../context/SwapsContext';
 export function useSupportedTokens() {
     const { swapper } = useContext(SwapsContext);
     const [updateCount, setUpdateCount] = useState(0);
@@ -9,17 +9,14 @@ export function useSupportedTokens() {
         const listener = () => {
             setUpdateCount((val) => val + 1);
         };
-        swapper.on("lpsRemoved", listener);
-        swapper.on("lpsAdded", listener);
+        swapper.on('lpsRemoved', listener);
+        swapper.on('lpsAdded', listener);
         return () => {
-            swapper.removeListener("lpsRemoved", listener);
-            swapper.removeListener("lpsAdded", listener);
+            swapper.removeListener('lpsRemoved', listener);
+            swapper.removeListener('lpsAdded', listener);
         };
     }, [swapper]);
     return useMemo(() => {
-        return [
-            swapper?.getSupportedTokens(true),
-            swapper?.getSupportedTokens(false),
-        ];
+        return [swapper?.getSupportedTokens(true), swapper?.getSupportedTokens(false)];
     }, [swapper, updateCount]);
 }

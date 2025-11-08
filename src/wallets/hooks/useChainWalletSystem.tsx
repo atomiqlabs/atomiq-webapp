@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { ChainWalletData } from '../ChainDataProvider';
-import {useSolanaWalletData} from "../chains/useSolanaWalletData";
-import {useStarknetWalletData} from "../chains/useStarknetWalletData";
-import {useLightningWalletData} from "../chains/useLightningWalletData";
-import {useBitcoinWalletData} from "../chains/useBitcoinWalletData";
+import { useSolanaWalletData } from '../chains/useSolanaWalletData';
+import { useStarknetWalletData } from '../chains/useStarknetWalletData';
+import { useLightningWalletData } from '../chains/useLightningWalletData';
+import { useBitcoinWalletData } from '../chains/useBitcoinWalletData';
 
 // Configuration that can be easily modified to enable/disable wallets
 export interface WalletSystemConfig {
@@ -30,7 +30,7 @@ export function useChainWalletSystem(
   const lightningResult = useLightningWalletData(config.enableLightning);
   const bitcoinResult = useBitcoinWalletData(config.enableBitcoin, {
     STARKNET: starknetResult?.wallet?.name,
-    SOLANA: solanaResult?.wallet?.name
+    SOLANA: solanaResult?.wallet?.name,
   });
 
   return useMemo(() => {

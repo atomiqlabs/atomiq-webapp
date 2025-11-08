@@ -19,7 +19,7 @@ import { ErrorAlert } from './components/ErrorAlert';
 import { ChainDataContext } from './wallets/context/ChainDataContext';
 import { ChainDataProvider } from './wallets/ChainDataProvider';
 import { SocialFooter } from './components/layout/SocialFooter';
-import { SwapNew2 } from "./pages/SwapNew2";
+import { SwapNew2 } from './pages/SwapNew2';
 require('@solana/wallet-adapter-react-ui/styles.css');
 const noWalletPaths = new Set(['/about', '/faq', '/46jh456f45f']);
 function WrappedApp() {

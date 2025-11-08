@@ -6,33 +6,30 @@ import {
   getCapabilities,
   getAddress,
   signTransaction,
-} from "sats-connect";
-import { ExtensionBitcoinWallet } from "./ExtensionBitcoinWallet";
-import { FEConstants } from "../../../../FEConstants";
-import { BitcoinNetwork, CoinselectAddressTypes } from "@atomiqlabs/sdk";
-import { BTC_NETWORK } from "@scure/btc-signer/utils";
-import { Transaction, Address as AddressParser } from "@scure/btc-signer";
+} from 'sats-connect';
+import { ExtensionBitcoinWallet } from './ExtensionBitcoinWallet';
+import { FEConstants } from '../../../../FEConstants';
+import { BitcoinNetwork, CoinselectAddressTypes } from '@atomiqlabs/sdk';
+import { BTC_NETWORK } from '@scure/btc-signer/utils';
+import { Transaction, Address as AddressParser } from '@scure/btc-signer';
 
 const network =
   FEConstants.bitcoinNetwork === BitcoinNetwork.MAINNET
     ? BitcoinNetworkType.Mainnet
     : FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET4
-      ? "Testnet4"
+      ? 'Testnet4'
       : BitcoinNetworkType.Testnet;
 
-function identifyAddressType(
-  address: string,
-  network: BTC_NETWORK,
-): CoinselectAddressTypes {
+function identifyAddressType(address: string, network: BTC_NETWORK): CoinselectAddressTypes {
   switch (AddressParser(network).decode(address).type) {
-    case "pkh":
-      return "p2pkh";
-    case "wpkh":
-      return "p2wpkh";
-    case "tr":
-      return "p2tr";
-    case "sh":
-      return "p2sh-p2wpkh";
+    case 'pkh':
+      return 'p2pkh';
+    case 'wpkh':
+      return 'p2wpkh';
+    case 'tr':
+      return 'p2tr';
+    case 'sh':
+      return 'p2sh-p2wpkh';
     default:
       return null;
   }
@@ -49,7 +46,7 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
     account: Address,
     walletName: string,
     iconUrl: string,
-    wasAutomaticallyConnected?: boolean,
+    wasAutomaticallyConnected?: boolean
   ) {
     super(wasAutomaticallyConnected);
     this.account = account;
@@ -65,7 +62,7 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
         await getCapabilities({
           onFinish() {},
           onCancel() {
-            console.error("User cancelled!");
+            console.error('User cancelled!');
           },
           payload: {
             network: {
@@ -91,21 +88,16 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
       account: Address,
       walletName: string,
       iconUrl: string,
-      wasAutomaticallyConnected?: boolean,
+      wasAutomaticallyConnected?: boolean
     ) => SatsConnectBitcoinWallet,
-    _data?: any,
+    _data?: any
   ): Promise<SatsConnectBitcoinWallet> {
     if (_data?.account != null) {
       const data: {
         account: Address;
       } = _data;
 
-      return new constructor(
-        data.account,
-        walletName,
-        iconUrl,
-        _data?.multichainConnected,
-      );
+      return new constructor(data.account, walletName, iconUrl, _data?.multichainConnected);
     }
 
     let result: GetAddressResponse = null;
@@ -113,7 +105,7 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
     await getAddress({
       payload: {
         purposes: [AddressPurpose.Payment],
-        message: "Connect your Bitcoin wallet to atomiq.exchange",
+        message: 'Connect your Bitcoin wallet to atomiq.exchange',
         network: {
           type: network as any,
         },
@@ -126,19 +118,13 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
       },
     });
 
-    if (cancelled) throw new Error("User declined the connection request");
+    if (cancelled) throw new Error('User declined the connection request');
 
-    if (result == null) throw new Error("Xverse bitcoin wallet not found");
+    if (result == null) throw new Error('Xverse bitcoin wallet not found');
     const accounts: Address[] = result.addresses;
-    console.log(
-      walletName + "BitcoinWallet: Loaded wallet accounts: ",
-      accounts,
-    );
-    const paymentAccounts = accounts.filter(
-      (e) => e.purpose === AddressPurpose.Payment,
-    );
-    if (paymentAccounts.length === 0)
-      throw new Error("No valid payment account found");
+    console.log(walletName + 'BitcoinWallet: Loaded wallet accounts: ', accounts);
+    const paymentAccounts = accounts.filter((e) => e.purpose === AddressPurpose.Payment);
+    if (paymentAccounts.length === 0) throw new Error('No valid payment account found');
 
     ExtensionBitcoinWallet.saveState(walletName, {
       account: paymentAccounts[0],
@@ -173,20 +159,16 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
     ];
   }
 
-  async sendTransaction(
-    address: string,
-    amount: bigint,
-    feeRate?: number,
-  ): Promise<string> {
+  async sendTransaction(address: string, amount: bigint, feeRate?: number): Promise<string> {
     const { psbt } = await super._getPsbt(
       this.toBitcoinWalletAccounts(),
       address,
       Number(amount),
-      feeRate,
+      feeRate
     );
 
     if (psbt == null) {
-      throw new Error("Not enough balance!");
+      throw new Error('Not enough balance!');
     }
 
     let txId: string = null;
@@ -197,24 +179,18 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
         network: {
           type: network as any,
         },
-        message: "Send a swap transaction",
-        psbtBase64: Buffer.from(psbt.toPSBT(0)).toString("base64"),
+        message: 'Send a swap transaction',
+        psbtBase64: Buffer.from(psbt.toPSBT(0)).toString('base64'),
         broadcast: true,
         inputsToSign: [
           {
             address: this.account.address,
-            signingIndexes: Array.from(
-              { length: psbt.inputsLength },
-              (_, i) => i,
-            ),
+            signingIndexes: Array.from({ length: psbt.inputsLength }, (_, i) => i),
           },
         ],
       },
       onFinish: (resp: { txId?: string; psbtBase64?: string }) => {
-        console.log(
-          this.getName() + "BitcoinWallet: transaction signed: ",
-          resp,
-        );
+        console.log(this.getName() + 'BitcoinWallet: transaction signed: ', resp);
         txId = resp.txId;
         psbtBase64 = resp.psbtBase64;
       },
@@ -223,14 +199,13 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
       },
     });
 
-    if (cancelled) throw new Error("User declined the transaction request");
+    if (cancelled) throw new Error('User declined the transaction request');
 
     if (txId == null) {
-      if (psbtBase64 == null)
-        throw new Error("Transaction not properly signed by the wallet!");
-      const psbt = Transaction.fromPSBT(Buffer.from(psbtBase64, "base64"));
+      if (psbtBase64 == null) throw new Error('Transaction not properly signed by the wallet!');
+      const psbt = Transaction.fromPSBT(Buffer.from(psbtBase64, 'base64'));
       psbt.finalize();
-      const txHex = Buffer.from(psbt.extract()).toString("hex");
+      const txHex = Buffer.from(psbt.extract()).toString('hex');
       txId = await super._sendTransaction(txHex);
     }
 
@@ -249,10 +224,7 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
 
   onWalletChanged(cbk: (newWallet: ExtensionBitcoinWallet) => void): void {}
 
-  async signPsbt(
-    psbt: Transaction,
-    signInputs: number[],
-  ): Promise<Transaction> {
+  async signPsbt(psbt: Transaction, signInputs: number[]): Promise<Transaction> {
     let psbtBase64: string = null;
     let cancelled: boolean = false;
     await signTransaction({
@@ -260,8 +232,8 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
         network: {
           type: network as any,
         },
-        message: "Send a swap transaction",
-        psbtBase64: Buffer.from(psbt.toPSBT(0)).toString("base64"),
+        message: 'Send a swap transaction',
+        psbtBase64: Buffer.from(psbt.toPSBT(0)).toString('base64'),
         inputsToSign: [
           {
             address: this.account.address,
@@ -270,10 +242,7 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
         ],
       },
       onFinish: (resp: { txId?: string; psbtBase64?: string }) => {
-        console.log(
-          this.getName() + "BitcoinWallet: transaction signed: ",
-          resp,
-        );
+        console.log(this.getName() + 'BitcoinWallet: transaction signed: ', resp);
         psbtBase64 = resp.psbtBase64;
       },
       onCancel: () => {
@@ -281,11 +250,10 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
       },
     });
 
-    if (cancelled) throw new Error("User declined the transaction request");
+    if (cancelled) throw new Error('User declined the transaction request');
 
-    if (psbtBase64 == null)
-      throw new Error("Transaction not properly signed by the wallet!");
+    if (psbtBase64 == null) throw new Error('Transaction not properly signed by the wallet!');
 
-    return Transaction.fromPSBT(Buffer.from(psbtBase64, "base64"));
+    return Transaction.fromPSBT(Buffer.from(psbtBase64, 'base64'));
   }
 }

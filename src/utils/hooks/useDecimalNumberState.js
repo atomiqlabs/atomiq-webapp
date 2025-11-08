@@ -1,9 +1,9 @@
-import { useCallback, useState } from "react";
-import BigNumber from "bignumber.js";
+import { useCallback, useState } from 'react';
+import BigNumber from 'bignumber.js';
 export function useDecimalNumberState(defaultValue) {
     const [value, _setValue] = useState(defaultValue);
     const setValue = useCallback((value) => {
-        if (value != null && value.includes("e"))
+        if (value != null && value.includes('e'))
             try {
                 const parsed = new BigNumber(value);
                 if (!parsed.isNaN()) {

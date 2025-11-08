@@ -1,14 +1,14 @@
-import { Placement } from "react-bootstrap/types";
-import { TemporaryOverlay } from "./TemporaryOverlay";
-import { useCallback } from "react";
+import { Placement } from 'react-bootstrap/types';
+import { TemporaryOverlay } from './TemporaryOverlay';
+import { useCallback } from 'react';
 
 export function CopyOverlay(props: {
   children?: (
     show: (
       target: HTMLElement,
       copyText: string,
-      copyInput?: HTMLInputElement | HTMLTextAreaElement,
-    ) => void,
+      copyInput?: HTMLInputElement | HTMLTextAreaElement
+    ) => void
   ) => JSX.Element | JSX.Element[];
   placement: Placement;
   timeout?: number;
@@ -19,7 +19,7 @@ export function CopyOverlay(props: {
         (
           target: HTMLElement,
           copyText: string,
-          copyInput?: HTMLInputElement | HTMLTextAreaElement,
+          copyInput?: HTMLInputElement | HTMLTextAreaElement
         ) => {
           try {
             // @ts-ignore
@@ -33,7 +33,7 @@ export function CopyOverlay(props: {
               // @ts-ignore
               copyInput.select();
               // @ts-ignore
-              document.execCommand("copy");
+              document.execCommand('copy');
               // @ts-ignore
               copyInput.blur();
             } catch (e) {
@@ -41,9 +41,9 @@ export function CopyOverlay(props: {
             }
 
           show(target);
-        },
+        }
       ),
-    [props.children],
+    [props.children]
   );
 
   return (

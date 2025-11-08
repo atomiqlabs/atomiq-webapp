@@ -1,20 +1,17 @@
-import { RefObject, useCallback, useMemo, useRef, useState } from "react";
+import { RefObject, useCallback, useMemo, useRef, useState } from 'react';
 
 export function useLocalStorage<T>(
   name: string,
-  _defaultValue: T,
+  _defaultValue: T
 ): [T, (val: T) => void, RefObject<T>] {
-  const initialStoredValue = useMemo(
-    () => window.localStorage.getItem(name),
-    [],
-  );
+  const initialStoredValue = useMemo(() => window.localStorage.getItem(name), []);
 
   const defaultValue =
     initialStoredValue === null
       ? _defaultValue
-      : initialStoredValue === "undefined"
+      : initialStoredValue === 'undefined'
         ? undefined
-        : initialStoredValue === "null"
+        : initialStoredValue === 'null'
           ? null
           : JSON.parse(initialStoredValue);
   const [value, setValue] = useState<T>(defaultValue);

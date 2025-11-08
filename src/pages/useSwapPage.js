@@ -1,21 +1,21 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { SwapsContext } from "../swaps/context/SwapsContext";
-import { useSupportedTokens } from "../swaps/hooks/useSupportedTokens";
-import { useStateWithOverride } from "../utils/hooks/useStateWithOverride";
-import { FEConstants, Tokens } from "../FEConstants";
-import { fromTokenIdentifier, getChainIdentifierForCurrency, includesToken, smartChainTokenArray, toTokenIdentifier } from "../tokens/Tokens";
-import { fromHumanReadableString, isBtcToken, isSCToken, SwapType, toTokenAmount } from "@atomiqlabs/sdk";
-import { useChain } from "../wallets/hooks/useChain";
-import { ChainDataContext } from "../wallets/context/ChainDataContext";
-import { useAddressData } from "../swaps/hooks/useAddressData";
-import { useDecimalNumberState } from "../utils/hooks/useDecimalNumberState";
-import { useAmountConstraints } from "../swaps/hooks/useAmountConstraints";
-import { useLocation } from "react-router-dom";
-import { useWalletBalance } from "../wallets/hooks/useWalletBalance";
-import BigNumber from "bignumber.js";
-import { numberValidator } from "../components/ValidatedInput";
-import { useQuote } from "../swaps/hooks/useQuote";
-import { usePricing } from "../tokens/hooks/usePricing";
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { SwapsContext } from '../swaps/context/SwapsContext';
+import { useSupportedTokens } from '../swaps/hooks/useSupportedTokens';
+import { useStateWithOverride } from '../utils/hooks/useStateWithOverride';
+import { FEConstants, Tokens } from '../FEConstants';
+import { fromTokenIdentifier, getChainIdentifierForCurrency, includesToken, smartChainTokenArray, toTokenIdentifier, } from '../tokens/Tokens';
+import { fromHumanReadableString, isBtcToken, isSCToken, SwapType, toTokenAmount, } from '@atomiqlabs/sdk';
+import { useChain } from '../wallets/hooks/useChain';
+import { ChainDataContext } from '../wallets/context/ChainDataContext';
+import { useAddressData } from '../swaps/hooks/useAddressData';
+import { useDecimalNumberState } from '../utils/hooks/useDecimalNumberState';
+import { useAmountConstraints } from '../swaps/hooks/useAmountConstraints';
+import { useLocation } from 'react-router-dom';
+import { useWalletBalance } from '../wallets/hooks/useWalletBalance';
+import BigNumber from 'bignumber.js';
+import { numberValidator } from '../components/ValidatedInput';
+import { useQuote } from '../swaps/hooks/useQuote';
+import { usePricing } from '../tokens/hooks/usePricing';
 export function useSwapPage() {
     const { chains, disconnectWallet, connectWallet } = useContext(ChainDataContext);
     const { swapper } = useContext(SwapsContext);
@@ -35,14 +35,12 @@ export function useSwapPage() {
     const inputTokenStep = useMemo(() => {
         if (inputToken == null)
             return new BigNumber('0.00000001');
-        return new BigNumber(10)
-            .pow(new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals)));
+        return new BigNumber(10).pow(new BigNumber(-(inputToken.displayDecimals ?? inputToken.decimals)));
     }, [inputToken]);
     const outputTokenStep = useMemo(() => {
         if (outputToken == null)
             return new BigNumber('0.00000001');
-        return new BigNumber(10)
-            .pow(new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals)));
+        return new BigNumber(10).pow(new BigNumber(-(outputToken.displayDecimals ?? outputToken.decimals)));
     }, [outputToken]);
     //Address
     const [addressFromWebLn, setAddressFromWebLn] = useState(null);
@@ -92,7 +90,7 @@ export function useSwapPage() {
     });
     const isFixedAmount = addressData?.amount != null;
     //Amounts
-    const [_amount, setAmount] = useDecimalNumberState("");
+    const [_amount, setAmount] = useDecimalNumberState('');
     const amount = isFixedAmount ? addressData.amount.amount : _amount;
     const [exactIn, setExactIn] = useStateWithOverride(true, isFixedAmount ? false : null);
     const { input: swapInputLimits, output: swapOutputLimits } = useAmountConstraints(inputToken, outputToken);
@@ -118,15 +116,13 @@ export function useSwapPage() {
             }
         }
         _setOutputToken(newOutputToken);
-        if (getChainIdentifierForCurrency(newOutputToken) !==
-            getChainIdentifierForCurrency(outputToken))
+        if (getChainIdentifierForCurrency(newOutputToken) !== getChainIdentifierForCurrency(outputToken))
             setAddress('');
     }, [swapper, outputToken, inputToken, exactIn]);
     const setOutputToken = useCallback((val) => {
         if (val === outputToken)
             return;
-        if (getChainIdentifierForCurrency(val) !==
-            getChainIdentifierForCurrency(outputToken))
+        if (getChainIdentifierForCurrency(val) !== getChainIdentifierForCurrency(outputToken))
             setAddress('');
         const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
         _setOutputToken(val);
@@ -204,7 +200,9 @@ export function useSwapPage() {
         const maxSpendableBigNum = new BigNumber(maxSpendable.balance.amount);
         return {
             min: swapInputLimits.min,
-            max: swapInputLimits.max == null ? maxSpendableBigNum : BigNumber.min(swapInputLimits.max, maxSpendableBigNum),
+            max: swapInputLimits.max == null
+                ? maxSpendableBigNum
+                : BigNumber.min(swapInputLimits.max, maxSpendableBigNum),
         };
     }, [swapInputLimits, maxSpendable]);
     const inputAmountValidator = useCallback(numberValidator(inputLimits, true), [inputLimits]);
@@ -223,14 +221,10 @@ export function useSwapPage() {
     const outputAmountValidator = useCallback(numberValidator(outputLimits, true), [outputLimits]);
     const [validatedAmount, amountError] = useMemo(() => {
         const error = (exactIn ? inputAmountValidator : outputAmountValidator)(amount);
-        return [
-            amount === '' || error != null ? null : new BigNumber(amount).toString(10),
-            error
-        ];
+        return [amount === '' || error != null ? null : new BigNumber(amount).toString(10), error];
     }, [inputAmountValidator, outputAmountValidator, amount, exactIn]);
     //WebLN
-    const webLnForOutput = outputChainData?.chain?.name === 'Lightning' &&
-        outputChainData?.wallet != null;
+    const webLnForOutput = outputChainData?.chain?.name === 'Lightning' && outputChainData?.wallet != null;
     useEffect(() => {
         if (!webLnForOutput)
             return;
@@ -275,7 +269,7 @@ export function useSwapPage() {
         address,
         outputChainData?.wallet?.address,
         addressFromWebLn,
-        webLnForOutput
+        webLnForOutput,
     ]);
     const notEnoughBalance = quote != null &&
         maxSpendable?.balance != null &&
@@ -322,44 +316,46 @@ export function useSwapPage() {
     const addressValidationStatus = useMemo(() => {
         if (swapTypeData?.requiresOutputWallet)
             return;
-        if (addressError && address !== "")
+        if (addressError && address !== '')
             return {
-                status: "error",
-                text: addressError.message
+                status: 'error',
+                text: addressError.message,
             };
         if (isOutputWalletAddress || isFixedAmount)
             return {
-                status: "success",
+                status: 'success',
                 text: isOutputWalletAddress
-                    ? "Wallet address fetched from " + outputChainData.wallet?.name
-                    : "Swap amount imported from lightning network invoice"
+                    ? 'Wallet address fetched from ' + outputChainData.wallet?.name
+                    : 'Swap amount imported from lightning network invoice',
             };
         if (quote?.getType() === SwapType.TO_BTCLN) {
             const _quote = quote;
             if (_quote.isPayingToNonCustodialWallet())
                 return {
-                    status: "warning",
-                    text: "Please make sure your receiving wallet is online"
+                    status: 'warning',
+                    text: 'Please make sure your receiving wallet is online',
                 };
             if (_quote.willLikelyFail())
                 return {
-                    status: "warning",
-                    text: "This destination is likely not payable"
+                    status: 'warning',
+                    text: 'This destination is likely not payable',
                 };
         }
     }, [swapTypeData, addressError, address, isOutputWalletAddress, isFixedAmount, outputChainData]);
     return {
         input: {
-            wallet: inputChainData?.wallet == null ? undefined : {
-                data: inputChainData.wallet,
-                spendable: maxSpendable?.balance,
-                btcFeeRate: maxSpendable?.feeRate,
-                disconnect: () => disconnectWallet(inputChainData.chainId)
-            },
+            wallet: inputChainData?.wallet == null
+                ? undefined
+                : {
+                    data: inputChainData.wallet,
+                    spendable: maxSpendable?.balance,
+                    btcFeeRate: maxSpendable?.feeRate,
+                    disconnect: () => disconnectWallet(inputChainData.chainId),
+                },
             token: {
                 value: inputToken,
                 values: inputTokens,
-                onChange: setInputToken
+                onChange: setInputToken,
             },
             amount: {
                 value: inputAmount,
@@ -373,29 +369,33 @@ export function useSwapPage() {
                 step: inputTokenStep,
                 min: inputLimits?.min,
                 max: inputLimits?.max,
-                validation: (exactIn && amountError) || notEnoughBalance ? {
-                    status: "error",
-                    text: notEnoughBalance ? "Not enough balance" : amountError
-                } : undefined
+                validation: (exactIn && amountError) || notEnoughBalance
+                    ? {
+                        status: 'error',
+                        text: notEnoughBalance ? 'Not enough balance' : amountError,
+                    }
+                    : undefined,
             },
             chainId: inputChainData?.chainId,
             useExternalWallet: useMemo(() => {
                 if (!showUseExternalWallet)
                     return undefined;
                 return () => disconnectWallet(inputChainData?.chainId);
-            }, [showUseExternalWallet, disconnectWallet, inputChainData])
+            }, [showUseExternalWallet, disconnectWallet, inputChainData]),
         },
         changeDirection,
         output: {
-            wallet: outputChainData?.wallet == null ? undefined : {
-                data: outputChainData.wallet,
-                balance: outputMaxSpendable?.balance,
-                disconnect: () => disconnectWallet(outputChainData.chainId)
-            },
+            wallet: outputChainData?.wallet == null
+                ? undefined
+                : {
+                    data: outputChainData.wallet,
+                    balance: outputMaxSpendable?.balance,
+                    disconnect: () => disconnectWallet(outputChainData.chainId),
+                },
             token: {
                 value: outputToken,
                 values: outputTokens,
-                onChange: setOutputToken
+                onChange: setOutputToken,
             },
             amount: {
                 value: outputAmount,
@@ -409,46 +409,55 @@ export function useSwapPage() {
                 step: outputTokenStep,
                 min: outputLimits?.min,
                 max: outputLimits?.max,
-                validation: !exactIn && amountError ? {
-                    status: "error",
-                    text: amountError
-                } : undefined,
-                isFromAddress: isFixedAmount
+                validation: !exactIn && amountError
+                    ? {
+                        status: 'error',
+                        text: amountError,
+                    }
+                    : undefined,
+                isFromAddress: isFixedAmount,
             },
             chainId: outputChainData?.chainId,
-            gasDrop: gasDropTokenAmount == null ? undefined : {
-                checked: gasDropChecked,
-                onChange: setGasDropChecked,
-                amount: gasDropTokenAmount
-            },
-            address: swapTypeData?.requiresOutputWallet || (webLnForOutput && validatedAmount == null) ? undefined : {
-                value: outputAddress,
-                onChange: setAddress,
-                disabled: isOutputWalletAddress,
-                loading: addressLoading,
-                validation: addressValidationStatus,
-                isFromWallet: isOutputWalletAddress
-            },
+            gasDrop: gasDropTokenAmount == null
+                ? undefined
+                : {
+                    checked: gasDropChecked,
+                    onChange: setGasDropChecked,
+                    amount: gasDropTokenAmount,
+                },
+            address: swapTypeData?.requiresOutputWallet || (webLnForOutput && validatedAmount == null)
+                ? undefined
+                : {
+                    value: outputAddress,
+                    onChange: setAddress,
+                    disabled: isOutputWalletAddress,
+                    loading: addressLoading,
+                    validation: addressValidationStatus,
+                    isFromWallet: isOutputWalletAddress,
+                },
             webln: useMemo(() => {
                 if (!webLnForOutput)
                     return undefined;
-                if (outputAddress !== "" || validatedAmount == null)
+                if (outputAddress !== '' || validatedAmount == null)
                     return {};
                 return {
                     fetchInvoice: () => {
-                        if (outputAddress !== "")
+                        if (outputAddress !== '')
                             return undefined;
                         if (validatedAmount == null)
                             return;
                         const webln = outputChainData.wallet.instance;
-                        webln.makeInvoice(Number(fromHumanReadableString(validatedAmount, Tokens.BITCOIN.BTCLN))).then(res => {
+                        webln
+                            .makeInvoice(Number(fromHumanReadableString(validatedAmount, Tokens.BITCOIN.BTCLN)))
+                            .then((res) => {
                             setAddress(res.paymentRequest);
                             setAddressFromWebLn(res.paymentRequest);
-                        }).catch(e => console.error(e));
-                    }
+                        })
+                            .catch((e) => console.error(e));
+                    },
                 };
             }, [webLnForOutput, outputAddress, validatedAmount, outputChainData]),
-            showLightningAlert: swapType === SwapType.TO_BTCLN && addressData == null && !webLnForOutput
+            showLightningAlert: swapType === SwapType.TO_BTCLN && addressData == null && !webLnForOutput,
         },
         smartChainId: scCurrency.chainId,
         swapType,
@@ -458,7 +467,7 @@ export function useSwapPage() {
             quote,
             isRandom: randomQuote,
             error: quoteError,
-            refresh: refreshQuote
-        }
+            refresh: refreshQuote,
+        },
     };
 }

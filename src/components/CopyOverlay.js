@@ -1,6 +1,6 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { TemporaryOverlay } from "./TemporaryOverlay";
-import { useCallback } from "react";
+import { TemporaryOverlay } from './TemporaryOverlay';
+import { useCallback } from 'react';
 export function CopyOverlay(props) {
     const showFunction = useCallback((show) => props.children((target, copyText, copyInput) => {
         try {
@@ -15,7 +15,7 @@ export function CopyOverlay(props) {
                 // @ts-ignore
                 copyInput.select();
                 // @ts-ignore
-                document.execCommand("copy");
+                document.execCommand('copy');
                 // @ts-ignore
                 copyInput.blur();
             }

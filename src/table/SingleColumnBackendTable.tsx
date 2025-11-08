@@ -1,6 +1,6 @@
-import { MutableRefObject, useCallback, useEffect, useRef } from "react";
-import * as React from "react";
-import { SingleColumnTable, TableColumn } from "./SingleColumnTable";
+import { MutableRefObject, useCallback, useEffect, useRef } from 'react';
+import * as React from 'react';
+import { SingleColumnTable, TableColumn } from './SingleColumnTable';
 
 export function SingleColumnBackendTable<T>(props: {
   className?: any;
@@ -73,8 +73,7 @@ export function SingleColumnBackendTable<T>(props: {
         const params: any = {
           limit: props.itemsPerPage || 10,
         };
-        if (sortedData.current.endTime != null)
-          params.endTime = sortedData.current.endTime;
+        if (sortedData.current.endTime != null) params.endTime = sortedData.current.endTime;
         if (props.additionalData != null) {
           for (let key in props.additionalData) {
             params[key] = props.additionalData[key];
@@ -83,17 +82,17 @@ export function SingleColumnBackendTable<T>(props: {
 
         const httpResponse = await fetch(
           props.endpoint +
-            "?" +
+            '?' +
             Object.keys(params)
-              .map((e) => e + "=" + encodeURIComponent("" + params[e]))
-              .join("&"),
+              .map((e) => e + '=' + encodeURIComponent('' + params[e]))
+              .join('&'),
           {
             signal: _abortSignal.signal,
-          },
+          }
         );
 
         if (httpResponse == null || httpResponse.status !== 200) {
-          throw new Error("Backend get response code not 200");
+          throw new Error('Backend get response code not 200');
         }
 
         const obj = await httpResponse.json();
@@ -123,14 +122,8 @@ export function SingleColumnBackendTable<T>(props: {
         maxPages: 1,
       };
     },
-    [props.endpoint, props.additionalData, props.dataPostProcessor],
+    [props.endpoint, props.additionalData, props.dataPostProcessor]
   );
 
-  return (
-    <SingleColumnTable<T>
-      getPage={memoizedGetter}
-      refresh={tableRefreshRef}
-      {...props}
-    />
-  );
+  return <SingleColumnTable<T> getPage={memoizedGetter} refresh={tableRefreshRef} {...props} />;
 }

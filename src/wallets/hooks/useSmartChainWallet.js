@@ -1,5 +1,5 @@
-import { ChainDataContext } from "../context/ChainDataContext";
-import { useContext } from "react";
+import { ChainDataContext } from '../context/ChainDataContext';
+import { useContext } from 'react';
 export function useSmartChainWallet(swap, requireSameAsInitiator) {
     const chainsData = useContext(ChainDataContext);
     const wallet = chainsData.chains[swap.chainIdentifier].wallet;

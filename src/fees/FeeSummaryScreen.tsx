@@ -5,11 +5,11 @@ import {
   toHumanReadableString,
   Token,
   TokenAmount,
-} from "@atomiqlabs/sdk";
-import { Badge, OverlayTrigger, Tooltip } from "react-bootstrap";
-import * as React from "react";
-import { TokenIcon } from "../tokens/TokenIcon";
-import { useSwapFees } from "./hooks/useSwapFees";
+} from '@atomiqlabs/sdk';
+import { Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import * as React from 'react';
+import { TokenIcon } from '../tokens/TokenIcon';
+import { useSwapFees } from './hooks/useSwapFees';
 
 function FeePart(props: {
   text: string;
@@ -32,7 +32,7 @@ function FeePart(props: {
       <span className="d-flex align-items-center">
         {props.text}
         {props.composition == null ? (
-          ""
+          ''
         ) : props.composition.base == null ? (
           <Badge bg="primary" className="ms-1 pill-round px-2" pill>
             {props.composition.percentage.percentage} %
@@ -40,26 +40,23 @@ function FeePart(props: {
         ) : (
           <OverlayTrigger
             overlay={
-              <Tooltip id={"fee-tooltip-" + props.text}>
+              <Tooltip id={'fee-tooltip-' + props.text}>
                 <span>
-                  {props.composition.percentage.percentage}% +{" "}
-                  {props.composition.base.amount}{" "}
+                  {props.composition.percentage.percentage}% + {props.composition.base.amount}{' '}
                   {props.composition.base.token.ticker}
                 </span>
               </Tooltip>
             }
           >
             <Badge bg="primary" className="ms-1 pill-round px-2" pill>
-              <span className="dottedUnderline">
-                {props.composition.percentage.percentage}%
-              </span>
+              <span className="dottedUnderline">{props.composition.percentage.percentage}%</span>
             </Badge>
           </OverlayTrigger>
         )}
         {props.description != null ? (
           <OverlayTrigger
             overlay={
-              <Tooltip id={"fee-tooltip-desc-" + props.text}>
+              <Tooltip id={'fee-tooltip-desc-' + props.text}>
                 <span>{props.description}</span>
               </Tooltip>
             }
@@ -69,11 +66,11 @@ function FeePart(props: {
             </Badge>
           </OverlayTrigger>
         ) : (
-          ""
+          ''
         )}
       </span>
       <span className="ms-auto">
-        {props.isApproximate ? "~" : ""}
+        {props.isApproximate ? '~' : ''}
         {toHumanReadableString(props.amount, props.token)} {props.token.ticker}
       </span>
     </div>
@@ -105,10 +102,7 @@ export function FeeSummaryScreen(props: { swap: ISwap; className?: string }) {
       <FeePart text="Amount" amount={amount} token={token} />
 
       {fees.map((val) => {
-        if (
-          val.fee.amountInDstToken == null ||
-          val.fee.amountInSrcToken.token === token
-        ) {
+        if (val.fee.amountInDstToken == null || val.fee.amountInSrcToken.token === token) {
           return (
             <FeePart
               text={val.text}

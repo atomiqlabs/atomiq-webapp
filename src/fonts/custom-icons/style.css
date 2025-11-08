@@ -1,7 +1,8 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?nwosdg');
-  src:  url('fonts/icomoon.eot?nwosdg#iefix') format('embedded-opentype'),
+  src: url('fonts/icomoon.eot?nwosdg');
+  src:
+    url('fonts/icomoon.eot?nwosdg#iefix') format('embedded-opentype'),
     url('fonts/icomoon.ttf?nwosdg') format('truetype'),
     url('fonts/icomoon.woff?nwosdg') format('woff'),
     url('fonts/icomoon.svg?nwosdg#icomoon') format('svg');
@@ -10,7 +11,8 @@
   font-display: block;
 }
 
-[class^="icon-"], [class*=" icon-"] {
+[class^='icon-'],
+[class*=' icon-'] {
   /* use !important to prevent issues with browser extensions that change fonts */
   font-family: 'icomoon' !important;
   speak: never;
@@ -26,131 +28,131 @@
 }
 
 .icon-verified:before {
-  content: "\e92a";
+  content: '\e92a';
 }
 .icon-copy:before {
-  content: "\e928";
+  content: '\e928';
 }
 .icon-swap:before {
-  content: "\e90e";
+  content: '\e90e';
 }
 .icon-about:before {
-  content: "\e900";
+  content: '\e900';
 }
 .icon-arrow-left:before {
-  content: "\e901";
+  content: '\e901';
 }
 .icon-arrow-down:before {
-  content: "\e902";
+  content: '\e902';
 }
 .icon-arrow-right:before {
-  content: "\e903";
+  content: '\e903';
 }
 .icon-bitcoin:before {
-  content: "\e904";
+  content: '\e904';
 }
 .icon-caret-down:before {
-  content: "\e905";
+  content: '\e905';
 }
 .icon-check:before {
-  content: "\e906";
+  content: '\e906';
 }
 .icon-circle-x-clear:before {
-  content: "\e907";
+  content: '\e907';
 }
 .icon-claim:before {
-  content: "\e908";
+  content: '\e908';
 }
 .icon-caret-up:before {
-  content: "\e909";
+  content: '\e909';
 }
 .icon-change-wallet:before {
-  content: "\e90a";
+  content: '\e90a';
 }
 .icon-check-circle:before {
-  content: "\e90b";
+  content: '\e90b';
 }
 .icon-close:before {
-  content: "\e90c";
+  content: '\e90c';
 }
 .icon-connect:before {
-  content: "\e90d";
+  content: '\e90d';
 }
 .icon-disconnect:before {
-  content: "\e90f";
+  content: '\e90f';
 }
 .icon-disconnected:before {
-  content: "\e910";
+  content: '\e910';
 }
 .icon-dropdown:before {
-  content: "\e911";
+  content: '\e911';
 }
 .icon-Explorer:before {
-  content: "\e912";
+  content: '\e912';
 }
 .icon-hourglass-expired:before {
-  content: "\e913";
+  content: '\e913';
 }
 .icon-hourglass:before {
-  content: "\e914";
+  content: '\e914';
 }
 .icon-info:before {
-  content: "\e915";
+  content: '\e915';
 }
 .icon-invalid-error:before {
-  content: "\e916";
+  content: '\e916';
 }
 .icon-Lightning-invoice:before {
-  content: "\e917";
+  content: '\e917';
 }
 .icon-lightning:before {
-  content: "\e918";
+  content: '\e918';
 }
 .icon-menu:before {
-  content: "\e919";
+  content: '\e919';
 }
 .icon-new-window:before {
-  content: "\e91a";
+  content: '\e91a';
 }
 .icon-Notice:before {
-  content: "\e91b";
+  content: '\e91b';
 }
 .icon-paste:before {
-  content: "\e91c";
+  content: '\e91c';
 }
 .icon-qr-code:before {
-  content: "\e91d";
+  content: '\e91d';
 }
 .icon-qr-scan:before {
-  content: "\e91e";
+  content: '\e91e';
 }
 .icon-quesitons:before {
-  content: "\e91f";
+  content: '\e91f';
 }
 .icon-question:before {
-  content: "\e920";
+  content: '\e920';
 }
 .icon-receipt-fees:before {
-  content: "\e921";
+  content: '\e921';
 }
 .icon-refund:before {
-  content: "\e922";
+  content: '\e922';
 }
 .icon-retry:before {
-  content: "\e923";
+  content: '\e923';
 }
 .icon-search:before {
-  content: "\e924";
+  content: '\e924';
 }
 .icon-send-claim:before {
-  content: "\e925";
+  content: '\e925';
 }
 .icon-Swap-History:before {
-  content: "\e926";
+  content: '\e926';
 }
 .icon-swap-nav:before {
-  content: "\e927";
+  content: '\e927';
 }
 .icon-Wallet-Disconnect:before {
-  content: "\e929";
+  content: '\e929';
 }

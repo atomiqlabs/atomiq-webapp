@@ -1,4 +1,4 @@
-import { FEConstants } from "../../../../FEConstants";
+import { FEConstants } from '../../../../FEConstants';
 /**
  * Traverses to latest confirmed ancestor UTXOs, whose output sats are contained in the specified UTXO according to
  *  ordinal theory, with the offset and sats range.
@@ -13,21 +13,20 @@ import { FEConstants } from "../../../../FEConstants";
  */
 export async function traverseToConfirmedOrdinalInputs(utxo, satsOffset = 0, satsRange = utxo.value) {
     if (utxo.value < satsOffset + satsRange)
-        throw new Error("Invalid UTXO traversal range! Offset: " +
+        throw new Error('Invalid UTXO traversal range! Offset: ' +
             satsOffset +
-            " range: " +
+            ' range: ' +
             satsRange +
-            " utxo value: " +
+            ' utxo value: ' +
             utxo.value +
-            " utxo: " +
+            ' utxo: ' +
             utxo.txId +
-            ":" +
+            ':' +
             utxo.vout);
     const tx = await FEConstants.mempoolApi.getTransaction(utxo.txId);
     if (tx.status.confirmed)
         return [utxo];
-    const outputSatOffsetStart = tx.vout.slice(0, utxo.vout).reduce((prev, curr) => prev + curr.value, 0) +
-        satsOffset;
+    const outputSatOffsetStart = tx.vout.slice(0, utxo.vout).reduce((prev, curr) => prev + curr.value, 0) + satsOffset;
     const outputSatOffsetEnd = outputSatOffsetStart + satsRange;
     const confirmedInputs = [];
     let inputSatCounter = 0;
@@ -69,38 +68,38 @@ export async function filterInscriptionUtxos(utxos) {
         if (!utxo.confirmed) {
             try {
                 const ancestorUtxos = await traverseToConfirmedOrdinalInputs(utxo);
-                console.log("InscriptionUtils: filterInscriptionUtxos(): Fetched ancestors of unconfirmed utxo " +
+                console.log('InscriptionUtils: filterInscriptionUtxos(): Fetched ancestors of unconfirmed utxo ' +
                     utxo.txId +
-                    ":" +
+                    ':' +
                     utxo.vout +
-                    ", array: ", ancestorUtxos);
-                ancestorUtxos.forEach((val) => ancestorMap.set(val.txId + ":" + val.vout, utxo.txId + ":" + utxo.vout));
+                    ', array: ', ancestorUtxos);
+                ancestorUtxos.forEach((val) => ancestorMap.set(val.txId + ':' + val.vout, utxo.txId + ':' + utxo.vout));
             }
             catch (e) {
                 console.error(e);
-                console.log("InscriptionUtils: filterInscriptionUtxos(): Failed to traverse ancestors of unconfirmed utxo " +
+                console.log('InscriptionUtils: filterInscriptionUtxos(): Failed to traverse ancestors of unconfirmed utxo ' +
                     utxo.txId +
-                    ":" +
+                    ':' +
                     utxo.vout +
-                    ", adding to unspendable UTXOs");
-                utxosWithAssetSet.add(utxo.txId + ":" + utxo.vout);
+                    ', adding to unspendable UTXOs');
+                utxosWithAssetSet.add(utxo.txId + ':' + utxo.vout);
             }
         }
         else {
-            ancestorMap.set(utxo.txId + ":" + utxo.vout, utxo.txId + ":" + utxo.vout);
+            ancestorMap.set(utxo.txId + ':' + utxo.vout, utxo.txId + ':' + utxo.vout);
         }
     }
-    const resp = await fetch("https://api.atomiq.exchange/api/CheckBitcoinUtxos", {
-        method: "POST",
+    const resp = await fetch('https://api.atomiq.exchange/api/CheckBitcoinUtxos', {
+        method: 'POST',
         body: JSON.stringify(Array.from(ancestorMap.keys())),
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
     });
     if (!resp.ok)
-        throw new Error("Failed to filter out inscription utxos");
+        throw new Error('Failed to filter out inscription utxos');
     const res = await resp.json();
     res.forEach((utxoWithAsset) => utxosWithAssetSet.add(ancestorMap.get(utxoWithAsset)));
-    console.log("InscriptionUtils: filterInscriptionUtxos(): Removing utxos from pool: ", Array.from(utxosWithAssetSet));
-    return utxos.filter((utxo) => !utxosWithAssetSet.has(utxo.txId + ":" + utxo.vout));
+    console.log('InscriptionUtils: filterInscriptionUtxos(): Removing utxos from pool: ', Array.from(utxosWithAssetSet));
+    return utxos.filter((utxo) => !utxosWithAssetSet.has(utxo.txId + ':' + utxo.vout));
 }
 /**
  * Filters out the utxos which have an inscription, btc20, arc20, or runes attached to them, also filters out unconfirmed UTXO
@@ -113,15 +112,15 @@ export async function filterInscriptionUtxosOnlyConfirmed(utxos) {
     if (utxos.length === 0)
         return utxos;
     utxos = utxos.filter((utxo) => utxo.confirmed);
-    const resp = await fetch("https://api.atomiq.exchange/api/CheckBitcoinUtxos", {
-        method: "POST",
-        body: JSON.stringify(utxos.map((utxo) => utxo.txId + ":" + utxo.vout)),
-        headers: { "Content-Type": "application/json" },
+    const resp = await fetch('https://api.atomiq.exchange/api/CheckBitcoinUtxos', {
+        method: 'POST',
+        body: JSON.stringify(utxos.map((utxo) => utxo.txId + ':' + utxo.vout)),
+        headers: { 'Content-Type': 'application/json' },
     });
     if (!resp.ok)
-        throw new Error("Failed to filter out inscription utxos");
+        throw new Error('Failed to filter out inscription utxos');
     const res = await resp.json();
     const utxosWithAssetSet = new Set(res);
-    console.log("InscriptionUtils: filterInscriptionUtxos(): Removing utxos from pool: ", Array.from(utxosWithAssetSet));
-    return utxos.filter((utxo) => !utxosWithAssetSet.has(utxo.txId + ":" + utxo.vout));
+    console.log('InscriptionUtils: filterInscriptionUtxos(): Removing utxos from pool: ', Array.from(utxosWithAssetSet));
+    return utxos.filter((utxo) => !utxosWithAssetSet.has(utxo.txId + ':' + utxo.vout));
 }

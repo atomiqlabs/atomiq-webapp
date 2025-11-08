@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 export function useAbortSignalRef(deps: any[]) {
   const controller = useRef<AbortController>();

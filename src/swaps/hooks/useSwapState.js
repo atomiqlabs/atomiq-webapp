@@ -1,5 +1,5 @@
-import { FromBTCLNSwapState, FromBTCSwapState, LnForGasSwapState, OnchainForGasSwapState, SpvFromBTCSwapState, SwapType, ToBTCSwapState, } from "@atomiqlabs/sdk";
-import { useEffect, useRef, useState } from "react";
+import { FromBTCLNSwapState, FromBTCSwapState, LnForGasSwapState, OnchainForGasSwapState, SpvFromBTCSwapState, SwapType, ToBTCSwapState, } from '@atomiqlabs/sdk';
+import { useEffect, useRef, useState } from 'react';
 function getStateToString(swapType, state) {
     switch (swapType) {
         case SwapType.TO_BTCLN:
@@ -61,14 +61,14 @@ export function useSwapState(quote) {
         setState(quote.getState());
         setInitiated(quote.isInitiated());
         let listener;
-        quote.events.on("swapState", (listener = (quote) => {
+        quote.events.on('swapState', (listener = (quote) => {
             const state = quote.getState();
             checkExpiry(state);
             setState(state);
             setInitiated(quote.isInitiated());
-            console.log("useSwapState(" +
+            console.log('useSwapState(' +
                 quote.getId() +
-                "): State changed to: " +
+                '): State changed to: ' +
                 getStateToString(quote.getType(), state), quote);
             if (quote.isFinished()) {
                 setInitialQuoteTimeout(null);
@@ -78,7 +78,7 @@ export function useSwapState(quote) {
         }));
         return () => {
             clearInterval(interval);
-            quote.events.removeListener("swapState", listener);
+            quote.events.removeListener('swapState', listener);
         };
     }, [quote]);
     return {

@@ -1,6 +1,6 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { useCallback, useEffect, useRef } from "react";
-import { SingleColumnTable } from "./SingleColumnTable";
+import { useCallback, useEffect, useRef } from 'react';
+import { SingleColumnTable } from './SingleColumnTable';
 export function SingleColumnBackendTable(props) {
     const abortSignal = useRef(null);
     const sortedData = useRef(null);
@@ -54,14 +54,14 @@ export function SingleColumnBackendTable(props) {
                 }
             }
             const httpResponse = await fetch(props.endpoint +
-                "?" +
+                '?' +
                 Object.keys(params)
-                    .map((e) => e + "=" + encodeURIComponent("" + params[e]))
-                    .join("&"), {
+                    .map((e) => e + '=' + encodeURIComponent('' + params[e]))
+                    .join('&'), {
                 signal: _abortSignal.signal,
             });
             if (httpResponse == null || httpResponse.status !== 200) {
-                throw new Error("Backend get response code not 200");
+                throw new Error('Backend get response code not 200');
             }
             const obj = await httpResponse.json();
             const data = obj.data;
@@ -86,5 +86,5 @@ export function SingleColumnBackendTable(props) {
             maxPages: 1,
         };
     }, [props.endpoint, props.additionalData, props.dataPostProcessor]);
-    return (_jsx(SingleColumnTable, { getPage: memoizedGetter, refresh: tableRefreshRef, ...props }));
+    return _jsx(SingleColumnTable, { getPage: memoizedGetter, refresh: tableRefreshRef, ...props });
 }

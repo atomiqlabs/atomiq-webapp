@@ -1,13 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { useStateRef } from "../../utils/hooks/useStateRef";
-import { NFCReader, NFCStartResult } from "../NFCReader";
+import { useEffect, useRef, useState } from 'react';
+import { useStateRef } from '../../utils/hooks/useStateRef';
+import { NFCReader, NFCStartResult } from '../NFCReader';
 
 type NFCCallback = (result: string) => void;
 
-export function useNFCScanner(
-  _callback: NFCCallback,
-  disable?: boolean,
-): NFCStartResult | null {
+export function useNFCScanner(_callback: NFCCallback, disable?: boolean): NFCStartResult | null {
   const callback = useStateRef(_callback);
   const [NFCScanning, setNFCScanning] = useState<NFCStartResult>(null);
   const nfcScannerRef = useRef<NFCReader>(null);

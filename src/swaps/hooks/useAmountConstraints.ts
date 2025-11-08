@@ -1,8 +1,8 @@
-import { Token } from "@atomiqlabs/sdk";
-import BigNumber from "bignumber.js";
-import { useContext, useEffect, useMemo, useState } from "react";
-import { toHumanReadable } from "../../tokens/Tokens";
-import { SwapsContext } from "../context/SwapsContext";
+import { Token } from '@atomiqlabs/sdk';
+import BigNumber from 'bignumber.js';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { toHumanReadable } from '../../tokens/Tokens';
+import { SwapsContext } from '../context/SwapsContext';
 
 const defaultConstraints = {
   min: 1n,
@@ -11,7 +11,7 @@ const defaultConstraints = {
 
 function toBigNumbers(
   input: { min: bigint; max: bigint },
-  token: Token,
+  token: Token
 ): {
   min: BigNumber;
   max: BigNumber;
@@ -26,7 +26,7 @@ function toBigNumbers(
 
 export function useAmountConstraints(
   inCurrency: Token,
-  outCurrency: Token,
+  outCurrency: Token
 ): {
   input: { min: BigNumber; max: BigNumber };
   output: { min: BigNumber; max: BigNumber };
@@ -39,14 +39,14 @@ export function useAmountConstraints(
     if (swapper == null) return;
     let listener;
     swapper.on(
-      "swapLimitsChanged",
+      'swapLimitsChanged',
       (listener = () => {
-        console.log("useAmountConstraints(): Swap limits changed!");
+        console.log('useAmountConstraints(): Swap limits changed!');
         setUpdateCounts((prevState) => prevState + 1);
-      }),
+      })
     );
     return () => {
-      swapper.removeListener("swapLimitsChanged", listener);
+      swapper.removeListener('swapLimitsChanged', listener);
     };
   }, [swapper]);
 
@@ -60,11 +60,11 @@ export function useAmountConstraints(
     return {
       input: toBigNumbers(
         { min: res.input.min?.rawAmount, max: res.input.max?.rawAmount },
-        inCurrency,
+        inCurrency
       ),
       output: toBigNumbers(
         { min: res.output.min?.rawAmount, max: res.output.max?.rawAmount },
-        outCurrency,
+        outCurrency
       ),
     };
   }, [swapper, inCurrency, outCurrency, updateCount]);

@@ -79,15 +79,19 @@ export function useSolanaWalletData(enabled) {
                     instance: solanaSigner,
                     address: wallet.adapter?.publicKey?.toBase58(),
                 },
-            installedWallets: availableWallets.filter(w => w.readyState === 'Installed').map(w => ({
+            installedWallets: availableWallets
+                .filter((w) => w.readyState === 'Installed')
+                .map((w) => ({
                 name: w.adapter.name,
                 icon: w.adapter.icon,
-                isConnected: w.adapter.name === wallet?.adapter?.name
+                isConnected: w.adapter.name === wallet?.adapter?.name,
             })),
-            nonInstalledWallets: availableWallets.filter(w => w.readyState === 'Loadable' || w.readyState === 'NotDetected').map(w => ({
+            nonInstalledWallets: availableWallets
+                .filter((w) => w.readyState === 'Loadable' || w.readyState === 'NotDetected')
+                .map((w) => ({
                 name: w.adapter.name,
                 icon: w.adapter.icon,
-                downloadLink: w.adapter.url
+                downloadLink: w.adapter.url,
             })),
             chainId: 'SOLANA',
             _disconnect: disconnect,
@@ -99,7 +103,7 @@ export function useSolanaWalletData(enabled) {
                 },
                 fees: solanaFees,
             },
-            hasWallets: availableWallets.length > 0
+            hasWallets: availableWallets.length > 0,
         };
     }, [wallet, solanaSigner, disconnect, connectWallet, connection, availableWallets]);
 }

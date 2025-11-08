@@ -1,18 +1,16 @@
-import { useContext, useMemo } from "react";
-import { BitcoinNetwork, fromHumanReadableString, isBtcToken, isLNURLWithdraw, isSCToken, SwapType, } from "@atomiqlabs/sdk";
-import { SwapsContext } from "../context/SwapsContext";
-import { useWithAwait } from "../../utils/hooks/useWithAwait";
-import { useChain } from "../../wallets/hooks/useChain";
-import { Address, NETWORK, TEST_NETWORK } from "@scure/btc-signer";
-import { FEConstants } from "../../FEConstants";
-import * as randomBytes from "randombytes";
-import { toTokenIdentifier } from "../../tokens/Tokens";
+import { useContext, useMemo } from 'react';
+import { BitcoinNetwork, fromHumanReadableString, isBtcToken, isLNURLWithdraw, isSCToken, SwapType, } from '@atomiqlabs/sdk';
+import { SwapsContext } from '../context/SwapsContext';
+import { useWithAwait } from '../../utils/hooks/useWithAwait';
+import { useChain } from '../../wallets/hooks/useChain';
+import { Address, NETWORK, TEST_NETWORK } from '@scure/btc-signer';
+import { FEConstants } from '../../FEConstants';
+import * as randomBytes from 'randombytes';
+import { toTokenIdentifier } from '../../tokens/Tokens';
 const btcFeeMaxOffset = 3;
 const btcFeeMaxMultiple = 1.5;
-const RANDOM_BTC_ADDRESS = Address(FEConstants.bitcoinNetwork === BitcoinNetwork.MAINNET
-    ? NETWORK
-    : TEST_NETWORK).encode({
-    type: "wsh",
+const RANDOM_BTC_ADDRESS = Address(FEConstants.bitcoinNetwork === BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK).encode({
+    type: 'wsh',
     hash: randomBytes(32),
 });
 function getRandomAddress(swapper, token) {
@@ -28,10 +26,7 @@ export function useQuote(amount, exactIn, inToken, outToken, address, gasDropAmo
     const { swapper } = useContext(SwapsContext);
     const inputChain = useChain(inToken);
     let inputAddress = inputChain?.wallet?.address;
-    if (inToken != null &&
-        isBtcToken(inToken) &&
-        inToken.lightning &&
-        isLNURLWithdraw(address)) {
+    if (inToken != null && isBtcToken(inToken) && inToken.lightning && isLNURLWithdraw(address)) {
         inputAddress = address;
         address = null;
     }
@@ -46,29 +41,25 @@ export function useQuote(amount, exactIn, inToken, outToken, address, gasDropAmo
         return null;
     }, [swapper, inToken, outToken]);
     const [result, loading, error, refresh] = useWithAwait(() => {
-        console.log("useQuote(): amount: " +
+        console.log('useQuote(): amount: ' +
             amount +
-            " exactIn: " +
+            ' exactIn: ' +
             exactIn +
-            " inToken: " +
+            ' inToken: ' +
             inToken?.ticker +
-            " outToken: " +
+            ' outToken: ' +
             outToken?.ticker +
-            " inputAddr: " +
+            ' inputAddr: ' +
             inputAddress +
-            " outputAddr: " +
+            ' outputAddr: ' +
             address +
-            " gasDropAmount: " +
+            ' gasDropAmount: ' +
             gasDropAmount +
-            " btcFeeRate: " +
+            ' btcFeeRate: ' +
             btcFeeRate +
-            " pause: " +
+            ' pause: ' +
             pause);
-        if (swapper == null ||
-            inToken == null ||
-            outToken == null ||
-            amount == null ||
-            pause)
+        if (swapper == null || inToken == null || outToken == null || amount == null || pause)
             return null;
         const outAddress = address ?? getRandomAddress(swapper, outToken);
         if (outAddress == null)
@@ -78,9 +69,7 @@ export function useQuote(amount, exactIn, inToken, outToken, address, gasDropAmo
         return swapper
             .swap(inToken, outToken, rawAmount, exactIn, inAddress, outAddress, {
             gasAmount: gasDropAmount,
-            maxAllowedNetworkFeeRate: btcFeeRate == null
-                ? null
-                : btcFeeMaxOffset + btcFeeRate * btcFeeMaxMultiple,
+            maxAllowedNetworkFeeRate: btcFeeRate == null ? null : btcFeeMaxOffset + btcFeeRate * btcFeeMaxMultiple,
             unsafeZeroWatchtowerFee: swapType === SwapType.SPV_VAULT_FROM_BTC,
         })
             .then((quote) => {
