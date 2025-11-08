@@ -314,7 +314,7 @@ export function SwapNew2() {
                                             textEnd={
                                                 swapPage.output.address?.loading ? (
                                                     <Spinner className="text-white"/>
-                                                ) : swapPage.output.address?.isFromWallet || swapPage.output.amount.isFromAddress ? (
+                                                ) : swapPage.output.address?.validation?.status==="success" ? (
                                                     <span className="icon icon-check"></span>
                                                 ) : swapPage.output.address?.validation?.status==="error" ? (
                                                     <span className="icon icon-invalid-error"></span>
@@ -402,7 +402,10 @@ export function SwapNew2() {
                             <SimpleFeeSummaryScreen
                                 swap={existingSwap ?? swapPage.quote.quote}
                                 btcFeeRate={swapPage.input.wallet?.btcFeeRate}
-                                onRefreshQuote={swapPage.quote.refresh}
+                                onRefreshQuote={() => {
+                                  if(existingSwap != null) navigate('/');
+                                  swapPage.quote.refresh();
+                                }}
                             />
                         </div>
                     ) : null}
@@ -413,15 +416,16 @@ export function SwapNew2() {
                                 quote={existingSwap ?? swapPage.quote.quote}
                                 balance={swapPage.input.wallet?.spendable?.rawAmount}
                                 refreshQuote={() => {
-                                    if(existingSwap == null) navigate('/');
+                                    if(existingSwap != null) navigate('/');
                                     swapPage.quote.refresh();
                                 }}
-                                setAmountLock={() => {
-                                    if(existingSwap == null) navigate('/?swapId=' + swapPage.quote.quote.getId());
+                                setAmountLock={(isLocked: boolean) => {
+                                  if(!isLocked) return;
+                                  if(existingSwap == null) navigate('/?swapId=' + swapPage.quote.quote.getId());
                                 }}
                                 abortSwap={() => {
-                                    swapPage.input.amount.onChange("");
-                                    navigate('/');
+                                  swapPage.input.amount.onChange("");
+                                  navigate('/');
                                 }}
                                 feeRate={swapPage.input.wallet?.btcFeeRate}
                             />
