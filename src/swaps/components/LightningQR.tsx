@@ -24,7 +24,7 @@ export function LightningQR(props: {
   onHyperlink?: () => void;
 }) {
   const { swapper } = useContext(SwapsContext);
-  const { disconnectWallet } = useContext(ChainDataContext);
+  const { disconnectWallet, connectWallet } = useContext(ChainDataContext);
   const lightningChainData = useChain('LIGHTNING');
 
   const [payingWithLNURL, setPayingWithLNURL] = useState<boolean>(false);
@@ -51,6 +51,14 @@ export function LightningQR(props: {
     [lightningChainData.wallet, props.quote]
   );
 
+  const [callPayFlag, setCallPayFlag] = useState<boolean>(false);
+  useEffect(() => {
+    if (!callPayFlag) return;
+    setCallPayFlag(false);
+    if (!lightningChainData.wallet) return;
+    pay();
+  }, [callPayFlag, lightningChainData.wallet, pay]);
+
   useEffect(() => {
     if (props.quote == null || !props.payInstantly) return;
     if (lightningChainData.wallet != null) pay();
@@ -60,9 +68,11 @@ export function LightningQR(props: {
     (show) => {
       return (
         <>
-          <AlertMessage variant="warning" className="mb-3">
-            Please initiate a payment to this <strong>Lightning Network invoice</strong>
-          </AlertMessage>
+          <div className="swap-panel__card__subtitle">
+            <i className="ico icon-arrow-down"></i>
+            <div className="sc-text">Initiate payment to this lightning network invoice</div>
+            <i className="ico icon-arrow-down"></i>
+          </div>
           <QRCodeSVG
             value={props.quote.getHyperlink()}
             size={240}
@@ -88,7 +98,7 @@ export function LightningQR(props: {
             chainName="Lightning Network"
             numberName={'invoice'}
             onCopy={() => {
-              // Optional: Add any copy callback logic here
+              navigator.clipboard.writeText(props.quote.getAddress());
             }}
           />
           <div className="payment-awaiting-buttons">
@@ -101,14 +111,28 @@ export function LightningQR(props: {
                 })
               }
             >
-              <i className="icon icon-new-window"></i>
-              <div className="sc-text">Open in Lightning Wallet</div>
+              <i className="icon icon-connect"></i>
+              <div className="sc-text">Pay with LN Wallet</div>
+            </BaseButton>
+            <BaseButton
+              variant="secondary"
+              textSize="sm"
+              className="d-flex flex-row align-items-center"
+              onClick={() => {
+                connectWallet('LIGHTNING').then((success) => {
+                  // Call pay on next state update
+                  if (success) setCallPayFlag(true);
+                });
+              }}
+            >
+              <img width={20} height={20} src="/wallets/WebLN.png" className="ms-2 me-1" />
+              Pay via WebLN
             </BaseButton>
           </div>
         </>
       );
     },
-    [props.quote, props.onHyperlink, NFCScanning]
+    [props.quote, props.onHyperlink, NFCScanning, connectWallet, setCallPayFlag]
   );
 
   return (
@@ -131,19 +155,6 @@ export function LightningQR(props: {
           />
 
           <div className="payment-awaiting-buttons">
-            {/*<Button*/}
-            {/*  variant="light"*/}
-            {/*  className="d-flex flex-row align-items-center"*/}
-            {/*  disabled={payLoading}*/}
-            {/*  onClick={() => {*/}
-            {/*    pay();*/}
-            {/*  }}*/}
-            {/*>*/}
-            {/*  {payLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}*/}
-            {/*  Pay with*/}
-            {/*  <img width={20} height={20} src="/wallets/WebLN.png" className="ms-2 me-1" />*/}
-            {/*  WebLN*/}
-            {/*</Button>*/}
             <BaseButton
               variant="secondary"
               textSize="sm"
@@ -155,7 +166,7 @@ export function LightningQR(props: {
             >
               {payLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
               <img width={20} height={20} src="/wallets/WebLN.png" className="ms-2 me-1" />
-              Pay with WebLN
+              Pay via WebLN
             </BaseButton>
             <BaseButton
               variant="secondary"
@@ -167,17 +178,6 @@ export function LightningQR(props: {
             >
               Or use a QR code/LN invoice
             </BaseButton>
-            {/*<small className="mt-2">*/}
-            {/*  <a*/}
-            {/*    href="#"*/}
-            {/*    onClick={(e) => {*/}
-            {/*      e.preventDefault();*/}
-            {/*      disconnectWallet('LIGHTNING');*/}
-            {/*    }}*/}
-            {/*  >*/}
-            {/*    Or use a QR code/LN invoice*/}
-            {/*  </a>*/}
-            {/*</small>*/}
           </div>
         </>
       ) : (

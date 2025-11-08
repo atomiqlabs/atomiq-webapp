@@ -16,6 +16,13 @@
     &__title {
       @apply text-[14px] font-bold uppercase;
     }
+    &__subtitle {
+      @apply flex gap-2 font-semibold justify-center items-center mb-4;
+
+      .ico {
+        @apply opacity-50;
+      }
+    }
 
     &__wallet {
       .base-button {

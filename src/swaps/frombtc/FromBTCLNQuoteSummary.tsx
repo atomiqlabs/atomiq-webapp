@@ -12,7 +12,6 @@ import { SwapForGasAlert } from '../components/SwapForGasAlert';
 import { StepByStep, WalletData } from '../../components/StepByStep';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { LightningQR } from '../components/LightningQR';
-import { ErrorAlert } from '../../components/ErrorAlert';
 import { useFromBtcLnQuote } from './useFromBtcLnQuote';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
@@ -215,6 +214,21 @@ export function FromBTCLNQuoteSummary(props: {
           title="Swap failed"
           description="Swap HTLC expired, your lightning payment will be refunded shortly!"
         />
+
+        <SwapStepAlert
+          show={!!(commitError || claimError)}
+          type="error"
+          icon={ic_warning}
+          title={
+            'Swap ' +
+            (canClaimInOneShot || claimError != null ? 'claim' : ' claim initialization') +
+            ' error'
+          }
+          description={
+            (commitError ?? claimError)?.message || (commitError ?? claimError)?.toString()
+          }
+          error={commitError ?? claimError}
+        />
       </div>
 
       {/* Action buttons outside the card */}
@@ -230,20 +244,6 @@ export function FromBTCLNQuoteSummary(props: {
 
       {isClaimable ? (
         <>
-          <ErrorAlert
-            className="mb-3"
-            title={
-              'Swap ' +
-              (canClaimInOneShot || claimError != null ? 'claim' : ' claim initialization') +
-              ' error'
-            }
-            error={commitError ?? claimError}
-          />
-          <SwapExpiryProgressBar
-            timeRemaining={quoteTimeRemaining}
-            totalTime={totalQuoteTime}
-            show={state === FromBTCLNSwapState.PR_PAID && !claiming && !committing}
-          />
           <ButtonWithWallet
             requiredWalletAddress={props.quote._getInitiator()}
             className="swap-panel__action"
