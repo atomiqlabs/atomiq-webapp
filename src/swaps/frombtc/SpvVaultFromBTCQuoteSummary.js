@@ -14,7 +14,6 @@ import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outl
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
-import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { StepByStep } from '../../components/StepByStep';
 import { useStateRef } from '../../utils/hooks/useStateRef';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
@@ -173,8 +172,8 @@ export function SpvVaultFromBTCQuoteSummary(props) {
         };
     if (isSuccess)
         executionSteps[1] = {
-            icon: ic_verified_outline,
-            text: 'Claim success',
+            icon: ic_receipt,
+            text: 'Claiming transaction',
             type: 'success',
         };
     return (_jsxs(_Fragment, { children: [isInitiated || (isCreated && sendLoading) ? _jsx(StepByStep, { steps: executionSteps }) : '', _jsx(SwapExpiryProgressBar, { expired: isQuoteExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: (isCreated || isQuoteExpired) && !sendLoading && bitcoinWallet != null && hasEnoughBalance }), isCreated ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: "Sending BTC failed", error: sendError }), _jsxs(ButtonWithWallet, { chainId: "BITCOIN", onClick: onSend, disabled: sendLoading || !hasEnoughBalance, size: "lg", className: "d-flex flex-row", children: [sendLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : '', "Pay with ", _jsx("img", { width: 20, height: 20, src: bitcoinWallet?.icon, className: "ms-2 me-1" }), ' ', bitcoinWallet?.name] })] })) : (''), isBroadcasting ? (_jsxs("div", { className: "d-flex flex-column align-items-center gap-2 tab-accent", children: [_jsx(Spinner, {}), _jsx("small", { className: "mt-2", children: "Sending bitcoin transaction..." })] })) : (''), isReceived ? (_jsxs("div", { className: "d-flex flex-column align-items-center tab-accent", children: [_jsx("small", { className: "mb-2", children: "Transaction received, waiting for confirmations..." }), _jsx(Spinner, {}), _jsxs("label", { children: [txData.confirmations, " / ", txData.confTarget] }), _jsx("label", { style: { marginTop: '-6px' }, children: "Confirmations" }), _jsx("a", { className: "mb-2 text-overflow-ellipsis text-nowrap overflow-hidden", style: { width: '100%' }, target: "_blank", href: FEConstants.btcBlockExplorer + txData.txId, children: _jsx("small", { children: txData.txId }) }), _jsxs(Badge, { className: 'text-black' + (txData.txEtaMs == null ? ' d-none' : ''), bg: "light", pill: true, children: ["ETA:", ' ', txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000

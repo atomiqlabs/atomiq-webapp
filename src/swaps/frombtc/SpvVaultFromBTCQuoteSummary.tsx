@@ -15,7 +15,6 @@ import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outl
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
-import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { SingleStep, StepByStep } from '../../components/StepByStep';
 import { useStateRef } from '../../utils/hooks/useStateRef';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
@@ -220,8 +219,8 @@ export function SpvVaultFromBTCQuoteSummary(props: {
     };
   if (isSuccess)
     executionSteps[1] = {
-      icon: ic_verified_outline,
-      text: 'Claim success',
+      icon: ic_receipt,
+      text: 'Claiming transaction',
       type: 'success',
     };
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { Alert, Button, Spinner } from 'react-bootstrap';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Spinner } from 'react-bootstrap';
 import { FromBTCLNSwap, FromBTCLNSwapState } from '@atomiqlabs/sdk';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
 import { useSwapState } from '../hooks/useSwapState';
@@ -9,15 +9,20 @@ import { LightningHyperlinkModal } from '../components/LightningHyperlinkModal';
 import { SwapExpiryProgressBar } from '../components/SwapExpiryProgressBar';
 import { SwapForGasAlert } from '../components/SwapForGasAlert';
 
-import { StepByStep } from '../../components/StepByStep';
+import { StepByStep, WalletData } from '../../components/StepByStep';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { LightningQR } from '../components/LightningQR';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import { useFromBtcLnQuote } from './useFromBtcLnQuote';
-import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
 import { useChain } from '../../wallets/hooks/useChain';
+import { SwapStepAlert } from '../components/SwapStepAlert';
+import { TokenIcons } from '../../tokens/Tokens';
+import { usePricing } from '../../tokens/hooks/usePricing';
+import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
+import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 
 /*
 Steps:
@@ -70,6 +75,65 @@ export function FromBTCLNQuoteSummary(props: {
     executionSteps,
   } = useFromBtcLnQuote(props.quote, props.setAmountLock);
 
+  // Source wallet data (input token - Lightning)
+  const inputAmount = props.quote.getInput().amount;
+  const inputToken = props.quote.getInput().token;
+  const inputValue = usePricing(inputAmount, inputToken);
+
+  const sourceWallet: WalletData = useMemo(() => {
+    if (!inputToken) return null;
+    const chainIcon = '/icons/chains/bitcoin.svg';
+    const amountStr = props.quote.getInput().toString();
+    const [numPart, tickerPart] = amountStr.split(' ');
+    const cleanedAmount = parseFloat(numPart).toString();
+    return {
+      icon: TokenIcons[inputToken.ticker],
+      chainIcon,
+      amount: `${cleanedAmount} ${tickerPart}`,
+      dollarValue: inputValue ? `$${inputValue.toFixed(2)}` : undefined,
+    };
+  }, [inputToken, inputAmount, inputValue]);
+
+  // Helper function to map token ticker to full chain name
+  const getChainName = (ticker?: string): string => {
+    if (!ticker) return 'Bitcoin';
+    const chainNames: Record<string, string> = {
+      BTC: 'Bitcoin',
+      ETH: 'Ethereum',
+      SOL: 'Solana',
+      USDC: 'USDC',
+      USDT: 'USDT',
+    };
+    return chainNames[ticker] || ticker;
+  };
+
+  // Destination wallet data (output token)
+  const outputAmount = props.quote.getOutput().amount;
+  const outputToken = props.quote.getOutput().token;
+  const outputValue = usePricing(outputAmount, outputToken);
+  const outputAddress = props.quote.getOutputAddress();
+
+  const destinationWallet: WalletData = useMemo(() => {
+    if (!outputToken) return null;
+    const chainIcon = props.quote.chainIdentifier?.includes('SOLANA')
+      ? '/icons/chains/solana.svg'
+      : props.quote.chainIdentifier?.includes('STARKNET')
+        ? '/icons/chains/STARKNET.svg'
+        : undefined;
+
+    const amountStr = props.quote.getOutput().toString();
+    const [numPart, tickerPart] = amountStr.split(' ');
+    const cleanedAmount = parseFloat(numPart).toString();
+    return {
+      icon: TokenIcons[outputToken.ticker],
+      chainIcon,
+      amount: `${cleanedAmount} ${tickerPart}`,
+      dollarValue: outputValue ? `$${outputValue.toFixed(2)}` : undefined,
+      address: outputAddress,
+      chainName: getChainName(outputToken.ticker),
+    };
+  }, [outputToken, outputAmount, outputValue, outputAddress, props.quote.chainIdentifier]);
+
   useEffect(() => {
     if (
       props.quote != null &&
@@ -93,72 +157,79 @@ export function FromBTCLNQuoteSummary(props: {
     <>
       <LightningHyperlinkModal openRef={openModalRef} hyperlink={props.quote.getHyperlink()} />
 
-      {isInitiated ? <StepByStep steps={executionSteps} /> : ''}
-
-      {isCreated && !paymentWaiting ? (
-        smartChainWallet === undefined ? (
-          <ButtonWithWallet
-            chainId={props.quote.chainIdentifier}
-            requiredWalletAddress={props.quote._getInitiator()}
-            size="lg"
+      <div className="swap-panel__card">
+        {isInitiated ? (
+          <StepByStep
+            steps={executionSteps}
+            sourceWallet={sourceWallet}
+            destinationWallet={destinationWallet}
           />
-        ) : (
+        ) : null}
+
+        <SwapStepAlert
+          show={!!paymentError}
+          type="error"
+          icon={ic_warning}
+          title="Swap initialization error"
+          description={paymentError?.message || paymentError?.toString()}
+          error={paymentError}
+        />
+
+        {isCreated && paymentWaiting ? (
           <>
-            <ErrorAlert className="mb-3" title="Swap initialization error" error={paymentError} />
-
-            <SwapForGasAlert notEnoughForGas={props.notEnoughForGas} quote={props.quote} />
-
-            <SwapExpiryProgressBar timeRemaining={quoteTimeRemaining} totalTime={totalQuoteTime} />
-
-            <ButtonWithWallet
-              requiredWalletAddress={props.quote._getInitiator()}
-              chainId={props.quote?.chainIdentifier}
-              onClick={() => {
-                setInitClicked(true);
-                waitForPayment();
-              }}
-              disabled={!!props.notEnoughForGas}
-              size="lg"
-            >
-              Initiate swap
-            </ButtonWithWallet>
+            <div className="swap-panel__card__group">
+              <LightningQR
+                quote={props.quote}
+                payInstantly={initClicked}
+                setAutoClaim={setAutoClaim}
+                autoClaim={autoClaim}
+                onHyperlink={onHyperlink}
+              />
+            </div>
+            <div className="swap-panel__card__group">
+              <SwapExpiryProgressBar
+                timeRemaining={quoteTimeRemaining}
+                totalTime={totalQuoteTime}
+                show={true}
+                type="bar"
+                expiryText="Swap address expired, please do not send any funds!"
+                quoteAlias="Lightning invoice"
+              />
+            </div>
           </>
-        )
-      ) : (
-        ''
-      )}
+        ) : (
+          ''
+        )}
+        <SwapStepAlert
+          show={isSuccess}
+          type="success"
+          icon={ic_check_circle}
+          title="Swap success"
+          description="Your swap was executed successfully!"
+        />
 
-      {isCreated && paymentWaiting ? (
-        <>
-          <LightningQR
-            quote={props.quote}
-            payInstantly={initClicked}
-            setAutoClaim={setAutoClaim}
-            autoClaim={autoClaim}
-            onHyperlink={onHyperlink}
-          />
+        <SwapStepAlert
+          show={isFailed}
+          type="danger"
+          icon={ic_warning}
+          title="Swap failed"
+          description="Swap HTLC expired, your lightning payment will be refunded shortly!"
+        />
+      </div>
 
-          <SwapExpiryProgressBar
-            timeRemaining={quoteTimeRemaining}
-            totalTime={totalQuoteTime}
-            show={true}
-          />
-
-          <Button onClick={props.abortSwap} variant="danger">
-            Abort swap
-          </Button>
-        </>
-      ) : (
-        ''
+      {/* Action buttons outside the card */}
+      {isCreated && paymentWaiting && (
+        <BaseButton
+          onClick={props.abortSwap}
+          variant="danger"
+          className="swap-panel__action is-large"
+        >
+          Abort swap
+        </BaseButton>
       )}
 
       {isClaimable ? (
         <>
-          <div className="mb-3 tab-accent">
-            <label>Lightning network payment received</label>
-            <label>Claim it below to finish the swap!</label>
-          </div>
-
           <ErrorAlert
             className="mb-3"
             title={
@@ -168,15 +239,14 @@ export function FromBTCLNQuoteSummary(props: {
             }
             error={commitError ?? claimError}
           />
-
           <SwapExpiryProgressBar
             timeRemaining={quoteTimeRemaining}
             totalTime={totalQuoteTime}
             show={state === FromBTCLNSwapState.PR_PAID && !claiming && !committing}
           />
-
           <ButtonWithWallet
             requiredWalletAddress={props.quote._getInitiator()}
+            className="swap-panel__action"
             chainId={props.quote?.chainIdentifier}
             onClick={() => onCommit()}
             disabled={committing || (!canClaimInOneShot && !isClaimCommittable)}
@@ -211,42 +281,41 @@ export function FromBTCLNQuoteSummary(props: {
         ''
       )}
 
-      {isSuccess ? (
-        <Alert variant="success" className="mb-3">
-          <strong>Swap success</strong>
-          <label>Your swap was executed successfully!</label>
-        </Alert>
+      {isCreated && !paymentWaiting ? (
+        smartChainWallet === undefined ? (
+          <ButtonWithWallet
+            chainId={props.quote.chainIdentifier}
+            requiredWalletAddress={props.quote._getInitiator()}
+            size="lg"
+          />
+        ) : (
+          <>
+            <SwapForGasAlert notEnoughForGas={props.notEnoughForGas} quote={props.quote} />
+
+            <ButtonWithWallet
+              requiredWalletAddress={props.quote._getInitiator()}
+              chainId={props.quote?.chainIdentifier}
+              className="swap-panel__action"
+              onClick={() => {
+                setInitClicked(true);
+                waitForPayment();
+              }}
+              disabled={!!props.notEnoughForGas}
+              size="lg"
+            >
+              Swap
+            </ButtonWithWallet>
+          </>
+        )
       ) : (
         ''
       )}
 
       {isQuoteExpired || isFailed || isSuccess ? (
-        <>
-          <Alert variant="danger" className="mb-3" show={isFailed}>
-            <strong>Swap failed</strong>
-            <label>Swap HTLC expired, your lightning payment will be refunded shortly!</label>
-          </Alert>
-
-          <SwapExpiryProgressBar
-            show={isQuoteExpired}
-            expired={true}
-            timeRemaining={quoteTimeRemaining}
-            totalTime={totalQuoteTime}
-            expiryText={
-              isInitiated
-                ? 'Swap expired! Your lightning payment should refund shortly.'
-                : 'Swap expired!'
-            }
-            quoteAlias="Swap"
-          />
-
-          <BaseButton onClick={props.refreshQuote} variant="primary" size="large">
-            New quote
-          </BaseButton>
-        </>
-      ) : (
-        ''
-      )}
+        <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
+          New quote
+        </BaseButton>
+      ) : null}
 
       <ScrollAnchor trigger={isInitiated}></ScrollAnchor>
     </>

@@ -1,29 +1,22 @@
-import {
-  Badge,
-  Button,
-  Form,
-  OverlayTrigger,
-  Spinner,
-  Tooltip,
-} from "react-bootstrap";
-import { CopyOverlay } from "../../components/CopyOverlay";
-import { QRCodeSVG } from "qrcode.react";
-import ValidatedInput, {
-  ValidatedInputRef,
-} from "../../components/ValidatedInput";
-import Icon from "react-icons-kit";
-import { clipboard } from "react-icons-kit/fa/clipboard";
-import { externalLink } from "react-icons-kit/fa/externalLink";
-import * as React from "react";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { FromBTCLNSwap, LnForGasSwap } from "@atomiqlabs/sdk";
-import { ErrorAlert } from "../../components/ErrorAlert";
-import { ChainDataContext } from "../../wallets/context/ChainDataContext";
-import { useAsync } from "../../utils/hooks/useAsync";
-import { useNFCScanner } from "../../nfc/hooks/useNFCScanner";
-import { SwapsContext } from "../context/SwapsContext";
-import { NFCStartResult } from "../../nfc/NFCReader";
-import {useChain} from "../../wallets/hooks/useChain";
+import { Badge, Button, Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import { CopyOverlay } from '../../components/CopyOverlay';
+import { QRCodeSVG } from 'qrcode.react';
+import ValidatedInput, { ValidatedInputRef } from '../../components/ValidatedInput';
+import Icon from 'react-icons-kit';
+import { clipboard } from 'react-icons-kit/fa/clipboard';
+import { externalLink } from 'react-icons-kit/fa/externalLink';
+import * as React from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { FromBTCLNSwap, LnForGasSwap } from '@atomiqlabs/sdk';
+import { ChainDataContext } from '../../wallets/context/ChainDataContext';
+import { useAsync } from '../../utils/hooks/useAsync';
+import { useNFCScanner } from '../../nfc/hooks/useNFCScanner';
+import { SwapsContext } from '../context/SwapsContext';
+import { NFCStartResult } from '../../nfc/NFCReader';
+import { useChain } from '../../wallets/hooks/useChain';
+import { BaseButton } from '../../components/BaseButton';
+import { SwapStepAlert } from './SwapStepAlert';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 
 export function LightningQR(props: {
   quote: FromBTCLNSwap | LnForGasSwap;
@@ -34,7 +27,7 @@ export function LightningQR(props: {
 }) {
   const { swapper } = useContext(SwapsContext);
   const { disconnectWallet } = useContext(ChainDataContext);
-  const lightningChainData = useChain("LIGHTNING");
+  const lightningChainData = useChain('LIGHTNING');
 
   const [payingWithLNURL, setPayingWithLNURL] = useState<boolean>(false);
   const NFCScanning = useNFCScanner(
@@ -42,27 +35,24 @@ export function LightningQR(props: {
       //TODO: Maybe we need to stop the scanning here as well
       swapper.Utils.getLNURLTypeAndData(address, false)
         .then((result) => {
-          if (result.type !== "withdraw") return;
+          if (result.type !== 'withdraw') return;
           return result;
         })
         .then((lnurlWithdraw) => {
-          return (props.quote as FromBTCLNSwap).settleWithLNURLWithdraw(
-            lnurlWithdraw,
-          );
+          return (props.quote as FromBTCLNSwap).settleWithLNURLWithdraw(lnurlWithdraw);
         })
         .then(() => {
           setPayingWithLNURL(true);
         });
     },
-    !(props.quote instanceof FromBTCLNSwap),
+    !(props.quote instanceof FromBTCLNSwap)
   );
 
   const textFieldRef = useRef<ValidatedInputRef>();
 
   const [pay, payLoading, payResult, payError] = useAsync(
-    () =>
-      lightningChainData.wallet.instance.sendPayment(props.quote.getAddress()),
-    [lightningChainData.wallet, props.quote],
+    () => lightningChainData.wallet.instance.sendPayment(props.quote.getAddress()),
+    [lightningChainData.wallet, props.quote]
   );
 
   useEffect(() => {
@@ -81,16 +71,12 @@ export function LightningQR(props: {
               includeMargin={true}
               className="cursor-pointer"
               onClick={(event) => {
-                show(
-                  event.target,
-                  props.quote.getAddress(),
-                  textFieldRef.current?.input?.current,
-                );
+                show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
               }}
               imageSettings={
                 NFCScanning === NFCStartResult.OK
                   ? {
-                      src: "/icons/contactless.png",
+                      src: '/icons/contactless.png',
                       excavate: true,
                       height: 50,
                       width: 50,
@@ -99,11 +85,9 @@ export function LightningQR(props: {
               }
             />
           </div>
-          <label>
-            Please initiate a payment to this lightning network invoice
-          </label>
+          <label>Please initiate a payment to this lightning network invoice</label>
           <ValidatedInput
-            type={"text"}
+            type={'text'}
             value={props.quote.getAddress()}
             textEnd={
               <a
@@ -113,7 +97,7 @@ export function LightningQR(props: {
                   show(
                     event.target as HTMLElement,
                     props.quote.getAddress(),
-                    textFieldRef.current?.input?.current,
+                    textFieldRef.current?.input?.current
                   );
                 }}
               >
@@ -133,21 +117,18 @@ export function LightningQR(props: {
               }
               className="d-flex flex-row align-items-center justify-content-center"
             >
-              <Icon
-                icon={externalLink}
-                className="d-flex align-items-center me-2"
-              />{" "}
-              Open in Lightning wallet app
+              <Icon icon={externalLink} className="d-flex align-items-center me-2" /> Open in
+              Lightning wallet app
             </Button>
           </div>
         </>
       );
     },
-    [props.quote, props.onHyperlink],
+    [props.quote, props.onHyperlink]
   );
 
   return (
-    <div className="tab-accent mb-3">
+    <div>
       {payingWithLNURL ? (
         <div className="d-flex flex-column align-items-center justify-content-center">
           <Spinner animation="border" />
@@ -155,46 +136,64 @@ export function LightningQR(props: {
         </div>
       ) : lightningChainData.wallet != null ? (
         <>
-          <ErrorAlert
-            className="mb-2"
-            title="Sending BTC failed"
+          <SwapStepAlert
+            show={!!payError}
+            type="error"
+            icon={ic_warning}
+            title="Sending Lightning payment failed"
+            description={payError?.message || payError?.toString()}
             error={payError}
+            className="mb-4 mt-0"
           />
 
-          <div className="d-flex flex-column align-items-center justify-content-center">
-            <Button
-              variant="light"
+          <div className="payment-awaiting-buttons">
+            {/*<Button*/}
+            {/*  variant="light"*/}
+            {/*  className="d-flex flex-row align-items-center"*/}
+            {/*  disabled={payLoading}*/}
+            {/*  onClick={() => {*/}
+            {/*    pay();*/}
+            {/*  }}*/}
+            {/*>*/}
+            {/*  {payLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}*/}
+            {/*  Pay with*/}
+            {/*  <img width={20} height={20} src="/wallets/WebLN.png" className="ms-2 me-1" />*/}
+            {/*  WebLN*/}
+            {/*</Button>*/}
+            <BaseButton
+              variant="secondary"
+              textSize="sm"
               className="d-flex flex-row align-items-center"
               disabled={payLoading}
               onClick={() => {
                 pay();
               }}
             >
-              {payLoading ? (
-                <Spinner animation="border" size="sm" className="mr-2" />
-              ) : (
-                ""
-              )}
-              Pay with
-              <img
-                width={20}
-                height={20}
-                src="/wallets/WebLN.png"
-                className="ms-2 me-1"
-              />
-              WebLN
-            </Button>
-            <small className="mt-2">
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  disconnectWallet("LIGHTNING");
-                }}
-              >
-                Or use a QR code/LN invoice
-              </a>
-            </small>
+              {payLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
+              <img width={20} height={20} src="/wallets/WebLN.png" className="ms-2 me-1" />
+              Pay with WebLN
+            </BaseButton>
+            <BaseButton
+              variant="secondary"
+              textSize="sm"
+              className="d-flex flex-row align-items-center"
+              onClick={() => {
+                disconnectWallet('LIGHTNING');
+              }}
+            >
+              Or use a QR code/LN invoice
+            </BaseButton>
+            {/*<small className="mt-2">*/}
+            {/*  <a*/}
+            {/*    href="#"*/}
+            {/*    onClick={(e) => {*/}
+            {/*      e.preventDefault();*/}
+            {/*      disconnectWallet('LIGHTNING');*/}
+            {/*    }}*/}
+            {/*  >*/}
+            {/*    Or use a QR code/LN invoice*/}
+            {/*  </a>*/}
+            {/*</small>*/}
           </div>
         </>
       ) : (
@@ -215,8 +214,8 @@ export function LightningQR(props: {
           <OverlayTrigger
             overlay={
               <Tooltip id="autoclaim-pay-tooltip">
-                Automatically requests authorization of the claim transaction
-                through your wallet as soon as the lightning payment arrives.
+                Automatically requests authorization of the claim transaction through your wallet as
+                soon as the lightning payment arrives.
               </Tooltip>
             }
           >
@@ -226,7 +225,7 @@ export function LightningQR(props: {
           </OverlayTrigger>
         </Form>
       ) : (
-        ""
+        ''
       )}
     </div>
   );

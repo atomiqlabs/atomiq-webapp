@@ -11,9 +11,9 @@ import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
 import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
-import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outline';
-import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
-import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
+import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
+import { ic_swap_horiz } from 'react-icons-kit/md/ic_swap_horiz';
+import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
 import { ic_download_outline } from 'react-icons-kit/md/ic_download_outline';
 import { timeoutPromise } from '../../utils/Utils';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
@@ -93,12 +93,12 @@ export function useFromBtcLnQuote(
 
   const executionSteps: SingleStep[] = [
     {
-      icon: ic_check_circle_outline,
+      icon: ic_check_outline,
       text: 'Lightning payment received',
       type: 'success',
     },
     {
-      icon: ic_swap_horizontal_circle_outline,
+      icon: ic_swap_horiz,
       text: 'Send claim transaction',
       type: 'disabled',
     },
@@ -148,13 +148,13 @@ export function useFromBtcLnQuote(
     }
     if (isClaimable)
       executionSteps[1] = {
-        icon: ic_swap_horizontal_circle_outline,
+        icon: ic_swap_horiz,
         text: committing || claiming ? 'Sending claim transaction' : 'Send claim transaction',
         type: 'loading',
       };
     if (isSuccess)
       executionSteps[1] = {
-        icon: ic_verified_outline,
+        icon: ic_receipt,
         text: 'Claim success',
         type: 'success',
       };
@@ -172,7 +172,7 @@ export function useFromBtcLnQuote(
     }
   } else {
     executionSteps[1] = {
-      icon: ic_swap_horizontal_circle_outline,
+      icon: ic_swap_horiz,
       text: 'Sending transaction',
       type: 'disabled',
     };
@@ -195,13 +195,13 @@ export function useFromBtcLnQuote(
     }
     if (isClaimCommittable)
       executionSteps[1] = {
-        icon: ic_swap_horizontal_circle_outline,
+        icon: ic_swap_horiz,
         text: committing ? 'Sending initialization transaction' : 'Sending transaction',
         type: 'loading',
       };
     if (isClaimClaimable) {
       executionSteps[1] = {
-        icon: ic_check_circle_outline,
+        icon: ic_check_outline,
         text: 'Initialization success',
         type: 'success',
       };
@@ -213,13 +213,13 @@ export function useFromBtcLnQuote(
     }
     if (isSuccess) {
       executionSteps[1] = {
-        icon: ic_check_circle_outline,
+        icon: ic_check_outline,
         text: 'Initialization success',
         type: 'success',
       };
       executionSteps[2] = {
-        icon: ic_verified_outline,
-        text: 'Claim success',
+        icon: ic_receipt,
+        text: 'Claiming transaction',
         type: 'success',
       };
     }
@@ -230,7 +230,7 @@ export function useFromBtcLnQuote(
         type: 'failed',
       };
       executionSteps[1] = {
-        icon: ic_check_circle_outline,
+        icon: ic_check_outline,
         text: 'Initialization success',
         type: 'success',
       };

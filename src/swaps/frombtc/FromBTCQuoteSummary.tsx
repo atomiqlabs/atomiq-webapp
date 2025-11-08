@@ -5,8 +5,6 @@ import { AlertMessage } from '../../components/AlertMessage';
 import { QRCodeSVG } from 'qrcode.react';
 import { ValidatedInputRef } from '../../components/ValidatedInput';
 import { FromBTCSwap, FromBTCSwapState } from '@atomiqlabs/sdk';
-import Icon from 'react-icons-kit';
-import { externalLink } from 'react-icons-kit/fa/externalLink';
 import { Tokens } from '../../FEConstants';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
 import { ScrollAnchor } from '../../components/ScrollAnchor';
@@ -24,7 +22,6 @@ import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
-import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { SingleStep, StepByStep } from '../../components/StepByStep';
 import { useStateRef } from '../../utils/hooks/useStateRef';
@@ -41,6 +38,7 @@ import { TokenIcons } from '../../tokens/Tokens';
 import { usePricing } from '../../tokens/hooks/usePricing';
 import { WalletAddressPreview } from '../../components/WalletAddressPreview';
 import { SwapConfirmations, TxData } from '../components/SwapConfirmations';
+import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 
 /*
 Steps:
@@ -474,19 +472,6 @@ export function FromBTCQuoteSummary(props: {
           />
         ) : null}
 
-        {/*<SwapExpiryProgressBar*/}
-        {/*  expired={isQuoteExpired}*/}
-        {/*  timeRemaining={quoteTimeRemaining}*/}
-        {/*  totalTime={totalQuoteTime}*/}
-        {/*  show={*/}
-        {/*    (isCreated || isQuoteExpired) &&*/}
-        {/*    !commitLoading &&*/}
-        {/*    !props.notEnoughForGas &&*/}
-        {/*    smartChainWallet !== undefined &&*/}
-        {/*    hasEnoughBalance*/}
-        {/*  }*/}
-        {/*/>*/}
-
         <SwapStepAlert
           show={!!commitError}
           type="error"
@@ -579,7 +564,7 @@ export function FromBTCQuoteSummary(props: {
         <SwapStepAlert
           show={isSuccess}
           type="success"
-          icon={ic_check_outline}
+          icon={ic_check_circle}
           title="Swap success"
           description="Your swap was executed successfully!"
         />

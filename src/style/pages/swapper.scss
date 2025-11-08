@@ -184,4 +184,8 @@
   img {
     @apply h-[16px] ml-[5px];
   }
+
+  &__text {
+    @apply text-[14px];
+  }
 }

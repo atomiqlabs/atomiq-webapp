@@ -11,7 +11,7 @@ import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
 import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
-import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outline';
+import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
@@ -60,7 +60,7 @@ export function TrustedFromBTCLNQuoteSummary(props) {
     }, [isQuoteExpired, isFailed, isSuccess]);
     const executionSteps = [
         {
-            icon: ic_check_circle_outline,
+            icon: ic_check_outline,
             text: 'Lightning payment received',
             type: 'success',
         },
