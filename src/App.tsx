@@ -38,6 +38,7 @@ import { NFCSwitch } from './nfc/NFCSwitch';
 import { ChainDataContext } from './wallets/context/ChainDataContext';
 import { ChainDataProvider } from './wallets/ChainDataProvider';
 import { SocialFooter } from './components/layout/SocialFooter';
+import {SwapNew2} from "./pages/SwapNew2";
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -146,7 +147,7 @@ function WrappedApp() {
           )}
           <Routes>
             <Route path="/">
-              <Route index element={<SwapNew supportedCurrencies={smartChainTokenArray} />}></Route>
+              <Route index element={<SwapNew2/>}></Route>
               <Route path="scan">
                 <Route index element={<QuickScan />} />
                 <Route path="2" element={<QuickScanExecute />} />

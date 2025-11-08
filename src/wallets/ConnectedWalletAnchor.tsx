@@ -2,7 +2,7 @@ import { Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import * as React from 'react';
 import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
 import Icon from 'react-icons-kit';
-import { Token, isBtcToken } from '@atomiqlabs/sdk';
+import {Token, isBtcToken, TokenAmount} from '@atomiqlabs/sdk';
 import { useChain } from './hooks/useChain';
 import { BaseButton, BaseButtonVariantProps } from '../components/BaseButton';
 import { WalletBalanceResult } from './hooks/useWalletBalance';
@@ -28,15 +28,15 @@ export function ConnectedWalletAnchor({
   variantButton = 'transparent',
   simple = false,
   maxSpendable,
-  inputRef,
+  setMax,
 }: {
   className?: string;
   noText?: boolean;
   simple?: boolean;
   currency: Token;
   variantButton?: BaseButtonVariantProps;
-  maxSpendable?: WalletBalanceResult;
-  inputRef?: React.RefObject<{ setValue: (value: string) => void }>;
+  maxSpendable?: TokenAmount;
+  setMax?: () => void;
 }) {
   const { wallet, hasWallets, chainId } = useChain(currency);
   const { connectWallet, disconnectWallet, changeWallet } = useContext(ChainDataContext);
@@ -52,18 +52,16 @@ export function ConnectedWalletAnchor({
         <img width={16} height={16} src={wallet.icon} alt={wallet.name} />
         {!isLightning && (
           <>
-            {maxSpendable?.balance?.amount ? (
+            {maxSpendable?.amount ? (
               <>
                 <div className="wallet-connections__amount">
-                  {maxSpendable.balance.amount} {currency.ticker}
+                  {maxSpendable.amount} {currency.ticker}
                 </div>
-                {inputRef ? (
+                {setMax ? (
                   <BaseButton
                     variant="border-only"
                     className="wallet-connections__simple__max"
-                    onClick={() => {
-                      inputRef.current.setValue(maxSpendable?.balance?.amount);
-                    }}
+                    onClick={setMax}
                   >
                     max
                   </BaseButton>
