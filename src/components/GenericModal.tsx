@@ -10,6 +10,7 @@ export interface GenericModalProps {
   title: string;
   children: ReactNode;
   size?: 'sm' | 'md' | 'lg';
+  type?: 'default' | 'notice';
   icon?: string;
   enableClose?: boolean;
 }
@@ -18,6 +19,7 @@ export const GenericModal: FC<GenericModalProps> = ({
   className = '',
   container = 'body',
   visible,
+  type,
   onClose,
   title,
   children,
@@ -112,7 +114,7 @@ export const GenericModal: FC<GenericModalProps> = ({
       <div
         aria-labelledby="generic-modal-title"
         aria-modal="true"
-        className={`generic-modal ${fadeIn && 'generic-modal-fade-in'} generic-modal--${size} ${className}`}
+        className={`generic-modal ${fadeIn && 'generic-modal-fade-in'} generic-modal--${size} is-${type} ${className}`}
         ref={ref}
         role="dialog"
       >

@@ -18,6 +18,29 @@
   &.generic-modal-fade-in {
     opacity: 1;
   }
+  &.is-notice {
+    @apply flex flex-col gap-[20px] text-white;
+
+    .sc-text {
+      @apply text-[16px] mb-6;
+
+      b {
+        @apply font-semibold;
+      }
+    }
+
+    .sc-button {
+      @apply w-full mt-6 text-[16px];
+    }
+
+    .generic-modal-wrapper {
+      @apply items-center text-center flex flex-col p-6;
+    }
+
+    .generic-modal-title {
+      @apply text-center text-[18px] mb-3 leading-none font-semibold;
+    }
+  }
 }
 
 .generic-modal-container {

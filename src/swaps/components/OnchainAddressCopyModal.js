@@ -8,7 +8,7 @@ export function OnchainAddressCopyModal(props) {
     props.openRef.current = () => {
         setOpenAppModalOpened(true);
     };
-    return (_jsxs(GenericModal, { visible: openAppModalOpened, size: "sm", className: "onchain-address-copy-modal", icon: "Notice", onClose: () => setOpenAppModalOpened(false), title: "Important notice", enableClose: false, children: [_jsxs("p", { className: "onchain-address-copy-modal__text", children: ["Make sure you send ", _jsxs("b", { children: ["EXACTLY ", props.amountBtc, " BTC"] }), ", as sending a different amount will not be accepted, and you might lose your funds!"] }), _jsx(ValidatedInput, { type: "checkbox", placeholder: "Don't show this warning again", onChange: (checked) => props.setShowCopyWarning(!checked) }), _jsx(BaseButton, { variant: "secondary", className: "onchain-address-copy-modal__button", onClick: () => {
+    return (_jsxs(GenericModal, { visible: openAppModalOpened, size: "sm", className: "onchain-address-copy-modal", icon: "Notice", type: "notice", onClose: () => setOpenAppModalOpened(false), title: "Important notice", enableClose: false, children: [_jsxs("p", { className: "sc-text", children: ["Make sure you send ", _jsxs("b", { children: ["EXACTLY ", props.amountBtc, " BTC"] }), ", as sending a different amount will not be accepted, and you might lose your funds!"] }), _jsx(ValidatedInput, { type: "checkbox", placeholder: "Don't show this warning again", onChange: (checked) => props.setShowCopyWarning(!checked) }), _jsx(BaseButton, { variant: "secondary", className: "sc-button", onClick: () => {
                     setOpenAppModalOpened(false);
                 }, children: "Understood, copy address" })] }));
 }

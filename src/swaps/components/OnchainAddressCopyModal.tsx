@@ -21,11 +21,12 @@ export function OnchainAddressCopyModal(props: {
       size="sm"
       className="onchain-address-copy-modal"
       icon="Notice"
+      type="notice"
       onClose={() => setOpenAppModalOpened(false)}
       title="Important notice"
       enableClose={false}
     >
-      <p className="onchain-address-copy-modal__text">
+      <p className="sc-text">
         Make sure you send <b>EXACTLY {props.amountBtc} BTC</b>, as sending a different amount will
         not be accepted, and you might lose your funds!
       </p>
@@ -36,7 +37,7 @@ export function OnchainAddressCopyModal(props: {
       />
       <BaseButton
         variant="secondary"
-        className="onchain-address-copy-modal__button"
+        className="sc-button"
         onClick={() => {
           setOpenAppModalOpened(false);
         }}

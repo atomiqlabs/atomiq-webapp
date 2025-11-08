@@ -1,12 +1,13 @@
-import * as React from "react";
-import { Button, CloseButton, Modal } from "react-bootstrap";
-import Icon from "react-icons-kit";
-import { info } from "react-icons-kit/fa/info";
-import { useState } from "react";
+import * as React from 'react';
+import { useState } from 'react';
+import { GenericModal } from '../../components/GenericModal';
+import { BaseButton } from '../../components/BaseButton';
+import ValidatedInput from '../../components/ValidatedInput';
 
 export function LightningHyperlinkModal(props: {
   openRef: React.MutableRefObject<() => void>;
   hyperlink: string;
+  setShowHyperlinkWarning: (value: boolean) => void;
 }) {
   const [openAppModalOpened, setOpenAppModalOpened] = useState<boolean>(false);
 
@@ -15,50 +16,34 @@ export function LightningHyperlinkModal(props: {
   };
 
   return (
-    <Modal
-      contentClassName="text-white bg-dark"
+    <GenericModal
+      visible={openAppModalOpened}
       size="sm"
-      centered
-      show={openAppModalOpened}
-      onHide={() => setOpenAppModalOpened(false)}
-      dialogClassName="min-width-400px"
+      type="notice"
+      icon="Notice"
+      onClose={() => setOpenAppModalOpened(false)}
+      title="Important notice"
+      enableClose={true}
     >
-      <Modal.Header className="border-0">
-        <Modal.Title
-          id="contained-modal-title-vcenter"
-          className="d-flex flex-grow-1"
-        >
-          <Icon icon={info} className="d-flex align-items-center me-2" />{" "}
-          Important notice
-          <CloseButton
-            className="ms-auto"
-            variant="white"
-            onClick={() => setOpenAppModalOpened(false)}
-          />
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <p>
-          Please make sure that you return back to this dApp once you inititated
-          a Lightning Network payment from your wallet app.{" "}
-          <b>
-            The Lightning Network payment will only succeed/confirm once you
-            come back to the dApp and claim the funds on the Solana side!
-          </b>
-        </p>
-      </Modal.Body>
-      <Modal.Footer className="border-0 d-flex">
-        <Button
-          variant="primary"
-          className="flex-grow-1"
-          onClick={() => {
-            window.location.href = props.hyperlink;
-            setOpenAppModalOpened(false);
-          }}
-        >
-          Understood, continue
-        </Button>
-      </Modal.Footer>
-    </Modal>
+      <p className="sc-text">
+        The payment will not succeed unless you{' '}
+        <strong>return to the web app and claim the swap.</strong>
+      </p>
+      <ValidatedInput
+        type="checkbox"
+        placeholder="Don't show this warning again"
+        onChange={(checked: boolean) => props.setShowHyperlinkWarning(!checked)}
+      />
+      <BaseButton
+        variant="secondary"
+        className="sc-button"
+        onClick={() => {
+          window.location.href = props.hyperlink;
+          setOpenAppModalOpened(false);
+        }}
+      >
+        Understood, pay with LN wallet
+      </BaseButton>
+    </GenericModal>
   );
 }

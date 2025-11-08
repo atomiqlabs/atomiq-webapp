@@ -44,12 +44,20 @@ export function FromBTCLNQuoteSummary(props: {
   const canClaimInOneShot = props.quote?.canCommitAndClaimInOneShot();
   const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
   const [autoClaim, setAutoClaim] = useLocalStorage('crossLightning-autoClaim', false);
+  const [showHyperlinkWarning, setShowHyperlinkWarning] = useLocalStorage(
+    'crossLightning-showHyperlinkWarning',
+    true
+  );
   const [initClicked, setInitClicked] = useState<boolean>(false);
 
   const openModalRef = useRef<() => void>(null);
   const onHyperlink = useCallback(() => {
-    openModalRef.current();
-  }, []);
+    if (showHyperlinkWarning) {
+      openModalRef.current();
+    } else {
+      window.location.href = props.quote.getHyperlink();
+    }
+  }, [showHyperlinkWarning, props.quote]);
 
   const {
     waitForPayment,
@@ -154,7 +162,11 @@ export function FromBTCLNQuoteSummary(props: {
 
   return (
     <>
-      <LightningHyperlinkModal openRef={openModalRef} hyperlink={props.quote.getHyperlink()} />
+      <LightningHyperlinkModal
+        openRef={openModalRef}
+        hyperlink={props.quote.getHyperlink()}
+        setShowHyperlinkWarning={setShowHyperlinkWarning}
+      />
 
       <div className="swap-panel__card">
         {isInitiated ? (

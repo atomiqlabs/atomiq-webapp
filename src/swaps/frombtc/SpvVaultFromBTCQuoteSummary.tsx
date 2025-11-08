@@ -249,13 +249,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
             className="d-flex flex-row"
           >
             {sendLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
-            Pay with <img
-              width={20}
-              height={20}
-              src={bitcoinWallet?.icon}
-              className="ms-2 me-1"
-            />{' '}
-            {bitcoinWallet?.name}
+            Pay with <img width={20} height={20} src={bitcoinWallet?.icon} /> {bitcoinWallet?.name}
           </ButtonWithWallet>
         </>
       ) : (

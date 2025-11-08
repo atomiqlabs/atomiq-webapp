@@ -125,7 +125,7 @@ export function LightningQR(props: {
                 });
               }}
             >
-              <img width={20} height={20} src="/wallets/WebLN.png" className="ms-2 me-1" />
+              <img width={20} height={20} src="/wallets/WebLN-outline.svg" />
               Pay via WebLN
             </BaseButton>
           </div>
@@ -165,7 +165,7 @@ export function LightningQR(props: {
               }}
             >
               {payLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
-              <img width={20} height={20} src="/wallets/WebLN.png" className="ms-2 me-1" />
+              <img width={20} height={20} src="/wallets/WebLN-outline.svg" />
               Pay via WebLN
             </BaseButton>
             <BaseButton
