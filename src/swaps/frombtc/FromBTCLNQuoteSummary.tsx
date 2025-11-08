@@ -278,7 +278,7 @@ export function FromBTCLNQuoteSummary(props: {
               onClick={() => onClaim()}
               disabled={claiming || !isClaimClaimable}
               size={isClaimClaimable ? 'lg' : 'sm'}
-              className="mt-2"
+              className="swap-panel__action"
             >
               {claiming ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
               {claiming ? '2. Claiming funds...' : '2. Finish swap (claim funds)'}
@@ -294,6 +294,7 @@ export function FromBTCLNQuoteSummary(props: {
       {isCreated && !paymentWaiting ? (
         smartChainWallet === undefined ? (
           <ButtonWithWallet
+            className="swap-panel__action"
             chainId={props.quote.chainIdentifier}
             requiredWalletAddress={props.quote._getInitiator()}
             size="lg"
