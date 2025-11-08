@@ -35,10 +35,17 @@ export function SwapConfirmations(props: SwapConfirmationsProps) {
 
         <div className="swap-confirmations__estimate">
           <Spinner />
-          <label>
-            {confirmations} / {confTarget}
-          </label>
-          <label>Confirmations</label>
+          <div className="swap-confirmations__estimate__info">
+            <div className="swap-confirmations__estimate__item">
+              {confirmations} / {confTarget} Confirmations
+            </div>
+            <div className="swap-confirmations__estimate__item is-eta">
+              ETA:{' '}
+              {txEtaMs === -1 || txEtaMs > 60 * 60 * 1000
+                ? '>1 hour'
+                : '~' + getDeltaText(txEtaMs, true)}
+            </div>
+          </div>
         </div>
 
         <a
@@ -49,11 +56,6 @@ export function SwapConfirmations(props: SwapConfirmationsProps) {
           <div className="sc-text">View transaction</div>
           <div className="icon icon-new-window"></div>
         </a>
-
-        <Badge className={'text-black' + (txEtaMs == null ? ' d-none' : '')} bg="light" pill>
-          ETA:{' '}
-          {txEtaMs === -1 || txEtaMs > 60 * 60 * 1000 ? '>1 hour' : '~' + getDeltaText(txEtaMs)}
-        </Badge>
       </div>
     );
   }

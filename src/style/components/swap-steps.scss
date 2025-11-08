@@ -31,7 +31,7 @@
     }
 
     &__icon {
-      @apply w-[40px] h-[40px] rounded-full border-2 border-solid border-white/30 flex items-center justify-center leading-none;
+      @apply w-[38px] h-[38px] rounded-full border-2 border-solid border-white/30 flex items-center justify-center leading-none;
 
       &.is-failed {
         @apply border-red text-red bg-red/10;
@@ -42,11 +42,11 @@
       }
 
       &.is-loading {
-        @apply border-transparent relative;
+        @apply border-white/30 relative;
 
         &::before {
           content: '';
-          @apply absolute inset-0 rounded-full;
+          @apply absolute inset-[-2px] rounded-full;
           border: 2px solid white;
           border-bottom-color: transparent;
           animation: spinner-spin 3s linear infinite;

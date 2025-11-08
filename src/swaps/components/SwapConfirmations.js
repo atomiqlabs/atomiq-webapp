@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { Badge, Spinner } from 'react-bootstrap';
+import { Spinner } from 'react-bootstrap';
 import { getDeltaText } from '../../utils/Utils';
 import { FEConstants } from '../../FEConstants';
 import { ErrorAlert } from '../../components/ErrorAlert';
@@ -8,7 +8,9 @@ export function SwapConfirmations(props) {
     // State 1: Confirming - Transaction received, waiting for confirmations
     if (props.txData && !props.isClaimable) {
         const { txId, confirmations, confTarget, txEtaMs } = props.txData;
-        return (_jsxs("div", { className: "swap-confirmations", children: [_jsx("div", { className: "swap-confirmations__name", children: "Transaction received, waiting for confirmations..." }), _jsxs("div", { className: "swap-confirmations__estimate", children: [_jsx(Spinner, {}), _jsxs("label", { children: [confirmations, " / ", confTarget] }), _jsx("label", { children: "Confirmations" })] }), _jsxs("a", { href: FEConstants.btcBlockExplorer + txId, target: "_blank", className: "swap-confirmations__link", children: [_jsx("div", { className: "sc-text", children: "View transaction" }), _jsx("div", { className: "icon icon-new-window" })] }), _jsxs(Badge, { className: 'text-black' + (txEtaMs == null ? ' d-none' : ''), bg: "light", pill: true, children: ["ETA:", ' ', txEtaMs === -1 || txEtaMs > 60 * 60 * 1000 ? '>1 hour' : '~' + getDeltaText(txEtaMs)] })] }));
+        return (_jsxs("div", { className: "swap-confirmations", children: [_jsx("div", { className: "swap-confirmations__name", children: "Transaction received, waiting for confirmations..." }), _jsxs("div", { className: "swap-confirmations__estimate", children: [_jsx(Spinner, {}), _jsxs("div", { className: "swap-confirmations__estimate__info", children: [_jsxs("div", { className: "swap-confirmations__estimate__item", children: [confirmations, " / ", confTarget, " Confirmations"] }), _jsxs("div", { className: "swap-confirmations__estimate__item is-eta", children: ["ETA:", ' ', txEtaMs === -1 || txEtaMs > 60 * 60 * 1000
+                                            ? '>1 hour'
+                                            : '~' + getDeltaText(txEtaMs, true)] })] })] }), _jsxs("a", { href: FEConstants.btcBlockExplorer + txId, target: "_blank", className: "swap-confirmations__link", children: [_jsx("div", { className: "sc-text", children: "View transaction" }), _jsx("div", { className: "icon icon-new-window" })] })] }));
     }
     // State 2: Confirmed - Transaction confirmed, waiting for watchtowers
     if (props.isClaimable && !props.claimable) {

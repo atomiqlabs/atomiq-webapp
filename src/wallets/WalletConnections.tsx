@@ -1,14 +1,9 @@
-import {useContext, useMemo, useState} from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Badge, Dropdown } from 'react-bootstrap';
 import * as React from 'react';
 import { ChainDataContext } from './context/ChainDataContext';
 import { ChainWalletData } from './ChainDataProvider';
 import { BaseButton } from '../components/BaseButton';
-import { ConnectedWalletAnchor } from './ConnectedWalletAnchor';
-import { useStateWithOverride } from '../utils/hooks/useStateWithOverride';
-import { smartChainTokenArray } from '../tokens/Tokens';
-import { Tokens } from '../FEConstants';
-import {Token} from "@atomiqlabs/sdk";
 
 type MultichainWallet = {
   name: string;
@@ -111,16 +106,15 @@ export function WalletConnections() {
       };
     }
 
-    return [
-      Object.keys(connectedWallets).map(key => connectedWallets[key]),
-      nonConnectedChains
-    ];
+    return [Object.keys(connectedWallets).map((key) => connectedWallets[key]), nonConnectedChains];
   }, [chains, connectWallet]);
 
   return (
     <div className="wallet-connections">
       {connectedWallets &&
-        connectedWallets.map((value) => <MultichainWalletDisplay key={value.name} wallet={value} />)}
+        connectedWallets.map((value) => (
+          <MultichainWalletDisplay key={value.name} wallet={value} />
+        ))}
 
       {nonConnectedChains.length > 0 ? (
         <Dropdown align="end">

@@ -366,7 +366,7 @@ export function FromBTCQuoteSummary(props: {
     };
   if (isSuccess)
     executionSteps[2] = {
-      icon: ic_verified_outline,
+      icon: ic_check_outline,
       text: 'Claim success',
       type: 'success',
     };
@@ -644,7 +644,10 @@ export function FromBTCQuoteSummary(props: {
         />
       ) : null}
 
-      {(isCommited || isReceived) &&
+      {isCommited &&
+        !isReceived &&
+        !isClaimable &&
+        !isClaiming &&
         (waitPaymentError == null ? (
           <BaseButton
             onClick={props.abortSwap}
