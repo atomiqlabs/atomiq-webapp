@@ -20,6 +20,7 @@ import { useWithAwait } from '../utils/hooks/useWithAwait';
 import { ChainDataContext } from '../wallets/context/ChainDataContext';
 import { ChainWalletData } from '../wallets/ChainDataProvider';
 import { getChainIdentifierForCurrency, toTokenIdentifier } from '../tokens/Tokens';
+import {FromBTCLNQuoteSummary2} from "./frombtc/FromBTCLNQuoteSummary2";
 
 export function QuoteSummary(props: {
   quote: ISwap;
@@ -112,7 +113,7 @@ export function QuoteSummary(props: {
         );
       } else {
         swapElement = (
-          <FromBTCLNQuoteSummary
+          <FromBTCLNQuoteSummary2
             type={props.type}
             setAmountLock={props.setAmountLock}
             quote={_quote}

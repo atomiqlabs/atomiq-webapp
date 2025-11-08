@@ -18,7 +18,7 @@ import { AlertMessage } from '../../components/AlertMessage';
 
 export function LightningQR(props: {
   quote: FromBTCLNSwap | LnForGasSwap;
-  payInstantly: boolean;
+  payInstantly?: boolean;
   setAutoClaim?: (val: boolean) => void;
   autoClaim?: boolean;
   onHyperlink?: () => void;

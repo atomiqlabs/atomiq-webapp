@@ -5,23 +5,21 @@ import { BaseButton } from '../../components/BaseButton';
 import ValidatedInput from '../../components/ValidatedInput';
 
 export function LightningHyperlinkModal(props: {
-  openRef: React.MutableRefObject<() => void>;
-  hyperlink: string;
-  setShowHyperlinkWarning: (value: boolean) => void;
-}) {
-  const [openAppModalOpened, setOpenAppModalOpened] = useState<boolean>(false);
+  openRef?: any,
+  hyperlink?: any,
 
-  props.openRef.current = () => {
-    setOpenAppModalOpened(true);
-  };
+  opened?: boolean;
+  close?: (accepted: boolean) => void,
+  setShowHyperlinkWarning?: (value: boolean) => void;
+}) {
 
   return (
     <GenericModal
-      visible={openAppModalOpened}
+      visible={props.opened}
       size="sm"
       type="notice"
       icon="Notice"
-      onClose={() => setOpenAppModalOpened(false)}
+      onClose={() => props.close(false)}
       title="Important notice"
       enableClose={true}
     >
@@ -37,10 +35,7 @@ export function LightningHyperlinkModal(props: {
       <BaseButton
         variant="secondary"
         className="sc-button"
-        onClick={() => {
-          window.location.href = props.hyperlink;
-          setOpenAppModalOpened(false);
-        }}
+        onClick={() => props.close(true)}
       >
         Understood, pay with LN wallet
       </BaseButton>

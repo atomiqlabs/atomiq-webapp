@@ -2,7 +2,6 @@ import { jsx as _jsx } from "react/jsx-runtime";
 import { IFromBTCSwap, IToBTCSwap, SwapType, } from '@atomiqlabs/sdk';
 import { ToBTCQuoteSummary } from './tobtc/ToBTCQuoteSummary';
 import { LNURLWithdrawQuoteSummary } from './frombtc/LNURLWithdrawQuoteSummary';
-import { FromBTCLNQuoteSummary } from './frombtc/FromBTCLNQuoteSummary';
 import { FromBTCQuoteSummary } from './frombtc/FromBTCQuoteSummary';
 import { useContext } from 'react';
 import { FEConstants } from '../FEConstants';
@@ -10,6 +9,7 @@ import { SpvVaultFromBTCQuoteSummary } from './frombtc/SpvVaultFromBTCQuoteSumma
 import { useWithAwait } from '../utils/hooks/useWithAwait';
 import { ChainDataContext } from '../wallets/context/ChainDataContext';
 import { getChainIdentifierForCurrency, toTokenIdentifier } from '../tokens/Tokens';
+import { FromBTCLNQuoteSummary2 } from "./frombtc/FromBTCLNQuoteSummary2";
 export function QuoteSummary(props) {
     const chainsData = useContext(ChainDataContext);
     const [notEnoughForGas] = useWithAwait(async () => {
@@ -56,7 +56,7 @@ export function QuoteSummary(props) {
                 swapElement = (_jsx(LNURLWithdrawQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: _quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas }));
             }
             else {
-                swapElement = (_jsx(FromBTCLNQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: _quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: notEnoughForGas }));
+                swapElement = (_jsx(FromBTCLNQuoteSummary2, { type: props.type, setAmountLock: props.setAmountLock, quote: _quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: notEnoughForGas }));
             }
             break;
         case SwapType.SPV_VAULT_FROM_BTC:
