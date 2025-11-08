@@ -2,7 +2,7 @@
   @apply flex items-center justify-between py-4 gap-6;
 
   &__content {
-    @apply flex flex-col gap-1 items-start flex-1;
+    @apply flex flex-col gap-1 items-start flex-1 min-w-0;
   }
 
   &__title {
@@ -10,12 +10,16 @@
   }
 
   &__address {
-    @apply flex items-center gap-[8px] w-full justify-between;
+    @apply flex items-center gap-[8px] w-full justify-between min-w-0;
 
     .sc-text {
       @apply text-[14px];
       color: rgba(255, 255, 255, 0.9);
-      word-break: break-all;
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 

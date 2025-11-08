@@ -1,12 +1,8 @@
-import { Badge, Button, Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import { Badge, Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import { CopyOverlay } from '../../components/CopyOverlay';
 import { QRCodeSVG } from 'qrcode.react';
-import ValidatedInput, { ValidatedInputRef } from '../../components/ValidatedInput';
-import Icon from 'react-icons-kit';
-import { clipboard } from 'react-icons-kit/fa/clipboard';
-import { externalLink } from 'react-icons-kit/fa/externalLink';
 import * as React from 'react';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { FromBTCLNSwap, LnForGasSwap } from '@atomiqlabs/sdk';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { useAsync } from '../../utils/hooks/useAsync';
@@ -17,6 +13,8 @@ import { useChain } from '../../wallets/hooks/useChain';
 import { BaseButton } from '../../components/BaseButton';
 import { SwapStepAlert } from './SwapStepAlert';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
+import { WalletAddressPreview } from '../../components/WalletAddressPreview';
+import { AlertMessage } from '../../components/AlertMessage';
 
 export function LightningQR(props: {
   quote: FromBTCLNSwap | LnForGasSwap;
@@ -48,8 +46,6 @@ export function LightningQR(props: {
     !(props.quote instanceof FromBTCLNSwap)
   );
 
-  const textFieldRef = useRef<ValidatedInputRef>();
-
   const [pay, payLoading, payResult, payError] = useAsync(
     () => lightningChainData.wallet.instance.sendPayment(props.quote.getAddress()),
     [lightningChainData.wallet, props.quote]
@@ -64,67 +60,55 @@ export function LightningQR(props: {
     (show) => {
       return (
         <>
-          <div className="mb-2">
-            <QRCodeSVG
-              value={props.quote.getHyperlink()}
-              size={300}
-              includeMargin={true}
-              className="cursor-pointer"
-              onClick={(event) => {
-                show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
-              }}
-              imageSettings={
-                NFCScanning === NFCStartResult.OK
-                  ? {
-                      src: '/icons/contactless.png',
-                      excavate: true,
-                      height: 50,
-                      width: 50,
-                    }
-                  : null
-              }
-            />
-          </div>
-          <label>Please initiate a payment to this lightning network invoice</label>
-          <ValidatedInput
-            type={'text'}
-            value={props.quote.getAddress()}
-            textEnd={
-              <a
-                href="#"
-                onClick={(event) => {
-                  event.preventDefault();
-                  show(
-                    event.target as HTMLElement,
-                    props.quote.getAddress(),
-                    textFieldRef.current?.input?.current
-                  );
-                }}
-              >
-                <Icon icon={clipboard} />
-              </a>
+          <AlertMessage variant="warning" className="mb-3">
+            Please initiate a payment to this <strong>Lightning Network invoice</strong>
+          </AlertMessage>
+          <QRCodeSVG
+            value={props.quote.getHyperlink()}
+            size={240}
+            includeMargin={true}
+            className="cursor-pointer"
+            onClick={(event) => {
+              show(event.target, props.quote.getAddress());
+            }}
+            imageSettings={
+              NFCScanning === NFCStartResult.OK
+                ? {
+                    src: '/icons/contactless.png',
+                    excavate: true,
+                    height: 50,
+                    width: 50,
+                  }
+                : null
             }
-            inputRef={textFieldRef}
           />
-          <div className="d-flex justify-content-center mt-2">
-            <Button
-              variant="light"
+
+          <WalletAddressPreview
+            address={props.quote.getAddress()}
+            chainName="Lightning Network"
+            numberName={'invoice'}
+            onCopy={() => {
+              // Optional: Add any copy callback logic here
+            }}
+          />
+          <div className="payment-awaiting-buttons">
+            <BaseButton
+              variant="secondary"
               onClick={
                 props.onHyperlink ||
                 (() => {
                   window.location.href = props.quote.getHyperlink();
                 })
               }
-              className="d-flex flex-row align-items-center justify-content-center"
             >
-              <Icon icon={externalLink} className="d-flex align-items-center me-2" /> Open in
-              Lightning wallet app
-            </Button>
+              <i className="icon icon-new-window"></i>
+              <div className="sc-text">Open in Lightning Wallet</div>
+            </BaseButton>
           </div>
         </>
       );
     },
-    [props.quote, props.onHyperlink]
+    [props.quote, props.onHyperlink, NFCScanning]
   );
 
   return (

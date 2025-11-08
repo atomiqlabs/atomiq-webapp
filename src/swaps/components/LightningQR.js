@@ -1,12 +1,8 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { Badge, Button, Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import { Badge, Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import { CopyOverlay } from '../../components/CopyOverlay';
 import { QRCodeSVG } from 'qrcode.react';
-import ValidatedInput from '../../components/ValidatedInput';
-import Icon from 'react-icons-kit';
-import { clipboard } from 'react-icons-kit/fa/clipboard';
-import { externalLink } from 'react-icons-kit/fa/externalLink';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { FromBTCLNSwap } from '@atomiqlabs/sdk';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { useAsync } from '../../utils/hooks/useAsync';
@@ -17,6 +13,8 @@ import { useChain } from '../../wallets/hooks/useChain';
 import { BaseButton } from '../../components/BaseButton';
 import { SwapStepAlert } from './SwapStepAlert';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
+import { WalletAddressPreview } from '../../components/WalletAddressPreview';
+import { AlertMessage } from '../../components/AlertMessage';
 export function LightningQR(props) {
     const { swapper } = useContext(SwapsContext);
     const { disconnectWallet } = useContext(ChainDataContext);
@@ -37,7 +35,6 @@ export function LightningQR(props) {
             setPayingWithLNURL(true);
         });
     }, !(props.quote instanceof FromBTCLNSwap));
-    const textFieldRef = useRef();
     const [pay, payLoading, payResult, payError] = useAsync(() => lightningChainData.wallet.instance.sendPayment(props.quote.getAddress()), [lightningChainData.wallet, props.quote]);
     useEffect(() => {
         if (props.quote == null || !props.payInstantly)
@@ -46,23 +43,22 @@ export function LightningQR(props) {
             pay();
     }, [props.quote, props.payInstantly]);
     const qrContent = useCallback((show) => {
-        return (_jsxs(_Fragment, { children: [_jsx("div", { className: "mb-2", children: _jsx(QRCodeSVG, { value: props.quote.getHyperlink(), size: 300, includeMargin: true, className: "cursor-pointer", onClick: (event) => {
-                            show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
-                        }, imageSettings: NFCScanning === NFCStartResult.OK
-                            ? {
-                                src: '/icons/contactless.png',
-                                excavate: true,
-                                height: 50,
-                                width: 50,
-                            }
-                            : null }) }), _jsx("label", { children: "Please initiate a payment to this lightning network invoice" }), _jsx(ValidatedInput, { type: 'text', value: props.quote.getAddress(), textEnd: _jsx("a", { href: "#", onClick: (event) => {
-                            event.preventDefault();
-                            show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
-                        }, children: _jsx(Icon, { icon: clipboard }) }), inputRef: textFieldRef }), _jsx("div", { className: "d-flex justify-content-center mt-2", children: _jsxs(Button, { variant: "light", onClick: props.onHyperlink ||
+        return (_jsxs(_Fragment, { children: [_jsxs(AlertMessage, { variant: "warning", className: "mb-3", children: ["Please initiate a payment to this ", _jsx("strong", { children: "Lightning Network invoice" })] }), _jsx(QRCodeSVG, { value: props.quote.getHyperlink(), size: 240, includeMargin: true, className: "cursor-pointer", onClick: (event) => {
+                        show(event.target, props.quote.getAddress());
+                    }, imageSettings: NFCScanning === NFCStartResult.OK
+                        ? {
+                            src: '/icons/contactless.png',
+                            excavate: true,
+                            height: 50,
+                            width: 50,
+                        }
+                        : null }), _jsx(WalletAddressPreview, { address: props.quote.getAddress(), chainName: "Lightning Network", numberName: 'invoice', onCopy: () => {
+                        // Optional: Add any copy callback logic here
+                    } }), _jsx("div", { className: "payment-awaiting-buttons", children: _jsxs(BaseButton, { variant: "secondary", onClick: props.onHyperlink ||
                             (() => {
                                 window.location.href = props.quote.getHyperlink();
-                            }), className: "d-flex flex-row align-items-center justify-content-center", children: [_jsx(Icon, { icon: externalLink, className: "d-flex align-items-center me-2" }), " Open in Lightning wallet app"] }) })] }));
-    }, [props.quote, props.onHyperlink]);
+                            }), children: [_jsx("i", { className: "icon icon-new-window" }), _jsx("div", { className: "sc-text", children: "Open in Lightning Wallet" })] }) })] }));
+    }, [props.quote, props.onHyperlink, NFCScanning]);
     return (_jsxs("div", { children: [payingWithLNURL ? (_jsxs("div", { className: "d-flex flex-column align-items-center justify-content-center", children: [_jsx(Spinner, { animation: "border" }), "Paying via NFC card..."] })) : lightningChainData.wallet != null ? (_jsxs(_Fragment, { children: [_jsx(SwapStepAlert, { show: !!payError, type: "error", icon: ic_warning, title: "Sending Lightning payment failed", description: payError?.message || payError?.toString(), error: payError, className: "mb-4 mt-0" }), _jsxs("div", { className: "payment-awaiting-buttons", children: [_jsxs(BaseButton, { variant: "secondary", textSize: "sm", className: "d-flex flex-row align-items-center", disabled: payLoading, onClick: () => {
                                     pay();
                                 }, children: [payLoading ? _jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" }) : '', _jsx("img", { width: 20, height: 20, src: "/wallets/WebLN.png", className: "ms-2 me-1" }), "Pay with WebLN"] }), _jsx(BaseButton, { variant: "secondary", textSize: "sm", className: "d-flex flex-row align-items-center", onClick: () => {

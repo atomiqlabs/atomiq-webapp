@@ -401,32 +401,6 @@ export function FromBTCQuoteSummary(props: {
             if (showCopyWarningRef.current) setTimeout(openModalRef.current, 100);
           }}
         />
-        {/* TODO remove if it will be not really needed */}
-        {/*<ValidatedInput*/}
-        {/*  type={'text'}*/}
-        {/*  value={props.quote.getAddress()}*/}
-        {/*  textEnd={*/}
-        {/*    <a*/}
-        {/*      href="#"*/}
-        {/*      onClick={(event) => {*/}
-        {/*        event.preventDefault();*/}
-        {/*        show(*/}
-        {/*          event.target as HTMLElement,*/}
-        {/*          props.quote.getAddress(),*/}
-        {/*          textFieldRef.current?.input?.current*/}
-        {/*        );*/}
-        {/*      }}*/}
-        {/*    >*/}
-        {/*      <Icon icon={clipboard} />*/}
-        {/*    </a>*/}
-        {/*  }*/}
-        {/*  onCopy={() => {*/}
-        {/*    //Direct call to open the modal here breaks the copying, this is a workaround*/}
-        {/*    if (showCopyWarningRef.current) setTimeout(openModalRef.current, 100);*/}
-        {/*  }}*/}
-        {/*  inputRef={textFieldRef}*/}
-        {/*/>*/}
-
         <div className="payment-awaiting-buttons">
           <BaseButton
             variant="secondary"

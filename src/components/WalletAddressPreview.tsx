@@ -4,13 +4,21 @@ import classNames from 'classnames';
 interface WalletAddressPreviewProps {
   address: string;
   chainName?: string;
+  numberName?: string;
   className?: string;
   onCopy?: () => void;
   showIndicator?: boolean;
 }
 
 export function WalletAddressPreview(props: WalletAddressPreviewProps) {
-  const { address, chainName, className, onCopy, showIndicator = true } = props;
+  const {
+    address,
+    chainName,
+    className,
+    onCopy,
+    showIndicator = true,
+    numberName = 'wallet address',
+  } = props;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(address);
@@ -24,7 +32,9 @@ export function WalletAddressPreview(props: WalletAddressPreviewProps) {
   return (
     <div className={componentClassName}>
       <div className="wallet-address-preview__content">
-        <div className="wallet-address-preview__title">{chainName} wallet address</div>
+        <div className="wallet-address-preview__title">
+          {chainName} {numberName}
+        </div>
         <div className="wallet-address-preview__address">
           <div className="sc-text">{address}</div>
           {showIndicator && <div className="wallet-address-preview__indicator"></div>}
