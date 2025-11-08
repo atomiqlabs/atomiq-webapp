@@ -27,7 +27,7 @@ export function LNURLWithdrawQuoteSummary(props) {
             });
         }
     }, [state, onCommit]);
-    return (_jsxs(_Fragment, { children: [isInitiated ? _jsx(StepByStep, { steps: executionSteps }) : '', _jsx(SwapExpiryProgressBar, { expired: isQuoteExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: (isClaimable || isQuoteExpiredClaim) &&
+    return (_jsxs(_Fragment, { children: [isInitiated ? _jsx(StepByStep, { quote: props.quote, steps: executionSteps }) : '', _jsx(SwapExpiryProgressBar, { expired: isQuoteExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: (isClaimable || isQuoteExpiredClaim) &&
                     !committing &&
                     !claiming &&
                     smartChainWallet !== undefined }), isCreated || isClaimable ? (smartChainWallet === undefined ? (_jsx(ButtonWithWallet, { className: "swap-panel__action", chainId: props.quote.chainIdentifier, requiredWalletAddress: props.quote._getInitiator(), size: "lg" })) : (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "mb-3", title: 'Swap ' +

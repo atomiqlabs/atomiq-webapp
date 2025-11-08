@@ -226,7 +226,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
 
   return (
     <>
-      {isInitiated || (isCreated && sendLoading) ? <StepByStep steps={executionSteps} /> : ''}
+      {isInitiated || (isCreated && sendLoading) ? <StepByStep quote={props.quote} steps={executionSteps} /> : ''}
 
       <SwapExpiryProgressBar
         expired={isQuoteExpired}

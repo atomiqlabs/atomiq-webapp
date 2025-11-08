@@ -62,7 +62,7 @@ export function LNURLWithdrawQuoteSummary(props: {
 
   return (
     <>
-      {isInitiated ? <StepByStep steps={executionSteps} /> : ''}
+      {isInitiated ? <StepByStep quote={props.quote} steps={executionSteps} /> : ''}
 
       <SwapExpiryProgressBar
         expired={isQuoteExpired}
