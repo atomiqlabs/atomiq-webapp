@@ -89,7 +89,7 @@ export function StepByStep(props: {
           )}
         </div>
       </div>
-      {props.destinationWallet.address && (
+      {props.destinationWallet?.address && (
         <div className="swap-steps__address">
           <div>Destination {props.destinationWallet.chainName ?? ''} Wallet Address:</div>
           <div>

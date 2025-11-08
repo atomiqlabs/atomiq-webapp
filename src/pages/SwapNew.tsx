@@ -469,10 +469,10 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                         <ConnectedWalletAnchor
                           noText={false}
                           simple={true}
-                          inputRef={inputRef}
+                          // inputRef={inputRef}
                           currency={inputToken}
                           variantButton="clear"
-                          maxSpendable={maxSpendable}
+                          maxSpendable={maxSpendable?.balance}
                         />
                       </div>
                     </div>
@@ -482,7 +482,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                         noText={false}
                         simple={true}
                         currency={inputToken}
-                        maxSpendable={maxSpendable}
+                        maxSpendable={maxSpendable?.balance}
                         variantButton="clear"
                       />
                     </div>
@@ -603,7 +603,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                         simple={true}
                         currency={outputToken}
                         variantButton="clear"
-                        maxSpendable={outputMaxSpendable}
+                        maxSpendable={outputMaxSpendable?.balance}
                       />
                     </div>
                   </div>
