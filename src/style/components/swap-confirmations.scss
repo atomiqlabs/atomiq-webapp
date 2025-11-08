@@ -1,0 +1,21 @@
+.swap-confirmations {
+  @apply py-[20px] rounded-lg flex flex-col justify-around items-center gap-3 relative mt-3;
+
+  background-color: rgb(255 255 255 / 0.05);
+
+  &__name {
+    @apply text-base;
+  }
+
+  &__estimate {
+    @apply flex items-center gap-2;
+  }
+
+  &__link {
+    @apply flex gap-2 no-underline font-semibold items-center mt-3 text-pink hover:text-pink/90 transition-all;
+
+    &:hover .sc-text {
+      @apply underline;
+    }
+  }
+}

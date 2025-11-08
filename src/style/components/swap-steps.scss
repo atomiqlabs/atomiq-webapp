@@ -23,8 +23,8 @@
   }
 
   &__indicator {
-    background-color: rgb(255 255 255 / 0.05);
     @apply py-6 rounded-lg flex justify-around items-start gap-4 relative;
+    background-color: rgb(255 255 255 / 0.05);
 
     &__text {
       @apply mt-[12px];
@@ -85,7 +85,7 @@
 }
 
 .payment-awaiting-buttons {
-  @apply flex justify-center gap-3;
+  @apply flex justify-center gap-3 w-full;
 
   .base-button {
     @apply text-[16px] flex-1 rounded-lg p-1;

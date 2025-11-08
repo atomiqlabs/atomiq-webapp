@@ -1,14 +1,13 @@
 import * as React from 'react';
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Badge, Button, Spinner } from 'react-bootstrap';
+import { Spinner } from 'react-bootstrap';
 import { AlertMessage } from '../../components/AlertMessage';
 import { QRCodeSVG } from 'qrcode.react';
 import { ValidatedInputRef } from '../../components/ValidatedInput';
 import { FromBTCSwap, FromBTCSwapState } from '@atomiqlabs/sdk';
 import Icon from 'react-icons-kit';
 import { externalLink } from 'react-icons-kit/fa/externalLink';
-import { getDeltaText } from '../../utils/Utils';
-import { FEConstants, Tokens } from '../../FEConstants';
+import { Tokens } from '../../FEConstants';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
 import { ScrollAnchor } from '../../components/ScrollAnchor';
 import { CopyOverlay } from '../../components/CopyOverlay';
@@ -32,7 +31,6 @@ import { useStateRef } from '../../utils/hooks/useStateRef';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
 import { OnchainAddressCopyModal } from '../components/OnchainAddressCopyModal';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { ErrorAlert } from '../../components/ErrorAlert';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { BaseButton } from '../../components/BaseButton';
@@ -42,6 +40,7 @@ import { SwapStepAlert } from '../components/SwapStepAlert';
 import { TokenIcons } from '../../tokens/Tokens';
 import { usePricing } from '../../tokens/hooks/usePricing';
 import { WalletAddressPreview } from '../../components/WalletAddressPreview';
+import { SwapConfirmations, TxData } from '../components/SwapConfirmations';
 
 /*
 Steps:
@@ -77,9 +76,9 @@ export function FromBTCQuoteSummary(props: {
 
   const [callPayFlag, setCallPayFlag] = useState<boolean>(false);
   useEffect(() => {
-    if(!callPayFlag) return;
+    if (!callPayFlag) return;
     setCallPayFlag(false);
-    if(!bitcoinChainData.wallet) return;
+    if (!bitcoinChainData.wallet) return;
     payBitcoin();
   }, [callPayFlag, bitcoinChainData.wallet, payBitcoin]);
 
@@ -131,12 +130,7 @@ export function FromBTCQuoteSummary(props: {
   const textFieldRef = useRef<ValidatedInputRef>();
   const openModalRef = useRef<() => void>(null);
 
-  const [txData, setTxData] = useState<{
-    txId: string;
-    confirmations: number;
-    confTarget: number;
-    txEtaMs: number;
-  }>(null);
+  const [txData, setTxData] = useState<TxData | null>(null);
 
   // Helper function to check if error is a user cancellation
   const isUserCancellation = useCallback((error: any): boolean => {
@@ -448,9 +442,9 @@ export function FromBTCQuoteSummary(props: {
           <BaseButton
             variant="secondary"
             onClick={() => {
-              connectWallet("BITCOIN").then(success => {
+              connectWallet('BITCOIN').then((success) => {
                 //Call payBitcoin on next state update
-                if(success) setCallPayFlag(true);
+                if (success) setCallPayFlag(true);
               });
             }}
           >
@@ -515,7 +509,7 @@ export function FromBTCQuoteSummary(props: {
                 <>
                   <div className="d-flex flex-column align-items-center justify-content-center">
                     {payTxId != null ? (
-                      <div className="d-flex flex-column align-items-center p-2">
+                      <div className="d-flex flex-column align-items-center p-2 gap-3">
                         <Spinner />
                         <label>Sending Bitcoin transaction...</label>
                       </div>
@@ -570,75 +564,16 @@ export function FromBTCQuoteSummary(props: {
           ''
         )}
 
-        {isReceived ? (
-          <div className="d-flex flex-column align-items-center tab-accent">
-            <small className="mb-2">
-              Transaction successfully received, waiting for confirmations...
-            </small>
-
-            <Spinner />
-            <label>
-              {txData.confirmations} / {txData.confTarget}
-            </label>
-            <label style={{ marginTop: '-6px' }}>Confirmations</label>
-
-            <a
-              className="mb-2 text-overflow-ellipsis text-nowrap overflow-hidden"
-              style={{ width: '100%' }}
-              target="_blank"
-              href={FEConstants.btcBlockExplorer + txData.txId}
-            >
-              <small>{txData.txId}</small>
-            </a>
-
-            <Badge
-              className={'text-black' + (txData.txEtaMs == null ? ' d-none' : '')}
-              bg="light"
-              pill
-            >
-              ETA:{' '}
-              {txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
-                ? '>1 hour'
-                : '~' + getDeltaText(txData.txEtaMs)}
-            </Badge>
-          </div>
-        ) : (
-          ''
-        )}
-
-        {isClaimable && !(claimable || isAlreadyClaimable) ? (
-          <div className="d-flex flex-column align-items-center tab-accent">
-            <Spinner />
-            <small className="mt-2">
-              Transaction received & confirmed, waiting for claim by watchtowers...
-            </small>
-          </div>
-        ) : (
-          ''
-        )}
-
-        {(isClaimable || isClaiming) && (claimable || isAlreadyClaimable) ? (
-          <>
-            <div className="d-flex flex-column align-items-center tab-accent mb-3">
-              <label>
-                Transaction received & confirmed, you can claim your funds manually now!
-              </label>
-            </div>
-
-            <ErrorAlert className="mb-3" title="Claim error" error={claimError} />
-
-            <ButtonWithWallet
-              chainId={props.quote.chainIdentifier}
-              onClick={onClaim}
-              disabled={claimLoading}
-              size="lg"
-            >
-              {claimLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
-              Finish swap (claim funds)
-            </ButtonWithWallet>
-          </>
-        ) : (
-          ''
+        {(isReceived || isClaimable || isClaiming) && (
+          <SwapConfirmations
+            txData={txData}
+            isClaimable={isClaimable || isClaiming}
+            claimable={claimable || isAlreadyClaimable}
+            chainId={props.quote.chainIdentifier}
+            onClaim={onClaim}
+            claimLoading={claimLoading}
+            claimError={claimError}
+          />
         )}
 
         <SwapStepAlert

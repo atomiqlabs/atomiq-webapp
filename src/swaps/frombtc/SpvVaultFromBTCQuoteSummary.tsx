@@ -264,7 +264,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
       )}
 
       {isBroadcasting ? (
-        <div className="d-flex flex-column align-items-center tab-accent">
+        <div className="d-flex flex-column align-items-center gap-2 tab-accent">
           <Spinner />
           <small className="mt-2">Sending bitcoin transaction...</small>
         </div>
@@ -274,9 +274,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
 
       {isReceived ? (
         <div className="d-flex flex-column align-items-center tab-accent">
-          <small className="mb-2">
-            Transaction successfully received, waiting for confirmations...
-          </small>
+          <small className="mb-2">Transaction received, waiting for confirmations...</small>
 
           <Spinner />
           <label>
