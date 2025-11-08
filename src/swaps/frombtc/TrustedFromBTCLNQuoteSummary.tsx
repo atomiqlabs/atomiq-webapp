@@ -121,7 +121,7 @@ export function TrustedFromBTCLNQuoteSummary(props: {
 
   return (
     <>
-      <StepByStep steps={executionSteps} />
+      <StepByStep quote={props.quote} steps={executionSteps} />
 
       {isCreated && !paymentWaiting ? (
         <>

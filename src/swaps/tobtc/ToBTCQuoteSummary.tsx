@@ -353,9 +353,8 @@ export function ToBTCQuoteSummary(props: {
         {isInitiated ? (
           <>
             <StepByStep
+              quote={props.quote}
               steps={executionSteps}
-              sourceWallet={sourceWallet}
-              destinationWallet={destinationWallet}
             />
             {isSuccess ? (
               <SwapStepAlert

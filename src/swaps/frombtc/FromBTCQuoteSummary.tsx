@@ -438,13 +438,7 @@ export function FromBTCQuoteSummary(props: {
       />
 
       <div className="swap-panel__card">
-        {isInitiated ? (
-          <StepByStep
-            steps={executionSteps}
-            sourceWallet={sourceWallet}
-            destinationWallet={destinationWallet}
-          />
-        ) : null}
+        {isInitiated ? <StepByStep quote={props.quote} steps={executionSteps} /> : null}
 
         <SwapStepAlert
           show={!!commitError}
