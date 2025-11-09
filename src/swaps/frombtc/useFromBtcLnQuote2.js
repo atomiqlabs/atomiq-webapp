@@ -19,7 +19,11 @@ import { useChain } from '../../wallets/hooks/useChain';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useCheckAdditionalGas } from '../useCheckAdditionalGas';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
+import { useNFCScanner } from "../../nfc/hooks/useNFCScanner";
+import { SwapsContext } from "../context/SwapsContext";
+import { NFCStartResult } from "../../nfc/NFCReader";
 export function useFromBtcLnQuote2(quote, setAmountLock) {
+    const { swapper } = useContext(SwapsContext);
     const { connectWallet, disconnectWallet } = useContext(ChainDataContext);
     const lightningWallet = useChain('LIGHTNING')?.wallet;
     const smartChainWallet = useSmartChainWallet(quote, true);
@@ -29,6 +33,24 @@ export function useFromBtcLnQuote2(quote, setAmountLock) {
     const [autoClaim, setAutoClaim] = useLocalStorage('crossLightning-autoClaim', false);
     const [showHyperlinkWarning, setShowHyperlinkWarning] = useLocalStorage('crossLightning-showHyperlinkWarning', true);
     const [addressWarningModalOpened, setAddressWarningModalOpened] = useState(false);
+    const [payingWithNFC, setPayingWithNFC] = useState(false);
+    const NFCScanning = useNFCScanner((address) => {
+        //TODO: Maybe we need to stop the scanning here as well
+        swapper.Utils.getLNURLTypeAndData(address, false)
+            .then((result) => {
+            if (result.type !== 'withdraw')
+                return;
+            return result;
+        })
+            .then((lnurlWithdraw) => {
+            return quote.settleWithLNURLWithdraw(lnurlWithdraw);
+        })
+            .then(() => {
+            setPayingWithNFC(true);
+        }).catch(e => {
+            console.error("useFromBtcLnQuote(): Failed to pay invoice via NFC: ", e);
+        });
+    }, payingWithNFC || lightningWallet != null);
     const setAmountLockRef = useStateRef(setAmountLock);
     const abortSignalRef = useAbortSignalRef([quote]);
     const [pay, payLoading, payResult, payError] = useAsync(() => lightningWallet.instance.sendPayment(quote.getAddress()), [lightningWallet, quote]);
@@ -298,7 +320,7 @@ export function useFromBtcLnQuote2(quote, setAmountLock) {
                     error: payError,
                 }
                 : undefined,
-            walletConnected: lightningWallet != null
+            walletConnected: lightningWallet != null && !payingWithNFC
                 ? {
                     payWithWebLn: {
                         onClick: () => {
@@ -313,7 +335,7 @@ export function useFromBtcLnQuote2(quote, setAmountLock) {
                     },
                 }
                 : undefined,
-            walletDisconnected: lightningWallet == null
+            walletDisconnected: lightningWallet == null && !payingWithNFC
                 ? {
                     autoClaim: {
                         value: autoClaim,
@@ -356,8 +378,10 @@ export function useFromBtcLnQuote2(quote, setAmountLock) {
                         },
                         loading: payLoading,
                     },
+                    nfcScanning: NFCScanning === NFCStartResult.OK,
                 }
                 : undefined,
+            nfcPaying: payingWithNFC,
             expiry: {
                 remaining: quoteTimeRemaining,
                 total: totalQuoteTime,
@@ -376,6 +400,8 @@ export function useFromBtcLnQuote2(quote, setAmountLock) {
         pay,
         payLoading,
         payError,
+        NFCScanning,
+        payingWithNFC
     ]);
     const step3claim = useMemo(() => {
         if (!isClaimable)

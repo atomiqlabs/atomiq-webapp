@@ -1,36 +1,42 @@
-import { FromBTCLNSwap, FromBTCLNSwapState, TokenAmount } from '@atomiqlabs/sdk';
-import { useContext, useEffect, useMemo, useState } from 'react';
-import { useSwapState } from '../hooks/useSwapState';
-import { useStateRef } from '../../utils/hooks/useStateRef';
-import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
-import { useAsync } from '../../utils/hooks/useAsync';
-import { SingleStep } from '../../components/StepByStep';
+import {FromBTCLNSwap, FromBTCLNSwapState, TokenAmount} from '@atomiqlabs/sdk';
+import {useContext, useEffect, useMemo, useState} from 'react';
+import {useSwapState} from '../hooks/useSwapState';
+import {useStateRef} from '../../utils/hooks/useStateRef';
+import {useAbortSignalRef} from '../../utils/hooks/useAbortSignal';
+import {useAsync} from '../../utils/hooks/useAsync';
+import {SingleStep} from '../../components/StepByStep';
 
-import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
-import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
-import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
-import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
-import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
-import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outline';
-import { ic_swap_horiz } from 'react-icons-kit/md/ic_swap_horiz';
-import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
-import { ic_download_outline } from 'react-icons-kit/md/ic_download_outline';
-import { timeoutPromise } from '../../utils/Utils';
-import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
-import { useChain } from '../../wallets/hooks/useChain';
-import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { useCheckAdditionalGas } from '../useCheckAdditionalGas';
-import { ChainDataContext } from '../../wallets/context/ChainDataContext';
+import {ic_hourglass_top_outline} from 'react-icons-kit/md/ic_hourglass_top_outline';
+import {ic_refresh} from 'react-icons-kit/md/ic_refresh';
+import {ic_flash_on_outline} from 'react-icons-kit/md/ic_flash_on_outline';
+import {ic_hourglass_disabled_outline} from 'react-icons-kit/md/ic_hourglass_disabled_outline';
+import {ic_watch_later_outline} from 'react-icons-kit/md/ic_watch_later_outline';
+import {ic_check_circle_outline} from 'react-icons-kit/md/ic_check_circle_outline';
+import {ic_swap_horiz} from 'react-icons-kit/md/ic_swap_horiz';
+import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
+import {ic_download_outline} from 'react-icons-kit/md/ic_download_outline';
+import {timeoutPromise} from '../../utils/Utils';
+import {useSmartChainWallet} from '../../wallets/hooks/useSmartChainWallet';
+import {useChain} from '../../wallets/hooks/useChain';
+import {useLocalStorage} from '../../utils/hooks/useLocalStorage';
+import {useCheckAdditionalGas} from '../useCheckAdditionalGas';
+import {ChainDataContext} from '../../wallets/context/ChainDataContext';
+import {useNFCScanner} from "../../nfc/hooks/useNFCScanner";
+import {SwapsContext} from "../context/SwapsContext";
+import {NFCStartResult} from "../../nfc/NFCReader";
 
 export type FromBtcLnQuotePage = {
   executionSteps?: SingleStep[];
   step1init?: {
+    //Need to connect a smart chain wallet with the same address as in quote
     invalidSmartChainWallet: boolean;
+    //Initiate the swap
     init: () => void;
     error?: {
       title: string;
       error: Error;
     };
+    //Additional gas required to go through with the swap, used for the not enough for gas notice
     additionalGasRequired?: TokenAmount;
     expiry: {
       remaining: number;
@@ -44,39 +50,52 @@ export type FromBtcLnQuotePage = {
     };
     //Either wallet is connected and just these 2 buttons should be displayed
     walletConnected?: {
+      //Pay via connected WebLN wallet
       payWithWebLn: {
         loading: boolean;
         onClick: () => void;
       };
+      //Switch to showing a QR code and using external lightning wallets
       useExternalWallet: {
         onClick: () => void;
       };
     };
     //Or wallet is disconnected and a QR code should be shown, with 2 buttons and autoClaim switch
     walletDisconnected?: {
+      //Displayed in the QR code and in text field
       address: {
         value: string;
         hyperlink: string;
       };
+      //Display the modal warning to user to come back after payment is initiated
       addressComeBackWarningModal?: {
+        //Close the modal with the user accepting or not
         close: (accepted: boolean) => void;
+        //Data for switch about whether to show the dialog again next time
         showAgain: {
           checked: boolean;
           onChange: (checked: boolean) => void;
         };
       };
+      //Pay with external lightning wallet by invoking a lightning: deeplink
       payWithLnWallet: {
         onClick: () => void;
       };
+      //Connect WebLN wallet and automatically pay after
       payWithWebLn: {
         loading: boolean;
         onClick: () => void;
       };
+      //Data for auto claim switch
       autoClaim: {
         value: boolean;
         onChange: (val: boolean) => void;
       };
+      //Actively scanning for NFC cards to pay with (NFC icon should be displayed in the QR code)
+      nfcScanning: boolean;
     };
+    //Payment via NFC is in progress - the other screens are hidden
+    nfcPaying?: boolean;
     expiry: {
       remaining: number;
       total: number;
@@ -91,6 +110,7 @@ export type FromBtcLnQuotePage = {
       remaining: number;
       total: number;
     };
+    //First button to show for claim, on Solana there is just this button
     commit: {
       text: string;
       loading: boolean;
@@ -98,6 +118,7 @@ export type FromBtcLnQuotePage = {
       size: 'sm' | 'lg';
       onClick: () => void;
     };
+    //Optionally a second button for claim, used for Starknet - only returned if needed
     claim?: {
       text: string;
       loading: boolean;
@@ -116,6 +137,7 @@ export function useFromBtcLnQuote2(
   quote: FromBTCLNSwap<any>,
   setAmountLock: (isLocked: boolean) => void
 ): FromBtcLnQuotePage {
+  const { swapper } = useContext(SwapsContext);
   const { connectWallet, disconnectWallet } = useContext(ChainDataContext);
   const lightningWallet = useChain('LIGHTNING')?.wallet;
   const smartChainWallet = useSmartChainWallet(quote, true);
@@ -130,6 +152,27 @@ export function useFromBtcLnQuote2(
     true
   );
   const [addressWarningModalOpened, setAddressWarningModalOpened] = useState<boolean>(false);
+
+  const [payingWithNFC, setPayingWithNFC] = useState<boolean>(false);
+  const NFCScanning = useNFCScanner(
+    (address) => {
+      //TODO: Maybe we need to stop the scanning here as well
+      swapper.Utils.getLNURLTypeAndData(address, false)
+        .then((result) => {
+          if (result.type !== 'withdraw') return;
+          return result;
+        })
+        .then((lnurlWithdraw) => {
+          return (quote as FromBTCLNSwap).settleWithLNURLWithdraw(lnurlWithdraw);
+        })
+        .then(() => {
+          setPayingWithNFC(true);
+        }).catch(e => {
+          console.error("useFromBtcLnQuote(): Failed to pay invoice via NFC: ", e);
+        });
+    },
+    payingWithNFC || lightningWallet!=null
+  );
 
   const setAmountLockRef = useStateRef(setAmountLock);
   const abortSignalRef = useAbortSignalRef([quote]);
@@ -419,7 +462,7 @@ export function useFromBtcLnQuote2(
             }
           : undefined,
       walletConnected:
-        lightningWallet != null
+        lightningWallet != null && !payingWithNFC
           ? {
               payWithWebLn: {
                 onClick: () => {
@@ -435,7 +478,7 @@ export function useFromBtcLnQuote2(
             }
           : undefined,
       walletDisconnected:
-        lightningWallet == null
+        lightningWallet == null && !payingWithNFC
           ? {
               autoClaim: {
                 value: autoClaim,
@@ -476,8 +519,10 @@ export function useFromBtcLnQuote2(
                 },
                 loading: payLoading,
               },
+              nfcScanning: NFCScanning===NFCStartResult.OK,
             }
           : undefined,
+      nfcPaying: payingWithNFC,
       expiry: {
         remaining: quoteTimeRemaining,
         total: totalQuoteTime,
@@ -496,6 +541,8 @@ export function useFromBtcLnQuote2(
     pay,
     payLoading,
     payError,
+    NFCScanning,
+    payingWithNFC
   ]);
 
   const step3claim = useMemo(() => {
