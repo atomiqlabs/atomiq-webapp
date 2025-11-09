@@ -197,7 +197,7 @@ export function SimpleFeeSummaryScreen(props: {
                 expired={isExpired}
                 timeRemaining={quoteTimeRemaining}
                 totalTime={totalQuoteTime}
-                show={true}
+                show={props.swap != null}
                 expiryText="Quote expired!"
                 onRefreshQuote={props.onRefreshQuote}
               />
