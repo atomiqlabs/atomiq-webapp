@@ -20,6 +20,7 @@ import { ChainDataContext } from '../wallets/context/ChainDataContext';
 import { ChainWalletData } from '../wallets/ChainDataProvider';
 import { getChainIdentifierForCurrency, toTokenIdentifier } from '../tokens/Tokens';
 import { FromBTCLNQuoteSummary2 } from './frombtc/FromBTCLNQuoteSummary2';
+import {ToBTCQuoteSummary2} from "./tobtc/ToBTCQuoteSummary2";
 
 export function QuoteSummary(props: {
   quote: ISwap;
@@ -74,13 +75,14 @@ export function QuoteSummary(props: {
     case SwapType.TO_BTC:
     case SwapType.TO_BTCLN:
       swapElement = (
-        <ToBTCQuoteSummary
+        <ToBTCQuoteSummary2
           type={props.type}
           setAmountLock={props.setAmountLock}
           quote={props.quote as IToBTCSwap}
           refreshQuote={props.refreshQuote}
           autoContinue={props.autoContinue}
           notEnoughForGas={notEnoughForGas}
+          balance={props.balance}
         />
       );
       break;

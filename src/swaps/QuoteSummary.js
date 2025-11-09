@@ -1,6 +1,5 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { IFromBTCSwap, IToBTCSwap, SwapType, } from '@atomiqlabs/sdk';
-import { ToBTCQuoteSummary } from './tobtc/ToBTCQuoteSummary';
 import { LNURLWithdrawQuoteSummary } from './frombtc/LNURLWithdrawQuoteSummary';
 import { FromBTCQuoteSummary } from './frombtc/FromBTCQuoteSummary';
 import { useContext } from 'react';
@@ -10,6 +9,7 @@ import { useWithAwait } from '../utils/hooks/useWithAwait';
 import { ChainDataContext } from '../wallets/context/ChainDataContext';
 import { getChainIdentifierForCurrency, toTokenIdentifier } from '../tokens/Tokens';
 import { FromBTCLNQuoteSummary2 } from './frombtc/FromBTCLNQuoteSummary2';
+import { ToBTCQuoteSummary2 } from "./tobtc/ToBTCQuoteSummary2";
 export function QuoteSummary(props) {
     const chainsData = useContext(ChainDataContext);
     const [notEnoughForGas] = useWithAwait(async () => {
@@ -46,7 +46,7 @@ export function QuoteSummary(props) {
     switch (props.quote.getType()) {
         case SwapType.TO_BTC:
         case SwapType.TO_BTCLN:
-            swapElement = (_jsx(ToBTCQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: props.quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas }));
+            swapElement = (_jsx(ToBTCQuoteSummary2, { type: props.type, setAmountLock: props.setAmountLock, quote: props.quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas, balance: props.balance }));
             break;
         case SwapType.FROM_BTC:
             swapElement = (_jsx(FromBTCQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: props.quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: notEnoughForGas, balance: props.balance, feeRate: props.feeRate }));
