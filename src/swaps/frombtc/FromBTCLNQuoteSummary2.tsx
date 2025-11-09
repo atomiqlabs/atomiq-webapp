@@ -64,6 +64,47 @@ export function FromBTCLNQuoteSummary2(props: {
           />
         )}
 
+        {page.step2paymentWait?.walletConnected && (
+          <>
+            <div className="swap-panel__card__group">
+              <div className="payment-awaiting-buttons">
+                <BaseButton
+                  variant="secondary"
+                  textSize="sm"
+                  className="d-flex flex-row align-items-center"
+                  onClick={page.step2paymentWait.walletConnected.payWithWebLn.onClick}
+                  disabled={page.step2paymentWait.walletConnected.payWithWebLn.loading}
+                >
+                  {page.step2paymentWait.walletConnected.payWithWebLn.loading ? (
+                    <Spinner animation="border" size="sm" className="mr-2" />
+                  ) : (
+                    <img width={20} height={20} src="/wallets/WebLN-outline.svg" alt="WebLN" />
+                  )}
+                  Pay via WebLN
+                </BaseButton>
+                <BaseButton
+                  variant="secondary"
+                  textSize="sm"
+                  onClick={page.step2paymentWait.walletConnected.useExternalWallet.onClick}
+                >
+                  Use external wallet
+                </BaseButton>
+              </div>
+            </div>
+
+            <div className="swap-panel__card__group">
+              <SwapExpiryProgressBar
+                timeRemaining={page.step2paymentWait.expiry.remaining}
+                totalTime={page.step2paymentWait.expiry.total}
+                show={true}
+                type="bar"
+                expiryText="Swap address expired, please do not send any funds!"
+                quoteAlias="Lightning invoice"
+              />
+            </div>
+          </>
+        )}
+
         {page.step2paymentWait?.walletDisconnected && (
           <>
             <div className="swap-panel__card__group">
