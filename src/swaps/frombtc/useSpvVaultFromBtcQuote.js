@@ -166,17 +166,28 @@ export function useSpvVaultFromBtcQuote(quote, setAmountLock, feeRate, inputWall
     const step1init = useMemo(() => (!isCreated ? undefined : {
         bitcoinWallet: bitcoinWallet,
         hasEnoughBalance,
-        init: bitcoinWallet != null ? onSend : undefined,
+        init: bitcoinWallet != null ? {
+            onClick: onSend,
+            loading: sendLoading,
+            disabled: sendLoading || !hasEnoughBalance
+        } : undefined,
         error: sendError != null ? {
             title: "Sending BTC failed",
             error: sendError
+        } : undefined,
+        expiry: hasEnoughBalance && !sendLoading ? {
+            remaining: quoteTimeRemaining,
+            total: totalQuoteTime
         } : undefined
     }), [
         isCreated,
         bitcoinWallet,
         hasEnoughBalance,
         onSend,
-        sendError
+        sendError,
+        sendLoading,
+        quoteTimeRemaining,
+        totalQuoteTime
     ]);
     const step3awaitingConfirmations = useMemo(() => (!isReceived ? undefined : {
         txData: {
@@ -185,12 +196,12 @@ export function useSpvVaultFromBtcQuote(quote, setAmountLock, feeRate, inputWall
                 actual: txData.confirmations,
                 required: txData.confTarget
             },
-            eta: {
+            eta: txData.txEtaMs != null ? {
                 millis: txData.txEtaMs,
                 text: txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
                     ? '>1 hour'
                     : '~' + getDeltaText(txData.txEtaMs)
-            }
+            } : undefined
         },
         error: waitPaymentError != null ? {
             title: "Wait payment error",
@@ -225,7 +236,7 @@ export function useSpvVaultFromBtcQuote(quote, setAmountLock, feeRate, inputWall
         claimLoading,
         claimError
     ]);
-    const step5 = useMemo(() => ({
+    const step5 = useMemo(() => (!isSuccess && !isFailed && !isQuoteExpired ? undefined : {
         state: isSuccess
             ? "success"
             : isFailed

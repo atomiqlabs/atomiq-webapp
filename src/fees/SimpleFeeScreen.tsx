@@ -4,7 +4,7 @@ import {
   ToBTCSwapState,
   FromBTCSwapState,
   SwapType,
-  FromBTCLNSwapState,
+  FromBTCLNSwapState, SpvFromBTCSwapState,
 } from '@atomiqlabs/sdk';
 import * as React from 'react';
 import { Accordion, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
@@ -156,29 +156,10 @@ export function SimpleFeeSummaryScreen(props: {
 
   const { totalQuoteTime, quoteTimeRemaining, state } = useSwapState(props.swap);
 
-  const swapType = props.swap?.getType();
-
-  const [isCreated, isExpired] = useMemo(() => {
-    if (swapType === SwapType.TO_BTC || swapType === SwapType.TO_BTCLN) {
-      return [
-        state === ToBTCSwapState.CREATED || state === ToBTCSwapState.QUOTE_SOFT_EXPIRED,
-        state === ToBTCSwapState.QUOTE_EXPIRED || state === ToBTCSwapState.QUOTE_SOFT_EXPIRED,
-      ];
-    } else if (swapType === SwapType.FROM_BTC) {
-      return [
-        state === FromBTCSwapState.PR_CREATED || state === FromBTCSwapState.QUOTE_SOFT_EXPIRED,
-        state === FromBTCSwapState.QUOTE_EXPIRED || state === FromBTCSwapState.QUOTE_SOFT_EXPIRED,
-      ];
-    } else if (swapType === SwapType.FROM_BTCLN) {
-      return [
-        state === FromBTCLNSwapState.PR_CREATED || state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED,
-        state === FromBTCLNSwapState.QUOTE_EXPIRED ||
-          state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED,
-      ];
-    }
-    // For other swap types, default to false
-    return [false, false];
-  }, [state, swapType]);
+  const isExpired = useMemo(
+    () => props.swap?.isQuoteSoftExpired() || props.swap?.isQuoteExpired(),
+    [state]
+  );
 
   return (
     <>
@@ -187,7 +168,7 @@ export function SimpleFeeSummaryScreen(props: {
           <Accordion.Header className="font-bigger d-flex flex-row" bsPrefix="fee-accordion-header">
             <div className="simple-fee-screen__quote">
               <div className="sc-text">
-                {isCreated && isExpired ? (
+                {isExpired ? (
                   <span className="simple-fee-screen__quote__error">
                     <span className="icon icon-invalid-error"></span>
                     <span className="sc-text">Quote expired</span>
@@ -216,7 +197,7 @@ export function SimpleFeeSummaryScreen(props: {
                 expired={isExpired}
                 timeRemaining={quoteTimeRemaining}
                 totalTime={totalQuoteTime}
-                show={isCreated || isExpired}
+                show={true}
                 expiryText="Quote expired!"
                 onRefreshQuote={props.onRefreshQuote}
               />

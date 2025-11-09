@@ -23,10 +23,18 @@ export type SpvVaultFromBtcPage = {
   step1init?: {
     bitcoinWallet?: ChainWalletData<ExtensionBitcoinWallet>["wallet"],
     hasEnoughBalance?: boolean,
-    init?: () => void,
+    init?: {
+      onClick: () => void,
+      loading: boolean,
+      disabled: boolean
+    },
     error?: {
       title: string,
       error: Error
+    },
+    expiry?: {
+      remaining: number,
+      total: number
     }
   },
   step2broadcasting?: {},
@@ -70,7 +78,7 @@ export function useSpvVaultFromBtcQuote(
   quote: SpvFromBTCSwap<any>,
   setAmountLock: (isLocked: boolean) => void,
   feeRate?: number,
-  inputWalletBalance?: number
+  inputWalletBalance?: bigint
 ): SpvVaultFromBtcPage {
   const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote);
   const bitcoinWallet = useChain('BITCOIN')?.wallet;
@@ -259,17 +267,28 @@ export function useSpvVaultFromBtcQuote(
   const step1init = useMemo(() => (!isCreated ? undefined : {
     bitcoinWallet: bitcoinWallet,
     hasEnoughBalance,
-    init: bitcoinWallet!=null ? onSend : undefined,
+    init: bitcoinWallet!=null ? {
+      onClick: onSend,
+      loading: sendLoading,
+      disabled: sendLoading || !hasEnoughBalance
+    } : undefined,
     error: sendError!=null ? {
       title: "Sending BTC failed",
       error: sendError
+    } : undefined,
+    expiry: hasEnoughBalance && !sendLoading ? {
+      remaining: quoteTimeRemaining,
+      total: totalQuoteTime
     } : undefined
   }), [
     isCreated,
     bitcoinWallet,
     hasEnoughBalance,
     onSend,
-    sendError
+    sendError,
+    sendLoading,
+    quoteTimeRemaining,
+    totalQuoteTime
   ]);
 
   const step3awaitingConfirmations = useMemo(() => (!isReceived ? undefined: {
@@ -279,12 +298,12 @@ export function useSpvVaultFromBtcQuote(
         actual: txData.confirmations,
         required: txData.confTarget
       },
-      eta: {
+      eta: txData.txEtaMs!=null ? {
         millis: txData.txEtaMs,
         text: txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
           ? '>1 hour'
           : '~' + getDeltaText(txData.txEtaMs)
-      }
+      } : undefined
     },
     error: waitPaymentError!=null ? {
       title: "Wait payment error",
@@ -321,7 +340,7 @@ export function useSpvVaultFromBtcQuote(
     claimError
   ]);
 
-  const step5 = useMemo(() => ({
+  const step5 = useMemo(() => (!isSuccess && !isFailed && !isQuoteExpired ? undefined : {
     state: isSuccess
       ? "success" as const
       : isFailed

@@ -23,6 +23,7 @@ import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
 import { useChain } from '../../wallets/hooks/useChain';
+import {useSpvVaultFromBtcQuote} from "./useSpvVaultFromBtcQuote";
 
 /*
 Steps:
@@ -39,224 +40,42 @@ export function SpvVaultFromBTCQuoteSummary(props: {
   feeRate?: number;
   balance?: bigint;
 }) {
-  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
-
-  const isAlreadyClaimable = useMemo(() => props.quote?.isClaimable(), [props.quote]);
-  const setAmountLockRef = useStateRef(props.setAmountLock);
-
-  const bitcoinWallet = useChain('BITCOIN')?.wallet;
-  const smartChainWallet = useSmartChainWallet(props.quote);
-
-  const [onSend, sendLoading, sendSuccess, sendError] = useAsync(() => {
-    if (setAmountLockRef.current != null) {
-      console.log('SpvVaultFromBTCQuoteSummary: onSend(): setting amount lock to true');
-      setAmountLockRef.current(true);
-    }
-    return props.quote
-      .sendBitcoinTransaction(
-        bitcoinWallet.instance,
-        Math.max(props.feeRate, props.quote.minimumBtcFeeRate)
-      )
-      .catch((e) => {
-        if (setAmountLockRef.current != null) {
-          console.log(
-            'SpvVaultFromBTCQuoteSummary: onSend(): signAndSubmit failed - setting amount lock to false'
-          );
-          setAmountLockRef.current(false);
-        }
-        throw e;
-      });
-  }, [props.quote, bitcoinWallet, props.feeRate]);
-
-  const abortSignalRef = useAbortSignalRef([props.quote]);
-
-  const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => {
-    return props.quote.waitForBitcoinTransaction(
-      abortSignalRef.current,
-      null,
-      (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
-        if (txId == null) {
-          setTxData(null);
-          return;
-        }
-        setTxData({
-          txId,
-          confirmations,
-          confTarget: confirmationTarget,
-          txEtaMs,
-        });
-      }
-    );
-  }, [props.quote]);
-
-  const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
-    return props.quote.claim(smartChainWallet.instance);
-  }, [props.quote, smartChainWallet]);
-
-  const [txData, setTxData] = useState<{
-    txId: string;
-    confirmations: number;
-    confTarget: number;
-    txEtaMs: number;
-  }>(null);
-
-  const [claimable, setClaimable] = useState(false);
-  useEffect(() => {
-    if (state === SpvFromBTCSwapState.POSTED || state === SpvFromBTCSwapState.BROADCASTED) {
-      onWaitForPayment();
-    }
-
-    let timer: NodeJS.Timeout = null;
-    if (state === SpvFromBTCSwapState.BTC_TX_CONFIRMED) {
-      timer = setTimeout(() => {
-        setClaimable(true);
-      }, 60 * 1000);
-    }
-
-    return () => {
-      if (timer != null) clearTimeout(timer);
-      setClaimable(false);
-    };
-  }, [state]);
-
-  const hasEnoughBalance = useMemo(
-    () =>
-      props.balance == null || props.quote == null
-        ? true
-        : props.balance >= props.quote.getInput().rawAmount,
-    [props.balance, props.quote]
-  );
-
-  const isQuoteExpired =
-    state === SpvFromBTCSwapState.QUOTE_EXPIRED ||
-    (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && !sendLoading && !waitingPayment);
-  const isCreated =
-    state === SpvFromBTCSwapState.CREATED ||
-    (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && sendLoading);
-  const isSending = state === SpvFromBTCSwapState.CREATED && sendLoading;
-  const isBroadcasting =
-    state === SpvFromBTCSwapState.SIGNED ||
-    state === SpvFromBTCSwapState.POSTED ||
-    (state === SpvFromBTCSwapState.BROADCASTED && txData == null);
-  const isReceived = state === SpvFromBTCSwapState.BROADCASTED && txData != null;
-  const isClaimable = state === SpvFromBTCSwapState.BTC_TX_CONFIRMED && !claimLoading;
-  const isClaiming = state === SpvFromBTCSwapState.BTC_TX_CONFIRMED && claimLoading;
-  const isFailed =
-    state === SpvFromBTCSwapState.FAILED ||
-    state === SpvFromBTCSwapState.DECLINED ||
-    state === SpvFromBTCSwapState.CLOSED;
-  const isSuccess = state === SpvFromBTCSwapState.CLAIMED || state === SpvFromBTCSwapState.FRONTED;
-
-  useEffect(() => {
-    if (isSuccess || isFailed || isQuoteExpired) {
-      console.log('SpvVaultFromBTCQuoteSummary: useEffect(state): setting amount lock to false');
-      if (setAmountLockRef.current != null) setAmountLockRef.current(false);
-    }
-  }, [isSuccess, isFailed, isQuoteExpired]);
-
-  /*
-    Steps:
-    1. Bitcoin payment -> Signing bitcoin transaction -> Broadcasting bitcoin transaction -> Waiting bitcoin confirmations -> Bitcoin confirmed
-    2. Claim transaction -> Sending claim transaction -> Claim success
-     */
-  const executionSteps: SingleStep[] = [
-    { icon: bitcoin, text: 'Bitcoin payment', type: 'loading' },
-    {
-      icon: ic_receipt,
-      text: 'Claim transaction',
-      type: 'disabled',
-    },
-  ];
-
-  if (isSending)
-    executionSteps[0] = {
-      icon: ic_hourglass_empty_outline,
-      text: 'Signing bitcoin transaction',
-      type: 'loading',
-    };
-  if (isBroadcasting)
-    executionSteps[0] = {
-      icon: ic_hourglass_empty_outline,
-      text: 'Broadcasting bitcoin transaction',
-      type: 'loading',
-    };
-  if (isReceived)
-    executionSteps[0] = {
-      icon: ic_hourglass_top_outline,
-      text: 'Waiting bitcoin confirmations',
-      type: 'loading',
-    };
-  if (isQuoteExpired)
-    executionSteps[0] = {
-      icon: ic_hourglass_disabled_outline,
-      text: 'Quote expired',
-      type: 'failed',
-    };
-  if (isClaimable || isClaiming || isSuccess)
-    executionSteps[0] = {
-      icon: ic_check_circle_outline,
-      text: 'Bitcoin confirmed',
-      type: 'success',
-    };
-  if (isFailed)
-    executionSteps[0] = {
-      icon: ic_refresh,
-      text: 'Bitcoin payment reverted',
-      type: 'failed',
-    };
-
-  if (isClaimable)
-    executionSteps[1] = {
-      icon: ic_receipt,
-      text: 'Claim transaction',
-      type: 'loading',
-    };
-  if (isClaiming)
-    executionSteps[1] = {
-      icon: ic_hourglass_empty_outline,
-      text: 'Sending claim transaction',
-      type: 'loading',
-    };
-  if (isSuccess)
-    executionSteps[1] = {
-      icon: ic_receipt,
-      text: 'Claiming transaction',
-      type: 'success',
-    };
+  const page = useSpvVaultFromBtcQuote(props.quote, props.setAmountLock, props.feeRate, props.balance);
 
   return (
     <>
-      {isInitiated || (isCreated && sendLoading) ? <StepByStep quote={props.quote} steps={executionSteps} /> : ''}
+      {page.executionSteps ? <StepByStep quote={props.quote} steps={page.executionSteps} /> : ''}
 
-      <SwapExpiryProgressBar
-        expired={isQuoteExpired}
-        timeRemaining={quoteTimeRemaining}
-        totalTime={totalQuoteTime}
-        show={
-          (isCreated || isQuoteExpired) && !sendLoading && bitcoinWallet != null && hasEnoughBalance
-        }
-      />
-
-      {isCreated ? (
+      {page.step1init ? (
         <>
-          <ErrorAlert className="mb-3" title="Sending BTC failed" error={sendError} />
+          {/*NOTE: I think this is not actually necessary since expiry is already shown in the fee summary*/}
+          <SwapExpiryProgressBar
+            expired={false}
+            timeRemaining={page.step1init.expiry?.remaining}
+            totalTime={page.step1init.expiry?.total}
+            show={!!page.step1init.expiry}
+            type="bar"
+            quoteAlias="Quote"
+          />
+
+          <ErrorAlert className="mb-3" title={page.step1init.error?.title} error={page.step1init.error?.error} />
 
           <ButtonWithWallet
             chainId="BITCOIN"
-            onClick={onSend}
+            onClick={page.step1init.init?.onClick}
             className="swap-panel__action"
-            disabled={sendLoading || !hasEnoughBalance}
+            disabled={page.step1init.init?.disabled}
             size="lg"
           >
-            {sendLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
-            Pay with <img width={20} height={20} src={bitcoinWallet?.icon} /> {bitcoinWallet?.name}
+            {page.step1init.init?.loading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
+            Pay with <img width={20} height={20} src={page.step1init.bitcoinWallet?.icon} /> {page.step1init.bitcoinWallet?.name}
           </ButtonWithWallet>
         </>
       ) : (
         ''
       )}
 
-      {isBroadcasting ? (
+      {page.step2broadcasting ? (
         <div className="d-flex flex-column align-items-center gap-2 tab-accent">
           <Spinner />
           <small className="mt-2">Sending bitcoin transaction...</small>
@@ -265,13 +84,13 @@ export function SpvVaultFromBTCQuoteSummary(props: {
         ''
       )}
 
-      {isReceived ? (
+      {page.step3awaitingConfirmations ? (
         <div className="d-flex flex-column align-items-center tab-accent">
           <small className="mb-2">Transaction received, waiting for confirmations...</small>
 
           <Spinner />
           <label>
-            {txData.confirmations} / {txData.confTarget}
+            {page.step3awaitingConfirmations.txData.confirmations.actual} / {page.step3awaitingConfirmations.txData.confirmations.required}
           </label>
           <label style={{ marginTop: '-6px' }}>Confirmations</label>
 
@@ -279,30 +98,27 @@ export function SpvVaultFromBTCQuoteSummary(props: {
             className="mb-2 text-overflow-ellipsis text-nowrap overflow-hidden"
             style={{ width: '100%' }}
             target="_blank"
-            href={FEConstants.btcBlockExplorer + txData.txId}
+            href={FEConstants.btcBlockExplorer + page.step3awaitingConfirmations.txData.txId}
           >
-            <small>{txData.txId}</small>
+            <small>{page.step3awaitingConfirmations.txData.txId}</small>
           </a>
 
           <Badge
-            className={'text-black' + (txData.txEtaMs == null ? ' d-none' : '')}
+            className={'text-black' + (page.step3awaitingConfirmations.txData.eta == null ? ' d-none' : '')}
             bg="light"
             pill
           >
-            ETA:{' '}
-            {txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
-              ? '>1 hour'
-              : '~' + getDeltaText(txData.txEtaMs)}
+            ETA: {page.step3awaitingConfirmations.txData.eta.text}
           </Badge>
 
-          {waitPaymentError != null ? (
+          {page.step3awaitingConfirmations.error != null ? (
             <>
               <ErrorAlert
                 className="my-3 width-fill"
-                title="Wait payment error"
-                error={waitPaymentError}
+                title={page.step3awaitingConfirmations.error.title}
+                error={page.step3awaitingConfirmations.error.error}
               />
-              <Button onClick={onWaitForPayment} className="width-fill" variant="secondary">
+              <Button onClick={page.step3awaitingConfirmations.error.retry} className="width-fill" variant="secondary">
                 Retry
               </Button>
             </>
@@ -314,7 +130,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
         ''
       )}
 
-      {isClaimable && !(claimable || isAlreadyClaimable) ? (
+      {page.step4claim && page.step4claim.waitingForWatchtowerClaim ? (
         <div className="d-flex flex-column align-items-center tab-accent">
           <Spinner />
           <small className="mt-2">
@@ -325,22 +141,22 @@ export function SpvVaultFromBTCQuoteSummary(props: {
         ''
       )}
 
-      {(isClaimable || isClaiming) && (claimable || isAlreadyClaimable) ? (
+      {page.step4claim && !page.step4claim.waitingForWatchtowerClaim ? (
         <>
           <div className="d-flex flex-column align-items-center tab-accent mb-3">
             <label>Transaction received & confirmed, you can claim your funds manually now!</label>
           </div>
 
-          <ErrorAlert className="mb-3" title="Claim error" error={claimError} />
+          <ErrorAlert className="mb-3" title={page.step4claim.error?.title} error={page.step4claim.error?.error} />
 
           <ButtonWithWallet
             chainId={props.quote.chainIdentifier}
             className="swap-panel__action"
-            onClick={onClaim}
-            disabled={claimLoading}
+            onClick={page.step4claim.claim.onClick}
+            disabled={page.step4claim.claim.disabled}
             size="lg"
           >
-            {claimLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
+            {page.step4claim.claim.loading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
             Finish swap (claim funds)
           </ButtonWithWallet>
         </>
@@ -348,7 +164,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
         ''
       )}
 
-      {isSuccess ? (
+      {page.step5?.state==="success" ? (
         <Alert variant="success" className="mb-3">
           <strong>Swap success</strong>
           <label>Your swap was executed successfully!</label>
@@ -357,7 +173,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
         ''
       )}
 
-      {isFailed ? (
+      {page.step5?.state==="failed" ? (
         <Alert variant="danger" className="mb-3">
           <strong>Swap failed</strong>
           <label>Swap transaction reverted, no funds were sent!</label>
@@ -366,7 +182,22 @@ export function SpvVaultFromBTCQuoteSummary(props: {
         ''
       )}
 
-      {isQuoteExpired || isFailed || isSuccess ? (
+      {/*NOTE: I think this is not actually necessary since expiry is already shown in the fee summary*/}
+      {page.step5?.state==="expired" ? (
+        <SwapExpiryProgressBar
+          expired={true}
+          timeRemaining={0}
+          totalTime={1}
+          show={true}
+          type="bar"
+          expiryText="Quote expired!"
+          quoteAlias="Quote"
+        />
+      ) : (
+        ''
+      )}
+
+      {page.step5 ? (
         <BaseButton
           onClick={props.refreshQuote}
           className="swap-panel__action"

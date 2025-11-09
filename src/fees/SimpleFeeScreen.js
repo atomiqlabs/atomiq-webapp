@@ -1,5 +1,4 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { ToBTCSwapState, FromBTCSwapState, SwapType, FromBTCLNSwapState, } from '@atomiqlabs/sdk';
 import { Accordion, Badge, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useMemo } from 'react';
 import { TokenIcon } from '../tokens/TokenIcon';
@@ -47,33 +46,10 @@ export function SimpleFeeSummaryScreen(props) {
         return outputTokenUsdPrice / inputTokenUsdPrice;
     }, [inputTokenUsdPrice, outputTokenUsdPrice]);
     const { totalQuoteTime, quoteTimeRemaining, state } = useSwapState(props.swap);
-    const swapType = props.swap?.getType();
-    const [isCreated, isExpired] = useMemo(() => {
-        if (swapType === SwapType.TO_BTC || swapType === SwapType.TO_BTCLN) {
-            return [
-                state === ToBTCSwapState.CREATED || state === ToBTCSwapState.QUOTE_SOFT_EXPIRED,
-                state === ToBTCSwapState.QUOTE_EXPIRED || state === ToBTCSwapState.QUOTE_SOFT_EXPIRED,
-            ];
-        }
-        else if (swapType === SwapType.FROM_BTC) {
-            return [
-                state === FromBTCSwapState.PR_CREATED || state === FromBTCSwapState.QUOTE_SOFT_EXPIRED,
-                state === FromBTCSwapState.QUOTE_EXPIRED || state === FromBTCSwapState.QUOTE_SOFT_EXPIRED,
-            ];
-        }
-        else if (swapType === SwapType.FROM_BTCLN) {
-            return [
-                state === FromBTCLNSwapState.PR_CREATED || state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED,
-                state === FromBTCLNSwapState.QUOTE_EXPIRED ||
-                    state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED,
-            ];
-        }
-        // For other swap types, default to false
-        return [false, false];
-    }, [state, swapType]);
-    return (_jsx(_Fragment, { children: _jsx(Accordion, { className: "simple-fee-screen", children: _jsxs(Accordion.Item, { eventKey: "0", className: "tab-accent-nop", children: [_jsxs(Accordion.Header, { className: "font-bigger d-flex flex-row", bsPrefix: "fee-accordion-header", children: [_jsxs("div", { className: "simple-fee-screen__quote", children: [_jsx("div", { className: "sc-text", children: isCreated && isExpired ? (_jsxs("span", { className: "simple-fee-screen__quote__error", children: [_jsx("span", { className: "icon icon-invalid-error" }), _jsx("span", { className: "sc-text", children: "Quote expired" })] })) : !outputToken || !inputToken ? (_jsx("div", { className: "simple-fee-screen__skeleton" })) : !props.swap ? (_jsxs(_Fragment, { children: ["1 ", outputToken.ticker, " =", ' ', calculatedSwapPrice != null
+    const isExpired = useMemo(() => props.swap?.isQuoteSoftExpired() || props.swap?.isQuoteExpired(), [state]);
+    return (_jsx(_Fragment, { children: _jsx(Accordion, { className: "simple-fee-screen", children: _jsxs(Accordion.Item, { eventKey: "0", className: "tab-accent-nop", children: [_jsxs(Accordion.Header, { className: "font-bigger d-flex flex-row", bsPrefix: "fee-accordion-header", children: [_jsxs("div", { className: "simple-fee-screen__quote", children: [_jsx("div", { className: "sc-text", children: isExpired ? (_jsxs("span", { className: "simple-fee-screen__quote__error", children: [_jsx("span", { className: "icon icon-invalid-error" }), _jsx("span", { className: "sc-text", children: "Quote expired" })] })) : !outputToken || !inputToken ? (_jsx("div", { className: "simple-fee-screen__skeleton" })) : !props.swap ? (_jsxs(_Fragment, { children: ["1 ", outputToken.ticker, " =", ' ', calculatedSwapPrice != null
                                                     ? calculatedSwapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals)
                                                     : '-', ' ', inputToken.ticker] })) : (_jsxs(_Fragment, { children: ["1 ", outputToken.ticker, " =", ' ', props.swap
                                                     .getPriceInfo()
-                                                    .swapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals), ' ', inputToken.ticker] })) }), _jsx(SwapExpiryProgressBar, { expired: isExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: isCreated || isExpired, expiryText: "Quote expired!", onRefreshQuote: props.onRefreshQuote })] }), _jsx("div", { className: "icon icon-receipt-fees" }), _jsx("span", { className: "simple-fee-screen__fee", children: totalUsdFee == null ? (props.swap == null ? ('$0.00') : (_jsx("div", { className: "simple-fee-screen__skeleton" }))) : ('$' + totalUsdFee.toFixed(2)) }), _jsx("div", { className: "icon icon-caret-down" })] }), _jsx(Accordion.Body, { className: "simple-fee-screen__body", children: fees.map((e, index) => (_jsx(FeePart, { ...e }, index))) })] }) }) }));
+                                                    .swapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals), ' ', inputToken.ticker] })) }), _jsx(SwapExpiryProgressBar, { expired: isExpired, timeRemaining: quoteTimeRemaining, totalTime: totalQuoteTime, show: true, expiryText: "Quote expired!", onRefreshQuote: props.onRefreshQuote })] }), _jsx("div", { className: "icon icon-receipt-fees" }), _jsx("span", { className: "simple-fee-screen__fee", children: totalUsdFee == null ? (props.swap == null ? ('$0.00') : (_jsx("div", { className: "simple-fee-screen__skeleton" }))) : ('$' + totalUsdFee.toFixed(2)) }), _jsx("div", { className: "icon icon-caret-down" })] }), _jsx(Accordion.Body, { className: "simple-fee-screen__body", children: fees.map((e, index) => (_jsx(FeePart, { ...e }, index))) })] }) }) }));
 }

@@ -189,10 +189,13 @@ export function useSwapPage(): SwapPageState {
         token = swapper.getSupportedTokens(false).find((val) => isBtcToken(val) && val.lightning);
         break;
       default:
-        if (isSCToken(outputToken) && outputToken.chainId === addressData.type) token = outputToken;
-        token = swapper
-          .getSupportedTokens(false)
-          .find((val) => isSCToken(val) && val.chainId === addressData.type);
+        if (isSCToken(outputToken) && outputToken.chainId === addressData.type) {
+          token = outputToken;
+        } else {
+          token = swapper
+            .getSupportedTokens(false)
+            .find((val) => isSCToken(val) && val.chainId === addressData.type);
+        }
         break;
     }
     if (outputToken === token) return;
