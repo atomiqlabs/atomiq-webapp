@@ -36,7 +36,11 @@ export type FromBtcLnQuotePage = {
     //Need to connect a smart chain wallet with the same address as in quote
     invalidSmartChainWallet: boolean;
     //Initiate the swap
-    init: () => void;
+    init?: {
+      onClick: () => void,
+      disabled: boolean,
+      loading: boolean
+    };
     error?: {
       title: string;
       error: Error;
@@ -491,11 +495,15 @@ export function useFromBtcLnQuote2(
     if (!isCreated || paymentWaiting) return;
     return {
       invalidSmartChainWallet: smartChainWallet === undefined,
-      init: () => {
-        waitForPayment();
-        if (lightningWallet == null) return;
-        pay();
-      },
+      init: smartChainWallet!=null ? {
+        onClick: () => {
+          waitForPayment();
+          if (lightningWallet == null) return;
+          pay();
+        },
+        disabled: !!additionalGasRequired,
+        loading: false
+      } : undefined,
       error:
         paymentError != null
           ? {

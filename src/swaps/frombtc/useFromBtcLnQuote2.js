@@ -333,12 +333,16 @@ export function useFromBtcLnQuote2(quote, setAmountLock) {
             return;
         return {
             invalidSmartChainWallet: smartChainWallet === undefined,
-            init: () => {
-                waitForPayment();
-                if (lightningWallet == null)
-                    return;
-                pay();
-            },
+            init: smartChainWallet != null ? {
+                onClick: () => {
+                    waitForPayment();
+                    if (lightningWallet == null)
+                        return;
+                    pay();
+                },
+                disabled: !!additionalGasRequired,
+                loading: false
+            } : undefined,
             error: paymentError != null
                 ? {
                     title: 'Swap initialization error',

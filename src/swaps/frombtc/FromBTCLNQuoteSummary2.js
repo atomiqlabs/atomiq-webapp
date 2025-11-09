@@ -36,7 +36,7 @@ export function FromBTCLNQuoteSummary2(props) {
             if (page.step1init.invalidSmartChainWallet) {
                 return (_jsx(ButtonWithWallet, { chainId: props.quote.chainIdentifier, requiredWalletAddress: props.quote._getInitiator(), size: "lg", className: "swap-panel__action" }));
             }
-            return (_jsxs(_Fragment, { children: [_jsx(SwapForGasAlert, { notEnoughForGas: page.step1init.additionalGasRequired?.rawAmount, quote: props.quote }), _jsx(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote?.chainIdentifier, className: "swap-panel__action", onClick: page.step1init.init, disabled: !!props.notEnoughForGas, size: "lg", children: "Swap" })] }));
+            return (_jsxs(_Fragment, { children: [_jsx(SwapForGasAlert, { notEnoughForGas: page.step1init.additionalGasRequired?.rawAmount, quote: props.quote }), _jsx(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote?.chainIdentifier, className: "swap-panel__action", onClick: page.step1init.init?.onClick, disabled: page.step1init.init?.disabled, size: "lg", children: "Swap" })] }));
         }
         // Step 2: Payment Wait
         if (page.step2paymentWait) {

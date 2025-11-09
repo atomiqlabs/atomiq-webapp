@@ -92,7 +92,7 @@ export function SwapStepAlert(props: SwapStepAlertProps) {
 
       {/* Dont need to type error 2 times, if description is not really description */}
       {props.description !== 'Error' && (
-        <label className="swap-step-alert__description">{props.description}</label>
+        <label className="swap-step-alert__description">{props.description ?? props.error?.message ?? props.error?.toString()}</label>
       )}
 
       {props.action && (

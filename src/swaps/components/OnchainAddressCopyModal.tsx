@@ -5,24 +5,21 @@ import { BaseButton } from '../../components/BaseButton';
 import ValidatedInput from '../../components/ValidatedInput';
 
 export function OnchainAddressCopyModal(props: {
-  openRef: React.MutableRefObject<() => void>;
+  openRef?: React.MutableRefObject<() => void>;
+
   amountBtc: string;
-  setShowCopyWarning: (value: boolean) => void;
+  opened?: boolean;
+  close?: (accepted: boolean) => void,
+  setShowCopyWarning?: (value: boolean) => void;
 }) {
-  const [openAppModalOpened, setOpenAppModalOpened] = useState<boolean>(false);
-
-  props.openRef.current = () => {
-    setOpenAppModalOpened(true);
-  };
-
   return (
     <GenericModal
-      visible={openAppModalOpened}
+      visible={props.opened}
       size="sm"
       className="onchain-address-copy-modal"
       icon="Notice"
       type="notice"
-      onClose={() => setOpenAppModalOpened(false)}
+      onClose={() => props.close(false)}
       title="Important notice"
       enableClose={false}
     >
@@ -39,7 +36,7 @@ export function OnchainAddressCopyModal(props: {
         variant="secondary"
         className="sc-button"
         onClick={() => {
-          setOpenAppModalOpened(false);
+          props.close(true);
         }}
       >
         Understood, copy address

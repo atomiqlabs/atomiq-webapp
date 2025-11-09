@@ -250,8 +250,8 @@ export function FromBTCLNQuoteSummary2(props: {
             requiredWalletAddress={props.quote._getInitiator()}
             chainId={props.quote?.chainIdentifier}
             className="swap-panel__action"
-            onClick={page.step1init.init}
-            disabled={!!props.notEnoughForGas}
+            onClick={page.step1init.init?.onClick}
+            disabled={page.step1init.init?.disabled}
             size="lg"
           >
             Swap
