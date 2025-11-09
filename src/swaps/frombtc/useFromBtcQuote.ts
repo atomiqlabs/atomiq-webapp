@@ -259,7 +259,8 @@ export function useFromBtcQuote(
   const isCreated =
     state === FromBTCSwapState.PR_CREATED ||
     (state === FromBTCSwapState.QUOTE_SOFT_EXPIRED && commitLoading);
-  const isCommited = state === FromBTCSwapState.CLAIM_COMMITED && txData == null;
+  const isCommited = state === FromBTCSwapState.CLAIM_COMMITED && txData == null && !(!!bitcoinWallet && !!payTxId);
+  const isBroadcasting = state === FromBTCSwapState.CLAIM_COMMITED && txData == null && !!bitcoinWallet && !!payTxId;
   const isReceived =
     state === (FromBTCSwapState.CLAIM_COMMITED || state === FromBTCSwapState.EXPIRED) &&
     txData != null;
@@ -329,7 +330,7 @@ export function useFromBtcQuote(
       type: 'failed',
     };
 
-  if (isCommited)
+  if (isCommited || isBroadcasting)
     executionSteps[1] = {
       icon: bitcoin,
       text: 'Awaiting bitcoin payment',
@@ -413,7 +414,7 @@ export function useFromBtcQuote(
     totalQuoteTime
   ]);
 
-  const step2paymentWait = useMemo(() => (!isCommited || (bitcoinWallet && payTxId) ? undefined : {
+  const step2paymentWait = useMemo(() => (!isCommited ? undefined : {
     error: waitPaymentError || (payError && bitcoinWallet) ? {
       title: payError && bitcoinWallet ? "Bitcoin transaction error" : "Wait payment error",
       error: payError && bitcoinWallet ? payError : waitPaymentError,
@@ -487,7 +488,6 @@ export function useFromBtcQuote(
     }
   }), [
     isCommited,
-    payTxId,
     waitPaymentError,
     bitcoinWallet,
     payError,
@@ -501,8 +501,8 @@ export function useFromBtcQuote(
     totalQuoteTime
   ]);
 
-  const step3awaitingConfirmations = useMemo(() => (!isReceived && !(bitcoinWallet && payTxId) ? undefined : {
-    broadcasting: payTxId != null && txData == null,
+  const step3awaitingConfirmations = useMemo(() => (!isReceived && !isBroadcasting ? undefined : {
+    broadcasting: isBroadcasting,
     txData: txData!=null ? {
       txId: txData.txId,
       confirmations: {
@@ -523,6 +523,7 @@ export function useFromBtcQuote(
     } : undefined
   }), [
     isReceived,
+    isBroadcasting,
     bitcoinWallet,
     payTxId,
     txData,
