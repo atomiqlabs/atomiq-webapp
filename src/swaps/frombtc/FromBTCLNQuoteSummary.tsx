@@ -164,10 +164,7 @@ export function FromBTCLNQuoteSummary(props: {
     <>
       {isInitiated ? (
         <div className="swap-panel__card">
-          <StepByStep
-            quote={props.quote}
-            steps={executionSteps}
-          />
+          <StepByStep quote={props.quote} steps={executionSteps} />
 
           {/* Step 1: Init */}
           <SwapStepAlert
@@ -182,13 +179,7 @@ export function FromBTCLNQuoteSummary(props: {
           {/* Step 2: Payment Wait */}
           {isCreated && paymentWaiting ? (
             <>
-              <LightningQR
-                quote={props.quote}
-                payInstantly={initClicked}
-                setAutoClaim={setAutoClaim}
-                autoClaim={autoClaim}
-                onHyperlink={onHyperlink}
-              />
+              <LightningQR quote={props.quote} payInstantly={initClicked} />
               <div className="swap-panel__card__group">
                 <SwapExpiryProgressBar
                   timeRemaining={quoteTimeRemaining}

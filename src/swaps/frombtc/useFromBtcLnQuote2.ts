@@ -1,29 +1,29 @@
-import {FromBTCLNSwap, FromBTCLNSwapState, TokenAmount} from '@atomiqlabs/sdk';
-import {useContext, useEffect, useMemo, useState} from 'react';
-import {useSwapState} from '../hooks/useSwapState';
-import {useStateRef} from '../../utils/hooks/useStateRef';
-import {useAbortSignalRef} from '../../utils/hooks/useAbortSignal';
-import {useAsync} from '../../utils/hooks/useAsync';
-import {SingleStep} from '../../components/StepByStep';
+import { FromBTCLNSwap, FromBTCLNSwapState, TokenAmount } from '@atomiqlabs/sdk';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { useSwapState } from '../hooks/useSwapState';
+import { useStateRef } from '../../utils/hooks/useStateRef';
+import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
+import { useAsync } from '../../utils/hooks/useAsync';
+import { SingleStep } from '../../components/StepByStep';
 
-import {ic_hourglass_top_outline} from 'react-icons-kit/md/ic_hourglass_top_outline';
-import {ic_refresh} from 'react-icons-kit/md/ic_refresh';
-import {ic_flash_on_outline} from 'react-icons-kit/md/ic_flash_on_outline';
-import {ic_hourglass_disabled_outline} from 'react-icons-kit/md/ic_hourglass_disabled_outline';
-import {ic_watch_later_outline} from 'react-icons-kit/md/ic_watch_later_outline';
-import {ic_check_circle_outline} from 'react-icons-kit/md/ic_check_circle_outline';
-import {ic_swap_horiz} from 'react-icons-kit/md/ic_swap_horiz';
-import {ic_verified_outline} from 'react-icons-kit/md/ic_verified_outline';
-import {ic_download_outline} from 'react-icons-kit/md/ic_download_outline';
-import {timeoutPromise} from '../../utils/Utils';
-import {useSmartChainWallet} from '../../wallets/hooks/useSmartChainWallet';
-import {useChain} from '../../wallets/hooks/useChain';
-import {useLocalStorage} from '../../utils/hooks/useLocalStorage';
-import {useCheckAdditionalGas} from '../useCheckAdditionalGas';
-import {ChainDataContext} from '../../wallets/context/ChainDataContext';
-import {useNFCScanner} from "../../nfc/hooks/useNFCScanner";
-import {SwapsContext} from "../context/SwapsContext";
-import {NFCStartResult} from "../../nfc/NFCReader";
+import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
+import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
+import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
+import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
+import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
+import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
+import { ic_swap_horiz } from 'react-icons-kit/md/ic_swap_horiz';
+import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
+import { ic_download_outline } from 'react-icons-kit/md/ic_download_outline';
+import { timeoutPromise } from '../../utils/Utils';
+import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
+import { useChain } from '../../wallets/hooks/useChain';
+import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { useCheckAdditionalGas } from '../useCheckAdditionalGas';
+import { ChainDataContext } from '../../wallets/context/ChainDataContext';
+import { useNFCScanner } from '../../nfc/hooks/useNFCScanner';
+import { SwapsContext } from '../context/SwapsContext';
+import { NFCStartResult } from '../../nfc/NFCReader';
 
 export type FromBtcLnQuotePage = {
   executionSteps?: SingleStep[];
@@ -167,11 +167,12 @@ export function useFromBtcLnQuote2(
         })
         .then(() => {
           setPayingWithNFC(true);
-        }).catch(e => {
-          console.error("useFromBtcLnQuote(): Failed to pay invoice via NFC: ", e);
+        })
+        .catch((e) => {
+          console.error('useFromBtcLnQuote(): Failed to pay invoice via NFC: ', e);
         });
     },
-    payingWithNFC || lightningWallet!=null
+    payingWithNFC || lightningWallet != null
   );
 
   const setAmountLockRef = useStateRef(setAmountLock);
@@ -268,7 +269,7 @@ export function useFromBtcLnQuote2(
 
   const executionSteps: SingleStep[] = [
     {
-      icon: ic_check_circle_outline,
+      icon: ic_check_outline,
       text: 'Lightning payment received',
       type: 'success',
     },
@@ -376,7 +377,7 @@ export function useFromBtcLnQuote2(
       };
     if (isClaimClaimable) {
       executionSteps[1] = {
-        icon: ic_check_circle_outline,
+        icon: ic_check_outline,
         text: 'Initialization success',
         type: 'success',
       };
@@ -388,7 +389,7 @@ export function useFromBtcLnQuote2(
     }
     if (isSuccess) {
       executionSteps[1] = {
-        icon: ic_check_circle_outline,
+        icon: ic_check_outline,
         text: 'Initialization success',
         type: 'success',
       };
@@ -405,7 +406,7 @@ export function useFromBtcLnQuote2(
         type: 'failed',
       };
       executionSteps[1] = {
-        icon: ic_check_circle_outline,
+        icon: ic_check_outline,
         text: 'Initialization success',
         type: 'success',
       };
@@ -519,7 +520,7 @@ export function useFromBtcLnQuote2(
                 },
                 loading: payLoading,
               },
-              nfcScanning: NFCScanning===NFCStartResult.OK,
+              nfcScanning: NFCScanning === NFCStartResult.OK,
             }
           : undefined,
       nfcPaying: payingWithNFC,
@@ -542,7 +543,7 @@ export function useFromBtcLnQuote2(
     payLoading,
     payError,
     NFCScanning,
-    payingWithNFC
+    payingWithNFC,
   ]);
 
   const step3claim = useMemo(() => {
