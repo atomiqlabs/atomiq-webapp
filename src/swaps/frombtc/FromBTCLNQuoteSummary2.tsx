@@ -209,13 +209,23 @@ export function FromBTCLNQuoteSummary2(props: {
                 .onChange
             }
           />
-          <BaseButton
-            onClick={props.abortSwap}
-            variant="danger"
-            className="swap-panel__action is-large"
-          >
-            Abort swap
-          </BaseButton>
+          {page.isPaymentCancelled ? (
+            <BaseButton
+              onClick={props.refreshQuote}
+              variant="secondary"
+              className="swap-panel__action is-large"
+            >
+              Retry
+            </BaseButton>
+          ) : (
+            <BaseButton
+              onClick={props.abortSwap}
+              variant="danger"
+              className="swap-panel__action is-large"
+            >
+              Abort swap
+            </BaseButton>
+          )}
         </>
       );
     }

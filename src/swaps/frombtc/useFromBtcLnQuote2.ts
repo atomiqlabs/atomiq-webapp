@@ -1,5 +1,5 @@
 import { FromBTCLNSwap, FromBTCLNSwapState, TokenAmount } from '@atomiqlabs/sdk';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSwapState } from '../hooks/useSwapState';
 import { useStateRef } from '../../utils/hooks/useStateRef';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
@@ -15,6 +15,7 @@ import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { ic_swap_horiz } from 'react-icons-kit/md/ic_swap_horiz';
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { ic_download_outline } from 'react-icons-kit/md/ic_download_outline';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { timeoutPromise } from '../../utils/Utils';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { useChain } from '../../wallets/hooks/useChain';
@@ -27,6 +28,8 @@ import { NFCStartResult } from '../../nfc/NFCReader';
 
 export type FromBtcLnQuotePage = {
   executionSteps?: SingleStep[];
+  //Whether payment was cancelled/declined by user
+  isPaymentCancelled?: boolean;
   step1init?: {
     //Need to connect a smart chain wallet with the same address as in quote
     invalidSmartChainWallet: boolean;
@@ -183,6 +186,29 @@ export function useFromBtcLnQuote2(
     [lightningWallet, quote]
   );
 
+  // Helper function to check if error is a user cancellation
+  const isUserCancellation = useCallback((error: any): boolean => {
+    if (!error) return false;
+    const errorMessage = error?.message?.toLowerCase() || error?.toString()?.toLowerCase() || '';
+    return (
+      errorMessage.includes('user rejected') ||
+      errorMessage.includes('user denied') ||
+      errorMessage.includes('user cancelled') ||
+      errorMessage.includes('user canceled') ||
+      errorMessage.includes('transaction rejected') ||
+      errorMessage.includes('cancelled by user') ||
+      errorMessage.includes('canceled by user') ||
+      error?.code === 4001 || // MetaMask user rejection
+      error?.code === 'ACTION_REJECTED'
+    );
+  }, []);
+
+  // Track if payment was cancelled/declined by user
+  const isPaymentCancelled = useMemo(
+    () => isUserCancellation(payError),
+    [payError, isUserCancellation]
+  );
+
   const [callPayFlag, setCallPayFlag] = useState<boolean>(false);
   useEffect(() => {
     if (!callPayFlag) return;
@@ -260,12 +286,12 @@ export function useFromBtcLnQuote2(
   const isSuccess = state === FromBTCLNSwapState.CLAIM_CLAIMED;
 
   useEffect(() => {
-    if (isQuoteExpired || isFailed || isSuccess) {
+    if (isQuoteExpired || isFailed || isSuccess || isPaymentCancelled) {
       if (setAmountLockRef.current != null) setAmountLockRef.current(false);
     } else if (!isCreated) {
       if (setAmountLockRef.current != null) setAmountLockRef.current(true);
     }
-  }, [isQuoteExpired, isFailed, isSuccess, isCreated]);
+  }, [isQuoteExpired, isFailed, isSuccess, isCreated, isPaymentCancelled]);
 
   const executionSteps: SingleStep[] = [
     {
@@ -302,6 +328,12 @@ export function useFromBtcLnQuote2(
       };
     }
   }
+  if (isPaymentCancelled)
+    executionSteps[0] = {
+      icon: ic_warning,
+      text: 'Payment declined',
+      type: 'failed',
+    };
   if (isQuoteExpired && !isQuoteExpiredClaim)
     executionSteps[0] = {
       icon: ic_hourglass_disabled_outline,
@@ -627,6 +659,7 @@ export function useFromBtcLnQuote2(
 
   return {
     executionSteps,
+    isPaymentCancelled,
     step1init,
     step2paymentWait,
     step3claim,

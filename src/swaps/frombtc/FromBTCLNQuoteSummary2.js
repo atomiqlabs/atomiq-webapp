@@ -41,7 +41,7 @@ export function FromBTCLNQuoteSummary2(props) {
         // Step 2: Payment Wait
         if (page.step2paymentWait) {
             return (_jsxs(_Fragment, { children: [_jsx(LightningHyperlinkModal, { opened: !!page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal, close: page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal?.close, setShowHyperlinkWarning: page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal?.showAgain
-                            .onChange }), _jsx(BaseButton, { onClick: props.abortSwap, variant: "danger", className: "swap-panel__action is-large", children: "Abort swap" })] }));
+                            .onChange }), page.isPaymentCancelled ? (_jsx(BaseButton, { onClick: props.refreshQuote, variant: "secondary", className: "swap-panel__action is-large", children: "Retry" })) : (_jsx(BaseButton, { onClick: props.abortSwap, variant: "danger", className: "swap-panel__action is-large", children: "Abort swap" }))] }));
         }
         // Step 3: Claim
         if (page.step3claim) {

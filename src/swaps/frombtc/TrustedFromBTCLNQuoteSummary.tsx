@@ -91,7 +91,7 @@ export function TrustedFromBTCLNQuoteSummary(props: {
   if (isCreated)
     executionSteps[0] = {
       icon: ic_flash_on_outline,
-      text: 'Awaiting lightning payment',
+      text: 'Awaiting lightning paymenxxt',
       type: 'loading',
     };
   if (isQuoteExpired)
