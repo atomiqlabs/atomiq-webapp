@@ -24,6 +24,7 @@ import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useFromBtcLnQuote2 } from './useFromBtcLnQuote2';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
+import { useAsync } from '../../utils/hooks/useAsync';
 
 /*
 Steps:
@@ -44,6 +45,18 @@ export function FromBTCLNQuoteSummary2(props: {
   const [callPayFlag, setCallPayFlag] = useState<boolean>(false);
   const page = useFromBtcLnQuote2(props.quote, props.setAmountLock);
   const lightningChainData = useChain('LIGHTNING');
+
+  const [pay, payLoading, payResult, payError] = useAsync(
+    () => lightningChainData.wallet.instance.sendPayment(props.quote.getAddress()),
+    [lightningChainData.wallet, props.quote]
+  );
+
+  useEffect(() => {
+    if (!callPayFlag) return;
+    setCallPayFlag(false);
+    if (!lightningChainData.wallet) return;
+    pay();
+  }, [callPayFlag, lightningChainData.wallet, pay]);
 
   // Render card content (progress, alerts, etc.)
   const renderCard = () => {

@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
 import { ScrollAnchor } from '../../components/ScrollAnchor';
@@ -15,6 +15,7 @@ import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useFromBtcLnQuote2 } from './useFromBtcLnQuote2';
 import { ChainDataContext } from '../../wallets/context/ChainDataContext';
+import { useAsync } from '../../utils/hooks/useAsync';
 /*
 Steps:
 1. Awaiting lightning payment -> Lightning payment received
@@ -26,6 +27,15 @@ export function FromBTCLNQuoteSummary2(props) {
     const [callPayFlag, setCallPayFlag] = useState(false);
     const page = useFromBtcLnQuote2(props.quote, props.setAmountLock);
     const lightningChainData = useChain('LIGHTNING');
+    const [pay, payLoading, payResult, payError] = useAsync(() => lightningChainData.wallet.instance.sendPayment(props.quote.getAddress()), [lightningChainData.wallet, props.quote]);
+    useEffect(() => {
+        if (!callPayFlag)
+            return;
+        setCallPayFlag(false);
+        if (!lightningChainData.wallet)
+            return;
+        pay();
+    }, [callPayFlag, lightningChainData.wallet, pay]);
     // Render card content (progress, alerts, etc.)
     const renderCard = () => {
         const isInitiated = !page.step1init;

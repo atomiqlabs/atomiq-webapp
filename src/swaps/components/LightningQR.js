@@ -63,5 +63,6 @@ export function LightningQR(props) {
                         navigator.clipboard.writeText(props.quote.getAddress());
                     } })] }));
     }, [props.quote, NFCScanning]);
+    // TODO propably remove all ) : lightningChainData.wallet != null ? ( logic
     return (_jsx(_Fragment, { children: payingWithLNURL ? (_jsxs("div", { className: "d-flex flex-column align-items-center justify-content-center", children: [_jsx(Spinner, { animation: "border" }), "Paying via NFC card..."] })) : lightningChainData.wallet != null ? (_jsx(_Fragment, { children: _jsx(SwapStepAlert, { show: !!payError, type: "error", icon: ic_warning, title: "Sending Lightning payment failed", description: payError?.message || payError?.toString(), error: payError, className: "mb-4 mt-0" }) })) : (_jsx(CopyOverlay, { placement: "top", children: qrContent })) }));
 }

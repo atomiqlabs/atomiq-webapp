@@ -104,6 +104,8 @@ export function LightningQR(props: {
     [props.quote, NFCScanning]
   );
 
+  // TODO propably remove all ) : lightningChainData.wallet != null ? ( logic
+
   return (
     <>
       {payingWithLNURL ? (
