@@ -1,30 +1,19 @@
 import * as React from 'react';
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
-import { FromBTCLNSwap, FromBTCLNSwapState } from '@atomiqlabs/sdk';
+import { FromBTCLNSwap } from '@atomiqlabs/sdk';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
-import { useSwapState } from '../hooks/useSwapState';
 import { ScrollAnchor } from '../../components/ScrollAnchor';
 import { LightningHyperlinkModal } from '../components/LightningHyperlinkModal';
 import { SwapExpiryProgressBar } from '../components/SwapExpiryProgressBar';
 import { SwapForGasAlert } from '../components/SwapForGasAlert';
 
-import { StepByStep, WalletData } from '../../components/StepByStep';
-import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { StepByStep } from '../../components/StepByStep';
 import { LightningQR } from '../components/LightningQR';
-import { useFromBtcLnQuote } from './useFromBtcLnQuote';
-import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
-import { useChain } from '../../wallets/hooks/useChain';
 import { SwapStepAlert } from '../components/SwapStepAlert';
-import { TokenIcons } from '../../tokens/Tokens';
-import { usePricing } from '../../tokens/hooks/usePricing';
-import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useFromBtcLnQuote2 } from './useFromBtcLnQuote2';
-import { ChainDataContext } from '../../wallets/context/ChainDataContext';
-import { useAsync } from '../../utils/hooks/useAsync';
 
 /*
 Steps:
@@ -41,23 +30,7 @@ export function FromBTCLNQuoteSummary2(props: {
   abortSwap?: () => void;
   notEnoughForGas: bigint;
 }) {
-  const { connectWallet } = useContext(ChainDataContext);
-  const [callPayFlag, setCallPayFlag] = useState<boolean>(false);
   const page = useFromBtcLnQuote2(props.quote, props.setAmountLock);
-  const lightningChainData = useChain('LIGHTNING');
-
-  const [pay, payLoading, payResult, payError] = useAsync(
-    () => lightningChainData.wallet.instance.sendPayment(props.quote.getAddress()),
-    [lightningChainData.wallet, props.quote]
-  );
-
-  useEffect(() => {
-    if (!callPayFlag) return;
-    setCallPayFlag(false);
-    if (!lightningChainData.wallet) return;
-    pay();
-  }, [callPayFlag, lightningChainData.wallet, pay]);
-
   // Render card content (progress, alerts, etc.)
   const renderCard = () => {
     const isInitiated = !page.step1init;
@@ -77,6 +50,20 @@ export function FromBTCLNQuoteSummary2(props: {
           error={page.step1init?.error?.error}
         />
 
+        {page.step2paymentWait?.error && (
+          <SwapStepAlert
+            show={true}
+            type="error"
+            icon={ic_warning}
+            title={page.step2paymentWait.error.title}
+            description={
+              page.step2paymentWait.error.error.message ||
+              page.step2paymentWait.error.error.toString()
+            }
+            error={page.step2paymentWait.error.error}
+          />
+        )}
+
         {page.step2paymentWait?.walletDisconnected && (
           <>
             <div className="swap-panel__card__group">
@@ -94,11 +81,7 @@ export function FromBTCLNQuoteSummary2(props: {
                   variant="secondary"
                   textSize="sm"
                   className="d-flex flex-row align-items-center"
-                  onClick={() => {
-                    connectWallet('LIGHTNING').then((success) => {
-                      if (success) setCallPayFlag(true);
-                    });
-                  }}
+                  onClick={page.step2paymentWait.walletDisconnected.payWithWebLn.onClick}
                 >
                   <img width={20} height={20} src="/wallets/WebLN-outline.svg" alt="WebLN" />
                   Pay via WebLN
@@ -106,8 +89,7 @@ export function FromBTCLNQuoteSummary2(props: {
               </div>
             </div>
 
-            {lightningChainData.wallet == null &&
-            page.step2paymentWait.walletDisconnected.autoClaim ? (
+            {page.step2paymentWait.walletDisconnected.autoClaim ? (
               <div className="swap-panel__card__group">
                 <Form className="auto-claim">
                   <div className="auto-claim__label">
