@@ -19,12 +19,9 @@ import { AlertMessage } from '../../components/AlertMessage';
 export function LightningQR(props: {
   quote: FromBTCLNSwap | LnForGasSwap;
   payInstantly?: boolean;
-  setAutoClaim?: (val: boolean) => void;
-  autoClaim?: boolean;
-  onHyperlink?: () => void;
 }) {
   const { swapper } = useContext(SwapsContext);
-  const { disconnectWallet, connectWallet } = useContext(ChainDataContext);
+  const { disconnectWallet } = useContext(ChainDataContext);
   const lightningChainData = useChain('LIGHTNING');
 
   const [payingWithLNURL, setPayingWithLNURL] = useState<boolean>(false);
@@ -67,7 +64,7 @@ export function LightningQR(props: {
   const qrContent = useCallback(
     (show) => {
       return (
-        <div className="swap-panel__card__group">
+        <>
           <div className="swap-panel__card__subtitle">
             <i className="ico icon-arrow-down"></i>
             <div className="sc-text">Initiate payment to this lightning network invoice</div>
@@ -101,39 +98,13 @@ export function LightningQR(props: {
               navigator.clipboard.writeText(props.quote.getAddress());
             }}
           />
-          <div className="payment-awaiting-buttons">
-            <BaseButton
-              variant="secondary"
-              onClick={
-                props.onHyperlink ||
-                (() => {
-                  window.location.href = props.quote.getHyperlink();
-                })
-              }
-            >
-              <i className="icon icon-connect"></i>
-              <div className="sc-text">Pay with LN Wallet</div>
-            </BaseButton>
-            <BaseButton
-              variant="secondary"
-              textSize="sm"
-              className="d-flex flex-row align-items-center"
-              onClick={() => {
-                connectWallet('LIGHTNING').then((success) => {
-                  // Call pay on next state update
-                  if (success) setCallPayFlag(true);
-                });
-              }}
-            >
-              <img width={20} height={20} src="/wallets/WebLN-outline.svg" />
-              Pay via WebLN
-            </BaseButton>
-          </div>
-        </div>
+        </>
       );
     },
-    [props.quote, props.onHyperlink, NFCScanning, connectWallet, setCallPayFlag]
+    [props.quote, NFCScanning]
   );
+
+  // TODO propably remove all ) : lightningChainData.wallet != null ? ( logic
 
   return (
     <>
@@ -154,64 +125,34 @@ export function LightningQR(props: {
             className="mb-4 mt-0"
           />
 
-          <div className="payment-awaiting-buttons">
-            <BaseButton
-              variant="secondary"
-              textSize="sm"
-              className="d-flex flex-row align-items-center"
-              disabled={payLoading}
-              onClick={() => {
-                pay();
-              }}
-            >
-              {payLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
-              <img width={20} height={20} src="/wallets/WebLN-outline.svg" />
-              Pay via WebLN
-            </BaseButton>
-            <BaseButton
-              variant="secondary"
-              textSize="sm"
-              className="d-flex flex-row align-items-center"
-              onClick={() => {
-                disconnectWallet('LIGHTNING');
-              }}
-            >
-              Or use a QR code/LN invoice
-            </BaseButton>
-          </div>
+          {/*<div className="payment-awaiting-buttons">*/}
+          {/*  <BaseButton*/}
+          {/*    variant="secondary"*/}
+          {/*    textSize="sm"*/}
+          {/*    className="d-flex flex-row align-items-center"*/}
+          {/*    disabled={payLoading}*/}
+          {/*    onClick={() => {*/}
+          {/*      pay();*/}
+          {/*    }}*/}
+          {/*  >*/}
+          {/*    {payLoading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}*/}
+          {/*    <img width={20} height={20} src="/wallets/WebLN-outline.svg" />*/}
+          {/*    Pay via WebLN*/}
+          {/*  </BaseButton>*/}
+          {/*  <BaseButton*/}
+          {/*    variant="secondary"*/}
+          {/*    textSize="sm"*/}
+          {/*    className="d-flex flex-row align-items-center"*/}
+          {/*    onClick={() => {*/}
+          {/*      disconnectWallet('LIGHTNING');*/}
+          {/*    }}*/}
+          {/*  >*/}
+          {/*    Or use a QR code/LN invoice*/}
+          {/*  </BaseButton>*/}
+          {/*</div>*/}
         </>
       ) : (
         <CopyOverlay placement="top">{qrContent}</CopyOverlay>
-      )}
-
-      {lightningChainData.wallet == null && props.setAutoClaim != null ? (
-        <div className="swap-panel__card__group">
-          <Form className="auto-claim">
-            <div className="auto-claim__label">
-              <label title="" htmlFor="autoclaim" className="form-check-label">
-                Auto-claim
-              </label>
-              <OverlayTrigger
-                overlay={
-                  <Tooltip id="autoclaim-pay-tooltip">
-                    Automatically requests authorization of the claim transaction through your
-                    wallet as soon as the lightning payment arrives.
-                  </Tooltip>
-                }
-              >
-                <i className="icon icon-info"></i>
-              </OverlayTrigger>
-            </div>
-            <Form.Check // prettier-ignore
-              id="autoclaim"
-              type="switch"
-              onChange={(val) => props.setAutoClaim(val.target.checked)}
-              checked={props.autoClaim}
-            />
-          </Form>
-        </div>
-      ) : (
-        ''
       )}
     </>
   );

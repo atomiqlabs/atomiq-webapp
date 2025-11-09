@@ -100,6 +100,23 @@ export function SwapNew2() {
       />
       <div className="d-flex flex-column align-items-center text-white">
         <div className="swap-panel">
+          <SwapStepAlert
+            type="error"
+            icon={ic_warning}
+            title="Quote error"
+            description={
+              swapPage.quote.error?.message ?? 'An error occurred while fetching the quote'
+            }
+            error={swapPage.quote.error}
+            show={swapPage.quote.error != null}
+            className="swap-panel__error mb-4"
+            action={{
+              type: 'button',
+              text: 'Retry',
+              onClick: swapPage.quote.refresh,
+              variant: 'secondary',
+            }}
+          />
           {existingSwap != null ? null : (
             <>
               <div className="swap-panel__card">
@@ -461,23 +478,6 @@ export function SwapNew2() {
               </BaseButton>
             </>
           )}
-          <SwapStepAlert
-            type="error"
-            icon={ic_warning}
-            title="Quote error"
-            description={
-              swapPage.quote.error?.message ?? 'An error occurred while fetching the quote'
-            }
-            error={swapPage.quote.error}
-            show={swapPage.quote.error != null}
-            className="swap-panel__error"
-            action={{
-              type: 'button',
-              text: 'Retry',
-              onClick: swapPage.quote.refresh,
-              variant: 'secondary',
-            }}
-          />
         </div>
       </div>
 

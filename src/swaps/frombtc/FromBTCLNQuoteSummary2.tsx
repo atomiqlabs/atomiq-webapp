@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Spinner } from 'react-bootstrap';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import { FromBTCLNSwap, FromBTCLNSwapState } from '@atomiqlabs/sdk';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
 import { useSwapState } from '../hooks/useSwapState';
@@ -23,6 +23,8 @@ import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useFromBtcLnQuote2 } from './useFromBtcLnQuote2';
+import { ChainDataContext } from '../../wallets/context/ChainDataContext';
+import { useAsync } from '../../utils/hooks/useAsync';
 
 /*
 Steps:
@@ -39,7 +41,22 @@ export function FromBTCLNQuoteSummary2(props: {
   abortSwap?: () => void;
   notEnoughForGas: bigint;
 }) {
+  const { connectWallet } = useContext(ChainDataContext);
+  const [callPayFlag, setCallPayFlag] = useState<boolean>(false);
   const page = useFromBtcLnQuote2(props.quote, props.setAmountLock);
+  const lightningChainData = useChain('LIGHTNING');
+
+  const [pay, payLoading, payResult, payError] = useAsync(
+    () => lightningChainData.wallet.instance.sendPayment(props.quote.getAddress()),
+    [lightningChainData.wallet, props.quote]
+  );
+
+  useEffect(() => {
+    if (!callPayFlag) return;
+    setCallPayFlag(false);
+    if (!lightningChainData.wallet) return;
+    pay();
+  }, [callPayFlag, lightningChainData.wallet, pay]);
 
   // Render card content (progress, alerts, etc.)
   const renderCard = () => {
@@ -62,12 +79,66 @@ export function FromBTCLNQuoteSummary2(props: {
 
         {page.step2paymentWait?.walletDisconnected && (
           <>
-            <LightningQR
-              quote={props.quote}
-              setAutoClaim={page.step2paymentWait.walletDisconnected.autoClaim.onChange}
-              autoClaim={page.step2paymentWait.walletDisconnected.autoClaim.value}
-              onHyperlink={page.step2paymentWait.walletDisconnected.payWithLnWallet.onClick}
-            />
+            <div className="swap-panel__card__group">
+              <LightningQR quote={props.quote} />
+
+              <div className="payment-awaiting-buttons">
+                <BaseButton
+                  variant="secondary"
+                  onClick={page.step2paymentWait.walletDisconnected.payWithLnWallet.onClick}
+                >
+                  <i className="icon icon-connect"></i>
+                  <div className="sc-text">Pay with LN Wallet</div>
+                </BaseButton>
+                <BaseButton
+                  variant="secondary"
+                  textSize="sm"
+                  className="d-flex flex-row align-items-center"
+                  onClick={() => {
+                    connectWallet('LIGHTNING').then((success) => {
+                      if (success) setCallPayFlag(true);
+                    });
+                  }}
+                >
+                  <img width={20} height={20} src="/wallets/WebLN-outline.svg" alt="WebLN" />
+                  Pay via WebLN
+                </BaseButton>
+              </div>
+            </div>
+
+            {lightningChainData.wallet == null &&
+            page.step2paymentWait.walletDisconnected.autoClaim ? (
+              <div className="swap-panel__card__group">
+                <Form className="auto-claim">
+                  <div className="auto-claim__label">
+                    <label title="" htmlFor="autoclaim" className="form-check-label">
+                      Auto-claim
+                    </label>
+                    <OverlayTrigger
+                      overlay={
+                        <Tooltip id="autoclaim-pay-tooltip">
+                          Automatically requests authorization of the claim transaction through your
+                          wallet as soon as the lightning payment arrives.
+                        </Tooltip>
+                      }
+                    >
+                      <i className="icon icon-info"></i>
+                    </OverlayTrigger>
+                  </div>
+                  <Form.Check // prettier-ignore
+                    id="autoclaim"
+                    type="switch"
+                    onChange={(val) =>
+                      page.step2paymentWait.walletDisconnected.autoClaim.onChange(
+                        val.target.checked
+                      )
+                    }
+                    checked={page.step2paymentWait.walletDisconnected.autoClaim.value}
+                  />
+                </Form>
+              </div>
+            ) : null}
+
             <div className="swap-panel__card__group">
               <SwapExpiryProgressBar
                 timeRemaining={page.step2paymentWait.expiry.remaining}

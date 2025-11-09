@@ -1,5 +1,6 @@
-import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
-import { Spinner } from 'react-bootstrap';
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { useContext, useEffect, useState } from 'react';
+import { Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
 import { ScrollAnchor } from '../../components/ScrollAnchor';
 import { LightningHyperlinkModal } from '../components/LightningHyperlinkModal';
@@ -8,10 +9,13 @@ import { SwapForGasAlert } from '../components/SwapForGasAlert';
 import { StepByStep } from '../../components/StepByStep';
 import { LightningQR } from '../components/LightningQR';
 import { BaseButton } from '../../components/BaseButton';
+import { useChain } from '../../wallets/hooks/useChain';
 import { SwapStepAlert } from '../components/SwapStepAlert';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useFromBtcLnQuote2 } from './useFromBtcLnQuote2';
+import { ChainDataContext } from '../../wallets/context/ChainDataContext';
+import { useAsync } from '../../utils/hooks/useAsync';
 /*
 Steps:
 1. Awaiting lightning payment -> Lightning payment received
@@ -19,13 +23,32 @@ Steps:
 3. Send claim transaction -> Sending claim transaction -> Claim success
  */
 export function FromBTCLNQuoteSummary2(props) {
+    const { connectWallet } = useContext(ChainDataContext);
+    const [callPayFlag, setCallPayFlag] = useState(false);
     const page = useFromBtcLnQuote2(props.quote, props.setAmountLock);
+    const lightningChainData = useChain('LIGHTNING');
+    const [pay, payLoading, payResult, payError] = useAsync(() => lightningChainData.wallet.instance.sendPayment(props.quote.getAddress()), [lightningChainData.wallet, props.quote]);
+    useEffect(() => {
+        if (!callPayFlag)
+            return;
+        setCallPayFlag(false);
+        if (!lightningChainData.wallet)
+            return;
+        pay();
+    }, [callPayFlag, lightningChainData.wallet, pay]);
     // Render card content (progress, alerts, etc.)
     const renderCard = () => {
         const isInitiated = !page.step1init;
         if (!isInitiated)
             return null;
-        return (_jsxs("div", { className: "swap-panel__card", children: [page.executionSteps && _jsx(StepByStep, { quote: props.quote, steps: page.executionSteps }), _jsx(SwapStepAlert, { show: !!page.step1init?.error, type: "error", icon: ic_warning, title: page.step1init?.error?.title, description: page.step1init?.error?.error.message, error: page.step1init?.error?.error }), page.step2paymentWait?.walletDisconnected && (_jsxs(_Fragment, { children: [_jsx(LightningQR, { quote: props.quote, setAutoClaim: page.step2paymentWait.walletDisconnected.autoClaim.onChange, autoClaim: page.step2paymentWait.walletDisconnected.autoClaim.value, onHyperlink: page.step2paymentWait.walletDisconnected.payWithLnWallet.onClick }), _jsx("div", { className: "swap-panel__card__group", children: _jsx(SwapExpiryProgressBar, { timeRemaining: page.step2paymentWait.expiry.remaining, totalTime: page.step2paymentWait.expiry.total, show: true, type: "bar", expiryText: "Swap address expired, please do not send any funds!", quoteAlias: "Lightning invoice" }) })] })), _jsx(SwapStepAlert, { show: !!page.step3claim?.error, type: "error", icon: ic_warning, title: page.step3claim?.error?.title, description: page.step3claim?.error?.error.message, error: page.step3claim?.error?.error }), _jsx(SwapStepAlert, { show: page.step4?.state === 'success', type: "success", icon: ic_check_circle, title: "Swap success", description: "Your swap was executed successfully!" }), _jsx(SwapStepAlert, { show: page.step4?.state === 'failed', type: "danger", icon: ic_warning, title: "Swap failed", description: "Swap HTLC expired, your lightning payment will be refunded shortly!" })] }));
+        return (_jsxs("div", { className: "swap-panel__card", children: [page.executionSteps && _jsx(StepByStep, { quote: props.quote, steps: page.executionSteps }), _jsx(SwapStepAlert, { show: !!page.step1init?.error, type: "error", icon: ic_warning, title: page.step1init?.error?.title, description: page.step1init?.error?.error.message, error: page.step1init?.error?.error }), page.step2paymentWait?.walletDisconnected && (_jsxs(_Fragment, { children: [_jsxs("div", { className: "swap-panel__card__group", children: [_jsx(LightningQR, { quote: props.quote }), _jsxs("div", { className: "payment-awaiting-buttons", children: [_jsxs(BaseButton, { variant: "secondary", onClick: page.step2paymentWait.walletDisconnected.payWithLnWallet.onClick, children: [_jsx("i", { className: "icon icon-connect" }), _jsx("div", { className: "sc-text", children: "Pay with LN Wallet" })] }), _jsxs(BaseButton, { variant: "secondary", textSize: "sm", className: "d-flex flex-row align-items-center", onClick: () => {
+                                                connectWallet('LIGHTNING').then((success) => {
+                                                    if (success)
+                                                        setCallPayFlag(true);
+                                                });
+                                            }, children: [_jsx("img", { width: 20, height: 20, src: "/wallets/WebLN-outline.svg", alt: "WebLN" }), "Pay via WebLN"] })] })] }), lightningChainData.wallet == null &&
+                            page.step2paymentWait.walletDisconnected.autoClaim ? (_jsx("div", { className: "swap-panel__card__group", children: _jsxs(Form, { className: "auto-claim", children: [_jsxs("div", { className: "auto-claim__label", children: [_jsx("label", { title: "", htmlFor: "autoclaim", className: "form-check-label", children: "Auto-claim" }), _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "autoclaim-pay-tooltip", children: "Automatically requests authorization of the claim transaction through your wallet as soon as the lightning payment arrives." }), children: _jsx("i", { className: "icon icon-info" }) })] }), _jsx(Form.Check // prettier-ignore
+                                    , { id: "autoclaim", type: "switch", onChange: (val) => page.step2paymentWait.walletDisconnected.autoClaim.onChange(val.target.checked), checked: page.step2paymentWait.walletDisconnected.autoClaim.value })] }) })) : null, _jsx("div", { className: "swap-panel__card__group", children: _jsx(SwapExpiryProgressBar, { timeRemaining: page.step2paymentWait.expiry.remaining, totalTime: page.step2paymentWait.expiry.total, show: true, type: "bar", expiryText: "Swap address expired, please do not send any funds!", quoteAlias: "Lightning invoice" }) })] })), _jsx(SwapStepAlert, { show: !!page.step3claim?.error, type: "error", icon: ic_warning, title: page.step3claim?.error?.title, description: page.step3claim?.error?.error.message, error: page.step3claim?.error?.error }), _jsx(SwapStepAlert, { show: page.step4?.state === 'success', type: "success", icon: ic_check_circle, title: "Swap success", description: "Your swap was executed successfully!" }), _jsx(SwapStepAlert, { show: page.step4?.state === 'failed', type: "danger", icon: ic_warning, title: "Swap failed", description: "Swap HTLC expired, your lightning payment will be refunded shortly!" })] }));
     };
     // Render action buttons based on current step
     const renderActions = () => {
