@@ -23,7 +23,7 @@ import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
 import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
 import { useChain } from '../../wallets/hooks/useChain';
-import {useSpvVaultFromBtcQuote} from "./useSpvVaultFromBtcQuote";
+import { useSpvVaultFromBtcQuote } from './useSpvVaultFromBtcQuote';
 
 /*
 Steps:
@@ -40,161 +40,186 @@ export function SpvVaultFromBTCQuoteSummary(props: {
   feeRate?: number;
   balance?: bigint;
 }) {
-  const page = useSpvVaultFromBtcQuote(props.quote, props.setAmountLock, props.feeRate, props.balance);
+  const page = useSpvVaultFromBtcQuote(
+    props.quote,
+    props.setAmountLock,
+    props.feeRate,
+    props.balance
+  );
 
   return (
     <>
-      {page.executionSteps ? <StepByStep quote={props.quote} steps={page.executionSteps} /> : ''}
+      <div className="swap-panel__card">
+        {page.executionSteps ? <StepByStep quote={props.quote} steps={page.executionSteps} /> : ''}
 
-      {page.step1init ? (
-        <>
-          {/*NOTE: I think this is not actually necessary since expiry is already shown in the fee summary*/}
-          <SwapExpiryProgressBar
-            expired={false}
-            timeRemaining={page.step1init.expiry?.remaining}
-            totalTime={page.step1init.expiry?.total}
-            show={!!page.step1init.expiry}
-            type="bar"
-            quoteAlias="Quote"
-          />
+        {page.step1init ? (
+          <>
+            <ErrorAlert
+              className="mb-3"
+              title={page.step1init.error?.title}
+              error={page.step1init.error?.error}
+            />
+          </>
+        ) : (
+          ''
+        )}
 
-          <ErrorAlert className="mb-3" title={page.step1init.error?.title} error={page.step1init.error?.error} />
+        {page.step2broadcasting ? (
+          <div className="d-flex flex-column align-items-center gap-2 tab-accent">
+            <Spinner />
+            <small className="mt-2">Sending bitcoin transaction...</small>
+          </div>
+        ) : (
+          ''
+        )}
 
-          <ButtonWithWallet
-            chainId="BITCOIN"
-            onClick={page.step1init.init?.onClick}
-            className="swap-panel__action"
-            disabled={page.step1init.init?.disabled}
-            size="lg"
-          >
-            {page.step1init.init?.loading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
-            Pay with <img width={20} height={20} src={page.step1init.bitcoinWallet?.icon} /> {page.step1init.bitcoinWallet?.name}
-          </ButtonWithWallet>
-        </>
-      ) : (
-        ''
-      )}
+        {page.step3awaitingConfirmations ? (
+          <div className="d-flex flex-column align-items-center tab-accent">
+            <small className="mb-2">Transaction received, waiting for confirmations...</small>
 
-      {page.step2broadcasting ? (
-        <div className="d-flex flex-column align-items-center gap-2 tab-accent">
-          <Spinner />
-          <small className="mt-2">Sending bitcoin transaction...</small>
-        </div>
-      ) : (
-        ''
-      )}
+            <Spinner />
+            <label>
+              {page.step3awaitingConfirmations.txData.confirmations.actual} /{' '}
+              {page.step3awaitingConfirmations.txData.confirmations.required}
+            </label>
+            <label style={{ marginTop: '-6px' }}>Confirmations</label>
 
-      {page.step3awaitingConfirmations ? (
-        <div className="d-flex flex-column align-items-center tab-accent">
-          <small className="mb-2">Transaction received, waiting for confirmations...</small>
+            <a
+              className="mb-2 text-overflow-ellipsis text-nowrap overflow-hidden"
+              style={{ width: '100%' }}
+              target="_blank"
+              href={FEConstants.btcBlockExplorer + page.step3awaitingConfirmations.txData.txId}
+            >
+              <small>{page.step3awaitingConfirmations.txData.txId}</small>
+            </a>
 
-          <Spinner />
-          <label>
-            {page.step3awaitingConfirmations.txData.confirmations.actual} / {page.step3awaitingConfirmations.txData.confirmations.required}
-          </label>
-          <label style={{ marginTop: '-6px' }}>Confirmations</label>
+            <Badge
+              className={
+                'text-black' + (page.step3awaitingConfirmations.txData.eta == null ? ' d-none' : '')
+              }
+              bg="light"
+              pill
+            >
+              ETA: {page.step3awaitingConfirmations.txData.eta.text}
+            </Badge>
 
-          <a
-            className="mb-2 text-overflow-ellipsis text-nowrap overflow-hidden"
-            style={{ width: '100%' }}
-            target="_blank"
-            href={FEConstants.btcBlockExplorer + page.step3awaitingConfirmations.txData.txId}
-          >
-            <small>{page.step3awaitingConfirmations.txData.txId}</small>
-          </a>
+            {page.step3awaitingConfirmations.error != null ? (
+              <>
+                <ErrorAlert
+                  className="my-3 width-fill"
+                  title={page.step3awaitingConfirmations.error.title}
+                  error={page.step3awaitingConfirmations.error.error}
+                />
+                <Button
+                  onClick={page.step3awaitingConfirmations.error.retry}
+                  className="width-fill"
+                  variant="secondary"
+                >
+                  Retry
+                </Button>
+              </>
+            ) : (
+              ''
+            )}
+          </div>
+        ) : (
+          ''
+        )}
 
-          <Badge
-            className={'text-black' + (page.step3awaitingConfirmations.txData.eta == null ? ' d-none' : '')}
-            bg="light"
-            pill
-          >
-            ETA: {page.step3awaitingConfirmations.txData.eta.text}
-          </Badge>
+        {page.step4claim && page.step4claim.waitingForWatchtowerClaim ? (
+          <div className="d-flex flex-column align-items-center tab-accent">
+            <Spinner />
+            <small className="mt-2">
+              Transaction received & confirmed, waiting for claim by watchtowers...
+            </small>
+          </div>
+        ) : (
+          ''
+        )}
 
-          {page.step3awaitingConfirmations.error != null ? (
-            <>
-              <ErrorAlert
-                className="my-3 width-fill"
-                title={page.step3awaitingConfirmations.error.title}
-                error={page.step3awaitingConfirmations.error.error}
-              />
-              <Button onClick={page.step3awaitingConfirmations.error.retry} className="width-fill" variant="secondary">
-                Retry
-              </Button>
-            </>
+        {page.step4claim && !page.step4claim.waitingForWatchtowerClaim ? (
+          <>
+            <div className="d-flex flex-column align-items-center tab-accent mb-3">
+              <label>
+                Transaction received & confirmed, you can claim your funds manually now!
+              </label>
+            </div>
+
+            <ErrorAlert
+              className="mb-3"
+              title={page.step4claim.error?.title}
+              error={page.step4claim.error?.error}
+            />
+
+            <ButtonWithWallet
+              chainId={props.quote.chainIdentifier}
+              className="swap-panel__action"
+              onClick={page.step4claim.claim.onClick}
+              disabled={page.step4claim.claim.disabled}
+              size="lg"
+            >
+              {page.step4claim.claim.loading ? (
+                <Spinner animation="border" size="sm" className="mr-2" />
+              ) : (
+                ''
+              )}
+              Finish swap (claim funds)
+            </ButtonWithWallet>
+          </>
+        ) : (
+          ''
+        )}
+
+        {page.step5?.state === 'success' ? (
+          <Alert variant="success" className="mb-3">
+            <strong>Swap success</strong>
+            <label>Your swap was executed successfully!</label>
+          </Alert>
+        ) : (
+          ''
+        )}
+
+        {page.step5?.state === 'failed' ? (
+          <Alert variant="danger" className="mb-3">
+            <strong>Swap failed</strong>
+            <label>Swap transaction reverted, no funds were sent!</label>
+          </Alert>
+        ) : (
+          ''
+        )}
+
+        {/*/!*NOTE: I think this is not actually necessary since expiry is already shown in the fee summary*!/*/}
+        {/*{page.step5?.state === 'expired' ? (*/}
+        {/*  <SwapExpiryProgressBar*/}
+        {/*    expired={true}*/}
+        {/*    timeRemaining={0}*/}
+        {/*    totalTime={1}*/}
+        {/*    show={true}*/}
+        {/*    type="bar"*/}
+        {/*    expiryText="Quote expired!"*/}
+        {/*    quoteAlias="Quote"*/}
+        {/*  />*/}
+        {/*) : (*/}
+        {/*  ''*/}
+        {/*)}*/}
+      </div>
+
+      {page.step1init && (
+        <ButtonWithWallet
+          chainId="BITCOIN"
+          onClick={page.step1init.init?.onClick}
+          className="swap-panel__action"
+          disabled={page.step1init.init?.disabled}
+          size="lg"
+        >
+          {page.step1init.init?.loading ? (
+            <Spinner animation="border" size="sm" className="mr-2" />
           ) : (
             ''
           )}
-        </div>
-      ) : (
-        ''
-      )}
-
-      {page.step4claim && page.step4claim.waitingForWatchtowerClaim ? (
-        <div className="d-flex flex-column align-items-center tab-accent">
-          <Spinner />
-          <small className="mt-2">
-            Transaction received & confirmed, waiting for claim by watchtowers...
-          </small>
-        </div>
-      ) : (
-        ''
-      )}
-
-      {page.step4claim && !page.step4claim.waitingForWatchtowerClaim ? (
-        <>
-          <div className="d-flex flex-column align-items-center tab-accent mb-3">
-            <label>Transaction received & confirmed, you can claim your funds manually now!</label>
-          </div>
-
-          <ErrorAlert className="mb-3" title={page.step4claim.error?.title} error={page.step4claim.error?.error} />
-
-          <ButtonWithWallet
-            chainId={props.quote.chainIdentifier}
-            className="swap-panel__action"
-            onClick={page.step4claim.claim.onClick}
-            disabled={page.step4claim.claim.disabled}
-            size="lg"
-          >
-            {page.step4claim.claim.loading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
-            Finish swap (claim funds)
-          </ButtonWithWallet>
-        </>
-      ) : (
-        ''
-      )}
-
-      {page.step5?.state==="success" ? (
-        <Alert variant="success" className="mb-3">
-          <strong>Swap success</strong>
-          <label>Your swap was executed successfully!</label>
-        </Alert>
-      ) : (
-        ''
-      )}
-
-      {page.step5?.state==="failed" ? (
-        <Alert variant="danger" className="mb-3">
-          <strong>Swap failed</strong>
-          <label>Swap transaction reverted, no funds were sent!</label>
-        </Alert>
-      ) : (
-        ''
-      )}
-
-      {/*NOTE: I think this is not actually necessary since expiry is already shown in the fee summary*/}
-      {page.step5?.state==="expired" ? (
-        <SwapExpiryProgressBar
-          expired={true}
-          timeRemaining={0}
-          totalTime={1}
-          show={true}
-          type="bar"
-          expiryText="Quote expired!"
-          quoteAlias="Quote"
-        />
-      ) : (
-        ''
+          Pay with <img width={20} height={20} src={page.step1init.bitcoinWallet?.icon} />{' '}
+          {page.step1init.bitcoinWallet?.name}
+        </ButtonWithWallet>
       )}
 
       {page.step5 ? (
