@@ -64,7 +64,7 @@ export function FromBTCLNQuoteSummary2(props: {
           />
         )}
 
-        {page.step2paymentWait?.walletConnected && (
+        {page.step2paymentWait?.walletConnected && !page.isPaymentCancelled && (
           <>
             <div className="swap-panel__card__group">
               <div className="payment-awaiting-buttons">
@@ -175,6 +175,28 @@ export function FromBTCLNQuoteSummary2(props: {
           </>
         )}
 
+        {page.step3claim && !page.isCommitCancelled && !page.isClaimCancelled && (
+          <SwapStepAlert
+            show={true}
+            type="success"
+            icon={ic_check_circle}
+            title="Lightning network payment received"
+            description="Claim your payment to finish the swap."
+            actionElement={
+              <ButtonWithWallet
+                requiredWalletAddress={props.quote._getInitiator()}
+                className="swap-step-alert__button"
+                chainId={props.quote?.chainIdentifier}
+                onClick={page.step3claim.commit.onClick}
+                variant="secondary"
+              >
+                <i className="icon icon-claim"></i>
+                Claim your payment
+              </ButtonWithWallet>
+            }
+          />
+        )}
+
         <SwapStepAlert
           show={!!page.step3claim?.error}
           type="error"
@@ -271,41 +293,41 @@ export function FromBTCLNQuoteSummary2(props: {
       );
     }
 
-    // Step 3: Claim
-    if (page.step3claim) {
-      return (
-        <>
-          <ButtonWithWallet
-            requiredWalletAddress={props.quote._getInitiator()}
-            className="swap-panel__action"
-            chainId={props.quote?.chainIdentifier}
-            onClick={page.step3claim.commit.onClick}
-            disabled={page.step3claim.commit.disabled}
-            size={page.step3claim.commit.size}
-          >
-            {page.step3claim.commit.loading && (
-              <Spinner animation="border" size="sm" className="mr-2" />
-            )}
-            {page.step3claim.commit.text}
-          </ButtonWithWallet>
-          {page.step3claim.claim && (
-            <ButtonWithWallet
-              requiredWalletAddress={props.quote._getInitiator()}
-              chainId={props.quote?.chainIdentifier}
-              onClick={page.step3claim.claim.onClick}
-              disabled={page.step3claim.claim.disabled}
-              size={page.step3claim.claim.size}
-              className="swap-panel__action"
-            >
-              {page.step3claim.claim.loading && (
-                <Spinner animation="border" size="sm" className="mr-2" />
-              )}
-              {page.step3claim.claim.text}
-            </ButtonWithWallet>
-          )}
-        </>
-      );
-    }
+    // / Step 3: Claim
+    // if (page.step3claim) {
+    //     return (
+    //         <>
+    //             <ButtonWithWallet
+    //                 requiredWalletAddress={props.quote._getInitiator()}
+    //                 className="swap-panel__action"
+    //                 chainId={props.quote?.chainIdentifier}
+    //                 onClick={page.step3claim.commit.onClick}
+    //                 disabled={page.step3claim.commit.disabled}
+    //                 size={page.step3claim.commit.size}
+    //             >
+    //                 {page.step3claim.commit.loading && (
+    //                     <Spinner animation="border" size="sm" className="mr-2" />
+    //                 )}
+    //                 {page.step3claim.commit.text}
+    //             </ButtonWithWallet>
+    //             {page.step3claim.claim && (
+    //                 <ButtonWithWallet
+    //                     requiredWalletAddress={props.quote._getInitiator()}
+    //                     chainId={props.quote?.chainIdentifier}
+    //                     onClick={page.step3claim.claim.onClick}
+    //                     disabled={page.step3claim.claim.disabled}
+    //                     size={page.step3claim.claim.size}
+    //                     className="swap-panel__action"
+    //                 >
+    //                     {page.step3claim.claim.loading && (
+    //                         <Spinner animation="border" size="sm" className="mr-2" />
+    //                     )}
+    //                     {page.step3claim.claim.text}
+    //                 </ButtonWithWallet>
+    //             )}
+    //         </>
+    //     );
+    // }
 
     // Step 4: Completion
     if (page.step4) {

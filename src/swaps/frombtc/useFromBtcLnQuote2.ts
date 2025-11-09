@@ -5,15 +5,13 @@ import { useStateRef } from '../../utils/hooks/useStateRef';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
 import { useAsync } from '../../utils/hooks/useAsync';
 import { SingleStep } from '../../components/StepByStep';
-
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
 import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
-import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { ic_swap_horiz } from 'react-icons-kit/md/ic_swap_horiz';
-import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
+import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { ic_download_outline } from 'react-icons-kit/md/ic_download_outline';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { timeoutPromise } from '../../utils/Utils';
@@ -25,11 +23,15 @@ import { ChainDataContext } from '../../wallets/context/ChainDataContext';
 import { useNFCScanner } from '../../nfc/hooks/useNFCScanner';
 import { SwapsContext } from '../context/SwapsContext';
 import { NFCStartResult } from '../../nfc/NFCReader';
+import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
 
 export type FromBtcLnQuotePage = {
   executionSteps?: SingleStep[];
   //Whether payment was cancelled/declined by user
   isPaymentCancelled?: boolean;
+  //Whether commit/claim was cancelled/declined by user
+  isCommitCancelled?: boolean;
+  isClaimCancelled?: boolean;
   step1init?: {
     //Need to connect a smart chain wallet with the same address as in quote
     invalidSmartChainWallet: boolean;
@@ -253,6 +255,17 @@ export function useFromBtcLnQuote2(
     [quote, smartChainWallet]
   );
 
+  // Track if commit/claim was cancelled/declined by user
+  const isCommitCancelled = useMemo(
+    () => isUserCancellation(commitError),
+    [commitError, isUserCancellation]
+  );
+
+  const isClaimCancelled = useMemo(
+    () => isUserCancellation(claimError),
+    [claimError, isUserCancellation]
+  );
+
   useEffect(() => {
     if (state === FromBTCLNSwapState.PR_PAID) {
       if (autoClaim || lightningWallet != null)
@@ -356,13 +369,19 @@ export function useFromBtcLnQuote2(
     }
     if (isClaimable)
       executionSteps[1] = {
-        icon: ic_swap_horiz,
-        text: committing || claiming ? 'Sending claim transaction' : 'Send claim transaction',
+        icon: ic_receipt,
+        text: committing || claiming ? 'Claiming transaction' : 'Send claim transaction',
         type: 'loading',
+      };
+    if (isCommitCancelled)
+      executionSteps[1] = {
+        icon: ic_warning,
+        text: 'Transaction declined',
+        type: 'failed',
       };
     if (isSuccess)
       executionSteps[1] = {
-        icon: ic_verified_outline,
+        icon: ic_check_outline,
         text: 'Claim success',
         type: 'success',
       };
@@ -407,6 +426,12 @@ export function useFromBtcLnQuote2(
         text: committing ? 'Sending initialization transaction' : 'Sending transaction',
         type: 'loading',
       };
+    if (isCommitCancelled)
+      executionSteps[1] = {
+        icon: ic_warning,
+        text: 'Transaction declined',
+        type: 'failed',
+      };
     if (isClaimClaimable) {
       executionSteps[1] = {
         icon: ic_check_outline,
@@ -414,9 +439,21 @@ export function useFromBtcLnQuote2(
         type: 'success',
       };
       executionSteps[2] = {
-        icon: ic_download_outline,
-        text: claiming ? 'Sending claim transaction' : 'Send claim transaction',
+        icon: ic_receipt,
+        text: claiming ? 'Claiming transaction' : 'Send claim transaction',
         type: 'loading',
+      };
+    }
+    if (isClaimCancelled) {
+      executionSteps[1] = {
+        icon: ic_check_outline,
+        text: 'Initialization success',
+        type: 'success',
+      };
+      executionSteps[2] = {
+        icon: ic_warning,
+        text: 'Transaction declined',
+        type: 'failed',
       };
     }
     if (isSuccess) {
@@ -426,7 +463,7 @@ export function useFromBtcLnQuote2(
         type: 'success',
       };
       executionSteps[2] = {
-        icon: ic_verified_outline,
+        icon: ic_check_outline,
         text: 'Claim success',
         type: 'success',
       };
@@ -660,6 +697,8 @@ export function useFromBtcLnQuote2(
   return {
     executionSteps,
     isPaymentCancelled,
+    isCommitCancelled,
+    isClaimCancelled,
     step1init,
     step2paymentWait,
     step3claim,
