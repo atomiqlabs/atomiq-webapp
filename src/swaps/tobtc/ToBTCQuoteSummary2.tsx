@@ -72,8 +72,6 @@ export function ToBTCQuoteSummary2(props: {
     return (
       <>
         <div className="swap-panel__card">
-          {stepByStep}
-
           <SwapStepAlert
             show={!!page.step1init.additionalGasRequired}
             type="danger"
@@ -89,13 +87,6 @@ export function ToBTCQuoteSummary2(props: {
             title={page.step1init.error?.title}
             description={page.step1init.error?.error.message}
             error={page.step1init.error?.error}
-            action={{
-              type: 'button',
-              text: 'Retry',
-              onClick: props.refreshQuote,
-              icon: <i className={'icon icon-refund'}></i>,
-              variant: 'secondary',
-            }}
           />
         </div>
 
@@ -173,9 +164,12 @@ export function ToBTCQuoteSummary2(props: {
   if(page.step4) {
     return (
       <>
-        <div className="swap-panel__card">
-          {stepByStep}
-        </div>
+        {/*NOTE: If swap is expired this fact is shown on the main UI's fee indicator*/}
+        {page.step4.state !== 'expired' ? (
+          <div className="swap-panel__card">
+            {stepByStep}
+          </div>
+        ) : ''}
 
         <SwapStepAlert
           show={page.step4.state==="refunded"}

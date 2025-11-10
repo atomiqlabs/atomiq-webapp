@@ -124,6 +124,7 @@ export function useFromBtcLnQuote2(quote, UICallback) {
     }, [state]);
     const isQuoteExpired = state === FromBTCLNSwapState.QUOTE_EXPIRED ||
         (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !committing && !paymentWaiting);
+    const isQuoteExpiredUninitialized = isQuoteExpired && isInitiated;
     const isQuoteExpiredClaim = isQuoteExpired && quote.signatureData != null;
     const isFailed = state === FromBTCLNSwapState.FAILED || state === FromBTCLNSwapState.EXPIRED;
     const isCreated = state === FromBTCLNSwapState.PR_CREATED ||
@@ -517,10 +518,10 @@ export function useFromBtcLnQuote2(quote, UICallback) {
                 ? 'success'
                 : isFailed
                     ? 'failed'
-                    : 'expired',
-            expiryMessage: isInitiated
-                ? 'Swap expired! Your lightning payment should refund shortly.'
-                : 'Swap expired!',
+                    : isInitiated
+                        ? 'expired'
+                        : 'expired_uninitialized',
+            expiryMessage: 'Swap expired! Your lightning payment should refund shortly.',
         };
     }, [isSuccess, isFailed, isQuoteExpired, isInitiated]);
     return {

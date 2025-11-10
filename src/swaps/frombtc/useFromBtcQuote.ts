@@ -569,7 +569,7 @@ export function useFromBtcQuote(
   ]);
 
   return {
-    executionSteps: isInitiated ? executionSteps : undefined,
+    executionSteps: isInitiated && !isCreated ? executionSteps : undefined,
     step1init,
     step2paymentWait,
     step3awaitingConfirmations,

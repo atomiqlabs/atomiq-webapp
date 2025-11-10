@@ -389,7 +389,7 @@ export function useSpvVaultFromBtcQuote(
   );
 
   return {
-    executionSteps: isInitiated || (isCreated && sendLoading) ? executionSteps : undefined,
+    executionSteps: isInitiated && !isCreated ? executionSteps : undefined,
     step1init,
     step2broadcasting: isBroadcasting ? {} : undefined,
     step3awaitingConfirmations,

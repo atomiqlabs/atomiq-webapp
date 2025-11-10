@@ -121,8 +121,6 @@ export function FromBTCQuoteSummary2(props: {
     return (
       <>
         <div className="swap-panel__card">
-          {stepByStep}
-
           <SwapStepAlert
             show={!!page.step1init.error}
             type="error"
@@ -362,35 +360,37 @@ export function FromBTCQuoteSummary2(props: {
   if(page.step5) {
     return (
       <>
-        <div className="swap-panel__card">
-          {stepByStep}
+        {page.step5.state!=='expired' ? (
+          <div className="swap-panel__card">
+            {stepByStep}
 
-          <SwapExpiryProgressBar
-            show={page.step5.state==="failed"}
-            expired={true}
-            timeRemaining={0}
-            totalTime={1}
-            type="bar"
-            expiryText="Swap address expired, please do not send any funds!"
-            quoteAlias="Swap address"
-          />
+            <SwapExpiryProgressBar
+              show={page.step5.state==="failed"}
+              expired={true}
+              timeRemaining={0}
+              totalTime={1}
+              type="bar"
+              expiryText="Swap address expired, please do not send any funds!"
+              quoteAlias="Swap address"
+            />
 
-          <SwapStepAlert
-            show={page.step5.state==="success"}
-            type="success"
-            icon={ic_check_circle}
-            title="Swap success"
-            description="Your swap was executed successfully!"
-          />
+            <SwapStepAlert
+              show={page.step5.state==="success"}
+              type="success"
+              icon={ic_check_circle}
+              title="Swap success"
+              description="Your swap was executed successfully!"
+            />
 
-          <SwapStepAlert
-            show={page.step5.state==="failed"}
-            type="danger"
-            icon={ic_warning}
-            title="Swap failed"
-            description="Swap address expired without receiving the required funds!"
-          />
-        </div>
+            <SwapStepAlert
+              show={page.step5.state==="failed"}
+              type="danger"
+              icon={ic_warning}
+              title="Swap failed"
+              description="Swap address expired without receiving the required funds!"
+            />
+          </div>
+        ) : ''}
 
         <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
           New quote

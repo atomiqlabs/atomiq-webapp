@@ -36,6 +36,7 @@ export function FromBTCLNQuoteSummary2(props: {
   const renderCard = () => {
     const isInitiated = !page.step1init;
     if (!isInitiated) return null;
+    if (page.step4?.state === 'expired_uninitialized') return null; //Let the main UI render this case
 
     return (
       <div className="swap-panel__card">
@@ -221,6 +222,14 @@ export function FromBTCLNQuoteSummary2(props: {
           icon={ic_warning}
           title="Swap failed"
           description="Swap HTLC expired, your lightning payment will be refunded shortly!"
+        />
+
+        <SwapStepAlert
+          show={page.step4?.state === 'expired'}
+          type="danger"
+          icon={ic_warning}
+          title="Swap expired"
+          description={page.step4?.expiryMessage}
         />
       </div>
     );

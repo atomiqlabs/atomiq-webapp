@@ -532,21 +532,33 @@ export function useSwapPage(): SwapPageState {
   }, [swapTypeData, addressError, address, isOutputWalletAddress, isFixedAmount, outputChainData]);
 
   //Leaves existing swap
-  const leaveExistingSwap = useCallback(() => {
-    if (existingSwap == null) return;
-    setInputToken(existingSwap.getInput().token);
-    setOutputToken(existingSwap.getOutput().token);
-    setAddress(existingSwap.getOutputAddress());
-    if (existingSwap.exactIn) {
-      setAmount(existingSwap.getInput().amount);
-    } else {
-      setAmount(existingSwap.getOutput().amount);
-    }
-    navigate('/');
-  }, [existingSwap]);
+  const leaveExistingSwap = useCallback(
+    () => {
+      if (existingSwap == null) return;
+      setInputToken(existingSwap.getInput().token);
+      setOutputToken(existingSwap.getOutput().token);
+      setAddress(existingSwap.getOutputAddress());
+      if (existingSwap.exactIn) {
+        setAmount(existingSwap.getInput().amount);
+      } else {
+        setAmount(existingSwap.getOutput().amount);
+      }
+      refreshQuote();
+      navigate('/');
+    },
+    [existingSwap, refreshQuote, navigate]
+  );
 
-  const [_UIState, setUIstate] = useState<{ quote: ISwap; state: SwapPageUIState }>();
-  const UIState = !!_UIState && _UIState.quote === quote ? _UIState.state : 'show';
+  const [_UIState, _setUIState] = useState<{quote: ISwap, state: SwapPageUIState}>();
+  const setUIState = useCallback((quote: ISwap, state: SwapPageUIState) => {
+    _setUIState({quote, state});
+    if(state==="hide") {
+      navigate("/?swapId="+quote.getId());
+    } else {
+      navigate("/");
+    }
+  }, []);
+  const UIState = !!_UIState && _UIState.quote.getId()===quote?.getId() ? _UIState.state : "show";
 
   return {
     input: {
@@ -679,9 +691,7 @@ export function useSwapPage(): SwapPageState {
       error: quoteError,
       refresh: refreshQuote,
       abort: leaveExistingSwap,
-      UICallback: useCallback((quote: ISwap, state: SwapPageUIState) => {
-        setUIstate({ quote, state });
-      }, []),
+      UICallback: setUIState
     },
     hideUI: UIState === 'hide',
   };

@@ -363,10 +363,20 @@ export function useSwapPage() {
         else {
             setAmount(existingSwap.getOutput().amount);
         }
+        refreshQuote();
         navigate('/');
-    }, [existingSwap]);
-    const [_UIState, setUIstate] = useState();
-    const UIState = !!_UIState && _UIState.quote === quote ? _UIState.state : 'show';
+    }, [existingSwap, refreshQuote, navigate]);
+    const [_UIState, _setUIState] = useState();
+    const setUIState = useCallback((quote, state) => {
+        _setUIState({ quote, state });
+        if (state === "hide") {
+            navigate("/?swapId=" + quote.getId());
+        }
+        else {
+            navigate("/");
+        }
+    }, []);
+    const UIState = !!_UIState && _UIState.quote.getId() === quote?.getId() ? _UIState.state : "show";
     return {
         input: {
             wallet: inputChainData?.wallet == null
@@ -497,9 +507,7 @@ export function useSwapPage() {
             error: quoteError,
             refresh: refreshQuote,
             abort: leaveExistingSwap,
-            UICallback: useCallback((quote, state) => {
-                setUIstate({ quote, state });
-            }, []),
+            UICallback: setUIState
         },
         hideUI: UIState === 'hide',
     };

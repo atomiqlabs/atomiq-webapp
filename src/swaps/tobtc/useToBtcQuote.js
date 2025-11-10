@@ -252,7 +252,7 @@ export function useToBtcQuote(quote, UICallback, type, inputWalletBalance) {
         isExpired
     ]);
     return {
-        executionSteps: isInitiated ? executionSteps : undefined,
+        executionSteps: isInitiated && !isCreated ? executionSteps : undefined,
         step1init,
         step2paying,
         step3refund,
