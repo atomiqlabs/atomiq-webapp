@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { useEffect } from 'react';
-import { Alert, Button, Spinner } from 'react-bootstrap';
+import { Button, Spinner } from 'react-bootstrap';
 import { LnForGasSwap, LnForGasSwapState } from '@atomiqlabs/sdk';
 import { useSwapState } from '../hooks/useSwapState';
 import { ScrollAnchor } from '../../components/ScrollAnchor';
 import { SwapExpiryProgressBar } from '../components/SwapExpiryProgressBar';
 import { useAsync } from '../../utils/hooks/useAsync';
 import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
+import { SwapStepAlert } from '../components/SwapStepAlert';
 
 import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
 import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
@@ -21,6 +22,7 @@ import { useStateRef } from '../../utils/hooks/useStateRef';
 import { LightningQR } from '../components/LightningQR';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import { BaseButton } from '../../components/BaseButton';
+import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 
 /*
 Steps:
@@ -172,20 +174,26 @@ export function TrustedFromBTCLNQuoteSummary(props: {
       )}
 
       {isSuccess ? (
-        <Alert variant="success" className="mb-3">
-          <strong>Swap success</strong>
-          <label>Your swap was executed successfully!</label>
-        </Alert>
+        <SwapStepAlert
+          type="success"
+          icon={ic_check_circle}
+          title="Swap success"
+          description="Your swap was executed successfully!"
+          className="mb-3"
+        />
       ) : (
         ''
       )}
 
       {isQuoteExpired || isFailed ? (
         <>
-          <Alert variant="danger" className="mb-3" show={isFailed}>
-            <strong>Swap failed</strong>
-            <label>Swap failed, your lightning payment will be refunded shortly!</label>
-          </Alert>
+          <SwapStepAlert
+            type="danger"
+            title="Swap failed"
+            description="Swap failed, your lightning payment will be refunded shortly!"
+            className="mb-3"
+            show={isFailed}
+          />
 
           <SwapExpiryProgressBar
             show={isQuoteExpired}

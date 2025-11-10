@@ -1,19 +1,19 @@
-import { SpvFromBTCSwapState } from "@atomiqlabs/sdk";
-import { useSwapState } from "../hooks/useSwapState";
-import { useEffect, useMemo, useState } from "react";
-import { useStateRef } from "../../utils/hooks/useStateRef";
-import { useChain } from "../../wallets/hooks/useChain";
-import { useSmartChainWallet } from "../../wallets/hooks/useSmartChainWallet";
-import { useAsync } from "../../utils/hooks/useAsync";
-import { useAbortSignalRef } from "../../utils/hooks/useAbortSignal";
+import { SpvFromBTCSwapState } from '@atomiqlabs/sdk';
+import { useSwapState } from '../hooks/useSwapState';
+import { useEffect, useMemo, useState } from 'react';
+import { useStateRef } from '../../utils/hooks/useStateRef';
+import { useChain } from '../../wallets/hooks/useChain';
+import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
+import { useAsync } from '../../utils/hooks/useAsync';
+import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empty_outline';
-import { ic_check_circle_outline } from 'react-icons-kit/md/ic_check_circle_outline';
+import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
 import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
-import { getDeltaText } from "../../utils/Utils";
+import { getDeltaText } from '../../utils/Utils';
 export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) {
     const UICallbackRef = useStateRef(UICallback);
     const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote, (state) => {
@@ -22,7 +22,7 @@ export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletB
             state === SpvFromBTCSwapState.QUOTE_EXPIRED)
             return;
         if (UICallbackRef.current)
-            UICallbackRef.current(quote, "hide");
+            UICallbackRef.current(quote, 'hide');
     });
     const bitcoinWallet = useChain('BITCOIN')?.wallet;
     const smartChainWallet = useSmartChainWallet(quote);
@@ -30,17 +30,17 @@ export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletB
     const [txData, setTxData] = useState(null);
     const [onSend, sendLoading, sendSuccess, sendError] = useAsync(() => {
         if (UICallbackRef.current)
-            UICallbackRef.current(quote, "lock");
+            UICallbackRef.current(quote, 'lock');
         return quote
             .sendBitcoinTransaction(bitcoinWallet.instance, feeRate != null ? Math.max(feeRate, quote.minimumBtcFeeRate) : undefined)
-            .then(val => {
+            .then((val) => {
             if (UICallbackRef.current)
-                UICallbackRef.current(quote, "hide");
+                UICallbackRef.current(quote, 'hide');
             return val;
         })
             .catch((e) => {
             if (UICallbackRef.current)
-                UICallbackRef.current(quote, "show");
+                UICallbackRef.current(quote, 'show');
             throw e;
         });
     }, [quote, bitcoinWallet, feeRate]);
@@ -136,7 +136,7 @@ export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletB
         };
     if (isClaimable || isClaiming || isSuccess)
         executionSteps[0] = {
-            icon: ic_check_circle_outline,
+            icon: ic_check_outline,
             text: 'Bitcoin confirmed',
             type: 'success',
         };
@@ -164,23 +164,31 @@ export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletB
             text: 'Claiming transaction',
             type: 'success',
         };
-    const step1init = useMemo(() => (!isCreated ? undefined : {
-        bitcoinWallet: bitcoinWallet,
-        hasEnoughBalance,
-        init: bitcoinWallet != null ? {
-            onClick: onSend,
-            loading: sendLoading,
-            disabled: sendLoading || !hasEnoughBalance
-        } : undefined,
-        error: sendError != null ? {
-            title: "Sending BTC failed",
-            error: sendError
-        } : undefined,
-        expiry: hasEnoughBalance && !sendLoading ? {
-            remaining: quoteTimeRemaining,
-            total: totalQuoteTime
-        } : undefined
-    }), [
+    const step1init = useMemo(() => !isCreated
+        ? undefined
+        : {
+            bitcoinWallet: bitcoinWallet,
+            hasEnoughBalance,
+            init: bitcoinWallet != null
+                ? {
+                    onClick: onSend,
+                    loading: sendLoading,
+                    disabled: sendLoading || !hasEnoughBalance,
+                }
+                : undefined,
+            error: sendError != null
+                ? {
+                    title: 'Sending BTC failed',
+                    error: sendError,
+                }
+                : undefined,
+            expiry: hasEnoughBalance && !sendLoading
+                ? {
+                    remaining: quoteTimeRemaining,
+                    total: totalQuoteTime,
+                }
+                : undefined,
+        }, [
         isCreated,
         bitcoinWallet,
         hasEnoughBalance,
@@ -188,46 +196,51 @@ export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletB
         sendError,
         sendLoading,
         quoteTimeRemaining,
-        totalQuoteTime
+        totalQuoteTime,
     ]);
-    const step3awaitingConfirmations = useMemo(() => (!isReceived ? undefined : {
-        txData: {
-            txId: txData.txId,
-            confirmations: {
-                actual: txData.confirmations,
-                required: txData.confTarget
+    const step3awaitingConfirmations = useMemo(() => !isReceived
+        ? undefined
+        : {
+            txData: {
+                txId: txData.txId,
+                confirmations: {
+                    actual: txData.confirmations,
+                    required: txData.confTarget,
+                },
+                eta: txData.txEtaMs != null
+                    ? {
+                        millis: txData.txEtaMs,
+                        text: txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
+                            ? '>1 hour'
+                            : '~' + getDeltaText(txData.txEtaMs),
+                    }
+                    : undefined,
             },
-            eta: txData.txEtaMs != null ? {
-                millis: txData.txEtaMs,
-                text: txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
-                    ? '>1 hour'
-                    : '~' + getDeltaText(txData.txEtaMs)
-            } : undefined
-        },
-        error: waitPaymentError != null ? {
-            title: "Wait payment error",
-            error: waitPaymentError,
-            retry: onWaitForPayment
-        } : undefined
-    }), [
-        isReceived,
-        txData,
-        waitPaymentError,
-        onWaitForPayment
-    ]);
-    const step4claim = useMemo(() => (!isClaimable && !isClaiming ? undefined : {
-        waitingForWatchtowerClaim: !(claimable || isAlreadyClaimable),
-        smartChainWallet,
-        claim: {
-            onClick: onClaim,
-            loading: claimLoading,
-            disabled: claimLoading
-        },
-        error: claimError != null ? {
-            title: "Claim error",
-            error: claimError
-        } : undefined
-    }), [
+            error: waitPaymentError != null
+                ? {
+                    title: 'Wait payment error',
+                    error: waitPaymentError,
+                    retry: onWaitForPayment,
+                }
+                : undefined,
+        }, [isReceived, txData, waitPaymentError, onWaitForPayment]);
+    const step4claim = useMemo(() => !isClaimable && !isClaiming
+        ? undefined
+        : {
+            waitingForWatchtowerClaim: !(claimable || isAlreadyClaimable),
+            smartChainWallet,
+            claim: {
+                onClick: onClaim,
+                loading: claimLoading,
+                disabled: claimLoading,
+            },
+            error: claimError != null
+                ? {
+                    title: 'Claim error',
+                    error: claimError,
+                }
+                : undefined,
+        }, [
         isClaimable,
         isClaiming,
         claimable,
@@ -235,25 +248,23 @@ export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletB
         smartChainWallet,
         onClaim,
         claimLoading,
-        claimError
+        claimError,
     ]);
-    const step5 = useMemo(() => (!isSuccess && !isFailed && !isQuoteExpired ? undefined : {
-        state: isSuccess
-            ? "success"
-            : isFailed
-                ? "failed"
-                : "expired",
-    }), [
-        isSuccess,
-        isFailed,
-        isQuoteExpired
-    ]);
+    const step5 = useMemo(() => !isSuccess && !isFailed && !isQuoteExpired
+        ? undefined
+        : {
+            state: isSuccess
+                ? 'success'
+                : isFailed
+                    ? 'failed'
+                    : 'expired',
+        }, [isSuccess, isFailed, isQuoteExpired]);
     return {
         executionSteps: isInitiated || (isCreated && sendLoading) ? executionSteps : undefined,
         step1init,
         step2broadcasting: isBroadcasting ? {} : undefined,
         step3awaitingConfirmations,
         step4claim,
-        step5
+        step5,
     };
 }
