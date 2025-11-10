@@ -794,7 +794,7 @@ export function SwapNew(props: { supportedCurrencies: SCToken[] }) {
                       }
                       refreshQuote();
                     }}
-                    setAmountLock={setAmountLock}
+                    UICallback={() => {}}
                     abortSwap={() => {
                       inputRef.current.setValue('');
                       outputRef.current.setValue('');

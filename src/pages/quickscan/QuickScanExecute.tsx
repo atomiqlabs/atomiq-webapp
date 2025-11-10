@@ -232,7 +232,7 @@ export function QuickScanExecute() {
               <>
                 <FeeSummaryScreen swap={quote} className="mt-3 mb-3 tab-accent" />
                 <QuoteSummary
-                  setAmountLock={setLocked}
+                  UICallback={() => {}}
                   type={'payment'}
                   quote={quote}
                   balance={walletBalance}

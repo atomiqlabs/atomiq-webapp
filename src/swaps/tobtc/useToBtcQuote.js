@@ -1,7 +1,6 @@
 import { SwapType, ToBTCSwapState } from "@atomiqlabs/sdk";
 import { useCheckAdditionalGas } from "../useCheckAdditionalGas";
-import { useContext, useEffect, useMemo } from "react";
-import { SwapsContext } from "../context/SwapsContext";
+import { useEffect, useMemo } from "react";
 import { useSmartChainWallet } from "../../wallets/hooks/useSmartChainWallet";
 import { useSwapState } from "../hooks/useSwapState";
 import { useStateRef } from "../../utils/hooks/useStateRef";
@@ -17,27 +16,32 @@ import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-export function useToBtcQuote(quote, setAmountLock, type, inputWalletBalance) {
+export function useToBtcQuote(quote, UICallback, type, inputWalletBalance) {
     const additionalGasRequired = useCheckAdditionalGas(quote);
-    const { swapper } = useContext(SwapsContext);
     const wallet = useSmartChainWallet(quote, true);
-    const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote);
-    const setAmountLockRef = useStateRef(setAmountLock);
+    const UICallbackRef = useStateRef(UICallback);
+    const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote, (state) => {
+        if (state === ToBTCSwapState.CREATED ||
+            state === ToBTCSwapState.QUOTE_SOFT_EXPIRED ||
+            state === ToBTCSwapState.QUOTE_EXPIRED)
+            return;
+        if (UICallbackRef.current)
+            UICallbackRef.current(quote, "hide");
+    });
     const [onContinue, continueLoading, continueSuccess, continueError] = useAsync((skipChecks) => {
-        if (setAmountLockRef.current)
-            setAmountLockRef.current(true);
-        return quote.commit(wallet.instance, null, skipChecks).catch((err) => {
-            if (setAmountLockRef.current)
-                setAmountLockRef.current(false);
+        if (UICallbackRef.current)
+            UICallbackRef.current(quote, "lock");
+        return quote.commit(wallet.instance, null, skipChecks).then(res => {
+            if (UICallbackRef.current)
+                UICallbackRef.current(quote, "hide");
+            return res;
+        }).catch((err) => {
+            if (UICallbackRef.current)
+                UICallbackRef.current(quote, "show");
             throw err;
         });
     }, [quote, wallet]);
-    const [onRefund, refundLoading, refundSuccess, refundError] = useAsync(async () => {
-        const res = await quote.refund(wallet.instance);
-        if (setAmountLockRef.current)
-            setAmountLockRef.current(false);
-        return res;
-    }, [quote, wallet]);
+    const [onRefund, refundLoading, refundSuccess, refundError] = useAsync(() => quote.refund(wallet.instance), [quote, wallet]);
     const abortSignalRef = useAbortSignalRef([quote]);
     const [retryWaitForPayment, _, __, paymentError] = useAsync(async () => {
         try {
@@ -174,12 +178,6 @@ export function useToBtcQuote(quote, setAmountLock, type, inputWalletBalance) {
             text: 'Refunded',
             type: 'success',
         };
-    useEffect(() => {
-        if (isExpired || isSuccess || isRefunded) {
-            if (setAmountLockRef.current != null)
-                setAmountLockRef.current(false);
-        }
-    }, [isExpired, isSuccess, isRefunded]);
     const step1init = useMemo(() => (!isCreated ? undefined : {
         invalidSmartChainWallet: wallet == null,
         hasEnoughBalance,

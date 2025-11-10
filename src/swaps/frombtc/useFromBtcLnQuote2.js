@@ -23,14 +23,20 @@ import { useNFCScanner } from '../../nfc/hooks/useNFCScanner';
 import { SwapsContext } from '../context/SwapsContext';
 import { NFCStartResult } from '../../nfc/NFCReader';
 import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
-export function useFromBtcLnQuote2(quote, setAmountLock) {
+export function useFromBtcLnQuote2(quote, UICallback) {
     const { swapper } = useContext(SwapsContext);
     const { connectWallet, disconnectWallet } = useContext(ChainDataContext);
     const lightningWallet = useChain('LIGHTNING')?.wallet;
     const smartChainWallet = useSmartChainWallet(quote, true);
     const canClaimInOneShot = quote?.canCommitAndClaimInOneShot();
     const additionalGasRequired = useCheckAdditionalGas(quote);
-    const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote);
+    const UICallbackRef = useStateRef(UICallback);
+    const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote, (state, initiated) => {
+        if (!initiated)
+            return;
+        if (UICallbackRef.current)
+            UICallbackRef.current(quote, "hide");
+    });
     const [autoClaim, setAutoClaim] = useLocalStorage('crossLightning-autoClaim', false);
     const [showHyperlinkWarning, setShowHyperlinkWarning] = useLocalStorage('crossLightning-showHyperlinkWarning', true);
     const [addressWarningModalOpened, setAddressWarningModalOpened] = useState(false);
@@ -53,7 +59,6 @@ export function useFromBtcLnQuote2(quote, setAmountLock) {
             console.error('useFromBtcLnQuote(): Failed to pay invoice via NFC: ', e);
         });
     }, payingWithNFC || lightningWallet != null);
-    const setAmountLockRef = useStateRef(setAmountLock);
     const abortSignalRef = useAbortSignalRef([quote]);
     const [pay, payLoading, payResult, payError] = useAsync(() => lightningWallet.instance.sendPayment(quote.getAddress()), [lightningWallet, quote]);
     // Helper function to check if error is a user cancellation
@@ -83,16 +88,9 @@ export function useFromBtcLnQuote2(quote, setAmountLock) {
         pay();
     }, [callPayFlag, lightningWallet, pay]);
     const [waitForPayment, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
-        if (setAmountLockRef.current != null)
-            setAmountLockRef.current(true);
         return quote
             .waitForPayment(abortSignalRef.current, 2)
-            .then(() => true)
-            .catch((err) => {
-            if (setAmountLockRef.current != null)
-                setAmountLockRef.current(false);
-            throw err;
-        });
+            .then(() => true);
     }, [quote]);
     useEffect(() => {
         if (quote != null && quote.isInitiated() && quote.state === FromBTCLNSwapState.PR_CREATED) {
@@ -136,16 +134,6 @@ export function useFromBtcLnQuote2(quote, setAmountLock) {
     const isClaimClaimable = state === FromBTCLNSwapState.CLAIM_COMMITED && !committing;
     const isClaimable = isClaimCommittable || isClaimClaimable;
     const isSuccess = state === FromBTCLNSwapState.CLAIM_CLAIMED;
-    useEffect(() => {
-        if (isQuoteExpired || isFailed || isSuccess || isPaymentCancelled) {
-            if (setAmountLockRef.current != null)
-                setAmountLockRef.current(false);
-        }
-        else if (!isCreated) {
-            if (setAmountLockRef.current != null)
-                setAmountLockRef.current(true);
-        }
-    }, [isQuoteExpired, isFailed, isSuccess, isCreated, isPaymentCancelled]);
     const executionSteps = [
         {
             icon: ic_check_outline,

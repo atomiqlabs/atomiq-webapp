@@ -10,15 +10,21 @@ import { ChainDataContext } from '../wallets/context/ChainDataContext';
 import { useAddressData } from '../swaps/hooks/useAddressData';
 import { useDecimalNumberState } from '../utils/hooks/useDecimalNumberState';
 import { useAmountConstraints } from '../swaps/hooks/useAmountConstraints';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useWalletBalance } from '../wallets/hooks/useWalletBalance';
 import BigNumber from 'bignumber.js';
 import { numberValidator } from '../components/ValidatedInput';
 import { useQuote } from '../swaps/hooks/useQuote';
 import { usePricing } from '../tokens/hooks/usePricing';
+import { useExistingSwap } from "../swaps/hooks/useExistingSwap";
 export function useSwapPage() {
     const { chains, disconnectWallet, connectWallet } = useContext(ChainDataContext);
     const { swapper } = useContext(SwapsContext);
+    const navigate = useNavigate();
+    const { search } = useLocation();
+    const params = new URLSearchParams(search);
+    const propSwapId = params.get('swapId');
+    const [existingSwap, existingSwapLoading] = useExistingSwap(propSwapId);
     const [inputTokens, outputTokens] = useSupportedTokens();
     //Tokens
     const [inputToken, _setInputToken] = useState(Tokens.BITCOIN.BTC);
@@ -148,8 +154,6 @@ export function useSwapPage() {
         }
     }, [swapper, outputToken, inputToken, exactIn]);
     //Url defined amount & swap type
-    const { search } = useLocation();
-    const params = new URLSearchParams(search);
     useEffect(() => {
         const tokenIn = fromTokenIdentifier(params.get('tokenIn'));
         const tokenOut = fromTokenIdentifier(params.get('tokenOut'));
@@ -238,7 +242,8 @@ export function useSwapPage() {
         setAddress('');
     }, [webLnForOutput]);
     //Quote
-    const [refreshQuote, quote, randomQuote, quoteLoading, quoteError] = useQuote(validatedAmount, exactIn, inputToken, outputToken, addressData?.lnurl ?? addressData?.address, gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined, maxSpendable?.feeRate, addressLoading);
+    const [refreshQuote, _quote, randomQuote, quoteLoading, quoteError] = useQuote(validatedAmount, exactIn, inputToken, outputToken, addressData?.lnurl ?? addressData?.address, gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined, maxSpendable?.feeRate, addressLoading || !!existingSwap);
+    const quote = existingSwap ?? _quote;
     useEffect(() => {
         if (quote == null ||
             maxSpendable?.feeRate == null ||
@@ -345,6 +350,23 @@ export function useSwapPage() {
                 };
         }
     }, [swapTypeData, addressError, address, isOutputWalletAddress, isFixedAmount, outputChainData]);
+    //Leaves existing swap
+    const leaveExistingSwap = useCallback(() => {
+        if (existingSwap == null)
+            return;
+        setInputToken(existingSwap.getInput().token);
+        setOutputToken(existingSwap.getOutput().token);
+        setAddress(existingSwap.getOutputAddress());
+        if (existingSwap.exactIn) {
+            setAmount(existingSwap.getInput().amount);
+        }
+        else {
+            setAmount(existingSwap.getOutput().amount);
+        }
+        navigate('/');
+    }, [existingSwap]);
+    const [_UIState, setUIstate] = useState();
+    const UIState = !!_UIState && _UIState.quote === quote ? _UIState.state : "show";
     return {
         input: {
             wallet: inputChainData?.wallet == null
@@ -359,6 +381,7 @@ export function useSwapPage() {
                 value: inputToken,
                 values: inputTokens,
                 onChange: setInputToken,
+                disabled: UIState === 'lock',
             },
             amount: {
                 value: inputAmount,
@@ -367,7 +390,7 @@ export function useSwapPage() {
                     setAmount(value);
                     setExactIn(true);
                 }, []),
-                disabled: amountsLocked || webLnForOutput,
+                disabled: amountsLocked || webLnForOutput || UIState === "lock",
                 loading: !exactIn && quoteLoading,
                 step: inputTokenStep,
                 min: inputLimits?.min,
@@ -399,6 +422,7 @@ export function useSwapPage() {
                 value: outputToken,
                 values: outputTokens,
                 onChange: setOutputToken,
+                disabled: UIState === 'lock',
             },
             amount: {
                 value: outputAmount,
@@ -407,7 +431,7 @@ export function useSwapPage() {
                     setAmount(value);
                     setExactIn(false);
                 }, []),
-                disabled: amountsLocked,
+                disabled: amountsLocked || UIState === "lock",
                 loading: exactIn && quoteLoading,
                 step: outputTokenStep,
                 min: outputLimits?.min,
@@ -427,13 +451,14 @@ export function useSwapPage() {
                     checked: gasDropChecked,
                     onChange: setGasDropChecked,
                     amount: gasDropTokenAmount,
+                    disabled: UIState === "lock"
                 },
             address: swapTypeData?.requiresOutputWallet || (webLnForOutput && validatedAmount == null)
                 ? undefined
                 : {
                     value: outputAddress,
                     onChange: setAddress,
-                    disabled: isOutputWalletAddress,
+                    disabled: isOutputWalletAddress || UIState === "lock",
                     loading: addressLoading,
                     validation: addressValidationStatus,
                     isFromWallet: isOutputWalletAddress,
@@ -471,6 +496,11 @@ export function useSwapPage() {
             isRandom: randomQuote,
             error: quoteError,
             refresh: refreshQuote,
+            abort: leaveExistingSwap,
+            UICallback: useCallback((quote, state) => {
+                setUIstate({ quote, state });
+            }, [])
         },
+        hideUI: UIState === "hide"
     };
 }

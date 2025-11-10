@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
-import { FromBTCLNSwap } from '@atomiqlabs/sdk';
+import {FromBTCLNSwap, ISwap} from '@atomiqlabs/sdk';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
 import { ScrollAnchor } from '../../components/ScrollAnchor';
 import { LightningHyperlinkModal } from '../components/LightningHyperlinkModal';
@@ -14,6 +14,7 @@ import { SwapStepAlert } from '../components/SwapStepAlert';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useFromBtcLnQuote2 } from './useFromBtcLnQuote2';
+import {SwapPageUIState} from "../../pages/useSwapPage";
 
 /*
 Steps:
@@ -25,12 +26,12 @@ Steps:
 export function FromBTCLNQuoteSummary2(props: {
   quote: FromBTCLNSwap;
   refreshQuote: () => void;
-  setAmountLock: (isLocked: boolean) => void;
+  UICallback: (quote: ISwap, state: SwapPageUIState) => void;
   type?: 'payment' | 'swap';
   abortSwap?: () => void;
   notEnoughForGas: bigint;
 }) {
-  const page = useFromBtcLnQuote2(props.quote, props.setAmountLock);
+  const page = useFromBtcLnQuote2(props.quote, props.UICallback);
   // Render card content (progress, alerts, etc.)
   const renderCard = () => {
     const isInitiated = !page.step1init;

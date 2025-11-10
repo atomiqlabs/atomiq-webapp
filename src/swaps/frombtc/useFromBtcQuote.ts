@@ -1,4 +1,4 @@
-import {FromBTCSwap, FromBTCSwapState, TokenAmount} from "@atomiqlabs/sdk";
+import {FromBTCSwap, FromBTCSwapState, ISwap, ToBTCSwapState, TokenAmount} from "@atomiqlabs/sdk";
 import {useContext, useEffect, useMemo, useRef, useState} from "react";
 import {ChainDataContext} from "../../wallets/context/ChainDataContext";
 import {useChain} from "../../wallets/hooks/useChain";
@@ -26,6 +26,7 @@ import {ChainWalletData} from "../../wallets/ChainDataProvider";
 import {useCheckAdditionalGas} from "../useCheckAdditionalGas";
 import {getDeltaText} from "../../utils/Utils";
 import {ExtensionBitcoinWallet} from "../../wallets/chains/bitcoin/base/ExtensionBitcoinWallet";
+import {SwapPageUIState} from "../../pages/useSwapPage";
 
 export type FromBtcQuotePage = {
   executionSteps?: SingleStep[];
@@ -141,7 +142,7 @@ export type FromBtcQuotePage = {
 
 export function useFromBtcQuote(
   quote: FromBTCSwap<any>,
-  setAmountLock: (isLocked: boolean) => void,
+  UICallback: (quote: ISwap, state: SwapPageUIState) => void,
   feeRate?: number,
   inputWalletBalance?: bigint
 ): FromBtcQuotePage {
@@ -150,9 +151,24 @@ export function useFromBtcQuote(
   const bitcoinWallet = bitcoinChainData.wallet;
   const smartChainWallet = useSmartChainWallet(quote, true);
 
+  const UICallbackRef = useStateRef(UICallback);
+
+  const {
+    state,
+    totalQuoteTime,
+    quoteTimeRemaining,
+    isInitiated
+  } = useSwapState(quote, (state: FromBTCSwapState) => {
+    if(
+      state === FromBTCSwapState.PR_CREATED ||
+      state === FromBTCSwapState.QUOTE_SOFT_EXPIRED ||
+      state === FromBTCSwapState.QUOTE_EXPIRED
+    ) return;
+    if(UICallbackRef.current) UICallbackRef.current(quote, "hide");
+  });
+
   const additionalGasRequired = useCheckAdditionalGas(quote);
 
-  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote);
   const [copyWarningModalOpened, setCopyWarningModalOpened] = useState<boolean>(false);
   const [showCopyWarning, setShowCopyWarning] = useLocalStorage(
     'crossLightning-copywarning',
@@ -180,18 +196,18 @@ export function useFromBtcQuote(
     () => (quote != null ? quote.isClaimable() : false),
     [quote]
   );
-  const setAmountLockRef = useStateRef(setAmountLock);
 
   const [onCommit, commitLoading, commitSuccess, commitError] = useAsync(async () => {
-    if (setAmountLockRef.current != null) setAmountLockRef.current(true);
-
-    const commitTxId = await quote.commit(smartChainWallet.instance).catch((e) => {
-      if (setAmountLockRef.current != null) setAmountLockRef.current(false);
+    if(UICallbackRef.current) UICallbackRef.current(quote, "lock");
+    try {
+      const commitTxId = await quote.commit(smartChainWallet.instance);
+      if(UICallbackRef.current) UICallbackRef.current(quote, "hide");
+      if (bitcoinChainData.wallet != null) payBitcoin();
+      return commitTxId;
+    } catch (e) {
+      if(UICallbackRef.current) UICallbackRef.current(quote, "show");
       throw e;
-    });
-
-    if (bitcoinChainData.wallet != null) payBitcoin();
-    return commitTxId;
+    }
   }, [quote, smartChainWallet, payBitcoin]);
 
   const abortSignalRef = useAbortSignalRef([quote]);
@@ -220,9 +236,6 @@ export function useFromBtcQuote(
   const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
     return quote.claim(smartChainWallet.instance);
   }, [quote, smartChainWallet]);
-
-  const textFieldRef = useRef<ValidatedInputRef>();
-  const openModalRef = useRef<() => void>(null);
 
   const [txData, setTxData] = useState<TxData | null>(null);
 
@@ -269,17 +282,6 @@ export function useFromBtcQuote(
   const isExpired = state === FromBTCSwapState.EXPIRED && txData == null;
   const isFailed = state === FromBTCSwapState.FAILED;
   const isSuccess = state === FromBTCSwapState.CLAIM_CLAIMED;
-
-  useEffect(() => {
-    if (
-      isSuccess ||
-      isFailed ||
-      isExpired ||
-      isQuoteExpired
-    ) {
-      if (setAmountLockRef.current != null) setAmountLockRef.current(false);
-    }
-  }, [isSuccess, isFailed, isExpired, isQuoteExpired]);
 
   /*
     Steps:

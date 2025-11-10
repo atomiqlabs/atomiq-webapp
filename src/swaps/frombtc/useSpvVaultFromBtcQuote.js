@@ -14,25 +14,33 @@ import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_ou
 import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
 import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
 import { getDeltaText } from "../../utils/Utils";
-export function useSpvVaultFromBtcQuote(quote, setAmountLock, feeRate, inputWalletBalance) {
-    const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote);
+export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) {
+    const UICallbackRef = useStateRef(UICallback);
+    const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote, (state) => {
+        if (state === SpvFromBTCSwapState.CREATED ||
+            state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED ||
+            state === SpvFromBTCSwapState.QUOTE_EXPIRED)
+            return;
+        if (UICallbackRef.current)
+            UICallbackRef.current(quote, "hide");
+    });
     const bitcoinWallet = useChain('BITCOIN')?.wallet;
     const smartChainWallet = useSmartChainWallet(quote);
     const isAlreadyClaimable = useMemo(() => quote?.isClaimable(), [quote]);
-    const setAmountLockRef = useStateRef(setAmountLock);
     const [txData, setTxData] = useState(null);
     const [onSend, sendLoading, sendSuccess, sendError] = useAsync(() => {
-        if (setAmountLockRef.current != null) {
-            console.log('SpvVaultFromBTCQuoteSummary: onSend(): setting amount lock to true');
-            setAmountLockRef.current(true);
-        }
+        if (UICallbackRef.current)
+            UICallbackRef.current(quote, "lock");
         return quote
             .sendBitcoinTransaction(bitcoinWallet.instance, feeRate != null ? Math.max(feeRate, quote.minimumBtcFeeRate) : undefined)
+            .then(val => {
+            if (UICallbackRef.current)
+                UICallbackRef.current(quote, "hide");
+            return val;
+        })
             .catch((e) => {
-            if (setAmountLockRef.current != null) {
-                console.log('SpvVaultFromBTCQuoteSummary: onSend(): signAndSubmit failed - setting amount lock to false');
-                setAmountLockRef.current(false);
-            }
+            if (UICallbackRef.current)
+                UICallbackRef.current(quote, "show");
             throw e;
         });
     }, [quote, bitcoinWallet, feeRate]);
@@ -89,13 +97,6 @@ export function useSpvVaultFromBtcQuote(quote, setAmountLock, feeRate, inputWall
         state === SpvFromBTCSwapState.DECLINED ||
         state === SpvFromBTCSwapState.CLOSED;
     const isSuccess = state === SpvFromBTCSwapState.CLAIMED || state === SpvFromBTCSwapState.FRONTED;
-    useEffect(() => {
-        if (isSuccess || isFailed || isQuoteExpired) {
-            console.log('SpvVaultFromBTCQuoteSummary: useEffect(state): setting amount lock to false');
-            if (setAmountLockRef.current != null)
-                setAmountLockRef.current(false);
-        }
-    }, [isSuccess, isFailed, isQuoteExpired]);
     /*
       Steps:
       1. Bitcoin payment -> Signing bitcoin transaction -> Broadcasting bitcoin transaction -> Waiting bitcoin confirmations -> Bitcoin confirmed

@@ -1,4 +1,4 @@
-import { FromBTCLNSwap, FromBTCLNSwapState, TokenAmount } from '@atomiqlabs/sdk';
+import {FromBTCLNSwap, FromBTCLNSwapState, FromBTCSwapState, ISwap, TokenAmount} from '@atomiqlabs/sdk';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSwapState } from '../hooks/useSwapState';
 import { useStateRef } from '../../utils/hooks/useStateRef';
@@ -24,6 +24,7 @@ import { useNFCScanner } from '../../nfc/hooks/useNFCScanner';
 import { SwapsContext } from '../context/SwapsContext';
 import { NFCStartResult } from '../../nfc/NFCReader';
 import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
+import {SwapPageUIState} from "../../pages/useSwapPage";
 
 export type FromBtcLnQuotePage = {
   executionSteps?: SingleStep[];
@@ -144,7 +145,7 @@ export type FromBtcLnQuotePage = {
 
 export function useFromBtcLnQuote2(
   quote: FromBTCLNSwap<any>,
-  setAmountLock: (isLocked: boolean) => void
+  UICallback: (quote: ISwap, state: SwapPageUIState) => void,
 ): FromBtcLnQuotePage {
   const { swapper } = useContext(SwapsContext);
   const { connectWallet, disconnectWallet } = useContext(ChainDataContext);
@@ -154,7 +155,18 @@ export function useFromBtcLnQuote2(
 
   const additionalGasRequired = useCheckAdditionalGas(quote);
 
-  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote);
+  const UICallbackRef = useStateRef(UICallback);
+
+  const {
+    state,
+    totalQuoteTime,
+    quoteTimeRemaining,
+    isInitiated
+  } = useSwapState(quote, (state: FromBTCLNSwapState, initiated: boolean) => {
+    if(!initiated) return;
+    if(UICallbackRef.current) UICallbackRef.current(quote, "hide");
+  });
+
   const [autoClaim, setAutoClaim] = useLocalStorage('crossLightning-autoClaim', false);
   const [showHyperlinkWarning, setShowHyperlinkWarning] = useLocalStorage(
     'crossLightning-showHyperlinkWarning',
@@ -184,7 +196,6 @@ export function useFromBtcLnQuote2(
     payingWithNFC || lightningWallet != null
   );
 
-  const setAmountLockRef = useStateRef(setAmountLock);
   const abortSignalRef = useAbortSignalRef([quote]);
 
   const [pay, payLoading, payResult, payError] = useAsync(
@@ -224,14 +235,9 @@ export function useFromBtcLnQuote2(
   }, [callPayFlag, lightningWallet, pay]);
 
   const [waitForPayment, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
-    if (setAmountLockRef.current != null) setAmountLockRef.current(true);
     return quote
       .waitForPayment(abortSignalRef.current, 2)
       .then(() => true)
-      .catch((err) => {
-        if (setAmountLockRef.current != null) setAmountLockRef.current(false);
-        throw err;
-      });
   }, [quote]);
 
   useEffect(() => {
@@ -301,14 +307,6 @@ export function useFromBtcLnQuote2(
   const isClaimable = isClaimCommittable || isClaimClaimable;
 
   const isSuccess = state === FromBTCLNSwapState.CLAIM_CLAIMED;
-
-  useEffect(() => {
-    if (isQuoteExpired || isFailed || isSuccess || isPaymentCancelled) {
-      if (setAmountLockRef.current != null) setAmountLockRef.current(false);
-    } else if (!isCreated) {
-      if (setAmountLockRef.current != null) setAmountLockRef.current(true);
-    }
-  }, [isQuoteExpired, isFailed, isSuccess, isCreated, isPaymentCancelled]);
 
   const executionSteps: SingleStep[] = [
     {

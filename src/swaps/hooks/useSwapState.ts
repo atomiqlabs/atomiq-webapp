@@ -10,7 +10,8 @@ import {
   SwapType,
   ToBTCSwapState,
 } from '@atomiqlabs/sdk';
-import { useEffect, useRef, useState } from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
+import {useStateRef} from "../../utils/hooks/useStateRef";
 
 function getStateToString(swapType: SwapType, state: number) {
   switch (swapType) {
@@ -30,22 +31,33 @@ function getStateToString(swapType: SwapType, state: number) {
   }
 }
 
-export function useSwapState<S extends number>(quote: ISwap<any, S>) {
+export function useSwapState<S extends number>(quote: ISwap<any, S>, onSwapStateChange?: (state: S, initiated: boolean) => void) {
   const [state, setState] = useState<S>(quote?.getState());
   const [isInitiated, setInitiated] = useState<boolean>(null);
+
+  const onSwapStateChangeRef = useStateRef(onSwapStateChange);
 
   const [quoteTimeRemaining, setQuoteTimeRemaining] = useState<number>();
   const [initialQuoteTimeout, setInitialQuoteTimeout] = useState<number>();
   const expiryTime = useRef<number>();
 
-  useEffect(() => {
+  //Use useMemo here, such that the state updates don't wait till after render (as with useEffect())
+  useMemo(() => {
     if (quote == null) {
       setState(null);
+      if(onSwapStateChangeRef.current) onSwapStateChangeRef.current(null, false);
       setQuoteTimeRemaining(null);
       setInitialQuoteTimeout(null);
       expiryTime.current = null;
-      return () => {};
+    } else {
+      setState(quote.getState());
+      setInitiated(quote.isInitiated());
+      if(onSwapStateChangeRef.current) onSwapStateChangeRef.current(quote.getState(), quote.isInitiated());
     }
+  }, [quote]);
+
+  useEffect(() => {
+    if (quote == null) return () => {};
 
     let interval;
     interval = setInterval(() => {
@@ -76,8 +88,6 @@ export function useSwapState<S extends number>(quote: ISwap<any, S>) {
     };
 
     checkExpiry(quote.getState());
-    setState(quote.getState());
-    setInitiated(quote.isInitiated());
 
     let listener;
     quote.events.on(
@@ -87,6 +97,7 @@ export function useSwapState<S extends number>(quote: ISwap<any, S>) {
         checkExpiry(state);
         setState(state);
         setInitiated(quote.isInitiated());
+        if(onSwapStateChangeRef.current) onSwapStateChangeRef.current(state, quote.isInitiated());
         console.log(
           'useSwapState(' +
             quote.getId() +

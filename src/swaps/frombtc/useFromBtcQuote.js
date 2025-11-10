@@ -1,5 +1,5 @@
 import { FromBTCSwapState } from "@atomiqlabs/sdk";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { ChainDataContext } from "../../wallets/context/ChainDataContext";
 import { useChain } from "../../wallets/hooks/useChain";
 import { useSmartChainWallet } from "../../wallets/hooks/useSmartChainWallet";
@@ -19,13 +19,21 @@ import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useLocalStorage } from "../../utils/hooks/useLocalStorage";
 import { useCheckAdditionalGas } from "../useCheckAdditionalGas";
 import { getDeltaText } from "../../utils/Utils";
-export function useFromBtcQuote(quote, setAmountLock, feeRate, inputWalletBalance) {
+export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) {
     const { disconnectWallet, connectWallet } = useContext(ChainDataContext);
     const bitcoinChainData = useChain('BITCOIN');
     const bitcoinWallet = bitcoinChainData.wallet;
     const smartChainWallet = useSmartChainWallet(quote, true);
+    const UICallbackRef = useStateRef(UICallback);
+    const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote, (state) => {
+        if (state === FromBTCSwapState.PR_CREATED ||
+            state === FromBTCSwapState.QUOTE_SOFT_EXPIRED ||
+            state === FromBTCSwapState.QUOTE_EXPIRED)
+            return;
+        if (UICallbackRef.current)
+            UICallbackRef.current(quote, "hide");
+    });
     const additionalGasRequired = useCheckAdditionalGas(quote);
-    const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote);
     const [copyWarningModalOpened, setCopyWarningModalOpened] = useState(false);
     const [showCopyWarning, setShowCopyWarning] = useLocalStorage('crossLightning-copywarning', true);
     const [payBitcoin, payLoading, payTxId, payError] = useAsync(() => quote.sendBitcoinTransaction(bitcoinChainData.wallet.instance, feeRate === 0 ? null : feeRate), [bitcoinChainData.wallet, feeRate, quote]);
@@ -39,18 +47,22 @@ export function useFromBtcQuote(quote, setAmountLock, feeRate, inputWalletBalanc
         payBitcoin();
     }, [callPayFlag, bitcoinChainData.wallet, payBitcoin]);
     const isAlreadyClaimable = useMemo(() => (quote != null ? quote.isClaimable() : false), [quote]);
-    const setAmountLockRef = useStateRef(setAmountLock);
     const [onCommit, commitLoading, commitSuccess, commitError] = useAsync(async () => {
-        if (setAmountLockRef.current != null)
-            setAmountLockRef.current(true);
-        const commitTxId = await quote.commit(smartChainWallet.instance).catch((e) => {
-            if (setAmountLockRef.current != null)
-                setAmountLockRef.current(false);
+        if (UICallbackRef.current)
+            UICallbackRef.current(quote, "lock");
+        try {
+            const commitTxId = await quote.commit(smartChainWallet.instance);
+            if (UICallbackRef.current)
+                UICallbackRef.current(quote, "hide");
+            if (bitcoinChainData.wallet != null)
+                payBitcoin();
+            return commitTxId;
+        }
+        catch (e) {
+            if (UICallbackRef.current)
+                UICallbackRef.current(quote, "show");
             throw e;
-        });
-        if (bitcoinChainData.wallet != null)
-            payBitcoin();
-        return commitTxId;
+        }
     }, [quote, smartChainWallet, payBitcoin]);
     const abortSignalRef = useAbortSignalRef([quote]);
     const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => quote.waitForBitcoinTransaction(abortSignalRef.current, null, (txId, confirmations, confirmationTarget, txEtaMs) => {
@@ -68,8 +80,6 @@ export function useFromBtcQuote(quote, setAmountLock, feeRate, inputWalletBalanc
     const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
         return quote.claim(smartChainWallet.instance);
     }, [quote, smartChainWallet]);
-    const textFieldRef = useRef();
-    const openModalRef = useRef(null);
     const [txData, setTxData] = useState(null);
     const [claimable, setClaimable] = useState(false);
     useEffect(() => {
@@ -104,15 +114,6 @@ export function useFromBtcQuote(quote, setAmountLock, feeRate, inputWalletBalanc
     const isExpired = state === FromBTCSwapState.EXPIRED && txData == null;
     const isFailed = state === FromBTCSwapState.FAILED;
     const isSuccess = state === FromBTCSwapState.CLAIM_CLAIMED;
-    useEffect(() => {
-        if (isSuccess ||
-            isFailed ||
-            isExpired ||
-            isQuoteExpired) {
-            if (setAmountLockRef.current != null)
-                setAmountLockRef.current(false);
-        }
-    }, [isSuccess, isFailed, isExpired, isQuoteExpired]);
     /*
       Steps:
       1. Opening swap address -> Swap address opened

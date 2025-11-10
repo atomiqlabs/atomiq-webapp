@@ -494,7 +494,7 @@ export function SwapNew(props) {
                                                 }
                                             }
                                             refreshQuote();
-                                        }, setAmountLock: setAmountLock, abortSwap: () => {
+                                        }, UICallback: () => { }, abortSwap: () => {
                                             inputRef.current.setValue('');
                                             outputRef.current.setValue('');
                                             navigate('/');

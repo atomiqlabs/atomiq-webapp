@@ -23,7 +23,7 @@ Steps on-chain:
 3. Waiting BTC confirmations -> BTC confirmed
  */
 export function ToBTCQuoteSummary2(props) {
-    const page = useToBtcQuote(props.quote, props.setAmountLock, props.type, props.balance);
+    const page = useToBtcQuote(props.quote, props.UICallback, props.type, props.balance);
     const stepByStep = page.executionSteps ? _jsx(StepByStep, { quote: props.quote, steps: page.executionSteps }) : '';
     if (page.step1init) {
         return (_jsxs(_Fragment, { children: [_jsxs("div", { className: "swap-panel__card", children: [stepByStep, _jsx(SwapStepAlert, { show: !!page.step1init.additionalGasRequired, type: "danger", icon: ic_error_outline_outline, title: `Not enough ${page.step1init.additionalGasRequired?.token.ticker} for fees`, description: `You need at least ${page.step1init.additionalGasRequired?.toString()} more to pay for fees and deposits!` }), _jsx(SwapStepAlert, { show: !!page.step1init.error, type: "error", icon: ic_warning, title: page.step1init.error?.title, description: page.step1init.error?.error.message, error: page.step1init.error?.error, action: {

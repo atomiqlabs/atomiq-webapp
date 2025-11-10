@@ -1,5 +1,6 @@
 import { FromBTCLNSwapState, FromBTCSwapState, LnForGasSwapState, OnchainForGasSwapState, SpvFromBTCSwapState, SwapType, ToBTCSwapState, } from '@atomiqlabs/sdk';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useStateRef } from "../../utils/hooks/useStateRef";
 function getStateToString(swapType, state) {
     switch (swapType) {
         case SwapType.TO_BTCLN:
@@ -17,20 +18,33 @@ function getStateToString(swapType, state) {
             return OnchainForGasSwapState[state];
     }
 }
-export function useSwapState(quote) {
+export function useSwapState(quote, onSwapStateChange) {
     const [state, setState] = useState(quote?.getState());
     const [isInitiated, setInitiated] = useState(null);
+    const onSwapStateChangeRef = useStateRef(onSwapStateChange);
     const [quoteTimeRemaining, setQuoteTimeRemaining] = useState();
     const [initialQuoteTimeout, setInitialQuoteTimeout] = useState();
     const expiryTime = useRef();
-    useEffect(() => {
+    //Use useMemo here, such that the state updates don't wait till after render (as with useEffect())
+    useMemo(() => {
         if (quote == null) {
             setState(null);
+            if (onSwapStateChangeRef.current)
+                onSwapStateChangeRef.current(null, false);
             setQuoteTimeRemaining(null);
             setInitialQuoteTimeout(null);
             expiryTime.current = null;
-            return () => { };
         }
+        else {
+            setState(quote.getState());
+            setInitiated(quote.isInitiated());
+            if (onSwapStateChangeRef.current)
+                onSwapStateChangeRef.current(quote.getState(), quote.isInitiated());
+        }
+    }, [quote]);
+    useEffect(() => {
+        if (quote == null)
+            return () => { };
         let interval;
         interval = setInterval(() => {
             if (expiryTime.current == null)
@@ -58,14 +72,14 @@ export function useSwapState(quote) {
             setQuoteTimeRemaining(dt);
         };
         checkExpiry(quote.getState());
-        setState(quote.getState());
-        setInitiated(quote.isInitiated());
         let listener;
         quote.events.on('swapState', (listener = (quote) => {
             const state = quote.getState();
             checkExpiry(state);
             setState(state);
             setInitiated(quote.isInitiated());
+            if (onSwapStateChangeRef.current)
+                onSwapStateChangeRef.current(state, quote.isInitiated());
             console.log('useSwapState(' +
                 quote.getId() +
                 '): State changed to: ' +

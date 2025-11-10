@@ -45,22 +45,23 @@ export function QuoteSummary(props) {
     switch (props.quote.getType()) {
         case SwapType.TO_BTC:
         case SwapType.TO_BTCLN:
-            swapElement = (_jsx(ToBTCQuoteSummary2, { type: props.type, setAmountLock: props.setAmountLock, quote: props.quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas, balance: props.balance }));
+            swapElement = (_jsx(ToBTCQuoteSummary2, { type: props.type, UICallback: props.UICallback, quote: props.quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas, balance: props.balance }));
             break;
         case SwapType.FROM_BTC:
-            swapElement = (_jsx(FromBTCQuoteSummary2, { type: props.type, setAmountLock: props.setAmountLock, quote: props.quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: notEnoughForGas, balance: props.balance, feeRate: props.feeRate }));
+            swapElement = (_jsx(FromBTCQuoteSummary2, { type: props.type, UICallback: props.UICallback, quote: props.quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: notEnoughForGas, balance: props.balance, feeRate: props.feeRate }));
             break;
         case SwapType.FROM_BTCLN:
             const _quote = props.quote;
             if (_quote.lnurl != null && props.type !== 'swap') {
-                swapElement = (_jsx(LNURLWithdrawQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: _quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas }));
+                //TODO: For now just mocked setAmountLock!!!
+                swapElement = (_jsx(LNURLWithdrawQuoteSummary, { type: props.type, setAmountLock: () => { }, quote: _quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas }));
             }
             else {
-                swapElement = (_jsx(FromBTCLNQuoteSummary2, { type: props.type, setAmountLock: props.setAmountLock, quote: _quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: notEnoughForGas }));
+                swapElement = (_jsx(FromBTCLNQuoteSummary2, { type: props.type, UICallback: props.UICallback, quote: _quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: notEnoughForGas }));
             }
             break;
         case SwapType.SPV_VAULT_FROM_BTC:
-            swapElement = (_jsx(SpvVaultFromBTCQuoteSummary, { type: props.type, setAmountLock: props.setAmountLock, quote: props.quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, balance: props.balance, feeRate: props.feeRate }));
+            swapElement = (_jsx(SpvVaultFromBTCQuoteSummary, { type: props.type, UICallback: props.UICallback, quote: props.quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, balance: props.balance, feeRate: props.feeRate }));
             break;
     }
     return swapElement;

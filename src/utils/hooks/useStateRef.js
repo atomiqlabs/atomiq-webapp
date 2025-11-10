@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 export function useStateRef(state) {
     const ref = useRef();
-    useEffect(() => {
+    useMemo(() => {
         ref.current = state;
     }, [state]);
     return ref;

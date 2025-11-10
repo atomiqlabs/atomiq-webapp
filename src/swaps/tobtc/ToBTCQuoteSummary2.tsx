@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useContext, useEffect, useMemo } from 'react';
 import { Button, Spinner } from 'react-bootstrap';
 import {
-  AbstractSigner,
+  AbstractSigner, ISwap,
   IToBTCSwap,
   SwapType,
   ToBTCLNSwap,
@@ -38,6 +38,7 @@ import { BaseButton } from '../../components/BaseButton';
 import { useCallback } from 'react';
 import { SwapStepAlert } from '../components/SwapStepAlert';
 import {useToBtcQuote} from "./useToBtcQuote";
+import {SwapPageUIState} from "../../pages/useSwapPage";
 
 /*
 Steps lightning:
@@ -53,14 +54,14 @@ Steps on-chain:
 export function ToBTCQuoteSummary2(props: {
   quote: IToBTCSwap;
   refreshQuote: () => void;
-  setAmountLock: (isLocked: boolean) => void;
+  UICallback: (quote: ISwap, state: SwapPageUIState) => void;
   type?: 'payment' | 'swap';
   autoContinue?: boolean;
   notEnoughForGas: bigint;
   balance?: bigint;
 }) {
 
-  const page = useToBtcQuote(props.quote, props.setAmountLock, props.type, props.balance);
+  const page = useToBtcQuote(props.quote, props.UICallback, props.type, props.balance);
 
   const stepByStep = page.executionSteps ? <StepByStep
     quote={props.quote}

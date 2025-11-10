@@ -25,7 +25,7 @@ Steps:
 3. Claim transaction -> Sending claim transaction -> Claim success
  */
 export function FromBTCQuoteSummary2(props) {
-    const page = useFromBtcQuote(props.quote, props.setAmountLock, props.feeRate, props.balance);
+    const page = useFromBtcQuote(props.quote, props.UICallback, props.feeRate, props.balance);
     const stepByStep = page.executionSteps ? _jsx(StepByStep, { quote: props.quote, steps: page.executionSteps }) : '';
     //TODO: This should be contained in a standalone component
     const addressContent = useCallback((show) => (_jsxs(_Fragment, { children: [_jsxs(AlertMessage, { variant: "warning", className: "mb-3", children: ["Send", ' ', _jsxs("strong", { children: ["EXACTLY ", props.quote.getInput().toString()] }), ' ', "to the address below."] }), _jsx(QRCodeSVG, { value: page.step2paymentWait?.walletDisconnected?.address.hyperlink, size: 240, includeMargin: true, className: "cursor-pointer", onClick: (event) => {

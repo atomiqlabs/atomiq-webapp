@@ -59,6 +59,7 @@ export function CurrencyDropdown(props) {
                             return (_jsx(Nav.Item, { children: _jsx(Nav.Link, { eventKey: val, className: "currency-dropdown__nav-link", children: _jsx("img", { src: '/icons/chains/' + val + '.svg', className: "currency-icon-medium" }) }) }, val));
                         }) }), _jsxs("div", { className: "currency-dropdown__items", children: [_jsxs("div", { className: "currency-dropdown__search", children: [_jsx("input", { type: "text", className: "currency-dropdown__search__input form-control", placeholder: "Search tokens...", value: searchQuery ?? '', onChange: (e) => setSearchQuery(e.target.value) }), _jsx("div", { className: "icon icon-search" })] }), _jsx(CurrenciesEntry, { currencies: displayedCurrencies, onSelect: (val) => {
                                     setShow(false);
-                                    props.onSelect(val);
+                                    if (props.onSelect)
+                                        props.onSelect(val);
                                 } })] })] })] }));
 }

@@ -139,7 +139,7 @@ export function CurrencyDropdown(props: {
             currencies={displayedCurrencies}
             onSelect={(val) => {
               setShow(false);
-              props.onSelect(val);
+              if(props.onSelect) props.onSelect(val);
             }}
           />
         </div>

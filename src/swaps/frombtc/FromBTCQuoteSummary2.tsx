@@ -4,7 +4,7 @@ import { Spinner } from 'react-bootstrap';
 import { AlertMessage } from '../../components/AlertMessage';
 import { QRCodeSVG } from 'qrcode.react';
 import { ValidatedInputRef } from '../../components/ValidatedInput';
-import { FromBTCSwap, FromBTCSwapState } from '@atomiqlabs/sdk';
+import {FromBTCSwap, FromBTCSwapState, ISwap} from '@atomiqlabs/sdk';
 import {FEConstants, Tokens} from '../../FEConstants';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
 import { ScrollAnchor } from '../../components/ScrollAnchor';
@@ -42,6 +42,7 @@ import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import {useFromBtcQuote} from "./useFromBtcQuote";
 import {getDeltaText} from "../../utils/Utils";
 import {ErrorAlert} from "../../components/ErrorAlert";
+import {SwapPageUIState} from "../../pages/useSwapPage";
 
 /*
 Steps:
@@ -53,14 +54,14 @@ Steps:
 export function FromBTCQuoteSummary2(props: {
   quote: FromBTCSwap<any>;
   refreshQuote: () => void;
-  setAmountLock: (isLocked: boolean) => void;
+  UICallback: (quote: ISwap, state: SwapPageUIState) => void;
   type?: 'payment' | 'swap';
   abortSwap?: () => void;
   notEnoughForGas: bigint;
   feeRate?: number;
   balance?: bigint;
 }) {
-  const page = useFromBtcQuote(props.quote, props.setAmountLock, props.feeRate, props.balance);
+  const page = useFromBtcQuote(props.quote, props.UICallback, props.feeRate, props.balance);
 
   const stepByStep = page.executionSteps ? <StepByStep
     quote={props.quote}

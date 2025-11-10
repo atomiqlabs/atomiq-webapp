@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Spinner } from 'react-bootstrap';
-import { SpvFromBTCSwap, SpvFromBTCSwapState } from '@atomiqlabs/sdk';
+import {ISwap, SpvFromBTCSwap, SpvFromBTCSwapState} from '@atomiqlabs/sdk';
 import { getDeltaText } from '../../utils/Utils';
 import { FEConstants } from '../../FEConstants';
 import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
@@ -24,6 +24,7 @@ import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
 import { BaseButton } from '../../components/BaseButton';
 import { useChain } from '../../wallets/hooks/useChain';
 import { useSpvVaultFromBtcQuote } from './useSpvVaultFromBtcQuote';
+import {SwapPageUIState} from "../../pages/useSwapPage";
 
 /*
 Steps:
@@ -34,7 +35,7 @@ Steps:
 export function SpvVaultFromBTCQuoteSummary(props: {
   quote: SpvFromBTCSwap<any>;
   refreshQuote: () => void;
-  setAmountLock: (isLocked: boolean) => void;
+  UICallback: (quote: ISwap, state: SwapPageUIState) => void;
   type?: 'payment' | 'swap';
   abortSwap?: () => void;
   feeRate?: number;
@@ -42,7 +43,7 @@ export function SpvVaultFromBTCQuoteSummary(props: {
 }) {
   const page = useSpvVaultFromBtcQuote(
     props.quote,
-    props.setAmountLock,
+    props.UICallback,
     props.feeRate,
     props.balance
   );

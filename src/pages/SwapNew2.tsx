@@ -49,41 +49,10 @@ import { WebLNProvider } from 'webln';
 import { BaseButton } from '../components/BaseButton';
 
 export function SwapNew2() {
-  const navigate = useNavigate();
-
   const swapPage = useSwapPage();
 
-  //Existing swap quote
-  const { search } = useLocation();
-  const params = new URLSearchParams(search);
-  const propSwapId = params.get('swapId');
-  const [existingSwap, existingSwapLoading] = useExistingSwap(propSwapId);
-
-  const [isUnlocked, setUnlocked] = useState<boolean>(false);
   const [reversed, setReversed] = useState(false);
-  const locked = !isUnlocked && existingSwap != null;
-
-  //QR scanner
   const [qrScanning, setQrScanning] = useState<boolean>(false);
-
-  //Leaves existing swap
-  const leaveExistingSwap = useCallback(
-    (noSetAddress?: boolean, noSetAmounts?: boolean) => {
-      if (existingSwap == null) return;
-      //TODO: Fix
-      // setInputToken(existingSwap.getInput().token);
-      // setOutputToken(existingSwap.getOutput().token);
-      // if (!noSetAddress) addressRef.current.setValue(existingSwap.getOutputAddress());
-      // if (!noSetAmounts)
-      //   if (existingSwap.exactIn) {
-      //     inputRef.current.setValue(existingSwap.getInput().amount);
-      //   } else {
-      //     outputRef.current.setValue(existingSwap.getOutput().amount);
-      //   }
-      navigate('/');
-    },
-    [existingSwap]
-  );
 
   return (
     <>
@@ -117,7 +86,7 @@ export function SwapNew2() {
               variant: 'secondary',
             }}
           />
-          {existingSwap != null ? null : (
+          {swapPage.hideUI ? null : (
             <>
               <div className="swap-panel__card">
                 <div className="swap-panel__card__header">
@@ -152,7 +121,7 @@ export function SwapNew2() {
                 <div className="swap-panel__card__body">
                   <CurrencyDropdown
                     currencyList={swapPage.input.token.values}
-                    onSelect={swapPage.input.token.onChange}
+                    onSelect={swapPage.input.token.disabled ? undefined : swapPage.input.token.onChange}
                     value={swapPage.input.token.value}
                     className="round-right text-white bg-black bg-opacity-10"
                   />
@@ -164,7 +133,7 @@ export function SwapNew2() {
                     value={swapPage.input.amount.value}
                     size={'lg'}
                     textStart={
-                      swapPage.input.amount.loading ? <Spinner className="text-white" /> : null
+                      swapPage.input.amount.loading ? <Spinner className="text-white"/> : null
                     }
                     onChange={swapPage.input.amount.onChange}
                     inputId="amount-input"
@@ -200,7 +169,7 @@ export function SwapNew2() {
               <div className="swap-panel__toggle">
                 <Button
                   onClick={() => {
-                    if (locked) return;
+                    if (swapPage.input.token.disabled || swapPage.output.token.disabled) return;
                     setReversed((v) => !v);
                     swapPage.changeDirection();
                   }}
@@ -231,7 +200,7 @@ export function SwapNew2() {
                   <div className="swap-panel__card__body">
                     <CurrencyDropdown
                       currencyList={swapPage.output.token.values}
-                      onSelect={swapPage.output.token.onChange}
+                      onSelect={swapPage.output.token.disabled ? undefined : swapPage.output.token.onChange}
                       value={swapPage.output.token.value}
                       className="round-right text-white bg-black bg-opacity-10"
                     />
@@ -242,7 +211,7 @@ export function SwapNew2() {
                       value={swapPage.output.amount.value}
                       size={'lg'}
                       textStart={
-                        swapPage.output.amount.loading ? <Spinner className="text-white" /> : null
+                        swapPage.output.amount.loading ? <Spinner className="text-white"/> : null
                       }
                       onChange={swapPage.output.amount.onChange}
                       inputId="amount-output"
@@ -290,7 +259,7 @@ export function SwapNew2() {
                       }
                       value={swapPage.output.gasDrop?.checked}
                       onValidate={() => null}
-                      disabled={locked}
+                      disabled={swapPage.output.gasDrop?.disabled}
                     />
                   </div>
                 </div>
@@ -331,7 +300,7 @@ export function SwapNew2() {
                               disabled={swapPage.output.address?.disabled}
                               textEnd={
                                 swapPage.output.address?.loading ? (
-                                  <Spinner className="text-white" />
+                                  <Spinner className="text-white"/>
                                 ) : swapPage.output.address?.validation?.status === 'success' ? (
                                   <span className="icon icon-check"></span>
                                 ) : swapPage.output.address?.validation?.status === 'error' ? (
@@ -412,76 +381,45 @@ export function SwapNew2() {
                   </div>
                 </div>
               </div>
-            </>
-          )}
 
-          {swapPage.quote.quote != null || existingSwap != null ? (
-            <>
-              {!(existingSwap ?? swapPage.quote.quote).isInitiated() ? (
-                <div className="mt-3">
-                  <SimpleFeeSummaryScreen
-                    swap={existingSwap ?? swapPage.quote.quote}
-                    btcFeeRate={swapPage.input.wallet?.btcFeeRate}
-                    onRefreshQuote={() => {
-                      if (existingSwap != null) navigate('/');
-                      swapPage.quote.refresh();
-                    }}
-                  />
-                </div>
-              ) : null}
-              {!swapPage.quote.isRandom || swapPage.swapTypeData.requiresOutputWallet ? (
-                <div className="d-flex flex-column text-white">
-                  <QuoteSummary
-                    type="swap"
-                    quote={existingSwap ?? swapPage.quote.quote}
-                    balance={swapPage.input.wallet?.spendable?.rawAmount}
-                    refreshQuote={() => {
-                      if (existingSwap != null) navigate('/');
-                      swapPage.quote.refresh();
-                    }}
-                    setAmountLock={(isLocked: boolean) => {
-                      if (!isLocked) return;
-                      if (existingSwap == null)
-                        navigate('/?swapId=' + swapPage.quote.quote.getId());
-                    }}
-                    abortSwap={() => {
-                      swapPage.input.amount.onChange('');
-                      navigate('/');
-                    }}
-                    feeRate={swapPage.input.wallet?.btcFeeRate}
-                  />
-                </div>
-              ) : (
-                ''
-              )}
-            </>
-          ) : (
-            <>
               <div className="mt-3">
                 <SimpleFeeSummaryScreen
-                  swap={null}
+                  swap={swapPage.quote.quote}
                   btcFeeRate={swapPage.input.wallet?.btcFeeRate}
                   inputToken={swapPage.input.token.value}
                   outputToken={swapPage.output.token.value}
-                  onRefreshQuote={() => {
-                    swapPage.quote.refresh();
-                  }}
+                  onRefreshQuote={swapPage.quote.refresh}
                 />
               </div>
-              <BaseButton
-                variant="primary"
-                className="swap-panel__action"
-                disabled={true}
-                size="lg"
-              >
-                Swap
-              </BaseButton>
             </>
+          )}
+
+          {swapPage.quote.quote != null && (!swapPage.quote.isRandom || swapPage.swapTypeData.requiresOutputWallet) ? (
+            <div className="d-flex flex-column text-white">
+              <QuoteSummary
+                type="swap"
+                quote={swapPage.quote.quote}
+                balance={swapPage.input.wallet?.spendable?.rawAmount}
+                refreshQuote={swapPage.quote.refresh}
+                UICallback={swapPage.quote.UICallback}
+                abortSwap={swapPage.quote.abort}
+                feeRate={swapPage.input.wallet?.btcFeeRate}
+              />
+            </div>
+          ) : (
+            <BaseButton
+              variant="primary"
+              className="swap-panel__action"
+              disabled={true}
+              size="lg"
+            >
+              Swap
+            </BaseButton>
           )}
         </div>
       </div>
 
-      <AuditedBy chainId={swapPage.smartChainId} />
+      <AuditedBy chainId={swapPage.smartChainId}/>
     </>
   );
 }

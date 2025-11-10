@@ -19,7 +19,7 @@ Steps:
 3. Send claim transaction -> Sending claim transaction -> Claim success
  */
 export function FromBTCLNQuoteSummary2(props) {
-    const page = useFromBtcLnQuote2(props.quote, props.setAmountLock);
+    const page = useFromBtcLnQuote2(props.quote, props.UICallback);
     // Render card content (progress, alerts, etc.)
     const renderCard = () => {
         const isInitiated = !page.step1init;

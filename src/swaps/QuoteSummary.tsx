@@ -22,11 +22,12 @@ import { getChainIdentifierForCurrency, toTokenIdentifier } from '../tokens/Toke
 import { FromBTCLNQuoteSummary2 } from './frombtc/FromBTCLNQuoteSummary2';
 import { ToBTCQuoteSummary2 } from './tobtc/ToBTCQuoteSummary2';
 import {FromBTCQuoteSummary2} from "./frombtc/FromBTCQuoteSummary2";
+import {SwapPageUIState} from "../pages/useSwapPage";
 
 export function QuoteSummary(props: {
   quote: ISwap;
   refreshQuote: () => void;
-  setAmountLock?: (isLocked: boolean) => void;
+  UICallback: (quote: ISwap, state: SwapPageUIState) => void;
   type?: 'payment' | 'swap';
   abortSwap?: () => void;
   balance?: bigint;
@@ -78,7 +79,7 @@ export function QuoteSummary(props: {
       swapElement = (
         <ToBTCQuoteSummary2
           type={props.type}
-          setAmountLock={props.setAmountLock}
+          UICallback={props.UICallback}
           quote={props.quote as IToBTCSwap}
           refreshQuote={props.refreshQuote}
           autoContinue={props.autoContinue}
@@ -91,7 +92,7 @@ export function QuoteSummary(props: {
       swapElement = (
         <FromBTCQuoteSummary2
           type={props.type}
-          setAmountLock={props.setAmountLock}
+          UICallback={props.UICallback}
           quote={props.quote as FromBTCSwap}
           refreshQuote={props.refreshQuote}
           abortSwap={props.abortSwap}
@@ -104,10 +105,11 @@ export function QuoteSummary(props: {
     case SwapType.FROM_BTCLN:
       const _quote = props.quote as FromBTCLNSwap;
       if (_quote.lnurl != null && props.type !== 'swap') {
+        //TODO: For now just mocked setAmountLock!!!
         swapElement = (
           <LNURLWithdrawQuoteSummary
             type={props.type}
-            setAmountLock={props.setAmountLock}
+            setAmountLock={() => {}}
             quote={_quote}
             refreshQuote={props.refreshQuote}
             autoContinue={props.autoContinue}
@@ -118,7 +120,7 @@ export function QuoteSummary(props: {
         swapElement = (
           <FromBTCLNQuoteSummary2
             type={props.type}
-            setAmountLock={props.setAmountLock}
+            UICallback={props.UICallback}
             quote={_quote}
             refreshQuote={props.refreshQuote}
             abortSwap={props.abortSwap}
@@ -131,7 +133,7 @@ export function QuoteSummary(props: {
       swapElement = (
         <SpvVaultFromBTCQuoteSummary
           type={props.type}
-          setAmountLock={props.setAmountLock}
+          UICallback={props.UICallback}
           quote={props.quote as SpvFromBTCSwap<any>}
           refreshQuote={props.refreshQuote}
           abortSwap={props.abortSwap}
