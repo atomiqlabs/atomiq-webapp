@@ -10,6 +10,7 @@ import { useSpvVaultFromBtcQuote } from './useSpvVaultFromBtcQuote';
 import { SwapPageUIState } from '../../pages/useSwapPage';
 import { SwapStepAlert } from '../components/SwapStepAlert';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 
 /*
 Steps:
@@ -72,7 +73,6 @@ export function SpvVaultFromBTCQuoteSummary(props: {
             icon={ic_check_circle}
             title="Swap success"
             description="Your swap was executed successfully!"
-            className="mb-3"
           />
         ) : (
           ''
@@ -81,9 +81,9 @@ export function SpvVaultFromBTCQuoteSummary(props: {
         {page.step5?.state === 'failed' ? (
           <SwapStepAlert
             type="danger"
+            icon={ic_warning}
             title="Swap failed"
             description="Swap transaction reverted, no funds were sent!"
-            className="mb-3"
           />
         ) : (
           ''

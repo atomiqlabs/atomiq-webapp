@@ -27,7 +27,7 @@
     background-color: rgb(255 255 255 / 0.05);
 
     &__text {
-      @apply mt-[12px];
+      @apply mt-[12px] text-[14px];
     }
 
     &__icon {

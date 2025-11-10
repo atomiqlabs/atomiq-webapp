@@ -16,7 +16,7 @@ import BigNumber from 'bignumber.js';
 import { numberValidator } from '../components/ValidatedInput';
 import { useQuote } from '../swaps/hooks/useQuote';
 import { usePricing } from '../tokens/hooks/usePricing';
-import { useExistingSwap } from "../swaps/hooks/useExistingSwap";
+import { useExistingSwap } from '../swaps/hooks/useExistingSwap';
 export function useSwapPage() {
     const { chains, disconnectWallet, connectWallet } = useContext(ChainDataContext);
     const { swapper } = useContext(SwapsContext);
@@ -366,7 +366,7 @@ export function useSwapPage() {
         navigate('/');
     }, [existingSwap]);
     const [_UIState, setUIstate] = useState();
-    const UIState = !!_UIState && _UIState.quote === quote ? _UIState.state : "show";
+    const UIState = !!_UIState && _UIState.quote === quote ? _UIState.state : 'show';
     return {
         input: {
             wallet: inputChainData?.wallet == null
@@ -390,7 +390,7 @@ export function useSwapPage() {
                     setAmount(value);
                     setExactIn(true);
                 }, []),
-                disabled: amountsLocked || webLnForOutput || UIState === "lock",
+                disabled: amountsLocked || webLnForOutput || UIState === 'lock',
                 loading: !exactIn && quoteLoading,
                 step: inputTokenStep,
                 min: inputLimits?.min,
@@ -431,7 +431,7 @@ export function useSwapPage() {
                     setAmount(value);
                     setExactIn(false);
                 }, []),
-                disabled: amountsLocked || UIState === "lock",
+                disabled: amountsLocked || UIState === 'lock',
                 loading: exactIn && quoteLoading,
                 step: outputTokenStep,
                 min: outputLimits?.min,
@@ -451,14 +451,14 @@ export function useSwapPage() {
                     checked: gasDropChecked,
                     onChange: setGasDropChecked,
                     amount: gasDropTokenAmount,
-                    disabled: UIState === "lock"
+                    disabled: UIState === 'lock',
                 },
             address: swapTypeData?.requiresOutputWallet || (webLnForOutput && validatedAmount == null)
                 ? undefined
                 : {
                     value: outputAddress,
                     onChange: setAddress,
-                    disabled: isOutputWalletAddress || UIState === "lock",
+                    disabled: isOutputWalletAddress || UIState === 'lock',
                     loading: addressLoading,
                     validation: addressValidationStatus,
                     isFromWallet: isOutputWalletAddress,
@@ -499,8 +499,8 @@ export function useSwapPage() {
             abort: leaveExistingSwap,
             UICallback: useCallback((quote, state) => {
                 setUIstate({ quote, state });
-            }, [])
+            }, []),
         },
-        hideUI: UIState === "hide"
+        hideUI: UIState === 'hide',
     };
 }

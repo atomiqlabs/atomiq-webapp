@@ -23,6 +23,7 @@ import { LightningQR } from '../components/LightningQR';
 import { ErrorAlert } from '../../components/ErrorAlert';
 import { BaseButton } from '../../components/BaseButton';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 
 /*
 Steps:
@@ -179,7 +180,6 @@ export function TrustedFromBTCLNQuoteSummary(props: {
           icon={ic_check_circle}
           title="Swap success"
           description="Your swap was executed successfully!"
-          className="mb-3"
         />
       ) : (
         ''
@@ -190,8 +190,8 @@ export function TrustedFromBTCLNQuoteSummary(props: {
           <SwapStepAlert
             type="danger"
             title="Swap failed"
+            icon={ic_warning}
             description="Swap failed, your lightning payment will be refunded shortly!"
-            className="mb-3"
             show={isFailed}
           />
 

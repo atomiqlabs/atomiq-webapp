@@ -29,16 +29,16 @@ import { useAddressData } from '../swaps/hooks/useAddressData';
 import { ChainWalletData } from '../wallets/ChainDataProvider';
 import { useDecimalNumberState } from '../utils/hooks/useDecimalNumberState';
 import { useAmountConstraints } from '../swaps/hooks/useAmountConstraints';
-import {useLocation, useNavigate} from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useWalletBalance } from '../wallets/hooks/useWalletBalance';
 import BigNumber from 'bignumber.js';
 import { numberValidator } from '../components/ValidatedInput';
 import { useQuote } from '../swaps/hooks/useQuote';
 import { usePricing } from '../tokens/hooks/usePricing';
 import { WebLNProvider } from 'webln';
-import {useExistingSwap} from "../swaps/hooks/useExistingSwap";
+import { useExistingSwap } from '../swaps/hooks/useExistingSwap';
 
-export type SwapPageUIState = "show" | "lock" | "hide";
+export type SwapPageUIState = 'show' | 'lock' | 'hide';
 
 export type SwapPageState = {
   input: {
@@ -532,24 +532,21 @@ export function useSwapPage(): SwapPageState {
   }, [swapTypeData, addressError, address, isOutputWalletAddress, isFixedAmount, outputChainData]);
 
   //Leaves existing swap
-  const leaveExistingSwap = useCallback(
-    () => {
-      if (existingSwap == null) return;
-      setInputToken(existingSwap.getInput().token);
-      setOutputToken(existingSwap.getOutput().token);
-      setAddress(existingSwap.getOutputAddress());
-      if (existingSwap.exactIn) {
-        setAmount(existingSwap.getInput().amount);
-      } else {
-        setAmount(existingSwap.getOutput().amount);
-      }
-      navigate('/');
-    },
-    [existingSwap]
-  );
+  const leaveExistingSwap = useCallback(() => {
+    if (existingSwap == null) return;
+    setInputToken(existingSwap.getInput().token);
+    setOutputToken(existingSwap.getOutput().token);
+    setAddress(existingSwap.getOutputAddress());
+    if (existingSwap.exactIn) {
+      setAmount(existingSwap.getInput().amount);
+    } else {
+      setAmount(existingSwap.getOutput().amount);
+    }
+    navigate('/');
+  }, [existingSwap]);
 
-  const [_UIState, setUIstate] = useState<{quote: ISwap, state: SwapPageUIState}>();
-  const UIState = !!_UIState && _UIState.quote===quote ? _UIState.state : "show";
+  const [_UIState, setUIstate] = useState<{ quote: ISwap; state: SwapPageUIState }>();
+  const UIState = !!_UIState && _UIState.quote === quote ? _UIState.state : 'show';
 
   return {
     input: {
@@ -575,7 +572,7 @@ export function useSwapPage(): SwapPageState {
           setAmount(value);
           setExactIn(true);
         }, []),
-        disabled: amountsLocked || webLnForOutput || UIState==="lock",
+        disabled: amountsLocked || webLnForOutput || UIState === 'lock',
         loading: !exactIn && quoteLoading,
         step: inputTokenStep,
         min: inputLimits?.min,
@@ -617,7 +614,7 @@ export function useSwapPage(): SwapPageState {
           setAmount(value);
           setExactIn(false);
         }, []),
-        disabled: amountsLocked || UIState==="lock",
+        disabled: amountsLocked || UIState === 'lock',
         loading: exactIn && quoteLoading,
         step: outputTokenStep,
         min: outputLimits?.min,
@@ -639,7 +636,7 @@ export function useSwapPage(): SwapPageState {
               checked: gasDropChecked,
               onChange: setGasDropChecked,
               amount: gasDropTokenAmount,
-              disabled: UIState==="lock"
+              disabled: UIState === 'lock',
             },
       address:
         swapTypeData?.requiresOutputWallet || (webLnForOutput && validatedAmount == null)
@@ -647,7 +644,7 @@ export function useSwapPage(): SwapPageState {
           : {
               value: outputAddress,
               onChange: setAddress,
-              disabled: isOutputWalletAddress || UIState==="lock",
+              disabled: isOutputWalletAddress || UIState === 'lock',
               loading: addressLoading,
               validation: addressValidationStatus,
               isFromWallet: isOutputWalletAddress,
@@ -683,9 +680,9 @@ export function useSwapPage(): SwapPageState {
       refresh: refreshQuote,
       abort: leaveExistingSwap,
       UICallback: useCallback((quote: ISwap, state: SwapPageUIState) => {
-        setUIstate({quote, state});
-      }, [])
+        setUIstate({ quote, state });
+      }, []),
     },
-    hideUI: UIState === "hide"
+    hideUI: UIState === 'hide',
   };
 }
