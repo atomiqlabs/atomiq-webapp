@@ -100,7 +100,6 @@ export function FromBTCQuoteSummary(props: {
             type="error"
             icon={ic_warning}
             title={page.step1init.error?.title}
-            description={page.step1init.error?.error.message}
             error={page.step1init.error?.error}
           />
 
@@ -206,7 +205,6 @@ export function FromBTCQuoteSummary(props: {
             type="error"
             icon={ic_warning}
             title={page.step2paymentWait.error?.title}
-            description={page.step2paymentWait.error?.error.message}
             error={page.step2paymentWait.error?.error}
             action={
               page.step2paymentWait.error?.retry
@@ -257,7 +255,6 @@ export function FromBTCQuoteSummary(props: {
           type="error"
           icon={ic_warning}
           title={page.step3awaitingConfirmations.error?.title}
-          description={page.step3awaitingConfirmations.error?.error.message}
           error={page.step3awaitingConfirmations.error?.error}
           action={{
             type: 'button',
@@ -300,7 +297,6 @@ export function FromBTCQuoteSummary(props: {
                 type="error"
                 icon={ic_warning}
                 title={page.step4claim.error?.title}
-                description={page.step4claim.error?.error.message}
                 error={page.step4claim.error?.error}
               />
 

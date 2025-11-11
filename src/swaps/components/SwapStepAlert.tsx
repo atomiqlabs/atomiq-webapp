@@ -3,8 +3,20 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Icon from 'react-icons-kit';
 import { ic_content_copy } from 'react-icons-kit/md/ic_content_copy';
 import { BaseButton } from '../../components/BaseButton';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
+import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
+import { ic_info } from 'react-icons-kit/md/ic_info';
+import { ic_error} from 'react-icons-kit/md/ic_error';
 
 type SwapStepAlertType = 'success' | 'error' | 'warning' | 'info' | 'danger';
+
+const DefaultIcons = {
+  success: ic_check_circle,
+  error: ic_warning,
+  warning: ic_warning,
+  info: ic_info,
+  danger: ic_error
+};
 
 interface SwapStepAlertAction {
   type: 'link' | 'button';
@@ -17,12 +29,11 @@ interface SwapStepAlertAction {
 
 interface SwapStepAlertProps {
   type: SwapStepAlertType;
-  icon?: any;
   title: string;
-  description: string;
-  action?: SwapStepAlertAction;
+  description?: string;
   error?: Error;
-  onCopyError?: () => void;
+  icon?: any | null;
+  action?: SwapStepAlertAction;
   show?: boolean;
   className?: string;
   actionElement?: (JSX.Element | string) | (JSX.Element | string)[];
@@ -45,9 +56,6 @@ export function SwapStepAlert(props: SwapStepAlertProps) {
         )
       );
     }
-    if (props.onCopyError) {
-      props.onCopyError();
-    }
   };
 
   // Handle show prop for conditional rendering
@@ -64,11 +72,13 @@ export function SwapStepAlert(props: SwapStepAlertProps) {
     .filter(Boolean)
     .join(' ');
 
+  const description = props.description ?? props.error?.message ?? props.error?.toString();
+
   return (
     <div className={classNames}>
-      {props.icon && (
+      {props.icon === null ? '' : (
         <div className="swap-step-alert__icon">
-          <Icon size={20} icon={props.icon} />
+          <Icon size={20} icon={props.icon ?? DefaultIcons[props.type]} />
         </div>
       )}
 
@@ -91,8 +101,8 @@ export function SwapStepAlert(props: SwapStepAlertProps) {
       </strong>
 
       {/* Dont need to type error 2 times, if description is not really description */}
-      {props.description !== 'Error' && (
-        <label className="swap-step-alert__description">{props.description ?? props.error?.message ?? props.error?.toString()}</label>
+      {description && (
+        <label className="swap-step-alert__description">{description}</label>
       )}
 
       {props.action && (

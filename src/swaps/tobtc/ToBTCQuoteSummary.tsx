@@ -64,7 +64,6 @@ export function ToBTCQuoteSummary(props: {
             type="error"
             icon={ic_warning}
             title={page.step1init.error?.title}
-            description={page.step1init.error?.error.message}
             error={page.step1init.error?.error}
           />
         </div>

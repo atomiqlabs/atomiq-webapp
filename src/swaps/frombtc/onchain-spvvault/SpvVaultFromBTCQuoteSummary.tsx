@@ -102,7 +102,6 @@ export function SpvVaultFromBTCQuoteSummary(props: {
               type="error"
               icon={ic_warning}
               title={page.step4claim.error?.title}
-              description={page.step4claim.error?.error.message}
               error={page.step4claim.error?.error}
             />
 
