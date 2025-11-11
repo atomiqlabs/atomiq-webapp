@@ -227,7 +227,7 @@ export function useSwapPage(): SwapPageState {
       disconnectWallet(outputChainData.chainId);
     }
     console.log('SwapNew(): Using token based on the address: ' + outputToken.ticker);
-    setOutputToken(token);
+    setOutputToken(token, false);
   });
   const isFixedAmount = addressData?.amount != null;
 
@@ -271,9 +271,9 @@ export function useSwapPage(): SwapPageState {
     [swapper, outputToken, inputToken, exactIn]
   );
   const setOutputToken = useCallback(
-    (val: Token) => {
+    (val: Token, resetAddress: boolean = true) => {
       if (val === outputToken) return;
-      if (getChainIdentifierForCurrency(val) !== getChainIdentifierForCurrency(outputToken))
+      if (resetAddress && getChainIdentifierForCurrency(val) !== getChainIdentifierForCurrency(outputToken))
         setAddress('');
       const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
       _setOutputToken(val);
