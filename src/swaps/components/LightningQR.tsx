@@ -1,4 +1,4 @@
-import { Badge, Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
+import { Spinner } from 'react-bootstrap';
 import { CopyOverlay } from '../../components/CopyOverlay';
 import { QRCodeSVG } from 'qrcode.react';
 import * as React from 'react';
@@ -10,11 +10,9 @@ import { useNFCScanner } from '../../nfc/hooks/useNFCScanner';
 import { SwapsContext } from '../context/SwapsContext';
 import { NFCStartResult } from '../../nfc/NFCReader';
 import { useChain } from '../../wallets/hooks/useChain';
-import { BaseButton } from '../../components/BaseButton';
 import { SwapStepAlert } from './SwapStepAlert';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { WalletAddressPreview } from '../../components/WalletAddressPreview';
-import { AlertMessage } from '../../components/AlertMessage';
 
 export function LightningQR(props: {
   quote: FromBTCLNSwap | LnForGasSwap;
