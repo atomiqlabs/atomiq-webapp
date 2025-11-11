@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { Spinner } from 'react-bootstrap';
 import { AlertMessage } from '../../../components/AlertMessage';
 import { QRCodeSVG } from 'qrcode.react';
-import {FromBTCSwap, ISwap} from '@atomiqlabs/sdk';
+import { FromBTCSwap, ISwap } from '@atomiqlabs/sdk';
 import { ButtonWithWallet } from '../../../wallets/ButtonWithWallet';
 import { ScrollAnchor } from '../../../components/ScrollAnchor';
 import { CopyOverlay } from '../../../components/CopyOverlay';
@@ -18,9 +18,8 @@ import { SwapStepAlert } from '../../components/SwapStepAlert';
 import { WalletAddressPreview } from '../../../components/WalletAddressPreview';
 import { SwapConfirmations } from '../../components/SwapConfirmations';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
-import {useFromBtcQuote} from "./useFromBtcQuote";
-import {ErrorAlert} from "../../../components/ErrorAlert";
-import {SwapPageUIState} from "../../../pages/useSwapPage";
+import { useFromBtcQuote } from './useFromBtcQuote';
+import { SwapPageUIState } from '../../../pages/useSwapPage';
 
 /*
 Steps:
@@ -41,21 +40,18 @@ export function FromBTCQuoteSummary(props: {
 }) {
   const page = useFromBtcQuote(props.quote, props.UICallback, props.feeRate, props.balance);
 
-  const stepByStep = page.executionSteps ? <StepByStep
-    quote={props.quote}
-    steps={page.executionSteps}
-  /> : '';
+  const stepByStep = page.executionSteps ? (
+    <StepByStep quote={props.quote} steps={page.executionSteps} />
+  ) : (
+    ''
+  );
 
   //TODO: This should be contained in a standalone component
   const addressContent = useCallback(
     (show) => (
       <>
         <AlertMessage variant="warning" className="mb-3">
-          Send{' '}
-          <strong>
-            EXACTLY {props.quote.getInput().toString()}
-          </strong>{' '}
-          to the address below.
+          Send <strong>EXACTLY {props.quote.getInput().toString()}</strong> to the address below.
         </AlertMessage>
 
         <QRCodeSVG
@@ -70,7 +66,7 @@ export function FromBTCQuoteSummary(props: {
         />
         <WalletAddressPreview
           address={page.step2paymentWait?.walletDisconnected?.address.value}
-          chainName={"Bitcoin"}
+          chainName={'Bitcoin'}
           onCopy={page.step2paymentWait?.walletDisconnected?.address.copy}
         />
         <div className="payment-awaiting-buttons">
@@ -95,7 +91,7 @@ export function FromBTCQuoteSummary(props: {
     [page.step2paymentWait?.walletDisconnected]
   );
 
-  if(page.step1init) {
+  if (page.step1init) {
     return (
       <>
         <div className="swap-panel__card">
@@ -108,7 +104,10 @@ export function FromBTCQuoteSummary(props: {
             error={page.step1init.error?.error}
           />
 
-          <SwapForGasAlert notEnoughForGas={page.step1init?.additionalGasRequired?.rawAmount} quote={props.quote} />
+          <SwapForGasAlert
+            notEnoughForGas={page.step1init?.additionalGasRequired?.rawAmount}
+            quote={props.quote}
+          />
         </div>
 
         <ButtonWithWallet
@@ -119,21 +118,29 @@ export function FromBTCQuoteSummary(props: {
           size="lg"
           className="swap-panel__action"
         >
-          {page.step1init.init.loading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
+          {page.step1init.init.loading ? (
+            <Spinner animation="border" size="sm" className="mr-2" />
+          ) : (
+            ''
+          )}
           Swap
         </ButtonWithWallet>
       </>
-    )
+    );
   }
 
-  if(page.step2paymentWait) {
+  if (page.step2paymentWait) {
     return (
       <>
         <OnchainAddressCopyModal
-          amountBtc={page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.btcAmount.amount}
+          amountBtc={
+            page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.btcAmount.amount
+          }
           opened={!!page.step2paymentWait.walletDisconnected?.addressCopyWarningModal}
           close={page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.close}
-          setShowCopyWarning={page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.showAgain.onChange}
+          setShowCopyWarning={
+            page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.showAgain.onChange
+          }
         />
 
         <div className="swap-panel__card">
@@ -150,12 +157,16 @@ export function FromBTCQuoteSummary(props: {
                   onClick={page.step2paymentWait.walletConnected.payWithBrowserWallet.onClick}
                 >
                   {page.step2paymentWait.walletConnected.payWithBrowserWallet.loading ? (
-                    <Spinner animation="border" size="sm" className="mr-2"/>
+                    <Spinner animation="border" size="sm" className="mr-2" />
                   ) : (
                     ''
                   )}
                   Pay with{' '}
-                  <img width={20} height={20} src={page.step2paymentWait.walletConnected.bitcoinWallet.icon}/>{' '}
+                  <img
+                    width={20}
+                    height={20}
+                    src={page.step2paymentWait.walletConnected.bitcoinWallet.icon}
+                  />{' '}
                   {page.step2paymentWait.walletConnected.bitcoinWallet.name}
                 </BaseButton>
 
@@ -168,10 +179,14 @@ export function FromBTCQuoteSummary(props: {
                   Use a QR/wallet address
                 </BaseButton>
               </div>
-            ) : ''}
+            ) : (
+              ''
+            )}
             {page.step2paymentWait.walletDisconnected ? (
               <CopyOverlay placement={'top'}>{addressContent}</CopyOverlay>
-            ) : ''}
+            ) : (
+              ''
+            )}
           </div>
 
           <div className="swap-panel__card__group">
@@ -191,12 +206,16 @@ export function FromBTCQuoteSummary(props: {
             title={page.step2paymentWait.error?.title}
             description={page.step2paymentWait.error?.error.message}
             error={page.step2paymentWait.error?.error}
-            action={page.step2paymentWait.error?.retry ? {
-              type: 'button',
-              text: 'Retry',
-              onClick: page.step2paymentWait.error?.retry,
-              variant: 'secondary',
-            } : undefined}
+            action={
+              page.step2paymentWait.error?.retry
+                ? {
+                    type: 'button',
+                    text: 'Retry',
+                    onClick: page.step2paymentWait.error?.retry,
+                    variant: 'secondary',
+                  }
+                : undefined
+            }
           />
 
           <ScrollAnchor trigger={true} />
@@ -213,7 +232,7 @@ export function FromBTCQuoteSummary(props: {
     );
   }
 
-  if(page.step3awaitingConfirmations) {
+  if (page.step3awaitingConfirmations) {
     return (
       <>
         <div className="swap-panel__card">
@@ -222,14 +241,12 @@ export function FromBTCQuoteSummary(props: {
           {page.step3awaitingConfirmations.broadcasting ? (
             <div className="swap-panel__card__group">
               <div className="d-flex flex-column align-items-center p-2 gap-3">
-                <Spinner/>
+                <Spinner />
                 <label>Sending Bitcoin transaction...</label>
               </div>
             </div>
           ) : (
-            <SwapConfirmations
-              txData={page.step3awaitingConfirmations.txData}
-            />
+            <SwapConfirmations txData={page.step3awaitingConfirmations.txData} />
           )}
         </div>
 
@@ -256,10 +273,10 @@ export function FromBTCQuoteSummary(props: {
           Abort swap
         </BaseButton>
       </>
-    )
+    );
   }
 
-  if(page.step4claim) {
+  if (page.step4claim) {
     return (
       <>
         <div className="swap-panel__card">
@@ -268,32 +285,48 @@ export function FromBTCQuoteSummary(props: {
           {page.step4claim.waitingForWatchtowerClaim ? (
             <div className="swap-confirmations">
               <div className="swap-confirmations__estimate">
-                <Spinner/>
+                <Spinner />
               </div>
               <div className="swap-confirmations__name">
                 Transaction received & confirmed, waiting for claim by watchtowers...
               </div>
             </div>
           ) : (
-            <div className="swap-confirmations">
-              <div className="swap-confirmations__name">
-                Transaction received & confirmed, you can claim your funds manually now!
-              </div>
+            <>
+              <SwapStepAlert
+                show={!!page.step4claim.error}
+                type="error"
+                icon={ic_warning}
+                title={page.step4claim.error?.title}
+                description={page.step4claim.error?.error.message}
+                error={page.step4claim.error?.error}
+              />
 
-              {page.step4claim.error && (
-                <ErrorAlert className="mb-3" title={page.step4claim.error.title} error={page.step4claim.error.error}/>
-              )}
-
-              <ButtonWithWallet
-                chainId={props.quote.chainIdentifier}
-                onClick={page.step4claim.claim.onClick}
-                disabled={page.step4claim.claim.disabled}
-                size="lg"
-              >
-                {page.step4claim.claim.loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ''}
-                Finish swap (claim funds)
-              </ButtonWithWallet>
-            </div>
+              <SwapStepAlert
+                show={true}
+                type="success"
+                icon={ic_check_circle}
+                title="Bitcoin transaction confirmed"
+                description="Claim your payment to finish the swap."
+                actionElement={
+                  <ButtonWithWallet
+                    requiredWalletAddress={props.quote._getInitiator()}
+                    className="swap-step-alert__button"
+                    chainId={props.quote?.chainIdentifier}
+                    onClick={page.step4claim.claim.onClick}
+                    disabled={page.step4claim.claim.disabled}
+                    variant="secondary"
+                  >
+                    {page.step4claim.claim.loading ? (
+                      <Spinner animation="border" size="sm" className="mr-2" />
+                    ) : (
+                      <i className="icon icon-claim" />
+                    )}
+                    Claim your payment
+                  </ButtonWithWallet>
+                }
+              />
+            </>
           )}
         </div>
 
@@ -308,15 +341,15 @@ export function FromBTCQuoteSummary(props: {
     );
   }
 
-  if(page.step5) {
+  if (page.step5) {
     return (
       <>
-        {page.step5.state!=='expired' ? (
+        {page.step5.state !== 'expired' ? (
           <div className="swap-panel__card">
             {stepByStep}
 
             <SwapExpiryProgressBar
-              show={page.step5.state==="failed"}
+              show={page.step5.state === 'failed'}
               expired={true}
               timeRemaining={0}
               totalTime={1}
@@ -326,7 +359,7 @@ export function FromBTCQuoteSummary(props: {
             />
 
             <SwapStepAlert
-              show={page.step5.state==="success"}
+              show={page.step5.state === 'success'}
               type="success"
               icon={ic_check_circle}
               title="Swap success"
@@ -334,20 +367,21 @@ export function FromBTCQuoteSummary(props: {
             />
 
             <SwapStepAlert
-              show={page.step5.state==="failed"}
+              show={page.step5.state === 'failed'}
               type="danger"
               icon={ic_warning}
               title="Swap failed"
               description="Swap address expired without receiving the required funds!"
             />
           </div>
-        ) : ''}
+        ) : (
+          ''
+        )}
 
         <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
           New quote
         </BaseButton>
       </>
-    )
+    );
   }
-
 }
