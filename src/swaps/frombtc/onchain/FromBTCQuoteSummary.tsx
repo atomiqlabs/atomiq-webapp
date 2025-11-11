@@ -12,7 +12,6 @@ import { SwapForGasAlert } from '../../components/SwapForGasAlert';
 
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { StepByStep } from '../../../components/StepByStep';
-import { OnchainAddressCopyModal } from '../../components/OnchainAddressCopyModal';
 import { BaseButton } from '../../../components/BaseButton';
 import { SwapStepAlert } from '../../components/SwapStepAlert';
 import { WalletAddressPreview } from '../../../components/WalletAddressPreview';
@@ -20,6 +19,7 @@ import { SwapConfirmations } from '../../components/SwapConfirmations';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { useFromBtcQuote } from './useFromBtcQuote';
 import { SwapPageUIState } from '../../../pages/useSwapPage';
+import {ImportantNoticeModal} from "../../components/ImportantNoticeModal";
 
 /*
 Steps:
@@ -132,15 +132,18 @@ export function FromBTCQuoteSummary(props: {
   if (page.step2paymentWait) {
     return (
       <>
-        <OnchainAddressCopyModal
-          amountBtc={
-            page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.btcAmount.amount
-          }
+        <ImportantNoticeModal
           opened={!!page.step2paymentWait.walletDisconnected?.addressCopyWarningModal}
           close={page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.close}
-          setShowCopyWarning={
-            page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.showAgain.onChange
-          }
+          setShowAgain={page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.showAgain.onChange}
+          text={(
+            <>
+              Make sure you send{' '}
+              <b>EXACTLY {page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.btcAmount.toString()}</b>
+              , as sending a different amount will not be accepted, and you might lose your funds!
+            </>
+          )}
+          buttonText="Understood, copy address"
         />
 
         <div className="swap-panel__card">
@@ -193,7 +196,6 @@ export function FromBTCQuoteSummary(props: {
             <SwapExpiryProgressBar
               timeRemaining={page.step2paymentWait.expiry.remaining}
               totalTime={page.step2paymentWait.expiry.total}
-              type="bar"
               expiryText="Swap address expired, please do not send any funds!"
               quoteAlias="Swap address"
             />
@@ -353,7 +355,6 @@ export function FromBTCQuoteSummary(props: {
               expired={true}
               timeRemaining={0}
               totalTime={1}
-              type="bar"
               expiryText="Swap address expired, please do not send any funds!"
               quoteAlias="Swap address"
             />

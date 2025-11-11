@@ -3,7 +3,6 @@ import { Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import {FromBTCLNSwap, ISwap} from '@atomiqlabs/sdk';
 import { ButtonWithWallet } from '../../../wallets/ButtonWithWallet';
 import { ScrollAnchor } from '../../../components/ScrollAnchor';
-import { LightningHyperlinkModal } from '../../components/LightningHyperlinkModal';
 import { SwapExpiryProgressBar } from '../../components/SwapExpiryProgressBar';
 import { SwapForGasAlert } from '../../components/SwapForGasAlert';
 
@@ -15,6 +14,7 @@ import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useFromBtcLnQuote } from './useFromBtcLnQuote';
 import {SwapPageUIState} from "../../../pages/useSwapPage";
+import {ImportantNoticeModal} from "../../components/ImportantNoticeModal";
 
 /*
 Steps:
@@ -75,13 +75,20 @@ export function FromBTCLNQuoteSummary(props: {
   if(page.step2paymentWait) {
     return (
       <>
-        <LightningHyperlinkModal
+        <ImportantNoticeModal
           opened={!!page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal}
           close={page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal?.close}
-          setShowHyperlinkWarning={
+          setShowAgain={
             page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal?.showAgain
               .onChange
           }
+          text={(
+            <>
+              The payment will not succeed unless you{' '}
+              <strong>return to the web app and claim the swap.</strong>
+            </>
+          )}
+          buttonText="Understood, pay with LN wallet"
         />
 
         <div className="swap-panel__card">
@@ -133,7 +140,6 @@ export function FromBTCLNQuoteSummary(props: {
                   timeRemaining={page.step2paymentWait.expiry.remaining}
                   totalTime={page.step2paymentWait.expiry.total}
                   show={true}
-                  type="bar"
                   expiryText="Swap address expired, please do not send any funds!"
                   quoteAlias="Lightning invoice"
                 />
@@ -202,7 +208,6 @@ export function FromBTCLNQuoteSummary(props: {
                   timeRemaining={page.step2paymentWait.expiry.remaining}
                   totalTime={page.step2paymentWait.expiry.total}
                   show={true}
-                  type="bar"
                   expiryText="Swap address expired, please do not send any funds!"
                   quoteAlias="Lightning invoice"
                 />

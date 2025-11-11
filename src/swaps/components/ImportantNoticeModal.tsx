@@ -1,18 +1,15 @@
 import * as React from 'react';
-import { useState } from 'react';
 import { GenericModal } from '../../components/GenericModal';
 import { BaseButton } from '../../components/BaseButton';
 import ValidatedInput from '../../components/ValidatedInput';
 
-export function LightningHyperlinkModal(props: {
-  openRef?: any,
-  hyperlink?: any,
-
-  opened?: boolean;
-  close?: (accepted: boolean) => void,
-  setShowHyperlinkWarning?: (value: boolean) => void;
+export function ImportantNoticeModal(props: {
+  opened: boolean;
+  close: (accepted: boolean) => void;
+  setShowAgain: (value: boolean) => void;
+  text: string | JSX.Element;
+  buttonText: string;
 }) {
-
   return (
     <GenericModal
       visible={props.opened}
@@ -24,20 +21,19 @@ export function LightningHyperlinkModal(props: {
       enableClose={true}
     >
       <p className="sc-text">
-        The payment will not succeed unless you{' '}
-        <strong>return to the web app and claim the swap.</strong>
+        {props.text}
       </p>
       <ValidatedInput
         type="checkbox"
         placeholder="Don't show this warning again"
-        onChange={(checked: boolean) => props.setShowHyperlinkWarning(!checked)}
+        onChange={(checked: boolean) => props.setShowAgain(!checked)}
       />
       <BaseButton
         variant="secondary"
         className="sc-button"
         onClick={() => props.close(true)}
       >
-        Understood, pay with LN wallet
+        {props.buttonText}
       </BaseButton>
     </GenericModal>
   );

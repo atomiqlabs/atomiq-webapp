@@ -14,6 +14,7 @@ import { FeeDetails, useSwapFees } from './hooks/useSwapFees';
 import { SwapExpiryProgressBar } from '../swaps/components/SwapExpiryProgressBar';
 import { useSwapState } from '../swaps/hooks/useSwapState';
 import { usePricing } from '../tokens/hooks/usePricing';
+import {SwapExpiryProgressCircle} from "../swaps/components/SwapExpiryProgressCircle";
 
 function FeePart(props: FeeDetails) {
   return (
@@ -193,12 +194,11 @@ export function SimpleFeeSummaryScreen(props: {
                   </>
                 )}
               </div>
-              <SwapExpiryProgressBar
+              <SwapExpiryProgressCircle
                 expired={isExpired}
                 timeRemaining={quoteTimeRemaining}
                 totalTime={totalQuoteTime}
                 show={props.swap != null}
-                expiryText="Quote expired!"
                 onRefreshQuote={props.onRefreshQuote}
               />
             </div>
