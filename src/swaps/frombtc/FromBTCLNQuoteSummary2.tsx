@@ -66,7 +66,7 @@ export function FromBTCLNQuoteSummary2(props: {
           />
         )}
 
-        {page.step2paymentWait?.walletConnected && !page.isPaymentCancelled && (
+        {page.step2paymentWait?.walletConnected && (
           <>
             <div className="swap-panel__card__group">
               <div className="payment-awaiting-buttons">
@@ -177,7 +177,7 @@ export function FromBTCLNQuoteSummary2(props: {
           </>
         )}
 
-        {page.step3claim && !page.isCommitCancelled && !page.isClaimCancelled && (
+        {page.step3claim && (
           <SwapStepAlert
             show={true}
             type="success"
@@ -282,23 +282,14 @@ export function FromBTCLNQuoteSummary2(props: {
                 .onChange
             }
           />
-          {page.isPaymentCancelled ? (
-            <BaseButton
-              onClick={props.refreshQuote}
-              variant="secondary"
-              className="swap-panel__action is-large"
-            >
-              Retry
-            </BaseButton>
-          ) : (
-            <BaseButton
-              onClick={props.abortSwap}
-              variant="danger"
-              className="swap-panel__action is-large"
-            >
-              Abort swap
-            </BaseButton>
-          )}
+
+          <BaseButton
+            onClick={props.abortSwap}
+            variant="danger"
+            className="swap-panel__action is-large"
+          >
+            Abort swap
+          </BaseButton>
         </>
       );
     }

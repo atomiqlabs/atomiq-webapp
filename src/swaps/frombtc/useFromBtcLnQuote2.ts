@@ -28,11 +28,6 @@ import {SwapPageUIState} from "../../pages/useSwapPage";
 
 export type FromBtcLnQuotePage = {
   executionSteps?: SingleStep[];
-  //Whether payment was cancelled/declined by user
-  isPaymentCancelled?: boolean;
-  //Whether commit/claim was cancelled/declined by user
-  isCommitCancelled?: boolean;
-  isClaimCancelled?: boolean;
   step1init?: {
     //Need to connect a smart chain wallet with the same address as in quote
     invalidSmartChainWallet: boolean;
@@ -203,29 +198,6 @@ export function useFromBtcLnQuote2(
     [lightningWallet, quote]
   );
 
-  // Helper function to check if error is a user cancellation
-  const isUserCancellation = useCallback((error: any): boolean => {
-    if (!error) return false;
-    const errorMessage = error?.message?.toLowerCase() || error?.toString()?.toLowerCase() || '';
-    return (
-      errorMessage.includes('user rejected') ||
-      errorMessage.includes('user denied') ||
-      errorMessage.includes('user cancelled') ||
-      errorMessage.includes('user canceled') ||
-      errorMessage.includes('transaction rejected') ||
-      errorMessage.includes('cancelled by user') ||
-      errorMessage.includes('canceled by user') ||
-      error?.code === 4001 || // MetaMask user rejection
-      error?.code === 'ACTION_REJECTED'
-    );
-  }, []);
-
-  // Track if payment was cancelled/declined by user
-  const isPaymentCancelled = useMemo(
-    () => isUserCancellation(payError),
-    [payError, isUserCancellation]
-  );
-
   const [callPayFlag, setCallPayFlag] = useState<boolean>(false);
   useEffect(() => {
     if (!callPayFlag) return;
@@ -263,17 +235,6 @@ export function useFromBtcLnQuote2(
   const [onClaim, claiming, claimSuccess, claimError] = useAsync(
     () => quote.claim(smartChainWallet.instance),
     [quote, smartChainWallet]
-  );
-
-  // Track if commit/claim was cancelled/declined by user
-  const isCommitCancelled = useMemo(
-    () => isUserCancellation(commitError),
-    [commitError, isUserCancellation]
-  );
-
-  const isClaimCancelled = useMemo(
-    () => isUserCancellation(claimError),
-    [claimError, isUserCancellation]
   );
 
   useEffect(() => {
@@ -343,12 +304,6 @@ export function useFromBtcLnQuote2(
       };
     }
   }
-  if (isPaymentCancelled)
-    executionSteps[0] = {
-      icon: ic_warning,
-      text: 'Payment declined',
-      type: 'failed',
-    };
   if (isQuoteExpired && !isQuoteExpiredClaim)
     executionSteps[0] = {
       icon: ic_hourglass_disabled_outline,
@@ -374,12 +329,6 @@ export function useFromBtcLnQuote2(
         icon: ic_receipt,
         text: committing || claiming ? 'Claiming transaction' : 'Send claim transaction',
         type: 'loading',
-      };
-    if (isCommitCancelled)
-      executionSteps[1] = {
-        icon: ic_warning,
-        text: 'Transaction declined',
-        type: 'failed',
       };
     if (isSuccess)
       executionSteps[1] = {
@@ -428,12 +377,6 @@ export function useFromBtcLnQuote2(
         text: committing ? 'Sending initialization transaction' : 'Sending transaction',
         type: 'loading',
       };
-    if (isCommitCancelled)
-      executionSteps[1] = {
-        icon: ic_warning,
-        text: 'Transaction declined',
-        type: 'failed',
-      };
     if (isClaimClaimable) {
       executionSteps[1] = {
         icon: ic_check_outline,
@@ -444,18 +387,6 @@ export function useFromBtcLnQuote2(
         icon: ic_receipt,
         text: claiming ? 'Claiming transaction' : 'Send claim transaction',
         type: 'loading',
-      };
-    }
-    if (isClaimCancelled) {
-      executionSteps[1] = {
-        icon: ic_check_outline,
-        text: 'Initialization success',
-        type: 'success',
-      };
-      executionSteps[2] = {
-        icon: ic_warning,
-        text: 'Transaction declined',
-        type: 'failed',
       };
     }
     if (isSuccess) {
@@ -702,9 +633,6 @@ export function useFromBtcLnQuote2(
 
   return {
     executionSteps,
-    isPaymentCancelled,
-    isCommitCancelled,
-    isClaimCancelled,
     step1init,
     step2paymentWait,
     step3claim,
