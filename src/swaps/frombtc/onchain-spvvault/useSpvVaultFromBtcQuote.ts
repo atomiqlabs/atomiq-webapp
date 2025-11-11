@@ -39,7 +39,13 @@ export type SpvVaultFromBtcPage = {
       total: number;
     };
   };
-  step2broadcasting?: {};
+  step2broadcasting?: {
+    error?: {
+      title: string;
+      error: Error;
+      retry: () => void;
+    };
+  };
   step3awaitingConfirmations?: {
     txData: TxDataType;
     error?: {
@@ -306,17 +312,34 @@ export function useSpvVaultFromBtcQuote(
       !isReceived
         ? undefined
         : {
-            txData,
+          txData: waitPaymentError == null ? txData : undefined,
+          error:
+            waitPaymentError != null
+              ? {
+                title: 'Connection error',
+                error: waitPaymentError,
+                retry: onWaitForPayment,
+              }
+              : undefined,
+        },
+    [isReceived, txData, waitPaymentError, onWaitForPayment]
+  );
+
+  const step2broadcasting = useMemo(
+    () =>
+      !isBroadcasting
+        ? undefined
+        : {
             error:
               waitPaymentError != null
                 ? {
-                    title: 'Wait payment error',
+                    title: 'Connection error',
                     error: waitPaymentError,
                     retry: onWaitForPayment,
                   }
                 : undefined,
           },
-    [isReceived, txData, waitPaymentError, onWaitForPayment]
+    [isBroadcasting, waitPaymentError, onWaitForPayment]
   );
 
   const step4claim = useMemo(
@@ -368,7 +391,7 @@ export function useSpvVaultFromBtcQuote(
   return {
     executionSteps: isInitiated && !isCreated ? executionSteps : undefined,
     step1init,
-    step2broadcasting: isBroadcasting ? {} : undefined,
+    step2broadcasting,
     step3awaitingConfirmations,
     step4claim,
     step5,

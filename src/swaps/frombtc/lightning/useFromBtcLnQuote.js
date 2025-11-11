@@ -103,7 +103,6 @@ export function useFromBtcLnQuote(quote, UICallback) {
     }, [state]);
     const isQuoteExpired = state === FromBTCLNSwapState.QUOTE_EXPIRED ||
         (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !committing && !paymentWaiting);
-    const isQuoteExpiredUninitialized = isQuoteExpired && isInitiated;
     const isQuoteExpiredClaim = isQuoteExpired && quote.signatureData != null;
     const isFailed = state === FromBTCLNSwapState.FAILED || state === FromBTCLNSwapState.EXPIRED;
     const isCreated = state === FromBTCLNSwapState.PR_CREATED ||
@@ -267,27 +266,20 @@ export function useFromBtcLnQuote(quote, UICallback) {
         }
     }
     const step1init = useMemo(() => {
-        if (!isCreated || paymentWaiting)
+        if (!isCreated || isInitiated)
             return;
         return {
             invalidSmartChainWallet: smartChainWallet === undefined,
-            init: smartChainWallet != null ? {
+            init: !additionalGasRequired ? {
                 onClick: () => {
                     waitForPayment();
                     if (lightningWallet == null)
                         return;
                     pay();
                 },
-                disabled: !!additionalGasRequired,
+                disabled: false,
                 loading: false
             } : undefined,
-            error: paymentError != null
-                ? {
-                    title: 'Swap initialization error',
-                    error: paymentError,
-                }
-                : undefined,
-            additionalGasRequired,
             expiry: {
                 remaining: quoteTimeRemaining,
                 total: totalQuoteTime,
@@ -305,16 +297,25 @@ export function useFromBtcLnQuote(quote, UICallback) {
         lightningWallet,
     ]);
     const step2paymentWait = useMemo(() => {
-        if (!isCreated || !paymentWaiting)
+        if (!isCreated || !isInitiated)
             return;
+        let error;
+        if (lightningWallet != null && payError != null)
+            error = {
+                title: 'Lightning transaction error',
+                type: 'error',
+                error: payError,
+            };
+        if (paymentError != null)
+            error = {
+                title: 'Connection problem',
+                type: 'warning',
+                error: paymentError,
+                retry: waitForPayment
+            };
         return {
-            error: lightningWallet != null && payError != null
-                ? {
-                    title: 'Sending BTC error',
-                    error: payError,
-                }
-                : undefined,
-            walletConnected: lightningWallet != null && !payingWithNFC
+            error,
+            walletConnected: lightningWallet != null && !payingWithNFC && paymentWaiting
                 ? {
                     payWithWebLn: {
                         onClick: () => {
@@ -329,7 +330,7 @@ export function useFromBtcLnQuote(quote, UICallback) {
                     },
                 }
                 : undefined,
-            walletDisconnected: lightningWallet == null && !payingWithNFC
+            walletDisconnected: lightningWallet == null && !payingWithNFC && paymentWaiting
                 ? {
                     autoClaim: {
                         value: autoClaim,
@@ -391,6 +392,8 @@ export function useFromBtcLnQuote(quote, UICallback) {
         addressWarningModalOpened,
         showHyperlinkWarning,
         lightningWallet,
+        paymentError,
+        waitForPayment,
         pay,
         payLoading,
         payError,
@@ -474,6 +477,7 @@ export function useFromBtcLnQuote(quote, UICallback) {
         };
     }, [isSuccess, isFailed, isQuoteExpired, isInitiated]);
     return {
+        additionalGasRequired: !isInitiated || isQuoteExpired ? additionalGasRequired : undefined,
         executionSteps: isInitiated ? executionSteps : undefined,
         step1init,
         step2paymentWait,

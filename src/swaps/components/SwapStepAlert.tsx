@@ -63,10 +63,12 @@ export function SwapStepAlert(props: SwapStepAlertProps) {
     return null;
   }
 
+  const icon = props.icon === null ? undefined : props.icon ?? DefaultIcons[props.type];
+
   const classNames = [
     'swap-step-alert',
     `is-${props.type}`,
-    !props.icon && 'no-icon',
+    !icon && 'no-icon',
     props.className,
   ]
     .filter(Boolean)
@@ -76,9 +78,9 @@ export function SwapStepAlert(props: SwapStepAlertProps) {
 
   return (
     <div className={classNames}>
-      {props.icon === null ? '' : (
+      {!!icon && (
         <div className="swap-step-alert__icon">
-          <Icon size={20} icon={props.icon ?? DefaultIcons[props.type]} />
+          <Icon size={20} icon={icon} />
         </div>
       )}
 

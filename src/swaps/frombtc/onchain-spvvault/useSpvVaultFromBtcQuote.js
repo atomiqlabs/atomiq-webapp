@@ -208,15 +208,26 @@ export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletB
     const step3awaitingConfirmations = useMemo(() => !isReceived
         ? undefined
         : {
-            txData,
+            txData: waitPaymentError == null ? txData : undefined,
             error: waitPaymentError != null
                 ? {
-                    title: 'Wait payment error',
+                    title: 'Connection error',
                     error: waitPaymentError,
                     retry: onWaitForPayment,
                 }
                 : undefined,
         }, [isReceived, txData, waitPaymentError, onWaitForPayment]);
+    const step2broadcasting = useMemo(() => !isBroadcasting
+        ? undefined
+        : {
+            error: waitPaymentError != null
+                ? {
+                    title: 'Connection error',
+                    error: waitPaymentError,
+                    retry: onWaitForPayment,
+                }
+                : undefined,
+        }, [isBroadcasting, waitPaymentError, onWaitForPayment]);
     const step4claim = useMemo(() => !isClaimable && !isClaiming
         ? undefined
         : {
@@ -255,7 +266,7 @@ export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletB
     return {
         executionSteps: isInitiated && !isCreated ? executionSteps : undefined,
         step1init,
-        step2broadcasting: isBroadcasting ? {} : undefined,
+        step2broadcasting,
         step3awaitingConfirmations,
         step4claim,
         step5,

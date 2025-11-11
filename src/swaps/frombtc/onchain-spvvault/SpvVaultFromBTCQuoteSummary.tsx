@@ -39,10 +39,10 @@ export function SpvVaultFromBTCQuoteSummary(props: {
     return (
       <>
         <div className="swap-panel__card">
-          {stepByStep}
-
-          <ErrorAlert
-            className="mb-3"
+          <SwapStepAlert
+            show={!!page.step1init.error}
+            type="warning"
+            icon={ic_warning}
             title={page.step1init.error?.title}
             error={page.step1init.error?.error}
           />
@@ -68,13 +68,53 @@ export function SpvVaultFromBTCQuoteSummary(props: {
   }
 
   if (page.step2broadcasting) {
-    return <div className="swap-panel__card">{stepByStep}</div>;
+    return (
+      <div className="swap-panel__card">
+        {stepByStep}
+
+        <SwapStepAlert
+          show={!!page.step2broadcasting.error}
+          type={"warning"}
+          icon={ic_warning}
+          title={page.step2broadcasting.error?.title}
+          error={page.step2broadcasting.error?.error}
+          actionElement={page.step2broadcasting.error?.retry && (
+            <BaseButton
+              className="swap-step-alert__button"
+              onClick={page.step2broadcasting.error?.retry}
+              variant="secondary"
+            >
+              <i className="icon icon-retry"/>
+              Retry
+            </BaseButton>
+          )}
+        />
+      </div>
+    );
   }
 
   if (page.step3awaitingConfirmations) {
     return (
       <div className="swap-panel__card">
         {stepByStep}
+
+        <SwapStepAlert
+          show={!!page.step3awaitingConfirmations.error}
+          type={"error"}
+          icon={ic_warning}
+          title={page.step3awaitingConfirmations.error?.title}
+          error={page.step3awaitingConfirmations.error?.error}
+          actionElement={page.step3awaitingConfirmations.error?.retry && (
+            <BaseButton
+              className="swap-step-alert__button"
+              onClick={page.step3awaitingConfirmations.error?.retry}
+              variant="secondary"
+            >
+              <i className="icon icon-retry"/>
+              Retry
+            </BaseButton>
+          )}
+        />
 
         <SwapConfirmations txData={page.step3awaitingConfirmations.txData} />
       </div>

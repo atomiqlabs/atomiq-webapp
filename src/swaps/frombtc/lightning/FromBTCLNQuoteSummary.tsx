@@ -33,6 +33,11 @@ export function FromBTCLNQuoteSummary(props: {
 }) {
   const page = useFromBtcLnQuote(props.quote, props.UICallback);
 
+  const gasAlert = <SwapForGasAlert
+    notEnoughForGas={page.additionalGasRequired}
+    quote={props.quote}
+  />;
+
   const stepByStep = page.executionSteps ? <StepByStep
     quote={props.quote}
     steps={page.executionSteps}
@@ -43,22 +48,11 @@ export function FromBTCLNQuoteSummary(props: {
       <>
         <div className="swap-panel__card">
           {stepByStep}
-
-          <SwapStepAlert
-            show={!!page.step1init.error}
-            type="error"
-            icon={ic_warning}
-            title={page.step1init.error?.title}
-            error={page.step1init.error?.error}
-          />
-
-          <SwapForGasAlert
-            notEnoughForGas={page.step1init.additionalGasRequired}
-            quote={props.quote}
-          />
         </div>
 
-        <ButtonWithWallet
+        {gasAlert}
+
+        {!!page.step1init.init && <ButtonWithWallet
           requiredWalletAddress={props.quote._getInitiator()}
           chainId={props.quote?.chainIdentifier}
           className="swap-panel__action"
@@ -67,7 +61,7 @@ export function FromBTCLNQuoteSummary(props: {
           size="lg"
         >
           Swap
-        </ButtonWithWallet>
+        </ButtonWithWallet>}
       </>
     );
   }
@@ -96,51 +90,49 @@ export function FromBTCLNQuoteSummary(props: {
 
           <SwapStepAlert
             show={!!page.step2paymentWait.error}
-            type="error"
+            type={page.step2paymentWait.error?.type}
             icon={ic_warning}
             title={page.step2paymentWait.error?.title}
             error={page.step2paymentWait.error?.error}
+            actionElement={page.step2paymentWait.error?.retry && (
+              <BaseButton
+                className="swap-step-alert__button"
+                onClick={page.step2paymentWait.error?.retry}
+                variant="secondary"
+              >
+                <i className="icon icon-retry"/>
+                Retry
+              </BaseButton>
+            )}
           />
 
           {/*TODO: This should be a separate component to be re-used between FromBTCLN and FromBTC swaps*/}
           {page.step2paymentWait.walletConnected && (
-            <>
-              <div className="swap-panel__card__group">
-                <div className="payment-awaiting-buttons">
-                  <BaseButton
-                    variant="secondary"
-                    textSize="sm"
-                    className="d-flex flex-row align-items-center"
-                    onClick={page.step2paymentWait.walletConnected.payWithWebLn.onClick}
-                    disabled={page.step2paymentWait.walletConnected.payWithWebLn.loading}
-                  >
-                    {page.step2paymentWait.walletConnected.payWithWebLn.loading ? (
-                      <Spinner animation="border" size="sm" className="mr-2" />
-                    ) : (
-                      <img width={20} height={20} src="/wallets/WebLN-outline.svg" alt="WebLN" />
-                    )}
-                    Pay via WebLN
-                  </BaseButton>
-                  <BaseButton
-                    variant="secondary"
-                    textSize="sm"
-                    onClick={page.step2paymentWait.walletConnected.useExternalWallet.onClick}
-                  >
-                    Use external wallet
-                  </BaseButton>
-                </div>
+            <div className="swap-panel__card__group">
+              <div className="payment-awaiting-buttons">
+                <BaseButton
+                  variant="secondary"
+                  textSize="sm"
+                  className="d-flex flex-row align-items-center"
+                  onClick={page.step2paymentWait.walletConnected.payWithWebLn.onClick}
+                  disabled={page.step2paymentWait.walletConnected.payWithWebLn.loading}
+                >
+                  {page.step2paymentWait.walletConnected.payWithWebLn.loading ? (
+                    <Spinner animation="border" size="sm" className="mr-2"/>
+                  ) : (
+                    <img width={20} height={20} src="/wallets/WebLN-outline.svg" alt="WebLN"/>
+                  )}
+                  Pay via WebLN
+                </BaseButton>
+                <BaseButton
+                  variant="secondary"
+                  textSize="sm"
+                  onClick={page.step2paymentWait.walletConnected.useExternalWallet.onClick}
+                >
+                  Use external wallet
+                </BaseButton>
               </div>
-
-              <div className="swap-panel__card__group">
-                <SwapExpiryProgressBar
-                  timeRemaining={page.step2paymentWait.expiry.remaining}
-                  totalTime={page.step2paymentWait.expiry.total}
-                  show={true}
-                  expiryText="Swap address expired, please do not send any funds!"
-                  quoteAlias="Lightning invoice"
-                />
-              </div>
-            </>
+            </div>
           )}
 
           {/*TODO: This should be a separate component to be re-used between FromBTCLN and FromBTC swaps*/}
@@ -198,18 +190,20 @@ export function FromBTCLNQuoteSummary(props: {
                   />
                 </Form>
               </div>
-
-              <div className="swap-panel__card__group">
-                <SwapExpiryProgressBar
-                  timeRemaining={page.step2paymentWait.expiry.remaining}
-                  totalTime={page.step2paymentWait.expiry.total}
-                  show={true}
-                  expiryText="Swap address expired, please do not send any funds!"
-                  quoteAlias="Lightning invoice"
-                />
-              </div>
             </>
           )}
+
+          {page.step2paymentWait?.walletDisconnected || page.step2paymentWait?.walletConnected ? (
+            <div className="swap-panel__card__group">
+              <SwapExpiryProgressBar
+                timeRemaining={page.step2paymentWait.expiry.remaining}
+                totalTime={page.step2paymentWait.expiry.total}
+                show={true}
+                expiryText="Swap address expired, please do not send any funds!"
+                quoteAlias="Lightning invoice"
+              />
+            </div>
+          ) : ''}
         </div>
 
         <ScrollAnchor trigger={!!page.step2paymentWait.walletDisconnected} />
@@ -296,6 +290,8 @@ export function FromBTCLNQuoteSummary(props: {
             description={page.step4?.expiryMessage}
           />
         </div>
+
+        {gasAlert}
 
         <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
           New quote

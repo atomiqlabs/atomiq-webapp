@@ -5,6 +5,7 @@ import {ISwap, TokenAmount, toTokenAmount} from '@atomiqlabs/sdk';
 import { SwapsContext } from '../context/SwapsContext';
 import { toTokenIdentifier } from '../../tokens/Tokens';
 import {SwapStepAlert} from "./SwapStepAlert";
+import {ic_warning} from "react-icons-kit/md/ic_warning";
 
 const swapMinimum = 1000000n;
 

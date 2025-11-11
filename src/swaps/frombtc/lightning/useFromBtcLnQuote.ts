@@ -27,6 +27,8 @@ import {SwapPageUIState} from "../../../pages/useSwapPage";
 
 export type FromBtcLnQuotePage = {
   executionSteps?: SingleStep[];
+  //Additional gas required to go through with the swap, used for the not enough for gas notice
+  additionalGasRequired?: TokenAmount;
   step1init?: {
     //Need to connect a smart chain wallet with the same address as in quote
     invalidSmartChainWallet: boolean;
@@ -36,12 +38,6 @@ export type FromBtcLnQuotePage = {
       disabled: boolean,
       loading: boolean
     };
-    error?: {
-      title: string;
-      error: Error;
-    };
-    //Additional gas required to go through with the swap, used for the not enough for gas notice
-    additionalGasRequired?: TokenAmount;
     expiry: {
       remaining: number;
       total: number;
@@ -51,6 +47,8 @@ export type FromBtcLnQuotePage = {
     error?: {
       title: string;
       error: Error;
+      type: "warning" | "error";
+      retry: () => void;
     };
     //Either wallet is connected and just these 2 buttons should be displayed
     walletConnected?: {
@@ -248,7 +246,6 @@ export function useFromBtcLnQuote(
   const isQuoteExpired =
     state === FromBTCLNSwapState.QUOTE_EXPIRED ||
     (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !committing && !paymentWaiting);
-  const isQuoteExpiredUninitialized = isQuoteExpired && isInitiated;
   const isQuoteExpiredClaim = isQuoteExpired && quote.signatureData != null;
 
   const isFailed = state === FromBTCLNSwapState.FAILED || state === FromBTCLNSwapState.EXPIRED;
@@ -420,26 +417,18 @@ export function useFromBtcLnQuote(
   }
 
   const step1init = useMemo(() => {
-    if (!isCreated || paymentWaiting) return;
+    if (!isCreated || isInitiated) return;
     return {
       invalidSmartChainWallet: smartChainWallet === undefined,
-      init: smartChainWallet!=null ? {
+      init: !additionalGasRequired ? {
         onClick: () => {
           waitForPayment();
           if (lightningWallet == null) return;
           pay();
         },
-        disabled: !!additionalGasRequired,
+        disabled: false,
         loading: false
       } : undefined,
-      error:
-        paymentError != null
-          ? {
-              title: 'Swap initialization error',
-              error: paymentError,
-            }
-          : undefined,
-      additionalGasRequired,
       expiry: {
         remaining: quoteTimeRemaining,
         total: totalQuoteTime,
@@ -458,17 +447,25 @@ export function useFromBtcLnQuote(
   ]);
 
   const step2paymentWait = useMemo(() => {
-    if (!isCreated || !paymentWaiting) return;
+    if (!isCreated || !isInitiated) return;
+
+    let error;
+    if(lightningWallet != null && payError != null) error = {
+      title: 'Lightning transaction error',
+      type: 'error' as const,
+      error: payError,
+    };
+    if(paymentError != null) error = {
+      title: 'Connection problem',
+      type: 'warning' as const,
+      error: paymentError,
+      retry: waitForPayment
+    }
+
     return {
-      error:
-        lightningWallet != null && payError != null
-          ? {
-              title: 'Sending BTC error',
-              error: payError,
-            }
-          : undefined,
+      error,
       walletConnected:
-        lightningWallet != null && !payingWithNFC
+        lightningWallet != null && !payingWithNFC && paymentWaiting
           ? {
               payWithWebLn: {
                 onClick: () => {
@@ -484,7 +481,7 @@ export function useFromBtcLnQuote(
             }
           : undefined,
       walletDisconnected:
-        lightningWallet == null && !payingWithNFC
+        lightningWallet == null && !payingWithNFC && paymentWaiting
           ? {
               autoClaim: {
                 value: autoClaim,
@@ -544,6 +541,8 @@ export function useFromBtcLnQuote(
     addressWarningModalOpened,
     showHyperlinkWarning,
     lightningWallet,
+    paymentError,
+    waitForPayment,
     pay,
     payLoading,
     payError,
@@ -631,6 +630,7 @@ export function useFromBtcLnQuote(
   }, [isSuccess, isFailed, isQuoteExpired, isInitiated]);
 
   return {
+    additionalGasRequired: !isInitiated || isQuoteExpired ? additionalGasRequired : undefined,
     executionSteps: isInitiated ? executionSteps : undefined,
     step1init,
     step2paymentWait,

@@ -223,16 +223,15 @@ export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) 
         };
     const step1init = useMemo(() => (!isCreated ? undefined : {
         invalidSmartChainWallet: smartChainWallet == null,
-        init: smartChainWallet != null ? {
+        init: !additionalGasRequired ? {
             onClick: onCommit,
-            disabled: commitLoading || !hasEnoughBalance || !!additionalGasRequired,
+            disabled: commitLoading || !hasEnoughBalance,
             loading: commitLoading
         } : undefined,
         error: commitError ? {
             title: "Swap initialization error",
             error: commitError
         } : undefined,
-        additionalGasRequired: additionalGasRequired,
         expiry: {
             remaining: quoteTimeRemaining,
             total: totalQuoteTime,
@@ -250,12 +249,13 @@ export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) 
     ]);
     const step2paymentWait = useMemo(() => (!isCommited ? undefined : {
         error: waitPaymentError || (payError && bitcoinWallet) ? {
-            title: payError && bitcoinWallet ? "Bitcoin transaction error" : "Wait payment error",
-            error: payError && bitcoinWallet ? payError : waitPaymentError,
-            retry: payError ? undefined : onWaitForPayment
+            title: waitPaymentError ? "Connection problem" : "Bitcoin transaction error",
+            error: waitPaymentError ? waitPaymentError : payError,
+            type: waitPaymentError ? "warning" : "error",
+            retry: waitPaymentError ? onWaitForPayment : undefined
         } : undefined,
         //Either wallet is connected and just these 2 buttons should be displayed
-        walletConnected: bitcoinWallet != null ? {
+        walletConnected: bitcoinWallet != null && waitingPayment ? {
             bitcoinWallet,
             //Pay via connected browser wallet
             payWithBrowserWallet: {
@@ -272,7 +272,7 @@ export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) 
             },
         } : undefined,
         //Or wallet is disconnected and a QR code should be shown, with 2 buttons and autoClaim switch
-        walletDisconnected: bitcoinWallet == null ? {
+        walletDisconnected: bitcoinWallet == null && waitingPayment ? {
             //Displayed in the QR code and in text field
             address: {
                 value: quote.getAddress(),
@@ -325,6 +325,7 @@ export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) 
     }), [
         isCommited,
         waitPaymentError,
+        waitingPayment,
         bitcoinWallet,
         payError,
         payLoading,
@@ -337,10 +338,10 @@ export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) 
         totalQuoteTime
     ]);
     const step3awaitingConfirmations = useMemo(() => (!isReceived && !isBroadcasting ? undefined : {
-        broadcasting: isBroadcasting,
-        txData,
+        broadcasting: !waitPaymentError ? isBroadcasting : undefined,
+        txData: !waitPaymentError ? txData : undefined,
         error: waitPaymentError ? {
-            title: "Wait payment error",
+            title: "Connection error",
             error: waitPaymentError,
             retry: onWaitForPayment
         } : undefined
@@ -380,13 +381,14 @@ export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) 
             ? "success"
             : (isFailed || isExpired)
                 ? "failed"
-                : "expired",
+                : "expired"
     }), [
         isSuccess,
         isFailed,
         isQuoteExpired
     ]);
     return {
+        additionalGasRequired: isCreated || isQuoteExpired ? additionalGasRequired : undefined,
         executionSteps: isInitiated && !isCreated ? executionSteps : undefined,
         step1init,
         step2paymentWait,

@@ -88,15 +88,24 @@ export function ToBTCQuoteSummary(props: {
       <>
         <div className="swap-panel__card">
           {stepByStep}
-        </div>
 
-        {/*TODO: This should use the SwapStepAlert with the action button to retry!*/}
-        <ErrorAlert className="mb-3" title={page.step2paying.error?.title} error={page.step2paying.error?.error} />
-        {page.step2paying.error ? (
-          <Button onClick={page.step2paying.error?.retry} variant="secondary">
-            Retry
-          </Button>
-        ) : ''}
+          <SwapStepAlert
+            show={!!page.step2paying.error}
+            type="error"
+            title={page.step2paying.error?.title}
+            error={page.step2paying.error?.error}
+            actionElement={page.step2paying.error?.retry && (
+              <BaseButton
+                className="swap-step-alert__button"
+                onClick={page.step2paying.error?.retry}
+                variant="secondary"
+              >
+                <i className="icon icon-retry"/>
+                Retry
+              </BaseButton>
+            )}
+          />
+        </div>
       </>
     )
   }
@@ -106,35 +115,41 @@ export function ToBTCQuoteSummary(props: {
       <>
         <div className="swap-panel__card">
           {stepByStep}
+
+          <SwapStepAlert
+            show={!!page.step3refund.error}
+            type="error"
+            icon={ic_warning}
+            title={page.step3refund.error?.title}
+            error={page.step3refund.error?.error}
+          />
+
+          <SwapStepAlert
+            type="danger"
+            icon={ic_error_outline_outline}
+            title="Swap failed"
+            description="Swap failed, you can refund your prior deposit"
+            actionElement={
+              <ButtonWithWallet
+                className="swap-step-alert__button"
+                requiredWalletAddress={props.quote._getInitiator()}
+                chainId={props.quote.chainIdentifier}
+                onClick={page.step3refund.refund?.onClick}
+                disabled={page.step3refund.refund?.disabled}
+                variant="secondary"
+              >
+                <div className="base-button__icon">
+                  {page.step3refund.refund?.loading ? (
+                    <Spinner animation="border" size="sm" className="mr-2" />
+                  ) : (
+                    <i className={'icon icon-refund'}></i>
+                  )}
+                </div>
+                Refund
+              </ButtonWithWallet>
+            }
+          />
         </div>
-
-        <SwapStepAlert
-          type="danger"
-          icon={ic_error_outline_outline}
-          title="Swap failed"
-          description="Swap failed, you can refund your prior deposit"
-          actionElement={
-            <ButtonWithWallet
-              className="swap-step-alert__button"
-              requiredWalletAddress={props.quote._getInitiator()}
-              chainId={props.quote.chainIdentifier}
-              onClick={page.step3refund.refund?.onClick}
-              disabled={page.step3refund.refund?.disabled}
-              variant="secondary"
-            >
-              <div className="base-button__icon">
-                {page.step3refund.refund?.loading ? (
-                  <Spinner animation="border" size="sm" className="mr-2" />
-                ) : (
-                  <i className={'icon icon-refund'}></i>
-                )}
-              </div>
-              Refund
-            </ButtonWithWallet>
-          }
-        />
-
-        <ErrorAlert className="mb-3" title={page.step3refund.error?.title} error={page.step3refund.error?.error} />
       </>
     );
   }
