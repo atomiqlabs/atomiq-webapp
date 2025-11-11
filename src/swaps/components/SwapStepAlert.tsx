@@ -30,7 +30,7 @@ interface SwapStepAlertAction {
 interface SwapStepAlertProps {
   type: SwapStepAlertType;
   title: string;
-  description?: string;
+  description?: string | JSX.Element;
   error?: Error;
   icon?: any | null;
   action?: SwapStepAlertAction;

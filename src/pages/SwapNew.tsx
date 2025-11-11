@@ -1,51 +1,16 @@
-import {
-  fromHumanReadableString,
-  isBtcToken,
-  isSCToken,
-  SCToken,
-  SpvFromBTCSwap,
-  SwapType,
-  Token,
-  toTokenAmount,
-} from '@atomiqlabs/sdk';
 import * as React from 'react';
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { SwapsContext } from '../swaps/context/SwapsContext';
-import { useAddressData } from '../swaps/hooks/useAddressData';
-import ValidatedInput, { numberValidator, ValidatedInputRef } from '../components/ValidatedInput';
-import { useAmountConstraints } from '../swaps/hooks/useAmountConstraints';
-import { useWalletBalance } from '../wallets/hooks/useWalletBalance';
+import { useState } from 'react';
+import ValidatedInput from '../components/ValidatedInput';
 import { QRScannerModal } from '../qr/QRScannerModal';
 import { Alert, Button, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
-import {
-  fromTokenIdentifier,
-  getChainIdentifierForCurrency,
-  includesToken,
-  smartChainTokenArray,
-  toTokenIdentifier,
-} from '../tokens/Tokens';
-import { FEConstants, Tokens } from '../FEConstants';
-import BigNumber from 'bignumber.js';
 import { CurrencyDropdown } from '../tokens/CurrencyDropdown';
 import { SimpleFeeSummaryScreen } from '../fees/SimpleFeeScreen';
 import { QuoteSummary } from '../swaps/QuoteSummary';
 import { SwapStepAlert } from '../swaps/components/SwapStepAlert';
-import { useQuote } from '../swaps/hooks/useQuote';
-import { usePricing } from '../tokens/hooks/usePricing';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useExistingSwap } from '../swaps/hooks/useExistingSwap';
 import { ConnectedWalletAnchor } from '../wallets/ConnectedWalletAnchor';
-import { useStateWithOverride } from '../utils/hooks/useStateWithOverride';
-import { useChain } from '../wallets/hooks/useChain';
-import { useSupportedTokens } from '../swaps/hooks/useSupportedTokens';
-import { useDecimalNumberState } from '../utils/hooks/useDecimalNumberState';
-import { ChainDataContext } from '../wallets/context/ChainDataContext';
-import { ChainWalletData } from '../wallets/ChainDataProvider';
 import { AuditedBy } from '../components/AuditedBy';
-import { WalletDestinationAddress } from '../components/WalletDestinationAddress';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useSwapPage } from './useSwapPage';
-import { WebLNProvider } from 'webln';
 import { BaseButton } from '../components/BaseButton';
 
 export function SwapNew() {

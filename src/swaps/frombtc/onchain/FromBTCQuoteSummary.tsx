@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useCallback } from 'react';
 import { Spinner } from 'react-bootstrap';
-import { AlertMessage } from '../../../components/AlertMessage';
 import { QRCodeSVG } from 'qrcode.react';
 import { FromBTCSwap, ISwap } from '@atomiqlabs/sdk';
 import { ButtonWithWallet } from '../../../wallets/ButtonWithWallet';
@@ -50,9 +49,12 @@ export function FromBTCQuoteSummary(props: {
   const addressContent = useCallback(
     (show) => (
       <>
-        <AlertMessage variant="warning" className="mb-3">
-          Send <strong>EXACTLY {props.quote.getInput().toString()}</strong> to the address below.
-        </AlertMessage>
+        <div className="alert-message is-warning mb-3">
+          <i className="alert-message__icon icon icon-Notice"></i>
+          <div className="alert-message__body">
+            Send <strong>EXACTLY {props.quote.getInput().toString()}</strong> to the address below.
+          </div>
+        </div>
 
         <QRCodeSVG
           value={page.step2paymentWait?.walletDisconnected?.address.hyperlink}
@@ -104,7 +106,7 @@ export function FromBTCQuoteSummary(props: {
           />
 
           <SwapForGasAlert
-            notEnoughForGas={page.step1init?.additionalGasRequired?.rawAmount}
+            notEnoughForGas={page.step1init?.additionalGasRequired}
             quote={props.quote}
           />
         </div>

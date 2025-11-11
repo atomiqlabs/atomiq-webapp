@@ -51,12 +51,13 @@ export function FromBTCLNQuoteSummary(props: {
             title={page.step1init.error?.title}
             error={page.step1init.error?.error}
           />
+
+          <SwapForGasAlert
+            notEnoughForGas={page.step1init.additionalGasRequired}
+            quote={props.quote}
+          />
         </div>
 
-        <SwapForGasAlert
-          notEnoughForGas={page.step1init.additionalGasRequired?.rawAmount}
-          quote={props.quote}
-        />
         <ButtonWithWallet
           requiredWalletAddress={props.quote._getInitiator()}
           chainId={props.quote?.chainIdentifier}
