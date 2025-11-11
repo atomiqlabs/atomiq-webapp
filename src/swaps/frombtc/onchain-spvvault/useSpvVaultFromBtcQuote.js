@@ -1,11 +1,11 @@
 import { SpvFromBTCSwapState } from '@atomiqlabs/sdk';
-import { useSwapState } from '../hooks/useSwapState';
+import { useSwapState } from '../../hooks/useSwapState';
 import { useEffect, useMemo, useState } from 'react';
-import { useStateRef } from '../../utils/hooks/useStateRef';
-import { useChain } from '../../wallets/hooks/useChain';
-import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
-import { useAsync } from '../../utils/hooks/useAsync';
-import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
+import { useStateRef } from '../../../utils/hooks/useStateRef';
+import { useChain } from '../../../wallets/hooks/useChain';
+import { useSmartChainWallet } from '../../../wallets/hooks/useSmartChainWallet';
+import { useAsync } from '../../../utils/hooks/useAsync';
+import { useAbortSignalRef } from '../../../utils/hooks/useAbortSignal';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empty_outline';
 import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
@@ -13,7 +13,7 @@ import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
 import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
-import { getDeltaText } from '../../utils/Utils';
+import { getDeltaText } from '../../../utils/Utils';
 export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) {
     const UICallbackRef = useStateRef(UICallback);
     const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote, (state) => {
@@ -53,9 +53,16 @@ export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletB
             }
             setTxData({
                 txId,
-                confirmations,
-                confTarget: confirmationTarget,
-                txEtaMs,
+                confirmations: {
+                    actual: confirmations,
+                    required: confirmationTarget
+                },
+                eta: txEtaMs != null && txEtaMs !== -1 ? {
+                    millis: txEtaMs,
+                    text: txEtaMs === -1 || txEtaMs > 60 * 60 * 1000
+                        ? '>1 hour'
+                        : '~' + getDeltaText(txEtaMs)
+                } : undefined,
             });
         });
     }, [quote]);
@@ -201,21 +208,7 @@ export function useSpvVaultFromBtcQuote(quote, UICallback, feeRate, inputWalletB
     const step3awaitingConfirmations = useMemo(() => !isReceived
         ? undefined
         : {
-            txData: {
-                txId: txData.txId,
-                confirmations: {
-                    actual: txData.confirmations,
-                    required: txData.confTarget,
-                },
-                eta: txData.txEtaMs != null
-                    ? {
-                        millis: txData.txEtaMs,
-                        text: txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
-                            ? '>1 hour'
-                            : '~' + getDeltaText(txData.txEtaMs),
-                    }
-                    : undefined,
-            },
+            txData,
             error: waitPaymentError != null
                 ? {
                     title: 'Wait payment error',

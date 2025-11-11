@@ -1,30 +1,30 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback } from 'react';
 import { Spinner } from 'react-bootstrap';
-import { AlertMessage } from '../../components/AlertMessage';
+import { AlertMessage } from '../../../components/AlertMessage';
 import { QRCodeSVG } from 'qrcode.react';
-import { FEConstants } from '../../FEConstants';
-import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
-import { ScrollAnchor } from '../../components/ScrollAnchor';
-import { CopyOverlay } from '../../components/CopyOverlay';
-import { SwapExpiryProgressBar } from '../components/SwapExpiryProgressBar';
-import { SwapForGasAlert } from '../components/SwapForGasAlert';
+import { ButtonWithWallet } from '../../../wallets/ButtonWithWallet';
+import { ScrollAnchor } from '../../../components/ScrollAnchor';
+import { CopyOverlay } from '../../../components/CopyOverlay';
+import { SwapExpiryProgressBar } from '../../components/SwapExpiryProgressBar';
+import { SwapForGasAlert } from '../../components/SwapForGasAlert';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import { StepByStep } from '../../components/StepByStep';
-import { OnchainAddressCopyModal } from '../components/OnchainAddressCopyModal';
-import { BaseButton } from '../../components/BaseButton';
-import { SwapStepAlert } from '../components/SwapStepAlert';
-import { WalletAddressPreview } from '../../components/WalletAddressPreview';
+import { StepByStep } from '../../../components/StepByStep';
+import { OnchainAddressCopyModal } from '../../components/OnchainAddressCopyModal';
+import { BaseButton } from '../../../components/BaseButton';
+import { SwapStepAlert } from '../../components/SwapStepAlert';
+import { WalletAddressPreview } from '../../../components/WalletAddressPreview';
+import { SwapConfirmations } from '../../components/SwapConfirmations';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { useFromBtcQuote } from "./useFromBtcQuote";
-import { ErrorAlert } from "../../components/ErrorAlert";
+import { ErrorAlert } from "../../../components/ErrorAlert";
 /*
 Steps:
 1. Opening swap address -> Swap address opened
 2. Bitcoin payment -> Awaiting bitcoin payment -> Waiting bitcoin confirmations -> Bitcoin confirmed
 3. Claim transaction -> Sending claim transaction -> Claim success
  */
-export function FromBTCQuoteSummary2(props) {
+export function FromBTCQuoteSummary(props) {
     const page = useFromBtcQuote(props.quote, props.UICallback, props.feeRate, props.balance);
     const stepByStep = page.executionSteps ? _jsx(StepByStep, { quote: props.quote, steps: page.executionSteps }) : '';
     //TODO: This should be contained in a standalone component
@@ -44,7 +44,7 @@ export function FromBTCQuoteSummary2(props) {
                             } : undefined }), _jsx(ScrollAnchor, { trigger: true })] }), _jsx(BaseButton, { onClick: props.abortSwap, variant: "danger", className: "swap-panel__action is-large", children: "Abort swap" })] }));
     }
     if (page.step3awaitingConfirmations) {
-        return (_jsxs(_Fragment, { children: [_jsxs("div", { className: "swap-panel__card", children: [stepByStep, page.step3awaitingConfirmations.broadcasting ? (_jsx("div", { className: "swap-panel__card__group", children: _jsxs("div", { className: "d-flex flex-column align-items-center p-2 gap-3", children: [_jsx(Spinner, {}), _jsx("label", { children: "Sending Bitcoin transaction..." })] }) })) : (_jsxs("div", { className: "swap-confirmations", children: [_jsx("div", { className: "swap-confirmations__name", children: "Transaction received, waiting for confirmations..." }), _jsxs("div", { className: "swap-confirmations__estimate", children: [_jsx(Spinner, {}), _jsxs("div", { className: "swap-confirmations__estimate__info", children: [_jsxs("div", { className: "swap-confirmations__estimate__item", children: [page.step3awaitingConfirmations.txData.confirmations.actual, " / ", page.step3awaitingConfirmations.txData.confirmations.required, " Confirmations"] }), _jsxs("div", { className: "swap-confirmations__estimate__item is-eta", children: ["ETA: ", page.step3awaitingConfirmations.txData.eta.text] })] })] }), _jsxs("a", { href: FEConstants.btcBlockExplorer + page.step3awaitingConfirmations.txData.txId, target: "_blank", className: "swap-confirmations__link", children: [_jsx("div", { className: "sc-text", children: "View transaction" }), _jsx("div", { className: "icon icon-new-window" })] })] }))] }), _jsx(SwapStepAlert, { show: !!page.step3awaitingConfirmations.error, type: "error", icon: ic_warning, title: page.step3awaitingConfirmations.error?.title, description: page.step3awaitingConfirmations.error?.error.message, error: page.step3awaitingConfirmations.error?.error, action: {
+        return (_jsxs(_Fragment, { children: [_jsxs("div", { className: "swap-panel__card", children: [stepByStep, page.step3awaitingConfirmations.broadcasting ? (_jsx("div", { className: "swap-panel__card__group", children: _jsxs("div", { className: "d-flex flex-column align-items-center p-2 gap-3", children: [_jsx(Spinner, {}), _jsx("label", { children: "Sending Bitcoin transaction..." })] }) })) : (_jsx(SwapConfirmations, { txData: page.step3awaitingConfirmations.txData }))] }), _jsx(SwapStepAlert, { show: !!page.step3awaitingConfirmations.error, type: "error", icon: ic_warning, title: page.step3awaitingConfirmations.error?.title, description: page.step3awaitingConfirmations.error?.error.message, error: page.step3awaitingConfirmations.error?.error, action: {
                         type: 'button',
                         text: 'Retry',
                         onClick: page.step3awaitingConfirmations.error?.retry,

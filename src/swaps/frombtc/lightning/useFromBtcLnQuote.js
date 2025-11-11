@@ -1,9 +1,9 @@
 import { FromBTCLNSwapState } from '@atomiqlabs/sdk';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { useSwapState } from '../hooks/useSwapState';
-import { useStateRef } from '../../utils/hooks/useStateRef';
-import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
-import { useAsync } from '../../utils/hooks/useAsync';
+import { useSwapState } from '../../hooks/useSwapState';
+import { useStateRef } from '../../../utils/hooks/useStateRef';
+import { useAbortSignalRef } from '../../../utils/hooks/useAbortSignal';
+import { useAsync } from '../../../utils/hooks/useAsync';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
 import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
@@ -12,17 +12,17 @@ import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outlin
 import { ic_swap_horiz } from 'react-icons-kit/md/ic_swap_horiz';
 import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { ic_download_outline } from 'react-icons-kit/md/ic_download_outline';
-import { timeoutPromise } from '../../utils/Utils';
-import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
-import { useChain } from '../../wallets/hooks/useChain';
-import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { useCheckAdditionalGas } from '../useCheckAdditionalGas';
-import { ChainDataContext } from '../../wallets/context/ChainDataContext';
-import { useNFCScanner } from '../../nfc/hooks/useNFCScanner';
-import { SwapsContext } from '../context/SwapsContext';
-import { NFCStartResult } from '../../nfc/NFCReader';
+import { timeoutPromise } from '../../../utils/Utils';
+import { useSmartChainWallet } from '../../../wallets/hooks/useSmartChainWallet';
+import { useChain } from '../../../wallets/hooks/useChain';
+import { useLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import { useCheckAdditionalGas } from '../../useCheckAdditionalGas';
+import { ChainDataContext } from '../../../wallets/context/ChainDataContext';
+import { useNFCScanner } from '../../../nfc/hooks/useNFCScanner';
+import { SwapsContext } from '../../context/SwapsContext';
+import { NFCStartResult } from '../../../nfc/NFCReader';
 import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
-export function useFromBtcLnQuote2(quote, UICallback) {
+export function useFromBtcLnQuote(quote, UICallback) {
     const { swapper } = useContext(SwapsContext);
     const { connectWallet, disconnectWallet } = useContext(ChainDataContext);
     const lightningWallet = useChain('LIGHTNING')?.wallet;

@@ -3,42 +3,25 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { QuickScan } from './pages/quickscan/QuickScan';
 import { QuickScanExecute } from './pages/quickscan/QuickScanExecute';
 import { Factory, FEConstants } from './FEConstants';
-import { smartChainTokenArray } from './tokens/Tokens';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { SwapsContext } from './swaps/context/SwapsContext';
-import { BitcoinNetwork, Swapper } from '@atomiqlabs/sdk';
+import { Swapper } from '@atomiqlabs/sdk';
 import { History } from './pages/History';
 import {
-  Badge,
-  Col,
-  Container,
-  Nav,
-  Navbar,
-  OverlayTrigger,
-  Row,
   Spinner,
-  Tooltip,
 } from 'react-bootstrap';
 import { MainNavigation } from './components/layout/MainNavigation';
 import { FAQ } from './pages/FAQ';
 import { About } from './pages/About';
-import { info } from 'react-icons-kit/fa/info';
-import { question } from 'react-icons-kit/fa/question';
-import { exchange } from 'react-icons-kit/fa/exchange';
-import Icon from 'react-icons-kit';
 import { SwapForGas } from './pages/SwapForGas';
 import { SwapExplorer } from './pages/SwapExplorer';
 import { Affiliate } from './pages/Affiliate';
-import { heart } from 'react-icons-kit/fa/heart';
 import { SwapNew } from './pages/SwapNew';
 import { useAnchorNavigate } from './utils/hooks/useAnchorNavigate';
 import { ErrorAlert } from './components/ErrorAlert';
-import { WalletConnections } from './wallets/WalletConnections';
-import { NFCSwitch } from './nfc/NFCSwitch';
 import { ChainDataContext } from './wallets/context/ChainDataContext';
 import { ChainDataProvider } from './wallets/ChainDataProvider';
 import { SocialFooter } from './components/layout/SocialFooter';
-import { SwapNew2 } from './pages/SwapNew2';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -147,7 +130,7 @@ function WrappedApp() {
           )}
           <Routes>
             <Route path="/">
-              <Route index element={<SwapNew2 />}></Route>
+              <Route index element={<SwapNew />}></Route>
               <Route path="scan">
                 <Route index element={<QuickScan />} />
                 <Route path="2" element={<QuickScanExecute />} />

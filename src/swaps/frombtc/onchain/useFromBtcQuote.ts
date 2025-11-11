@@ -1,15 +1,13 @@
-import {FromBTCSwap, FromBTCSwapState, ISwap, ToBTCSwapState, TokenAmount} from "@atomiqlabs/sdk";
-import {useContext, useEffect, useMemo, useRef, useState} from "react";
-import {ChainDataContext} from "../../wallets/context/ChainDataContext";
-import {useChain} from "../../wallets/hooks/useChain";
-import {useSmartChainWallet} from "../../wallets/hooks/useSmartChainWallet";
-import {useSwapState} from "../hooks/useSwapState";
-import {useAsync} from "../../utils/hooks/useAsync";
-import {useStateRef} from "../../utils/hooks/useStateRef";
-import {useAbortSignalRef} from "../../utils/hooks/useAbortSignal";
-import {ValidatedInputRef} from "../../components/ValidatedInput";
-import {TxData} from "../components/SwapConfirmations";
-import {SingleStep} from "../../components/StepByStep";
+import {FromBTCSwap, FromBTCSwapState, ISwap, TokenAmount} from "@atomiqlabs/sdk";
+import {useContext, useEffect, useMemo, useState} from "react";
+import {ChainDataContext} from "../../../wallets/context/ChainDataContext";
+import {useChain} from "../../../wallets/hooks/useChain";
+import {useSmartChainWallet} from "../../../wallets/hooks/useSmartChainWallet";
+import {useSwapState} from "../../hooks/useSwapState";
+import {useAsync} from "../../../utils/hooks/useAsync";
+import {useStateRef} from "../../../utils/hooks/useStateRef";
+import {useAbortSignalRef} from "../../../utils/hooks/useAbortSignal";
+import {SingleStep} from "../../../components/StepByStep";
 
 import { ic_gavel_outline } from 'react-icons-kit/md/ic_gavel_outline';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
@@ -21,12 +19,13 @@ import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 
-import {useLocalStorage} from "../../utils/hooks/useLocalStorage";
-import {ChainWalletData} from "../../wallets/ChainDataProvider";
-import {useCheckAdditionalGas} from "../useCheckAdditionalGas";
-import {getDeltaText} from "../../utils/Utils";
-import {ExtensionBitcoinWallet} from "../../wallets/chains/bitcoin/base/ExtensionBitcoinWallet";
-import {SwapPageUIState} from "../../pages/useSwapPage";
+import {useLocalStorage} from "../../../utils/hooks/useLocalStorage";
+import {ChainWalletData} from "../../../wallets/ChainDataProvider";
+import {useCheckAdditionalGas} from "../../useCheckAdditionalGas";
+import {getDeltaText} from "../../../utils/Utils";
+import {ExtensionBitcoinWallet} from "../../../wallets/chains/bitcoin/base/ExtensionBitcoinWallet";
+import {SwapPageUIState} from "../../../pages/useSwapPage";
+import {TxDataType} from "../../types/TxDataType";
 
 export type FromBtcQuotePage = {
   executionSteps?: SingleStep[];
@@ -105,17 +104,7 @@ export type FromBtcQuotePage = {
   };
   step3awaitingConfirmations?: {
     broadcasting: boolean,
-    txData?: {
-      txId: string,
-      confirmations: {
-        actual: number,
-        required: number
-      },
-      eta: {
-        millis: number,
-        text: string
-      }
-    },
+    txData?: TxDataType,
     error?: {
       title: string,
       error: Error,
@@ -224,9 +213,16 @@ export function useFromBtcQuote(
           }
           setTxData({
             txId,
-            confirmations,
-            confTarget: confirmationTarget,
-            txEtaMs,
+            confirmations: {
+              actual: confirmations,
+              required: confirmationTarget
+            },
+            eta: txEtaMs != null && txEtaMs !== -1 ? {
+              millis: txEtaMs,
+              text: txEtaMs === -1 || txEtaMs > 60 * 60 * 1000
+                ? '>1 hour'
+                : '~' + getDeltaText(txEtaMs)
+            } : undefined,
           });
         }
       ),
@@ -237,7 +233,7 @@ export function useFromBtcQuote(
     return quote.claim(smartChainWallet.instance);
   }, [quote, smartChainWallet]);
 
-  const [txData, setTxData] = useState<TxData | null>(null);
+  const [txData, setTxData] = useState<TxDataType | null>(null);
 
   const [claimable, setClaimable] = useState(false);
   useEffect(() => {
@@ -505,19 +501,7 @@ export function useFromBtcQuote(
 
   const step3awaitingConfirmations = useMemo(() => (!isReceived && !isBroadcasting ? undefined : {
     broadcasting: isBroadcasting,
-    txData: txData!=null ? {
-      txId: txData.txId,
-      confirmations: {
-        actual: txData.confirmations,
-        required: txData.confTarget
-      },
-      eta: txData.txEtaMs!=null ? {
-        millis: txData.txEtaMs,
-        text: txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
-          ? '>1 hour'
-          : '~' + getDeltaText(txData.txEtaMs)
-      } : undefined
-    } : undefined,
+    txData,
     error: waitPaymentError ? {
       title: "Wait payment error",
       error: waitPaymentError,

@@ -1,0 +1,169 @@
+import * as React from 'react';
+import { Spinner } from 'react-bootstrap';
+import { ISwap, SpvFromBTCSwap } from '@atomiqlabs/sdk';
+import { ButtonWithWallet } from '../../../wallets/ButtonWithWallet';
+import { SwapConfirmations } from '../../components/SwapConfirmations';
+import { StepByStep } from '../../../components/StepByStep';
+import { ErrorAlert } from '../../../components/ErrorAlert';
+import { BaseButton } from '../../../components/BaseButton';
+import { useSpvVaultFromBtcQuote } from './useSpvVaultFromBtcQuote';
+import { SwapPageUIState } from '../../../pages/useSwapPage';
+import { SwapStepAlert } from '../../components/SwapStepAlert';
+import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
+
+/*
+Steps:
+1. Bitcoin payment -> Broadcasting bitcoin transaction -> Waiting bitcoin confirmations -> Bitcoin confirmed
+2. Claim transaction -> Sending claim transaction -> Claim success
+ */
+
+export function SpvVaultFromBTCQuoteSummary(props: {
+  quote: SpvFromBTCSwap<any>;
+  refreshQuote: () => void;
+  UICallback: (quote: ISwap, state: SwapPageUIState) => void;
+  type?: 'payment' | 'swap';
+  abortSwap?: () => void;
+  feeRate?: number;
+  balance?: bigint;
+}) {
+  const page = useSpvVaultFromBtcQuote(props.quote, props.UICallback, props.feeRate, props.balance);
+
+  const stepByStep = page.executionSteps ? <StepByStep
+    quote={props.quote}
+    steps={page.executionSteps}
+  /> : '';
+
+  if(page.step1init) {
+    return (
+      <>
+        <div className="swap-panel__card">
+          {stepByStep}
+
+          <ErrorAlert
+            className="mb-3"
+            title={page.step1init.error?.title}
+            error={page.step1init.error?.error}
+          />
+        </div>
+
+        <ButtonWithWallet
+          chainId="BITCOIN"
+          onClick={page.step1init.init?.onClick}
+          className="swap-panel__action"
+          disabled={page.step1init.init?.disabled}
+          size="lg"
+        >
+          {page.step1init.init?.loading ? (
+            <Spinner animation="border" size="sm" className="mr-2" />
+          ) : (
+            ''
+          )}
+          Pay with <img width={20} height={20} src={page.step1init.bitcoinWallet?.icon} />{' '}
+          {page.step1init.bitcoinWallet?.name}
+        </ButtonWithWallet>
+      </>
+    );
+  }
+
+  if(page.step2broadcasting) {
+    return (
+      <div className="swap-panel__card">
+        {stepByStep}
+      </div>
+    );
+  }
+
+  if(page.step3awaitingConfirmations) {
+    return (
+      <div className="swap-panel__card">
+        {stepByStep}
+
+        <SwapConfirmations
+          txData={page.step3awaitingConfirmations.txData}
+        />
+      </div>
+    );
+  }
+
+  if(page.step4claim) {
+    return (
+      <div className="swap-panel__card">
+        {stepByStep}
+
+        {page.step4claim.waitingForWatchtowerClaim ? (
+          <div className="swap-confirmations">
+            <div className="swap-confirmations__estimate">
+              <Spinner/>
+            </div>
+            <div className="swap-confirmations__name">
+              Transaction received & confirmed, waiting for claim by watchtowers...
+            </div>
+          </div>
+        ) : (
+          <div className="swap-confirmations">
+            <div className="swap-confirmations__name">
+              Transaction received & confirmed, you can claim your funds manually now!
+            </div>
+
+            {!!page.step4claim.error && (
+              <ErrorAlert className="mb-3" title={page.step4claim.error.title} error={page.step4claim.error.error}/>
+            )}
+
+            <ButtonWithWallet
+              chainId={props.quote.chainIdentifier}
+              onClick={page.step4claim.claim.onClick}
+              disabled={page.step4claim.claim.disabled}
+              size="lg"
+            >
+              {page.step4claim.claim.loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ''}
+              Finish swap (claim funds)
+            </ButtonWithWallet>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if(page.step5) {
+    return (
+      <>
+        <div className="swap-panel__card">
+          {page.step5.state !== 'expired' ? stepByStep : ''}
+
+          {page.step5.state === 'success' ? (
+            <SwapStepAlert
+              type="success"
+              icon={ic_check_circle}
+              title="Swap success"
+              description="Your swap was executed successfully!"
+            />
+          ) : (
+            ''
+          )}
+
+          {page.step5.state === 'failed' ? (
+            <SwapStepAlert
+              type="danger"
+              icon={ic_warning}
+              title="Swap failed"
+              description="Swap transaction reverted, no funds were sent!"
+            />
+          ) : (
+            ''
+          )}
+        </div>
+
+
+        <BaseButton
+          onClick={props.refreshQuote}
+          className="swap-panel__action"
+          variant="primary"
+          size="large"
+        >
+          New quote
+        </BaseButton>
+      </>
+    )
+  }
+}

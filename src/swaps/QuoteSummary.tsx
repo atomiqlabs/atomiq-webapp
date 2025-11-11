@@ -1,27 +1,16 @@
 import {
   FromBTCLNSwap,
   FromBTCSwap,
-  IFromBTCSwap,
   ISwap,
   IToBTCSwap,
   SpvFromBTCSwap,
   SwapType,
-  TokenAmount,
 } from '@atomiqlabs/sdk';
-import { ToBTCQuoteSummary } from './tobtc/ToBTCQuoteSummary';
-import { LNURLWithdrawQuoteSummary } from './frombtc/LNURLWithdrawQuoteSummary';
-import { FromBTCQuoteSummary } from './frombtc/FromBTCQuoteSummary';
 import * as React from 'react';
-import { useContext } from 'react';
-import { FEConstants } from '../FEConstants';
-import { SpvVaultFromBTCQuoteSummary } from './frombtc/SpvVaultFromBTCQuoteSummary';
-import { useWithAwait } from '../utils/hooks/useWithAwait';
-import { ChainDataContext } from '../wallets/context/ChainDataContext';
-import { ChainWalletData } from '../wallets/ChainDataProvider';
-import { getChainIdentifierForCurrency, toTokenIdentifier } from '../tokens/Tokens';
-import { FromBTCLNQuoteSummary2 } from './frombtc/FromBTCLNQuoteSummary2';
-import { ToBTCQuoteSummary2 } from './tobtc/ToBTCQuoteSummary2';
-import {FromBTCQuoteSummary2} from "./frombtc/FromBTCQuoteSummary2";
+import { SpvVaultFromBTCQuoteSummary } from './frombtc/onchain-spvvault/SpvVaultFromBTCQuoteSummary';
+import { FromBTCLNQuoteSummary } from './frombtc/lightning/FromBTCLNQuoteSummary';
+import { ToBTCQuoteSummary } from './tobtc/ToBTCQuoteSummary';
+import {FromBTCQuoteSummary} from "./frombtc/onchain/FromBTCQuoteSummary";
 import {SwapPageUIState} from "../pages/useSwapPage";
 
 export function QuoteSummary(props: {
@@ -45,7 +34,7 @@ export function QuoteSummary(props: {
     case SwapType.TO_BTC:
     case SwapType.TO_BTCLN:
       swapElement = (
-        <ToBTCQuoteSummary2
+        <ToBTCQuoteSummary
           type={props.type}
           UICallback={props.UICallback}
           quote={props.quote as IToBTCSwap}
@@ -58,7 +47,7 @@ export function QuoteSummary(props: {
       break;
     case SwapType.FROM_BTC:
       swapElement = (
-        <FromBTCQuoteSummary2
+        <FromBTCQuoteSummary
           type={props.type}
           UICallback={props.UICallback}
           quote={props.quote as FromBTCSwap}
@@ -73,20 +62,10 @@ export function QuoteSummary(props: {
     case SwapType.FROM_BTCLN:
       const _quote = props.quote as FromBTCLNSwap;
       if (_quote.lnurl != null && props.type !== 'swap') {
-        //TODO: For now just mocked setAmountLock!!!
-        swapElement = (
-          <LNURLWithdrawQuoteSummary
-            type={props.type}
-            setAmountLock={() => {}}
-            quote={_quote}
-            refreshQuote={props.refreshQuote}
-            autoContinue={props.autoContinue}
-            notEnoughForGas={null}
-          />
-        );
+        swapElement = <></>;
       } else {
         swapElement = (
-          <FromBTCLNQuoteSummary2
+          <FromBTCLNQuoteSummary
             type={props.type}
             UICallback={props.UICallback}
             quote={_quote}

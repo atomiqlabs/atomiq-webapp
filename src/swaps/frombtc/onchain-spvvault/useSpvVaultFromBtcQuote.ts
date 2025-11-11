@@ -1,14 +1,14 @@
-import { SingleStep } from '../../components/StepByStep';
-import { ChainWalletData } from '../../wallets/ChainDataProvider';
-import { ExtensionBitcoinWallet } from '../../wallets/chains/bitcoin/base/ExtensionBitcoinWallet';
-import { ISwap, SpvFromBTCSwap, SpvFromBTCSwapState, ToBTCSwapState } from '@atomiqlabs/sdk';
-import { useSwapState } from '../hooks/useSwapState';
+import { SingleStep } from '../../../components/StepByStep';
+import { ChainWalletData } from '../../../wallets/ChainDataProvider';
+import { ExtensionBitcoinWallet } from '../../../wallets/chains/bitcoin/base/ExtensionBitcoinWallet';
+import { ISwap, SpvFromBTCSwap, SpvFromBTCSwapState } from '@atomiqlabs/sdk';
+import { useSwapState } from '../../hooks/useSwapState';
 import { useEffect, useMemo, useState } from 'react';
-import { useStateRef } from '../../utils/hooks/useStateRef';
-import { useChain } from '../../wallets/hooks/useChain';
-import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
-import { useAsync } from '../../utils/hooks/useAsync';
-import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
+import { useStateRef } from '../../../utils/hooks/useStateRef';
+import { useChain } from '../../../wallets/hooks/useChain';
+import { useSmartChainWallet } from '../../../wallets/hooks/useSmartChainWallet';
+import { useAsync } from '../../../utils/hooks/useAsync';
+import { useAbortSignalRef } from '../../../utils/hooks/useAbortSignal';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empty_outline';
 import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
@@ -16,8 +16,9 @@ import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
 import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
-import { getDeltaText } from '../../utils/Utils';
-import { SwapPageUIState } from '../../pages/useSwapPage';
+import { getDeltaText } from '../../../utils/Utils';
+import { SwapPageUIState } from '../../../pages/useSwapPage';
+import {TxDataType} from "../../types/TxDataType";
 
 export type SpvVaultFromBtcPage = {
   executionSteps?: SingleStep[];
@@ -40,17 +41,7 @@ export type SpvVaultFromBtcPage = {
   };
   step2broadcasting?: {};
   step3awaitingConfirmations?: {
-    txData: {
-      txId: string;
-      confirmations: {
-        actual: number;
-        required: number;
-      };
-      eta: {
-        millis: number;
-        text: string;
-      };
-    };
+    txData: TxDataType;
     error?: {
       title: string;
       error: Error;
@@ -100,12 +91,7 @@ export function useSpvVaultFromBtcQuote(
   const smartChainWallet = useSmartChainWallet(quote);
 
   const isAlreadyClaimable = useMemo(() => quote?.isClaimable(), [quote]);
-  const [txData, setTxData] = useState<{
-    txId: string;
-    confirmations: number;
-    confTarget: number;
-    txEtaMs: number;
-  }>(null);
+  const [txData, setTxData] = useState<TxDataType>(null);
 
   const [onSend, sendLoading, sendSuccess, sendError] = useAsync(() => {
     if (UICallbackRef.current) UICallbackRef.current(quote, 'lock');
@@ -137,9 +123,16 @@ export function useSpvVaultFromBtcQuote(
         }
         setTxData({
           txId,
-          confirmations,
-          confTarget: confirmationTarget,
-          txEtaMs,
+          confirmations: {
+            actual: confirmations,
+            required: confirmationTarget
+          },
+          eta: txEtaMs != null && txEtaMs !== -1 ? {
+            millis: txEtaMs,
+            text: txEtaMs === -1 || txEtaMs > 60 * 60 * 1000
+              ? '>1 hour'
+              : '~' + getDeltaText(txEtaMs)
+          } : undefined,
         });
       }
     );
@@ -313,23 +306,7 @@ export function useSpvVaultFromBtcQuote(
       !isReceived
         ? undefined
         : {
-            txData: {
-              txId: txData.txId,
-              confirmations: {
-                actual: txData.confirmations,
-                required: txData.confTarget,
-              },
-              eta:
-                txData.txEtaMs != null
-                  ? {
-                      millis: txData.txEtaMs,
-                      text:
-                        txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
-                          ? '>1 hour'
-                          : '~' + getDeltaText(txData.txEtaMs),
-                    }
-                  : undefined,
-            },
+            txData,
             error:
               waitPaymentError != null
                 ? {

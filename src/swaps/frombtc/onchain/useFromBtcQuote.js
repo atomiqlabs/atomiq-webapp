@@ -1,12 +1,12 @@
 import { FromBTCSwapState } from "@atomiqlabs/sdk";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { ChainDataContext } from "../../wallets/context/ChainDataContext";
-import { useChain } from "../../wallets/hooks/useChain";
-import { useSmartChainWallet } from "../../wallets/hooks/useSmartChainWallet";
-import { useSwapState } from "../hooks/useSwapState";
-import { useAsync } from "../../utils/hooks/useAsync";
-import { useStateRef } from "../../utils/hooks/useStateRef";
-import { useAbortSignalRef } from "../../utils/hooks/useAbortSignal";
+import { ChainDataContext } from "../../../wallets/context/ChainDataContext";
+import { useChain } from "../../../wallets/hooks/useChain";
+import { useSmartChainWallet } from "../../../wallets/hooks/useSmartChainWallet";
+import { useSwapState } from "../../hooks/useSwapState";
+import { useAsync } from "../../../utils/hooks/useAsync";
+import { useStateRef } from "../../../utils/hooks/useStateRef";
+import { useAbortSignalRef } from "../../../utils/hooks/useAbortSignal";
 import { ic_gavel_outline } from 'react-icons-kit/md/ic_gavel_outline';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
@@ -16,9 +16,9 @@ import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import { useLocalStorage } from "../../utils/hooks/useLocalStorage";
-import { useCheckAdditionalGas } from "../useCheckAdditionalGas";
-import { getDeltaText } from "../../utils/Utils";
+import { useLocalStorage } from "../../../utils/hooks/useLocalStorage";
+import { useCheckAdditionalGas } from "../../useCheckAdditionalGas";
+import { getDeltaText } from "../../../utils/Utils";
 export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) {
     const { disconnectWallet, connectWallet } = useContext(ChainDataContext);
     const bitcoinChainData = useChain('BITCOIN');
@@ -72,9 +72,16 @@ export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) 
         }
         setTxData({
             txId,
-            confirmations,
-            confTarget: confirmationTarget,
-            txEtaMs,
+            confirmations: {
+                actual: confirmations,
+                required: confirmationTarget
+            },
+            eta: txEtaMs != null && txEtaMs !== -1 ? {
+                millis: txEtaMs,
+                text: txEtaMs === -1 || txEtaMs > 60 * 60 * 1000
+                    ? '>1 hour'
+                    : '~' + getDeltaText(txEtaMs)
+            } : undefined,
         });
     }), [quote]);
     const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
@@ -331,19 +338,7 @@ export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) 
     ]);
     const step3awaitingConfirmations = useMemo(() => (!isReceived && !isBroadcasting ? undefined : {
         broadcasting: isBroadcasting,
-        txData: txData != null ? {
-            txId: txData.txId,
-            confirmations: {
-                actual: txData.confirmations,
-                required: txData.confTarget
-            },
-            eta: txData.txEtaMs != null ? {
-                millis: txData.txEtaMs,
-                text: txData.txEtaMs === -1 || txData.txEtaMs > 60 * 60 * 1000
-                    ? '>1 hour'
-                    : '~' + getDeltaText(txData.txEtaMs)
-            } : undefined
-        } : undefined,
+        txData,
         error: waitPaymentError ? {
             title: "Wait payment error",
             error: waitPaymentError,

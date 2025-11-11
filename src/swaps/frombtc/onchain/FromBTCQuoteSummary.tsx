@@ -1,48 +1,26 @@
 import * as React from 'react';
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback } from 'react';
 import { Spinner } from 'react-bootstrap';
-import { AlertMessage } from '../../components/AlertMessage';
+import { AlertMessage } from '../../../components/AlertMessage';
 import { QRCodeSVG } from 'qrcode.react';
-import { ValidatedInputRef } from '../../components/ValidatedInput';
-import {FromBTCSwap, FromBTCSwapState, ISwap} from '@atomiqlabs/sdk';
-import {FEConstants, Tokens} from '../../FEConstants';
-import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
-import { ScrollAnchor } from '../../components/ScrollAnchor';
-import { CopyOverlay } from '../../components/CopyOverlay';
-import { useSwapState } from '../hooks/useSwapState';
-import { useAsync } from '../../utils/hooks/useAsync';
-import { SwapExpiryProgressBar } from '../components/SwapExpiryProgressBar';
-import { SwapForGasAlert } from '../components/SwapForGasAlert';
+import {FromBTCSwap, ISwap} from '@atomiqlabs/sdk';
+import { ButtonWithWallet } from '../../../wallets/ButtonWithWallet';
+import { ScrollAnchor } from '../../../components/ScrollAnchor';
+import { CopyOverlay } from '../../../components/CopyOverlay';
+import { SwapExpiryProgressBar } from '../../components/SwapExpiryProgressBar';
+import { SwapForGasAlert } from '../../components/SwapForGasAlert';
 
-import { ic_gavel_outline } from 'react-icons-kit/md/ic_gavel_outline';
-import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
-import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
-import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empty_outline';
-import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
-import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
-import { bitcoin } from 'react-icons-kit/fa/bitcoin';
-import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import { SingleStep, StepByStep } from '../../components/StepByStep';
-import { useStateRef } from '../../utils/hooks/useStateRef';
-import { useAbortSignalRef } from '../../utils/hooks/useAbortSignal';
-import { OnchainAddressCopyModal } from '../components/OnchainAddressCopyModal';
-import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { useSmartChainWallet } from '../../wallets/hooks/useSmartChainWallet';
-import { ChainDataContext } from '../../wallets/context/ChainDataContext';
-import { BaseButton } from '../../components/BaseButton';
-import { useChain } from '../../wallets/hooks/useChain';
-import { WalletData } from '../../components/StepByStep';
-import { SwapStepAlert } from '../components/SwapStepAlert';
-import { TokenIcons } from '../../tokens/Tokens';
-import { usePricing } from '../../tokens/hooks/usePricing';
-import { WalletAddressPreview } from '../../components/WalletAddressPreview';
-import { SwapConfirmations, TxData } from '../components/SwapConfirmations';
+import { StepByStep } from '../../../components/StepByStep';
+import { OnchainAddressCopyModal } from '../../components/OnchainAddressCopyModal';
+import { BaseButton } from '../../../components/BaseButton';
+import { SwapStepAlert } from '../../components/SwapStepAlert';
+import { WalletAddressPreview } from '../../../components/WalletAddressPreview';
+import { SwapConfirmations } from '../../components/SwapConfirmations';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import {useFromBtcQuote} from "./useFromBtcQuote";
-import {getDeltaText} from "../../utils/Utils";
-import {ErrorAlert} from "../../components/ErrorAlert";
-import {SwapPageUIState} from "../../pages/useSwapPage";
+import {ErrorAlert} from "../../../components/ErrorAlert";
+import {SwapPageUIState} from "../../../pages/useSwapPage";
 
 /*
 Steps:
@@ -51,7 +29,7 @@ Steps:
 3. Claim transaction -> Sending claim transaction -> Claim success
  */
 
-export function FromBTCQuoteSummary2(props: {
+export function FromBTCQuoteSummary(props: {
   quote: FromBTCSwap<any>;
   refreshQuote: () => void;
   UICallback: (quote: ISwap, state: SwapPageUIState) => void;
@@ -249,36 +227,9 @@ export function FromBTCQuoteSummary2(props: {
               </div>
             </div>
           ) : (
-            <div className="swap-confirmations">
-              {/*
-                TODO: Extract this to separate component, something like SwapConfirmations - but
-                 ONLY handle tx confirmation showing, no claiming and other BS
-                */}
-              <div className="swap-confirmations__name">
-                Transaction received, waiting for confirmations...
-              </div>
-
-              <div className="swap-confirmations__estimate">
-                <Spinner/>
-                <div className="swap-confirmations__estimate__info">
-                  <div className="swap-confirmations__estimate__item">
-                    {page.step3awaitingConfirmations.txData.confirmations.actual} / {page.step3awaitingConfirmations.txData.confirmations.required} Confirmations
-                  </div>
-                  <div className="swap-confirmations__estimate__item is-eta">
-                    ETA: {page.step3awaitingConfirmations.txData.eta.text}
-                  </div>
-                </div>
-              </div>
-
-              <a
-                href={FEConstants.btcBlockExplorer + page.step3awaitingConfirmations.txData.txId}
-                target="_blank"
-                className="swap-confirmations__link"
-              >
-                <div className="sc-text">View transaction</div>
-                <div className="icon icon-new-window"></div>
-              </a>
-            </div>
+            <SwapConfirmations
+              txData={page.step3awaitingConfirmations.txData}
+            />
           )}
         </div>
 

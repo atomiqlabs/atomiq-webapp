@@ -11,7 +11,7 @@ import { SwapsContext } from '../swaps/context/SwapsContext';
 import { TokenIcon } from '../tokens/TokenIcon';
 import { useAnchorNavigate } from '../utils/hooks/useAnchorNavigate';
 import { useAsync } from '../utils/hooks/useAsync';
-import { TrustedFromBTCLNQuoteSummary } from '../swaps/frombtc/TrustedFromBTCLNQuoteSummary';
+import { TrustedFromBTCLNQuoteSummary } from '../swaps/frombtc/trusted/TrustedFromBTCLNQuoteSummary';
 import { useSwapState } from '../swaps/hooks/useSwapState';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { Tokens } from '../FEConstants';

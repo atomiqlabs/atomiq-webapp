@@ -1,20 +1,17 @@
 import {
-  AbstractSigner, ISwap,
+  ISwap,
   IToBTCSwap,
   SwapType,
-  ToBTCLNSwap,
   ToBTCSwapState,
-  toHumanReadableString, TokenAmount
+  TokenAmount
 } from "@atomiqlabs/sdk";
 import {useCheckAdditionalGas} from "../useCheckAdditionalGas";
-import {useCallback, useContext, useEffect, useMemo} from "react";
-import {SwapsContext} from "../context/SwapsContext";
+import {useEffect, useMemo} from "react";
 import {useSmartChainWallet} from "../../wallets/hooks/useSmartChainWallet";
 import {useSwapState} from "../hooks/useSwapState";
 import {useStateRef} from "../../utils/hooks/useStateRef";
 import {useAsync} from "../../utils/hooks/useAsync";
 import {useAbortSignalRef} from "../../utils/hooks/useAbortSignal";
-import {useWithAwait} from "../../utils/hooks/useWithAwait";
 import {SingleStep} from "../../components/StepByStep";
 import { ic_play_circle_outline } from 'react-icons-kit/md/ic_play_circle_outline';
 import { ic_settings_backup_restore_outline } from 'react-icons-kit/md/ic_settings_backup_restore_outline';
@@ -23,11 +20,9 @@ import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
 import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
 import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empty_outline';
 import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
-import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { bitcoin } from 'react-icons-kit/fa/bitcoin';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import {ChainWalletData} from "../../wallets/ChainDataProvider";
 import {SwapPageUIState} from "../../pages/useSwapPage";
 
 export type ToBtcPage = {
