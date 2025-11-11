@@ -631,7 +631,7 @@ export function useFromBtcLnQuote(
   }, [isSuccess, isFailed, isQuoteExpired, isInitiated]);
 
   return {
-    executionSteps,
+    executionSteps: isInitiated ? executionSteps : undefined,
     step1init,
     step2paymentWait,
     step3claim,

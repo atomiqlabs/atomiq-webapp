@@ -534,19 +534,20 @@ export function useSwapPage(): SwapPageState {
   }, [swapTypeData, addressError, address, isOutputWalletAddress, isFixedAmount, outputChainData]);
 
   //Leaves existing swap
-  const leaveExistingSwap = useCallback(
+  const leaveExistingSwapOrRefresh = useCallback(
     () => {
-      if (existingSwap == null) return;
-      setInputToken(existingSwap.getInput().token);
-      setOutputToken(existingSwap.getOutput().token);
-      setAddress(existingSwap.getOutputAddress());
-      if (existingSwap.exactIn) {
-        setAmount(existingSwap.getInput().amount);
-      } else {
-        setAmount(existingSwap.getOutput().amount);
+      if (existingSwap != null) {
+        setInputToken(existingSwap.getInput().token);
+        setOutputToken(existingSwap.getOutput().token);
+        setAddress(existingSwap.getOutputAddress());
+        if (existingSwap.exactIn) {
+          setAmount(existingSwap.getInput().amount);
+        } else {
+          setAmount(existingSwap.getOutput().amount);
+        }
+        navigate('/');
       }
       refreshQuote();
-      navigate('/');
     },
     [existingSwap, refreshQuote, navigate]
   );
@@ -691,8 +692,8 @@ export function useSwapPage(): SwapPageState {
       quote,
       isRandom: randomQuote,
       error: quoteError,
-      refresh: refreshQuote,
-      abort: leaveExistingSwap,
+      refresh: leaveExistingSwapOrRefresh,
+      abort: leaveExistingSwapOrRefresh,
       UICallback: setUIState
     },
     hideUI: UIState === 'hide',
