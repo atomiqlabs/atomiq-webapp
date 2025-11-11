@@ -35,38 +35,6 @@ export function QuoteSummary(props: {
   feeRate?: number;
   disabled?: boolean;
 }) {
-  const chainsData = useContext(ChainDataContext);
-
-  const [notEnoughForGas] = useWithAwait(async () => {
-    if (props.quote == null || props.quote.isInitiated()) return;
-    let result: {
-      enoughBalance: boolean;
-      balance: TokenAmount;
-      required: TokenAmount;
-    };
-    let address: string;
-    if (props.quote instanceof IToBTCSwap) {
-      result = await props.quote.hasEnoughForTxFees();
-      address = props.quote._getInitiator();
-    } else if (props.quote instanceof IFromBTCSwap) {
-      result = await props.quote.hasEnoughForTxFees();
-      address = props.quote._getInitiator();
-    } else {
-      return;
-    }
-    if (!result.enoughBalance) {
-      const chainIdentifer = getChainIdentifierForCurrency(result.required.token);
-      const chainData: ChainWalletData<any> = chainsData[chainIdentifer];
-      if (chainData.wallet?.address == address) {
-        return (
-          FEConstants.scBalances[toTokenIdentifier(result.required.token)].optimal +
-          result.required.rawAmount -
-          result.balance.rawAmount
-        );
-      }
-    }
-  }, [props.quote, chainsData]);
-
   if (!props.quote) {
     return null;
   }
@@ -83,7 +51,7 @@ export function QuoteSummary(props: {
           quote={props.quote as IToBTCSwap}
           refreshQuote={props.refreshQuote}
           autoContinue={props.autoContinue}
-          notEnoughForGas={notEnoughForGas}
+          notEnoughForGas={null}
           balance={props.balance}
         />
       );
@@ -96,7 +64,7 @@ export function QuoteSummary(props: {
           quote={props.quote as FromBTCSwap}
           refreshQuote={props.refreshQuote}
           abortSwap={props.abortSwap}
-          notEnoughForGas={notEnoughForGas}
+          notEnoughForGas={null}
           balance={props.balance}
           feeRate={props.feeRate}
         />
@@ -113,7 +81,7 @@ export function QuoteSummary(props: {
             quote={_quote}
             refreshQuote={props.refreshQuote}
             autoContinue={props.autoContinue}
-            notEnoughForGas={notEnoughForGas}
+            notEnoughForGas={null}
           />
         );
       } else {
@@ -124,7 +92,7 @@ export function QuoteSummary(props: {
             quote={_quote}
             refreshQuote={props.refreshQuote}
             abortSwap={props.abortSwap}
-            notEnoughForGas={notEnoughForGas}
+            notEnoughForGas={null}
           />
         );
       }

@@ -1,43 +1,11 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { IFromBTCSwap, IToBTCSwap, SwapType, } from '@atomiqlabs/sdk';
+import { SwapType, } from '@atomiqlabs/sdk';
 import { LNURLWithdrawQuoteSummary } from './frombtc/LNURLWithdrawQuoteSummary';
-import { useContext } from 'react';
-import { FEConstants } from '../FEConstants';
 import { SpvVaultFromBTCQuoteSummary } from './frombtc/SpvVaultFromBTCQuoteSummary';
-import { useWithAwait } from '../utils/hooks/useWithAwait';
-import { ChainDataContext } from '../wallets/context/ChainDataContext';
-import { getChainIdentifierForCurrency, toTokenIdentifier } from '../tokens/Tokens';
 import { FromBTCLNQuoteSummary2 } from './frombtc/FromBTCLNQuoteSummary2';
 import { ToBTCQuoteSummary2 } from './tobtc/ToBTCQuoteSummary2';
 import { FromBTCQuoteSummary2 } from "./frombtc/FromBTCQuoteSummary2";
 export function QuoteSummary(props) {
-    const chainsData = useContext(ChainDataContext);
-    const [notEnoughForGas] = useWithAwait(async () => {
-        if (props.quote == null || props.quote.isInitiated())
-            return;
-        let result;
-        let address;
-        if (props.quote instanceof IToBTCSwap) {
-            result = await props.quote.hasEnoughForTxFees();
-            address = props.quote._getInitiator();
-        }
-        else if (props.quote instanceof IFromBTCSwap) {
-            result = await props.quote.hasEnoughForTxFees();
-            address = props.quote._getInitiator();
-        }
-        else {
-            return;
-        }
-        if (!result.enoughBalance) {
-            const chainIdentifer = getChainIdentifierForCurrency(result.required.token);
-            const chainData = chainsData[chainIdentifer];
-            if (chainData.wallet?.address == address) {
-                return (FEConstants.scBalances[toTokenIdentifier(result.required.token)].optimal +
-                    result.required.rawAmount -
-                    result.balance.rawAmount);
-            }
-        }
-    }, [props.quote, chainsData]);
     if (!props.quote) {
         return null;
     }
@@ -45,19 +13,19 @@ export function QuoteSummary(props) {
     switch (props.quote.getType()) {
         case SwapType.TO_BTC:
         case SwapType.TO_BTCLN:
-            swapElement = (_jsx(ToBTCQuoteSummary2, { type: props.type, UICallback: props.UICallback, quote: props.quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas, balance: props.balance }));
+            swapElement = (_jsx(ToBTCQuoteSummary2, { type: props.type, UICallback: props.UICallback, quote: props.quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: null, balance: props.balance }));
             break;
         case SwapType.FROM_BTC:
-            swapElement = (_jsx(FromBTCQuoteSummary2, { type: props.type, UICallback: props.UICallback, quote: props.quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: notEnoughForGas, balance: props.balance, feeRate: props.feeRate }));
+            swapElement = (_jsx(FromBTCQuoteSummary2, { type: props.type, UICallback: props.UICallback, quote: props.quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: null, balance: props.balance, feeRate: props.feeRate }));
             break;
         case SwapType.FROM_BTCLN:
             const _quote = props.quote;
             if (_quote.lnurl != null && props.type !== 'swap') {
                 //TODO: For now just mocked setAmountLock!!!
-                swapElement = (_jsx(LNURLWithdrawQuoteSummary, { type: props.type, setAmountLock: () => { }, quote: _quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: notEnoughForGas }));
+                swapElement = (_jsx(LNURLWithdrawQuoteSummary, { type: props.type, setAmountLock: () => { }, quote: _quote, refreshQuote: props.refreshQuote, autoContinue: props.autoContinue, notEnoughForGas: null }));
             }
             else {
-                swapElement = (_jsx(FromBTCLNQuoteSummary2, { type: props.type, UICallback: props.UICallback, quote: _quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: notEnoughForGas }));
+                swapElement = (_jsx(FromBTCLNQuoteSummary2, { type: props.type, UICallback: props.UICallback, quote: _quote, refreshQuote: props.refreshQuote, abortSwap: props.abortSwap, notEnoughForGas: null }));
             }
             break;
         case SwapType.SPV_VAULT_FROM_BTC:
