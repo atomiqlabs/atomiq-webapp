@@ -29,12 +29,13 @@ export function SpvVaultFromBTCQuoteSummary(props: {
 }) {
   const page = useSpvVaultFromBtcQuote(props.quote, props.UICallback, props.feeRate, props.balance);
 
-  const stepByStep = page.executionSteps ? <StepByStep
-    quote={props.quote}
-    steps={page.executionSteps}
-  /> : '';
+  const stepByStep = page.executionSteps ? (
+    <StepByStep quote={props.quote} steps={page.executionSteps} />
+  ) : (
+    ''
+  );
 
-  if(page.step1init) {
+  if (page.step1init) {
     return (
       <>
         <div className="swap-panel__card">
@@ -66,27 +67,21 @@ export function SpvVaultFromBTCQuoteSummary(props: {
     );
   }
 
-  if(page.step2broadcasting) {
-    return (
-      <div className="swap-panel__card">
-        {stepByStep}
-      </div>
-    );
+  if (page.step2broadcasting) {
+    return <div className="swap-panel__card">{stepByStep}</div>;
   }
 
-  if(page.step3awaitingConfirmations) {
+  if (page.step3awaitingConfirmations) {
     return (
       <div className="swap-panel__card">
         {stepByStep}
 
-        <SwapConfirmations
-          txData={page.step3awaitingConfirmations.txData}
-        />
+        <SwapConfirmations txData={page.step3awaitingConfirmations.txData} />
       </div>
     );
   }
 
-  if(page.step4claim) {
+  if (page.step4claim) {
     return (
       <div className="swap-panel__card">
         {stepByStep}
@@ -94,38 +89,54 @@ export function SpvVaultFromBTCQuoteSummary(props: {
         {page.step4claim.waitingForWatchtowerClaim ? (
           <div className="swap-confirmations">
             <div className="swap-confirmations__estimate">
-              <Spinner/>
+              <Spinner />
             </div>
             <div className="swap-confirmations__name">
               Transaction received & confirmed, waiting for claim by watchtowers...
             </div>
           </div>
         ) : (
-          <div className="swap-confirmations">
-            <div className="swap-confirmations__name">
-              Transaction received & confirmed, you can claim your funds manually now!
-            </div>
+          <>
+            <SwapStepAlert
+              show={!!page.step4claim.error}
+              type="error"
+              icon={ic_warning}
+              title={page.step4claim.error?.title}
+              description={page.step4claim.error?.error.message}
+              error={page.step4claim.error?.error}
+            />
 
-            {!!page.step4claim.error && (
-              <ErrorAlert className="mb-3" title={page.step4claim.error.title} error={page.step4claim.error.error}/>
-            )}
-
-            <ButtonWithWallet
-              chainId={props.quote.chainIdentifier}
-              onClick={page.step4claim.claim.onClick}
-              disabled={page.step4claim.claim.disabled}
-              size="lg"
-            >
-              {page.step4claim.claim.loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ''}
-              Finish swap (claim funds)
-            </ButtonWithWallet>
-          </div>
+            <SwapStepAlert
+              show={true}
+              type="success"
+              icon={ic_check_circle}
+              title="Bitcoin transaction confirmed"
+              description="Claim your payment to finish the swap."
+              actionElement={
+                <ButtonWithWallet
+                  requiredWalletAddress={props.quote._getInitiator()}
+                  className="swap-step-alert__button"
+                  chainId={props.quote?.chainIdentifier}
+                  onClick={page.step4claim.claim.onClick}
+                  disabled={page.step4claim.claim.disabled}
+                  variant="secondary"
+                >
+                  {page.step4claim.claim.loading ? (
+                    <Spinner animation="border" size="sm" className="mr-2" />
+                  ) : (
+                    <i className="icon icon-claim" />
+                  )}
+                  Claim your payment
+                </ButtonWithWallet>
+              }
+            />
+          </>
         )}
       </div>
     );
   }
 
-  if(page.step5) {
+  if (page.step5) {
     return (
       <>
         <div className="swap-panel__card">
@@ -154,7 +165,6 @@ export function SpvVaultFromBTCQuoteSummary(props: {
           )}
         </div>
 
-
         <BaseButton
           onClick={props.refreshQuote}
           className="swap-panel__action"
@@ -164,6 +174,6 @@ export function SpvVaultFromBTCQuoteSummary(props: {
           New quote
         </BaseButton>
       </>
-    )
+    );
   }
 }
