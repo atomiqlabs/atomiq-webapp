@@ -10,10 +10,9 @@ import { close } from 'react-icons-kit/fa/close';
 import { useLocation } from 'react-router-dom';
 import { SocialFooter } from './SocialFooter';
 
-// TODO Icons
 const navItems = [
   { link: '/', icon: 'swap-nav', title: 'Swap' },
-  { link: '/about', icon: 'Swap-History', title: 'Swap History' },
+  { link: '/history', icon: 'Swap-History', title: 'Swap History' },
   { link: '/faq', icon: 'Explorer', title: 'Explorer' },
   { link: '/more', icon: 'info', title: 'About' },
   { link: '/more-daco', icon: 'quesitons', title: 'FAQs' },
