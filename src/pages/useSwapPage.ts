@@ -218,6 +218,9 @@ export function useSwapPage(): SwapPageState {
     const counterTokens = swapper.getSwapCounterTokens(token, false);
     if (counterTokens.length === 0) return 'Address not supported for swaps!';
     const outputChainData: ChainWalletData<any> = chains[getChainIdentifierForCurrency(token)];
+    //This handles the case when the chain to be switched to already has a wallet connected,
+    // a connected wallet would block the address from being used, therefore the wallet
+    // is disconnected here
     if (
       outputChainData.wallet != null &&
       outputChainData.wallet.address != null &&
@@ -239,7 +242,6 @@ export function useSwapPage(): SwapPageState {
     inputToken,
     outputToken
   );
-  //TODO: Amount validation
 
   //Tokens setters
   const setInputToken = useCallback(
