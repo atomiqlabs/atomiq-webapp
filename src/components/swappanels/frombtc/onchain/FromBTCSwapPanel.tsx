@@ -288,38 +288,25 @@ export function FromBTCSwapPanel(props: {
   if (page.step5) {
     return (
       <>
-        {page.step5.state !== 'expired' ? (
-          <div className="swap-panel__card">
-            {stepByStep}
+        <div className="swap-panel__card">
+          {page.step5.state !== 'expired' && stepByStep}
 
-            <SwapExpiryProgressBar
-              show={page.step5.state === 'failed'}
-              expired={true}
-              timeRemaining={0}
-              totalTime={1}
-              expiryText="Swap address expired, please do not send any funds!"
-              quoteAlias="Swap address"
-            />
+          <SwapStepAlert
+            show={page.step5.state === 'success'}
+            type="success"
+            icon={ic_check_circle}
+            title="Swap success"
+            description="Your swap was executed successfully!"
+          />
 
-            <SwapStepAlert
-              show={page.step5.state === 'success'}
-              type="success"
-              icon={ic_check_circle}
-              title="Swap success"
-              description="Your swap was executed successfully!"
-            />
-
-            <SwapStepAlert
-              show={page.step5.state === 'failed'}
-              type="danger"
-              icon={ic_warning}
-              title="Swap failed"
-              description="Swap address expired without receiving the required funds!"
-            />
-          </div>
-        ) : (
-          ''
-        )}
+          <SwapStepAlert
+            show={page.step5.state === 'failed'}
+            type="danger"
+            icon={ic_warning}
+            title="Swap failed"
+            description="Swap address expired, please do not send any funds!"
+          />
+        </div>
 
         {gasAlert}
 

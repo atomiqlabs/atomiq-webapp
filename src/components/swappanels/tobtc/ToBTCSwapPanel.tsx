@@ -49,23 +49,21 @@ export function ToBTCSwapPanel(props: {
   if(page.step1init) {
     return (
       <>
-        <div className="swap-panel__card">
-          <SwapStepAlert
-            show={!!page.step1init.additionalGasRequired}
-            type="danger"
-            icon={ic_error_outline_outline}
-            title={`Not enough ${page.step1init.additionalGasRequired?.token.ticker} for fees`}
-            description={`You need at least ${page.step1init.additionalGasRequired?.toString()} more to pay for fees and deposits!`}
-          />
+        <SwapStepAlert
+          show={!!page.step1init.additionalGasRequired}
+          type="danger"
+          icon={ic_error_outline_outline}
+          title={`Not enough ${page.step1init.additionalGasRequired?.token.ticker} for fees`}
+          description={`You need at least ${page.step1init.additionalGasRequired?.toString()} more to pay for fees and deposits!`}
+        />
 
-          <SwapStepAlert
-            show={!!page.step1init.error}
-            type="error"
-            icon={ic_warning}
-            title={page.step1init.error?.title}
-            error={page.step1init.error?.error}
-          />
-        </div>
+        <SwapStepAlert
+          show={!!page.step1init.error}
+          type="error"
+          icon={ic_warning}
+          title={page.step1init.error?.title}
+          error={page.step1init.error?.error}
+        />
 
         <ButtonWithWallet
           className="swap-panel__action"
@@ -156,40 +154,37 @@ export function ToBTCSwapPanel(props: {
   if(page.step4) {
     return (
       <>
-        {/*NOTE: If swap is expired this fact is shown on the main UI's fee indicator*/}
-        {page.step4.state !== 'expired' ? (
-          <div className="swap-panel__card">
-            {stepByStep}
-          </div>
-        ) : ''}
+        <div className="swap-panel__card">
+          {page.step4.state !== 'expired' && stepByStep}
 
-        <SwapStepAlert
-          show={page.step4.state==="refunded"}
-          type="info"
-          icon={ic_settings_backup_restore_outline}
-          title="Funds returning"
-          description="Funds refunded successfully!"
-        />
+          <SwapStepAlert
+            show={page.step4.state==="refunded"}
+            type="info"
+            icon={ic_settings_backup_restore_outline}
+            title="Funds returning"
+            description="Funds refunded successfully!"
+          />
 
-        <SwapStepAlert
-          show={page.step4.state==="success"}
-          type="success"
-          icon={ic_check_circle}
-          title="Swap success"
-          description="Your swap was executed successfully!"
-          action={
-            props.quote.getType() === SwapType.TO_BTC
-              ? {
-                type: 'link',
-                text: 'View transaction',
-                href: FEConstants.btcBlockExplorer + props.quote.getOutputTxId(),
-              }
-              : undefined
-          }
-        />
+          <SwapStepAlert
+            show={page.step4.state==="success"}
+            type="success"
+            icon={ic_check_circle}
+            title="Swap success"
+            description="Your swap was executed successfully!"
+            action={
+              props.quote.getType() === SwapType.TO_BTC
+                ? {
+                  type: 'link',
+                  text: 'View transaction',
+                  href: FEConstants.btcBlockExplorer + props.quote.getOutputTxId(),
+                }
+                : undefined
+            }
+          />
+        </div>
 
-        <BaseButton onClick={props.refreshQuote} variant="secondary" className="swap-panel__action">
-          New quote
+        <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
+          New Swap
         </BaseButton>
       </>
     )

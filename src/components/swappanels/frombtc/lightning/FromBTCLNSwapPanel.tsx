@@ -46,10 +46,6 @@ export function FromBTCLNSwapPanel(props: {
   if(page.step1init) {
     return (
       <>
-        <div className="swap-panel__card">
-          {stepByStep}
-        </div>
-
         {gasAlert}
 
         {!!page.step1init.init && <ButtonWithWallet
@@ -237,7 +233,7 @@ export function FromBTCLNSwapPanel(props: {
         {gasAlert}
 
         <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
-          New quote
+          New Swap
         </BaseButton>
       </>
     )

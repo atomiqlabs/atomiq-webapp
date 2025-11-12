@@ -37,15 +37,13 @@ export function SpvVaultFromBTCSwapPanel(props: {
   if (page.step1init) {
     return (
       <>
-        <div className="swap-panel__card">
-          <SwapStepAlert
-            show={!!page.step1init.error}
-            type="warning"
-            icon={ic_warning}
-            title={page.step1init.error?.title}
-            error={page.step1init.error?.error}
-          />
-        </div>
+        <SwapStepAlert
+          show={!!page.step1init.error}
+          type="error"
+          icon={ic_warning}
+          title={page.step1init.error?.title}
+          error={page.step1init.error?.error}
+        />
 
         <ButtonWithWallet
           chainId="BITCOIN"

@@ -218,7 +218,7 @@ export function useFromBtcQuote(
               actual: confirmations,
               required: confirmationTarget
             },
-            eta: txEtaMs != null && txEtaMs !== -1 ? {
+            eta: txEtaMs != null ? {
               millis: txEtaMs,
               text: txEtaMs === -1 || txEtaMs > 60 * 60 * 1000
                 ? '>1 hour'
