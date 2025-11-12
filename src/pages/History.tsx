@@ -1,12 +1,12 @@
 import { ISwap, SwapType } from '@atomiqlabs/sdk';
 import * as React from 'react';
 import { useContext, useEffect, useState } from 'react';
-import { SwapsContext } from '../swaps/context/SwapsContext';
-import { SingleColumnStaticTable } from '../table/SingleColumnTable';
+import { SwapperContext } from '../context/SwapperContext';
 import { HistoryEntry } from '../components/history/HistoryEntry';
+import {ArrayDataPaginatedList} from "../components/list/ArrayDataPaginatedList";
 
 export function History() {
-  const { swapper } = useContext(SwapsContext);
+  const { swapper } = useContext(SwapperContext);
 
   const [swaps, setSwaps] = useState<ISwap[]>([]);
 
@@ -55,11 +55,9 @@ export function History() {
   return (
     <>
       <div className="flex-fill text-white container text-start">
-        <SingleColumnStaticTable<ISwap>
-          column={{
-            renderer: (row) => {
-              return <HistoryEntry swap={row} />;
-            },
+        <ArrayDataPaginatedList<ISwap>
+          renderer={(row) => {
+            return <HistoryEntry swap={row} />;
           }}
           data={swaps}
           itemsPerPage={10}

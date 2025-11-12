@@ -4,7 +4,7 @@ import { Navbar, Container, Nav, Badge, NavDropdown } from 'react-bootstrap';
 import Icon from 'react-icons-kit';
 import { FEConstants } from '../../FEConstants';
 import { BitcoinNetwork } from '@atomiqlabs/sdk';
-import { WalletConnections } from '../../wallets/WalletConnections';
+import { WalletConnector } from '../wallets/WalletConnector';
 import { angleDown } from 'react-icons-kit/fa/angleDown';
 import { close } from 'react-icons-kit/fa/close';
 import { useLocation } from 'react-router-dom';
@@ -69,7 +69,7 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={() => setIsOpen(!isOpen)} />
           <div className="main-navigation__wallet">
-            <WalletConnections />
+            <WalletConnector />
           </div>
           <Navbar.Collapse
             ref={collapseRef}

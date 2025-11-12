@@ -1,16 +1,16 @@
-import { QRScanner } from '../../qr/QRScanner';
 import { Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { SwapTopbar } from '../SwapTopbar';
 import * as React from 'react';
 import { useCallback, useState } from 'react';
-import { smartChainTokenArray } from '../../tokens/Tokens';
-import { CurrencyDropdown } from '../../tokens/CurrencyDropdown';
+import { smartChainTokenArray } from '../../utils/Tokens';
+import { TokensDropdown } from '../../components/tokens/TokensDropdown';
 import Icon from 'react-icons-kit';
 import { ic_contactless } from 'react-icons-kit/md/ic_contactless';
 import { SCToken } from '@atomiqlabs/sdk';
-import { useNFCScanner } from '../../nfc/hooks/useNFCScanner';
-import { NFCStartResult } from '../../nfc/NFCReader';
+import { useNFCScanner } from '../../hooks/nfc/useNFCScanner';
+import { NFCStartResult } from '../../utils/NFCReader';
+import {QRScanner} from "../../components/qrscanner/QRScanner";
 
 export function QuickScan() {
   const navigate = useNavigate();
@@ -72,8 +72,8 @@ export function QuickScan() {
             <div className={'mx-auto ' + (NFCScanning === NFCStartResult.OK ? '' : 'mb-5')}>
               <div className="text-white p-3 position-relative">
                 <label>Pay with</label>
-                <CurrencyDropdown
-                  currencyList={smartChainTokenArray}
+                <TokensDropdown
+                  tokensList={smartChainTokenArray}
                   onSelect={(val) => {
                     setSelectedCurrency(val as SCToken);
                   }}

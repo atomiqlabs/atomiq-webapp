@@ -1,15 +1,15 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { QRScanner } from '../../qr/QRScanner';
 import { Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { SwapTopbar } from '../SwapTopbar';
 import { useCallback, useState } from 'react';
-import { smartChainTokenArray } from '../../tokens/Tokens';
-import { CurrencyDropdown } from '../../tokens/CurrencyDropdown';
+import { smartChainTokenArray } from '../../utils/Tokens';
+import { TokensDropdown } from '../../components/tokens/TokensDropdown';
 import Icon from 'react-icons-kit';
 import { ic_contactless } from 'react-icons-kit/md/ic_contactless';
-import { useNFCScanner } from '../../nfc/hooks/useNFCScanner';
-import { NFCStartResult } from '../../nfc/NFCReader';
+import { useNFCScanner } from '../../hooks/nfc/useNFCScanner';
+import { NFCStartResult } from '../../utils/NFCReader';
+import { QRScanner } from "../../components/qrscanner/QRScanner";
 export function QuickScan() {
     const navigate = useNavigate();
     const [selectedCurrency, setSelectedCurrency] = useState(null);
@@ -40,7 +40,7 @@ export function QuickScan() {
                             bottom: '0rem',
                             right: '0px',
                             left: '0px',
-                        }, children: _jsxs("div", { className: "d-flex justify-content-center align-items-center flex-column", children: [_jsx("div", { className: 'mx-auto ' + (NFCScanning === NFCStartResult.OK ? '' : 'mb-5'), children: _jsxs("div", { className: "text-white p-3 position-relative", children: [_jsx("label", { children: "Pay with" }), _jsx(CurrencyDropdown, { currencyList: smartChainTokenArray, onSelect: (val) => {
+                        }, children: _jsxs("div", { className: "d-flex justify-content-center align-items-center flex-column", children: [_jsx("div", { className: 'mx-auto ' + (NFCScanning === NFCStartResult.OK ? '' : 'mb-5'), children: _jsxs("div", { className: "text-white p-3 position-relative", children: [_jsx("label", { children: "Pay with" }), _jsx(TokensDropdown, { tokensList: smartChainTokenArray, onSelect: (val) => {
                                                     setSelectedCurrency(val);
                                                 }, value: selectedCurrency, className: "bg-dark bg-opacity-25 text-white" })] }) }), NFCScanning === NFCStartResult.OK ? (_jsxs(Button, { className: "mb-4 p-2 bg-opacity-25 bg-dark border-0 d-flex align-items-center text-white flex-row", children: [_jsx("span", { className: "position-relative me-1", style: { fontSize: '1.25rem' }, children: _jsx("b", { children: "NFC" }) }), _jsx(Icon, { size: 32, icon: ic_contactless })] })) : ('')] }) })] })] }));
 }

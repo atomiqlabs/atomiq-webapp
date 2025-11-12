@@ -1,0 +1,156 @@
+import {SolanaWalletWrapper, useSolanaChain} from './chains/useSolanaChain';
+import { ChainsContext } from '../context/ChainsContext';
+import { FEConstants } from '../FEConstants';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import {useStarknetChain} from "./chains/useStarknetChain";
+import {useLightningNetwork} from "./chains/useLightningNetwork";
+import {useBitcoinChain} from "./chains/useBitcoinChain";
+import {WebLNProvider} from "webln";
+import {SolanaSigner} from "@atomiqlabs/chain-solana";
+import {StarknetSigner} from "@atomiqlabs/chain-starknet";
+import {ExtensionBitcoinWallet} from "../wallets/bitcoin/base/ExtensionBitcoinWallet";
+import {ConnectWalletModal} from "../components/wallets/ConnectWalletModal";
+
+export type WalletListData = {
+  name: string;
+  icon: string;
+  downloadLink?: string;
+};
+
+export type Chain<T> = {
+  chain: {
+    name: string;
+    icon: string;
+  };
+  wallet: {
+    name: string;
+    icon: string;
+    address?: string;
+    instance: T;
+  };
+  installedWallets: Array<WalletListData & { isConnected?: boolean }>;
+  nonInstalledWallets: Array<WalletListData>;
+  chainId: string;
+  _disconnect: () => Promise<void> | void;
+  _connectWallet: (walletName: string) => Promise<void> | void;
+  swapperOptions?: any;
+  hasWallets: boolean;
+};
+
+export type WalletTypes = {
+  BITCOIN: ExtensionBitcoinWallet;
+  LIGHTNING: WebLNProvider;
+  SOLANA: SolanaSigner;
+  STARKNET: StarknetSigner;
+};
+
+export type ChainIdentifiers = keyof WalletTypes;
+
+function WrappedChainsProvider(props: { children: React.ReactNode }) {
+  const solanaResult = useSolanaChain(FEConstants.chainsConfiguration.enableSolana);
+  const starknetResult = useStarknetChain(FEConstants.chainsConfiguration.enableStarknet);
+  const lightningResult = useLightningNetwork(FEConstants.chainsConfiguration.enableLightning);
+  const bitcoinResult = useBitcoinChain(FEConstants.chainsConfiguration.enableBitcoin, {
+    STARKNET: starknetResult?.wallet?.name,
+    SOLANA: solanaResult?.wallet?.name,
+  });
+
+  const chains = useMemo(() => {
+    const chainsData: Record<string, Chain<any>> = {};
+
+    // Add wallets and chain data based on configuration
+    if (FEConstants.chainsConfiguration.enableSolana && solanaResult) chainsData.SOLANA = solanaResult;
+    if (FEConstants.chainsConfiguration.enableStarknet && starknetResult) chainsData.STARKNET = starknetResult;
+    if (FEConstants.chainsConfiguration.enableLightning && lightningResult) chainsData.LIGHTNING = lightningResult;
+    if (FEConstants.chainsConfiguration.enableBitcoin && bitcoinResult) chainsData.BITCOIN = bitcoinResult;
+
+    return chainsData;
+  }, [solanaResult, starknetResult, lightningResult, bitcoinResult]);
+
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [modalChainId, setModalChainId] = useState<string>();
+  const modalSelectedChainData = useMemo(() => chains[modalChainId], [modalChainId]);
+
+  const connectWalletPromiseCbk = useRef<(success: boolean) => void>();
+
+  const connectWallet: (chainIdentifier: string) => Promise<boolean> = useCallback(
+    (chainIdentifier: string) => {
+      setModalOpen(true);
+      setModalChainId(chainIdentifier);
+      if (connectWalletPromiseCbk.current) connectWalletPromiseCbk.current(false);
+      return new Promise<boolean>((resolve) => {
+        connectWalletPromiseCbk.current = resolve;
+      });
+    },
+    [chains]
+  );
+  const disconnectWallet: (chainIdentifier: string) => Promise<void> = useCallback(
+    async (chainIdentifier: string) => {
+      const chain = chains[chainIdentifier];
+      if (!chain) return;
+      await chain._disconnect();
+    },
+    [chains]
+  );
+  const changeWallet: (chainIdentifier: string) => Promise<void> = useCallback(
+    async (chainIdentifier: string) => {
+      const chain = chains[chainIdentifier];
+      if (!chain || !chain._disconnect) return;
+      await chain._disconnect();
+      setModalOpen(true);
+      setModalChainId(chainIdentifier);
+    },
+    [chains]
+  );
+
+  return (
+    <ChainsContext.Provider
+      value={{
+        chains,
+        connectWallet,
+        disconnectWallet,
+        changeWallet,
+      }}
+    >
+      <ConnectWalletModal
+        visible={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          if (connectWalletPromiseCbk.current) {
+            connectWalletPromiseCbk.current(false);
+            connectWalletPromiseCbk.current = null;
+          }
+        }}
+        title={`Select a ${modalSelectedChainData?.chain.name ?? modalChainId} Wallet`}
+        installedWallets={modalSelectedChainData?.installedWallets ?? []}
+        notInstalledWallets={modalSelectedChainData?.nonInstalledWallets ?? []}
+        onWalletClick={(wallet) => {
+          if (modalSelectedChainData == null) return;
+          (async () => {
+            try {
+              await modalSelectedChainData._connectWallet(wallet.name);
+              setModalOpen(false);
+              if (connectWalletPromiseCbk.current) {
+                connectWalletPromiseCbk.current(true);
+                connectWalletPromiseCbk.current = null;
+              }
+            } catch (e) {
+              alert(
+                `Failed to connect to ${wallet.name}. This wallet may not be available or compatible with the ${modalSelectedChainData.chain.name} network.`
+              );
+            }
+          })();
+        }}
+      />
+      {props.children}
+    </ChainsContext.Provider>
+  );
+}
+
+export function ChainsProvider(props: { children: React.ReactNode }) {
+  return (
+    <SolanaWalletWrapper>
+      <WrappedChainsProvider>{props.children}</WrappedChainsProvider>
+    </SolanaWalletWrapper>
+  );
+}

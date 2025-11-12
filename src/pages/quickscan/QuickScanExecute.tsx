@@ -1,29 +1,29 @@
 import ValidatedInput, { numberValidator } from '../../components/ValidatedInput';
-import { CurrencyDropdown } from '../../tokens/CurrencyDropdown';
+import { TokensDropdown } from '../../components/tokens/TokensDropdown';
 import * as React from 'react';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { FeeSummaryScreen } from '../../fees/FeeSummaryScreen';
+import { FeeSummaryScreen } from '../../components/fees/FeeSummaryScreen';
 import { Badge, Button, Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import { SCToken, SwapType } from '@atomiqlabs/sdk';
 import BigNumber from 'bignumber.js';
-import { smartChainTokenArray } from '../../tokens/Tokens';
-import { QuoteSummary } from '../../swaps/QuoteSummary';
+import { smartChainTokenArray } from '../../utils/Tokens';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SwapTopbar } from '../SwapTopbar';
-import { SwapsContext } from '../../swaps/context/SwapsContext';
-import { TokenIcon } from '../../tokens/TokenIcon';
-import { useAddressData } from '../../swaps/hooks/useAddressData';
-import { useAmountConstraints } from '../../swaps/hooks/useAmountConstraints';
-import { useQuote } from '../../swaps/hooks/useQuote';
-import { useWalletBalance } from '../../wallets/hooks/useWalletBalance';
+import { SwapperContext } from '../../context/SwapperContext';
+import { TokenIcon } from '../../components/tokens/TokenIcon';
+import { useAddressData } from '../../hooks/quoting/useAddressData';
+import { useAmountConstraints } from '../../hooks/quoting/useAmountConstraints';
+import { useQuote } from '../../hooks/quoting/useQuote';
+import { useWalletBalance } from '../../hooks/wallets/useWalletBalance';
 import { ScrollAnchor } from '../../components/ScrollAnchor';
-import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { ErrorAlert } from '../../components/ErrorAlert';
+import { useLocalStorage } from '../../hooks/utils/useLocalStorage';
+import { ErrorAlert } from '../../components/_deprecated/ErrorAlert';
 import { Tokens } from '../../FEConstants';
-import { useStateWithOverride } from '../../utils/hooks/useStateWithOverride';
+import { useStateWithOverride } from '../../hooks/utils/useStateWithOverride';
+import {SwapPanel} from "../../components/swappanels/SwapPanel";
 
 export function QuickScanExecute() {
-  const { swapper } = useContext(SwapsContext);
+  const { swapper } = useContext(SwapperContext);
 
   const navigate = useNavigate();
   const goBack = () => navigate('/scan');
@@ -168,8 +168,8 @@ export function QuickScanExecute() {
                 <label className="fw-bold mb-1">{!exactIn ? 'with' : 'to'}</label>
 
                 <div className="d-flex justify-content-center">
-                  <CurrencyDropdown
-                    currencyList={selectableCurrencies}
+                  <TokensDropdown
+                    tokensList={selectableCurrencies}
                     onSelect={(val) => {
                       if (isLocked) return;
                       setSelectedCurrency(val as SCToken);
@@ -231,7 +231,7 @@ export function QuickScanExecute() {
             {quote != null ? (
               <>
                 <FeeSummaryScreen swap={quote} className="mt-3 mb-3 tab-accent" />
-                <QuoteSummary
+                <SwapPanel
                   UICallback={() => {}}
                   type={'payment'}
                   quote={quote}

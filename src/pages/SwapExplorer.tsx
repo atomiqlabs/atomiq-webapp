@@ -11,14 +11,14 @@ import {
 } from 'react-bootstrap';
 import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { SingleColumnBackendTable } from '../table/SingleColumnBackendTable';
+import { BackendDataPaginatedList } from '../components/list/BackendDataPaginatedList';
 import Icon from 'react-icons-kit';
 import { ic_arrow_forward } from 'react-icons-kit/md/ic_arrow_forward';
 import { ic_arrow_downward } from 'react-icons-kit/md/ic_arrow_downward';
 import ValidatedInput, { ValidatedInputRef } from '../components/ValidatedInput';
 import { ChainSwapType, toHumanReadableString, Token } from '@atomiqlabs/sdk';
 import { getTimeDeltaText } from '../utils/Utils';
-import { TokenIcon } from '../tokens/TokenIcon';
+import { TokenIcon } from '../components/tokens/TokenIcon';
 
 const timeframes = ['24h', '7d', '30d'];
 
@@ -173,7 +173,7 @@ export function SwapExplorer(props: {}) {
       </div>
 
       <div>
-        <SingleColumnBackendTable<{
+        <BackendDataPaginatedList<{
           chainId?: string;
           paymentHash: string;
 
@@ -216,210 +216,151 @@ export function SwapExplorer(props: {}) {
           _btcRawAmount: number;
           _btcAmount: number;
         }>
-          column={{
-            renderer: (row) => {
-              const chainId: string = row.chainId ?? 'SOLANA';
+          renderer={(row) => {
+            const chainId: string = row.chainId ?? 'SOLANA';
 
-              let inputAmount: bigint;
-              let inputCurrency: Token;
-              let outputAmount: bigint;
-              let outputCurrency: Token;
+            let inputAmount: bigint;
+            let inputCurrency: Token;
+            let outputAmount: bigint;
+            let outputCurrency: Token;
 
-              let inputExplorer;
-              let txIdInput;
-              let outputExplorer;
-              let txIdOutput;
+            let inputExplorer;
+            let txIdInput;
+            let outputExplorer;
+            let txIdOutput;
 
-              let inputAddress: string = 'Unknown';
-              let outputAddress: string = 'Unknown';
+            let inputAddress: string = 'Unknown';
+            let outputAddress: string = 'Unknown';
 
-              let inputInfo: string;
-              let outputInfo: string;
+            let inputInfo: string;
+            let outputInfo: string;
 
-              if (row.direction === 'ToBTC') {
-                inputAmount = BigInt(row.rawAmount);
-                inputCurrency = TokenResolver[chainId].getToken(row.token);
-                outputAmount = row.btcRawAmount == null ? null : BigInt(row.btcRawAmount);
-                outputCurrency = row.type === 'CHAIN' ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
-                txIdInput = row.txInit;
-                txIdOutput = row.type === 'CHAIN' ? row.btcTx : row.paymentHash;
-                inputExplorer = FEConstants.blockExplorers[chainId];
-                outputExplorer = row.type === 'CHAIN' ? FEConstants.btcBlockExplorer : null;
-                if (row.type === 'LN') {
-                  outputInfo = 'Lightning network amounts and addresses are private!';
-                } else if (!row.finished) {
-                  outputInfo = 'BTC amounts for pending swaps are blinded!';
-                } else if (!row.success) {
-                  outputInfo = 'BTC amounts & addresses for failed swaps are never un-blinded!';
-                }
-                inputAddress = row.clientWallet;
-                if (row.type === 'CHAIN') outputAddress = row.btcAddress || 'Unknown';
-              } else {
-                outputAmount = BigInt(row.rawAmount);
-                outputCurrency = TokenResolver[chainId].getToken(row.token);
-                inputAmount = row.btcRawAmount == null ? null : BigInt(row.btcRawAmount);
-                inputCurrency = row.type === 'CHAIN' ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
-                txIdOutput = row.txInit;
-                txIdInput = row.type === 'CHAIN' ? row.btcTx : row.paymentHash;
-                outputExplorer = FEConstants.blockExplorers[chainId];
-                inputExplorer = row.type === 'CHAIN' ? FEConstants.btcBlockExplorer : null;
-                if (row.type === 'LN') {
-                  inputInfo = 'Lightning network amounts and addresses are private!';
-                } else if (!row.finished) {
-                  inputInfo = 'BTC amounts for pending swaps are blinded!';
-                } else if (!row.success) {
-                  inputInfo = 'BTC amounts & addresses for failed swaps are never un-blinded!';
-                }
-                outputAddress = row.clientWallet;
-                if (row.type === 'CHAIN' && row.btcInAddresses != null) {
-                  inputAddress = row.btcInAddresses[0];
-                }
+            if (row.direction === 'ToBTC') {
+              inputAmount = BigInt(row.rawAmount);
+              inputCurrency = TokenResolver[chainId].getToken(row.token);
+              outputAmount = row.btcRawAmount == null ? null : BigInt(row.btcRawAmount);
+              outputCurrency = row.type === 'CHAIN' ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
+              txIdInput = row.txInit;
+              txIdOutput = row.type === 'CHAIN' ? row.btcTx : row.paymentHash;
+              inputExplorer = FEConstants.blockExplorers[chainId];
+              outputExplorer = row.type === 'CHAIN' ? FEConstants.btcBlockExplorer : null;
+              if (row.type === 'LN') {
+                outputInfo = 'Lightning network amounts and addresses are private!';
+              } else if (!row.finished) {
+                outputInfo = 'BTC amounts for pending swaps are blinded!';
+              } else if (!row.success) {
+                outputInfo = 'BTC amounts & addresses for failed swaps are never un-blinded!';
               }
+              inputAddress = row.clientWallet;
+              if (row.type === 'CHAIN') outputAddress = row.btcAddress || 'Unknown';
+            } else {
+              outputAmount = BigInt(row.rawAmount);
+              outputCurrency = TokenResolver[chainId].getToken(row.token);
+              inputAmount = row.btcRawAmount == null ? null : BigInt(row.btcRawAmount);
+              inputCurrency = row.type === 'CHAIN' ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
+              txIdOutput = row.txInit;
+              txIdInput = row.type === 'CHAIN' ? row.btcTx : row.paymentHash;
+              outputExplorer = FEConstants.blockExplorers[chainId];
+              inputExplorer = row.type === 'CHAIN' ? FEConstants.btcBlockExplorer : null;
+              if (row.type === 'LN') {
+                inputInfo = 'Lightning network amounts and addresses are private!';
+              } else if (!row.finished) {
+                inputInfo = 'BTC amounts for pending swaps are blinded!';
+              } else if (!row.success) {
+                inputInfo = 'BTC amounts & addresses for failed swaps are never un-blinded!';
+              }
+              outputAddress = row.clientWallet;
+              if (row.type === 'CHAIN' && row.btcInAddresses != null) {
+                inputAddress = row.btcInAddresses[0];
+              }
+            }
 
-              return (
-                <Row className="d-flex flex-row gx-1 gy-1">
-                  <Col xl={2} md={12} className="d-flex text-md-end text-start">
-                    <Row className="gx-1 gy-0 width-fill">
-                      <Col xl={6} md={2} xs={6}>
-                        {!row.finished ? (
-                          <Badge bg="primary" className="width-fill">
-                            Pending
-                          </Badge>
-                        ) : row.success ? (
-                          <Badge bg="success" className="width-fill">
-                            Success
-                          </Badge>
-                        ) : row.direction === 'FromBTC' ? (
-                          <Badge bg="warning" className="width-fill bg-atomiq-orange">
-                            Expired
-                          </Badge>
-                        ) : (
-                          <Badge bg="danger" className="width-fill">
-                            Refunded
-                          </Badge>
-                        )}
-                      </Col>
-                      <Col xl={6} md={2} xs={6}>
-                        <Badge
-                          bg={row.type === 'LN' ? 'dark' : row.kind === -1 ? 'info' : 'warning'}
-                          className="width-fill"
-                        >
-                          {row.type === 'LN' ? 'Lightning' : 'On-chain'}
-                          <img
-                            src={'/icons/chains/' + chainId + '.svg'}
-                            className="ms-1"
-                            style={{
-                              width: '18px',
-                              marginTop: '-8px',
-                              marginBottom: '-4px',
-                            }}
-                          />
+            return (
+              <Row className="d-flex flex-row gx-1 gy-1">
+                <Col xl={2} md={12} className="d-flex text-md-end text-start">
+                  <Row className="gx-1 gy-0 width-fill">
+                    <Col xl={6} md={2} xs={6}>
+                      {!row.finished ? (
+                        <Badge bg="primary" className="width-fill">
+                          Pending
                         </Badge>
-                      </Col>
-                      <Col xl={0} lg={2} md={1} xs={0}></Col>
-                      <Col xl={12} lg={2} md={3} xs={6}>
-                        <small className="">
-                          {new Date(row.timestampInit * 1000).toLocaleString()}
-                        </small>
-                      </Col>
-                      <Col xl={12} md={2} xs={3}>
-                        <small className="">{getTimeDeltaText(row.timestampInit * 1000)} ago</small>
-                      </Col>
-                      <Col xl={12} md={2} xs={3} className="text-end">
+                      ) : row.success ? (
+                        <Badge bg="success" className="width-fill">
+                          Success
+                        </Badge>
+                      ) : row.direction === 'FromBTC' ? (
+                        <Badge bg="warning" className="width-fill bg-atomiq-orange">
+                          Expired
+                        </Badge>
+                      ) : (
+                        <Badge bg="danger" className="width-fill">
+                          Refunded
+                        </Badge>
+                      )}
+                    </Col>
+                    <Col xl={6} md={2} xs={6}>
+                      <Badge
+                        bg={row.type === 'LN' ? 'dark' : row.kind === -1 ? 'info' : 'warning'}
+                        className="width-fill"
+                      >
+                        {row.type === 'LN' ? 'Lightning' : 'On-chain'}
+                        <img
+                          src={'/icons/chains/' + chainId + '.svg'}
+                          className="ms-1"
+                          style={{
+                            width: '18px',
+                            marginTop: '-8px',
+                            marginBottom: '-4px',
+                          }}
+                        />
+                      </Badge>
+                    </Col>
+                    <Col xl={0} lg={2} md={1} xs={0}></Col>
+                    <Col xl={12} lg={2} md={3} xs={6}>
+                      <small className="">
+                        {new Date(row.timestampInit * 1000).toLocaleString()}
+                      </small>
+                    </Col>
+                    <Col xl={12} md={2} xs={3}>
+                      <small className="">{getTimeDeltaText(row.timestampInit * 1000)} ago</small>
+                    </Col>
+                    <Col xl={12} md={2} xs={3} className="text-end">
                         <span className="font-weight-500">
                           {FEConstants.USDollar.format(row._usdValue)}
                         </span>
-                      </Col>
-                    </Row>
-                  </Col>
-                  <Col xl={10} md={12} className="d-flex">
-                    <div className="card border-0 bg-white bg-opacity-10 p-2 width-fill container-fluid">
-                      <Row className="">
-                        <Col md={6} xs={12} className="d-flex flex-row align-items-center">
-                          <div className="min-width-0 me-md-2">
-                            <a
-                              className="font-small single-line-ellipsis"
-                              target="_blank"
-                              href={
-                                inputExplorer == null || txIdInput == null
-                                  ? null
-                                  : inputExplorer + txIdInput
-                              }
-                            >
-                              {txIdInput || 'None'}
-                            </a>
-                            <span className="d-flex align-items-center font-weight-500 my-1">
-                              <TokenIcon
-                                tokenOrTicker={inputCurrency}
-                                className="currency-icon-medium"
-                              />
-                              {inputAmount == null || inputCurrency == null
-                                ? '???'
-                                : toHumanReadableString(inputAmount, inputCurrency)}{' '}
-                              {inputCurrency?.ticker || '???'}
-                              {inputInfo != null ? (
-                                <OverlayTrigger
-                                  overlay={
-                                    <Tooltip id={'explorer-tooltip-in-' + row.id}>
-                                      {inputInfo}
-                                    </Tooltip>
-                                  }
-                                >
-                                  <Badge bg="primary" className="ms-2 pill-round px-2" pill>
-                                    ?
-                                  </Badge>
-                                </OverlayTrigger>
-                              ) : (
-                                ''
-                              )}
-                            </span>
-                            <small className="single-line-ellipsis">{inputAddress}</small>
-                          </div>
-                          <Icon
-                            size={22}
-                            icon={ic_arrow_forward}
-                            className="d-md-block d-none"
-                            style={{
-                              marginLeft: 'auto',
-                              marginRight: '-22px',
-                              marginBottom: '6px',
-                            }}
-                          />
-                        </Col>
-                        <Col md={0} xs={12} className="d-md-none d-flex justify-content-center">
-                          <Icon
-                            size={22}
-                            icon={ic_arrow_downward}
-                            className=""
-                            style={{ marginBottom: '6px' }}
-                          />
-                        </Col>
-                        <Col md={6} xs={12} className="ps-md-4">
+                    </Col>
+                  </Row>
+                </Col>
+                <Col xl={10} md={12} className="d-flex">
+                  <div className="card border-0 bg-white bg-opacity-10 p-2 width-fill container-fluid">
+                    <Row className="">
+                      <Col md={6} xs={12} className="d-flex flex-row align-items-center">
+                        <div className="min-width-0 me-md-2">
                           <a
                             className="font-small single-line-ellipsis"
                             target="_blank"
                             href={
-                              outputExplorer == null || txIdOutput == null
+                              inputExplorer == null || txIdInput == null
                                 ? null
-                                : outputExplorer + txIdOutput
+                                : inputExplorer + txIdInput
                             }
                           >
-                            {txIdOutput || '...'}
+                            {txIdInput || 'None'}
                           </a>
                           <span className="d-flex align-items-center font-weight-500 my-1">
-                            <TokenIcon
-                              tokenOrTicker={outputCurrency}
-                              className="currency-icon-medium"
-                            />
-                            {outputAmount == null || outputCurrency == null
+                              <TokenIcon
+                                tokenOrTicker={inputCurrency}
+                                className="currency-icon-medium"
+                              />
+                            {inputAmount == null || inputCurrency == null
                               ? '???'
-                              : toHumanReadableString(outputAmount, outputCurrency)}{' '}
-                            {outputCurrency?.ticker || '???'}
-                            {outputInfo != null ? (
+                              : toHumanReadableString(inputAmount, inputCurrency)}{' '}
+                            {inputCurrency?.ticker || '???'}
+                            {inputInfo != null ? (
                               <OverlayTrigger
                                 overlay={
-                                  <Tooltip id={'explorer-tooltip-out-' + row.id}>
-                                    {outputInfo}
+                                  <Tooltip id={'explorer-tooltip-in-' + row.id}>
+                                    {inputInfo}
                                   </Tooltip>
                                 }
                               >
@@ -430,15 +371,72 @@ export function SwapExplorer(props: {}) {
                             ) : (
                               ''
                             )}
+                            </span>
+                          <small className="single-line-ellipsis">{inputAddress}</small>
+                        </div>
+                        <Icon
+                          size={22}
+                          icon={ic_arrow_forward}
+                          className="d-md-block d-none"
+                          style={{
+                            marginLeft: 'auto',
+                            marginRight: '-22px',
+                            marginBottom: '6px',
+                          }}
+                        />
+                      </Col>
+                      <Col md={0} xs={12} className="d-md-none d-flex justify-content-center">
+                        <Icon
+                          size={22}
+                          icon={ic_arrow_downward}
+                          className=""
+                          style={{ marginBottom: '6px' }}
+                        />
+                      </Col>
+                      <Col md={6} xs={12} className="ps-md-4">
+                        <a
+                          className="font-small single-line-ellipsis"
+                          target="_blank"
+                          href={
+                            outputExplorer == null || txIdOutput == null
+                              ? null
+                              : outputExplorer + txIdOutput
+                          }
+                        >
+                          {txIdOutput || '...'}
+                        </a>
+                        <span className="d-flex align-items-center font-weight-500 my-1">
+                            <TokenIcon
+                              tokenOrTicker={outputCurrency}
+                              className="currency-icon-medium"
+                            />
+                          {outputAmount == null || outputCurrency == null
+                            ? '???'
+                            : toHumanReadableString(outputAmount, outputCurrency)}{' '}
+                          {outputCurrency?.ticker || '???'}
+                          {outputInfo != null ? (
+                            <OverlayTrigger
+                              overlay={
+                                <Tooltip id={'explorer-tooltip-out-' + row.id}>
+                                  {outputInfo}
+                                </Tooltip>
+                              }
+                            >
+                              <Badge bg="primary" className="ms-2 pill-round px-2" pill>
+                                ?
+                              </Badge>
+                            </OverlayTrigger>
+                          ) : (
+                            ''
+                          )}
                           </span>
-                          <small className="single-line-ellipsis">{outputAddress}</small>
-                        </Col>
-                      </Row>
-                    </div>
-                  </Col>
-                </Row>
-              );
-            },
+                        <small className="single-line-ellipsis">{outputAddress}</small>
+                      </Col>
+                    </Row>
+                  </div>
+                </Col>
+              </Row>
+            );
           }}
           endpoint={FEConstants.statsUrl + '/GetSwapList'}
           itemsPerPage={10}

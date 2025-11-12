@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { Badge, Button, ButtonGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { SwapsContext } from '../swaps/context/SwapsContext';
+import { SwapperContext } from '../context/SwapperContext';
 import { useContext, useEffect, useState } from 'react';
 // TODO probably remove later, when this will be implemented elsewhere
 const tabs = [
@@ -24,7 +24,7 @@ const tabs = [
 ];
 export function SwapTopbar(props) {
     const navigate = useNavigate();
-    const { swapper } = useContext(SwapsContext);
+    const { swapper } = useContext(SwapperContext);
     const [actionableSwaps, setActionableSwaps] = useState(new Set());
     useEffect(() => {
         if (swapper == null)

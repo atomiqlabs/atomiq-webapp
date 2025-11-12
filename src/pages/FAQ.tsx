@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Accordion } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
-import { useAnchorNavigate } from '../utils/hooks/useAnchorNavigate';
+import { useAnchorNavigate } from '../hooks/navigation/useAnchorNavigate';
 
 export function FAQ(props: {}) {
   const { search } = useLocation() as { search: string };

@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { useState } from 'react';
 import ValidatedInput from '../components/ValidatedInput';
-import { QRScannerModal } from '../qr/QRScannerModal';
 import { Alert, Button, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
-import { CurrencyDropdown } from '../tokens/CurrencyDropdown';
-import { SimpleFeeSummaryScreen } from '../fees/SimpleFeeScreen';
-import { QuoteSummary } from '../swaps/QuoteSummary';
-import { SwapStepAlert } from '../swaps/components/SwapStepAlert';
-import { ConnectedWalletAnchor } from '../wallets/ConnectedWalletAnchor';
-import { AuditedBy } from '../components/AuditedBy';
+import { TokensDropdown } from '../components/tokens/TokensDropdown';
+import { SimpleFeeSummaryScreen } from '../components/fees/SimpleFeeScreen';
+import { SwapStepAlert } from '../components/swaps/SwapStepAlert';
+import { WalletInfoBadge } from '../components/wallets/WalletInfoBadge';
+import { AuditedBy } from '../components/_deprecated/AuditedBy';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import { useSwapPage } from './useSwapPage';
+import { useSwapPage } from '../hooks/pages/useSwapPage';
 import { BaseButton } from '../components/BaseButton';
+import {QRScannerModal} from "../components/qrscanner/QRScannerModal";
+import {SwapPanel} from "../components/swappanels/SwapPanel";
 
 export function SwapNew() {
   const swapPage = useSwapPage();
@@ -60,7 +60,7 @@ export function SwapNew() {
                   {swapPage.input.wallet?.spendable != null ? (
                     <div className="swap-connected-wallet">
                       <div className="swap-panel__card__wallet">
-                        <ConnectedWalletAnchor
+                        <WalletInfoBadge
                           noText={false}
                           simple={true}
                           setMax={() =>
@@ -74,7 +74,7 @@ export function SwapNew() {
                     </div>
                   ) : (
                     <div className="swap-panel__card__wallet">
-                      <ConnectedWalletAnchor
+                      <WalletInfoBadge
                         noText={false}
                         simple={true}
                         currency={swapPage.input.token.value}
@@ -84,8 +84,8 @@ export function SwapNew() {
                   )}
                 </div>
                 <div className="swap-panel__card__body">
-                  <CurrencyDropdown
-                    currencyList={swapPage.input.token.values}
+                  <TokensDropdown
+                    tokensList={swapPage.input.token.values}
                     onSelect={swapPage.input.token.disabled ? undefined : swapPage.input.token.onChange}
                     value={swapPage.input.token.value}
                     className="round-right text-white bg-black bg-opacity-10"
@@ -153,7 +153,7 @@ export function SwapNew() {
                   <div className="swap-panel__card__header">
                     <div className="swap-panel__card__title">You receive</div>
                     <div className="swap-panel__card__wallet">
-                      <ConnectedWalletAnchor
+                      <WalletInfoBadge
                         noText={false}
                         simple={true}
                         currency={swapPage.output.token.value}
@@ -163,8 +163,8 @@ export function SwapNew() {
                     </div>
                   </div>
                   <div className="swap-panel__card__body">
-                    <CurrencyDropdown
-                      currencyList={swapPage.output.token.values}
+                    <TokensDropdown
+                      tokensList={swapPage.output.token.values}
                       onSelect={swapPage.output.token.disabled ? undefined : swapPage.output.token.onChange}
                       value={swapPage.output.token.value}
                       className="round-right text-white bg-black bg-opacity-10"
@@ -361,7 +361,7 @@ export function SwapNew() {
 
           {swapPage.quote.quote != null && (!swapPage.quote.isRandom || swapPage.swapTypeData.requiresOutputWallet) ? (
             <div className="d-flex flex-column text-white">
-              <QuoteSummary
+              <SwapPanel
                 type="swap"
                 quote={swapPage.quote.quote}
                 balance={swapPage.input.wallet?.spendable?.rawAmount}

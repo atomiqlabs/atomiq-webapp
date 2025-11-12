@@ -1,25 +1,25 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { Badge, Card, Col, Form, Placeholder, Row } from 'react-bootstrap';
-import { bitcoinTokenArray } from '../tokens/Tokens';
+import { bitcoinTokenArray } from '../utils/Tokens';
 import { useContext, useEffect, useState } from 'react';
 import ValidatedInput from '../components/ValidatedInput';
 import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
-import { SingleColumnStaticTable } from '../table/SingleColumnTable';
 import { getTimeDeltaText } from '../utils/Utils';
-import { SwapsContext } from '../swaps/context/SwapsContext';
-import { TokenIcon } from '../tokens/TokenIcon';
-import { ButtonWithWallet } from '../wallets/ButtonWithWallet';
-import { ErrorAlert } from '../components/ErrorAlert';
+import { SwapperContext } from '../context/SwapperContext';
+import { TokenIcon } from '../components/tokens/TokenIcon';
+import { ButtonWithWallet } from '../components/wallets/ButtonWithWallet';
+import { ErrorAlert } from '../components/_deprecated/ErrorAlert';
 import { toHumanReadableString } from '@atomiqlabs/sdk';
-import { ChainDataContext } from '../wallets/context/ChainDataContext';
+import { ChainsContext } from '../context/ChainsContext';
+import { ArrayDataPaginatedList } from "../components/list/ArrayDataPaginatedList";
 const chain = 'SOLANA';
 export function Affiliate() {
-    const { swapper } = useContext(SwapsContext);
+    const { swapper } = useContext(SwapperContext);
     const [data, setData] = useState();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState();
     const currencySpec = data?.token == null ? null : TokenResolver[chain].getToken(data.token);
-    const chains = useContext(ChainDataContext);
+    const chains = useContext(ChainsContext);
     const solanaWallet = chains?.[chain]?.wallet;
     useEffect(() => {
         if (swapper == null || solanaWallet == null) {
@@ -62,16 +62,14 @@ export function Affiliate() {
                                                             : BigInt(data?.stats?.unclaimedFeeSats), bitcoinTokenArray[0]) + ' BTC'] })) }), _jsx("label", { className: "mb-2", children: loading || currencySpec == null ? (_jsx(Placeholder, { xs: 6 })) : (_jsxs(_Fragment, { children: [_jsx(TokenIcon, { tokenOrTicker: currencySpec, className: "currency-icon-small pb-2" }), '~' +
                                                             toHumanReadableString(data?.unclaimedUsdcValue == null ? 0n : BigInt(data?.unclaimedUsdcValue), currencySpec) +
                                                             ' ' +
-                                                            currencySpec.ticker] })) })] }) })] }), _jsx("h1", { className: "section-title mt-4", children: "Payouts" }), _jsx(SingleColumnStaticTable, { data: data?.stats?.payouts != null ? data.stats.payouts : [], column: {
-                                renderer: (row) => {
-                                    let inputAmount = BigInt(row.amountSats);
-                                    let inputCurrency = Tokens.BITCOIN.BTC;
-                                    let outputAmount = BigInt(row.amountToken);
-                                    let outputCurrency = TokenResolver[chain].getToken(row.token);
-                                    let txIdInput = row.txId;
-                                    return (_jsxs(Row, { className: "d-flex flex-row gx-1 gy-1", children: [_jsx(Col, { xl: 2, md: 12, className: "d-flex text-md-end text-start", children: _jsxs(Row, { className: "gx-1 gy-0 width-fill", children: [_jsx(Col, { xl: 12, md: 4, xs: 12, children: row.state === 'pending' ? (_jsx(Badge, { bg: "primary", className: "width-fill", children: "Pending" })) : row.state === 'success' ? (_jsx(Badge, { bg: "success", className: "width-fill", children: "Success" })) : (_jsx(Badge, { bg: "danger", className: "width-fill", children: "Refunded" })) }), _jsx(Col, { xl: 12, md: 4, xs: 6, children: _jsx("small", { className: "", children: new Date(row.timestamp).toLocaleString() }) }), _jsx(Col, { xl: 12, md: 4, xs: 6, className: "text-end", children: _jsxs("small", { className: "", children: [getTimeDeltaText(row.timestamp), " ago"] }) })] }) }), _jsx(Col, { xl: 10, md: 12, className: "d-flex", children: _jsx("div", { className: "card border-0 bg-white bg-opacity-10 p-2 width-fill container-fluid", children: _jsxs("div", { className: "min-width-0", children: [_jsx("a", { className: "font-small single-line-ellipsis", target: "_blank", href: txIdInput == null
-                                                                    ? null
-                                                                    : FEConstants.blockExplorers[chain] + txIdInput, children: txIdInput || 'None' }), _jsxs("span", { className: "d-flex align-items-center font-weight-500 my-1", children: [_jsx(TokenIcon, { tokenOrTicker: outputCurrency, className: "currency-icon-medium" }), toHumanReadableString(outputAmount, outputCurrency), ' ', outputCurrency.ticker] }), _jsxs("small", { className: "d-flex align-items-center", children: [_jsx(TokenIcon, { tokenOrTicker: inputCurrency, className: "currency-icon-small" }), toHumanReadableString(inputAmount, inputCurrency), ' ', inputCurrency.ticker] })] }) }) })] }));
-                                },
+                                                            currencySpec.ticker] })) })] }) })] }), _jsx("h1", { className: "section-title mt-4", children: "Payouts" }), _jsx(ArrayDataPaginatedList, { data: data?.stats?.payouts != null ? data.stats.payouts : [], renderer: (row) => {
+                                let inputAmount = BigInt(row.amountSats);
+                                let inputCurrency = Tokens.BITCOIN.BTC;
+                                let outputAmount = BigInt(row.amountToken);
+                                let outputCurrency = TokenResolver[chain].getToken(row.token);
+                                let txIdInput = row.txId;
+                                return (_jsxs(Row, { className: "d-flex flex-row gx-1 gy-1", children: [_jsx(Col, { xl: 2, md: 12, className: "d-flex text-md-end text-start", children: _jsxs(Row, { className: "gx-1 gy-0 width-fill", children: [_jsx(Col, { xl: 12, md: 4, xs: 12, children: row.state === 'pending' ? (_jsx(Badge, { bg: "primary", className: "width-fill", children: "Pending" })) : row.state === 'success' ? (_jsx(Badge, { bg: "success", className: "width-fill", children: "Success" })) : (_jsx(Badge, { bg: "danger", className: "width-fill", children: "Refunded" })) }), _jsx(Col, { xl: 12, md: 4, xs: 6, children: _jsx("small", { className: "", children: new Date(row.timestamp).toLocaleString() }) }), _jsx(Col, { xl: 12, md: 4, xs: 6, className: "text-end", children: _jsxs("small", { className: "", children: [getTimeDeltaText(row.timestamp), " ago"] }) })] }) }), _jsx(Col, { xl: 10, md: 12, className: "d-flex", children: _jsx("div", { className: "card border-0 bg-white bg-opacity-10 p-2 width-fill container-fluid", children: _jsxs("div", { className: "min-width-0", children: [_jsx("a", { className: "font-small single-line-ellipsis", target: "_blank", href: txIdInput == null
+                                                                ? null
+                                                                : FEConstants.blockExplorers[chain] + txIdInput, children: txIdInput || 'None' }), _jsxs("span", { className: "d-flex align-items-center font-weight-500 my-1", children: [_jsx(TokenIcon, { tokenOrTicker: outputCurrency, className: "currency-icon-medium" }), toHumanReadableString(outputAmount, outputCurrency), ' ', outputCurrency.ticker] }), _jsxs("small", { className: "d-flex align-items-center", children: [_jsx(TokenIcon, { tokenOrTicker: inputCurrency, className: "currency-icon-small" }), toHumanReadableString(inputAmount, inputCurrency), ' ', inputCurrency.ticker] })] }) }) })] }));
                             }, itemsPerPage: 10, loading: loading })] }), _jsx(ErrorAlert, { className: "mb-2", title: "Loading failed", error: error })] }) }));
 }

@@ -4,7 +4,7 @@ import { QuickScan } from './pages/quickscan/QuickScan';
 import { QuickScanExecute } from './pages/quickscan/QuickScanExecute';
 import { Factory, FEConstants } from './FEConstants';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { SwapsContext } from './swaps/context/SwapsContext';
+import { SwapperContext } from './context/SwapperContext';
 import { Swapper } from '@atomiqlabs/sdk';
 import { History } from './pages/History';
 import {
@@ -17,10 +17,10 @@ import { SwapForGas } from './pages/SwapForGas';
 import { SwapExplorer } from './pages/SwapExplorer';
 import { Affiliate } from './pages/Affiliate';
 import { SwapNew } from './pages/SwapNew';
-import { useAnchorNavigate } from './utils/hooks/useAnchorNavigate';
-import { ErrorAlert } from './components/ErrorAlert';
-import { ChainDataContext } from './wallets/context/ChainDataContext';
-import { ChainDataProvider } from './wallets/ChainDataProvider';
+import { useAnchorNavigate } from './hooks/navigation/useAnchorNavigate';
+import { ErrorAlert } from './components/_deprecated/ErrorAlert';
+import { ChainsContext } from './context/ChainsContext';
+import { ChainsProvider } from './providers/ChainsProvider';
 import { SocialFooter } from './components/layout/SocialFooter';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
@@ -47,7 +47,7 @@ function WrappedApp() {
 
   const abortController = useRef<AbortController>();
 
-  const chainsData = useContext(ChainDataContext);
+  const chainsData = useContext(ChainsContext);
   const loadSwapper: () => Promise<Swapper<any>> = async () => {
     setSwapperLoadingError(null);
     setSwapperLoading(true);
@@ -96,7 +96,7 @@ function WrappedApp() {
     <>
       <MainNavigation affiliateLink={affiliateLink} />
 
-      <SwapsContext.Provider value={{ swapper }}>
+      <SwapperContext.Provider value={{ swapper }}>
         <div className="d-flex flex-grow-1 flex-column mt-5">
           {!noWalletPaths.has(pathName) && swapper == null ? (
             <div className="no-wallet-overlay d-flex align-items-center">
@@ -144,7 +144,7 @@ function WrappedApp() {
             </Route>
           </Routes>
         </div>
-      </SwapsContext.Provider>
+      </SwapperContext.Provider>
       <SocialFooter affiliateLink={affiliateLink} />
     </>
   );
@@ -153,11 +153,11 @@ function WrappedApp() {
 function App() {
   return (
     <div className="App d-flex flex-column">
-      <ChainDataProvider>
+      <ChainsProvider>
         <BrowserRouter>
           <WrappedApp />
         </BrowserRouter>
-      </ChainDataProvider>
+      </ChainsProvider>
     </div>
   );
 }

@@ -1,28 +1,28 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import ValidatedInput, { numberValidator } from '../../components/ValidatedInput';
-import { CurrencyDropdown } from '../../tokens/CurrencyDropdown';
+import { TokensDropdown } from '../../components/tokens/TokensDropdown';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { FeeSummaryScreen } from '../../fees/FeeSummaryScreen';
+import { FeeSummaryScreen } from '../../components/fees/FeeSummaryScreen';
 import { Badge, Button, Form, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import { SwapType } from '@atomiqlabs/sdk';
 import BigNumber from 'bignumber.js';
-import { smartChainTokenArray } from '../../tokens/Tokens';
-import { QuoteSummary } from '../../swaps/QuoteSummary';
+import { smartChainTokenArray } from '../../utils/Tokens';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SwapTopbar } from '../SwapTopbar';
-import { SwapsContext } from '../../swaps/context/SwapsContext';
-import { TokenIcon } from '../../tokens/TokenIcon';
-import { useAddressData } from '../../swaps/hooks/useAddressData';
-import { useAmountConstraints } from '../../swaps/hooks/useAmountConstraints';
-import { useQuote } from '../../swaps/hooks/useQuote';
-import { useWalletBalance } from '../../wallets/hooks/useWalletBalance';
+import { SwapperContext } from '../../context/SwapperContext';
+import { TokenIcon } from '../../components/tokens/TokenIcon';
+import { useAddressData } from '../../hooks/quoting/useAddressData';
+import { useAmountConstraints } from '../../hooks/quoting/useAmountConstraints';
+import { useQuote } from '../../hooks/quoting/useQuote';
+import { useWalletBalance } from '../../hooks/wallets/useWalletBalance';
 import { ScrollAnchor } from '../../components/ScrollAnchor';
-import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { ErrorAlert } from '../../components/ErrorAlert';
+import { useLocalStorage } from '../../hooks/utils/useLocalStorage';
+import { ErrorAlert } from '../../components/_deprecated/ErrorAlert';
 import { Tokens } from '../../FEConstants';
-import { useStateWithOverride } from '../../utils/hooks/useStateWithOverride';
+import { useStateWithOverride } from '../../hooks/utils/useStateWithOverride';
+import { SwapPanel } from "../../components/swappanels/SwapPanel";
 export function QuickScanExecute() {
-    const { swapper } = useContext(SwapsContext);
+    const { swapper } = useContext(SwapperContext);
     const navigate = useNavigate();
     const goBack = () => navigate('/scan');
     const { search } = useLocation();
@@ -91,11 +91,11 @@ export function QuickScanExecute() {
                                                     ? amountConstraints.min.toString(10)
                                                     : amountConstraints.max.toString(10), value: amount, onChange: (val) => {
                                                 setAmount(val);
-                                            }, placeholder: 'Input amount' }), _jsx("label", { className: "fw-bold mb-1", children: !exactIn ? 'with' : 'to' }), _jsx("div", { className: "d-flex justify-content-center", children: _jsx(CurrencyDropdown, { currencyList: selectableCurrencies, onSelect: (val) => {
+                                            }, placeholder: 'Input amount' }), _jsx("label", { className: "fw-bold mb-1", children: !exactIn ? 'with' : 'to' }), _jsx("div", { className: "d-flex justify-content-center", children: _jsx(TokensDropdown, { tokensList: selectableCurrencies, onSelect: (val) => {
                                                     if (isLocked)
                                                         return;
                                                     setSelectedCurrency(val);
                                                     setCurrencyPreselected(false);
                                                 }, value: selectedCurrency, className: "bg-black bg-opacity-10 text-white" }) }), _jsxs(Form, { className: "text-start d-flex align-items-center justify-content-center font-bigger mt-2", children: [_jsx(Form.Check // prettier-ignore
-                                                , { id: "autoclaim-pay", type: "switch", onChange: (val) => setAutoContinue(val.target.checked), checked: autoContinue }), _jsx("label", { title: "", htmlFor: "autoclaim-pay", className: "form-check-label me-2", children: !exactIn ? 'Auto-pay' : 'Auto-claim' }), _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "autoclaim-pay-tooltip", children: "Automatically requests authorization of the transaction through your wallet - as soon as the swap pricing is returned." }), children: _jsx(Badge, { bg: "primary", className: "pill-round", pill: true, children: "?" }) })] })] })) : (''), quoteLoading ? (_jsxs("div", { className: "d-flex flex-column align-items-center justify-content-center tab-accent mt-3", children: [_jsx(Spinner, { animation: "border" }), "Fetching quote..."] })) : (''), quoteError ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "my-3", title: "Quoting error", error: quoteError }), _jsx(Button, { onClick: refresh, variant: "secondary", children: "Retry" })] })) : (''), quote != null ? (_jsxs(_Fragment, { children: [_jsx(FeeSummaryScreen, { swap: quote, className: "mt-3 mb-3 tab-accent" }), _jsx(QuoteSummary, { UICallback: () => { }, type: 'payment', quote: quote, balance: walletBalance, refreshQuote: refresh, autoContinue: autoContinue && (!isCurrencyPreselected || addressResult?.amount != null) })] })) : (''), _jsx(ScrollAnchor, { trigger: quote != null })] }), _jsx("div", { className: "d-flex mt-auto py-4", children: _jsx(Button, { variant: "secondary flex-fill", disabled: isLocked, onClick: goBack, children: "< Back" }) })] }) })] }));
+                                                , { id: "autoclaim-pay", type: "switch", onChange: (val) => setAutoContinue(val.target.checked), checked: autoContinue }), _jsx("label", { title: "", htmlFor: "autoclaim-pay", className: "form-check-label me-2", children: !exactIn ? 'Auto-pay' : 'Auto-claim' }), _jsx(OverlayTrigger, { overlay: _jsx(Tooltip, { id: "autoclaim-pay-tooltip", children: "Automatically requests authorization of the transaction through your wallet - as soon as the swap pricing is returned." }), children: _jsx(Badge, { bg: "primary", className: "pill-round", pill: true, children: "?" }) })] })] })) : (''), quoteLoading ? (_jsxs("div", { className: "d-flex flex-column align-items-center justify-content-center tab-accent mt-3", children: [_jsx(Spinner, { animation: "border" }), "Fetching quote..."] })) : (''), quoteError ? (_jsxs(_Fragment, { children: [_jsx(ErrorAlert, { className: "my-3", title: "Quoting error", error: quoteError }), _jsx(Button, { onClick: refresh, variant: "secondary", children: "Retry" })] })) : (''), quote != null ? (_jsxs(_Fragment, { children: [_jsx(FeeSummaryScreen, { swap: quote, className: "mt-3 mb-3 tab-accent" }), _jsx(SwapPanel, { UICallback: () => { }, type: 'payment', quote: quote, balance: walletBalance, refreshQuote: refresh, autoContinue: autoContinue && (!isCurrencyPreselected || addressResult?.amount != null) })] })) : (''), _jsx(ScrollAnchor, { trigger: quote != null })] }), _jsx("div", { className: "d-flex mt-auto py-4", children: _jsx(Button, { variant: "secondary flex-fill", disabled: isLocked, onClick: goBack, children: "< Back" }) })] }) })] }));
 }

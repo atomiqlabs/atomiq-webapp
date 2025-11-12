@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FEConstants } from '../../FEConstants';
 import { Badge, Button, Col, Row } from 'react-bootstrap';
 import { getTimeDeltaText } from '../../utils/Utils';
-import { TokenIcon } from '../../tokens/TokenIcon';
+import { TokenIcon } from '../tokens/TokenIcon';
 import Icon from 'react-icons-kit';
 import { ic_arrow_downward } from 'react-icons-kit/md/ic_arrow_downward';
 import { ic_arrow_forward } from 'react-icons-kit/md/ic_arrow_forward';

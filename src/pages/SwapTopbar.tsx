@@ -1,6 +1,6 @@
 import { Badge, Button, ButtonGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { SwapsContext } from '../swaps/context/SwapsContext';
+import { SwapperContext } from '../context/SwapperContext';
 import { useContext, useEffect, useState } from 'react';
 import { ISwap } from '@atomiqlabs/sdk';
 // TODO probably remove later, when this will be implemented elsewhere
@@ -26,7 +26,7 @@ const tabs = [
 export function SwapTopbar(props: { selected: number; enabled: boolean }) {
   const navigate = useNavigate();
 
-  const { swapper } = useContext(SwapsContext);
+  const { swapper } = useContext(SwapperContext);
 
   const [actionableSwaps, setActionableSwaps] = useState<Set<string>>(new Set());
   useEffect(() => {
