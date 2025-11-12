@@ -234,9 +234,34 @@ export function useSwapPage(): SwapPageState {
   });
   const isFixedAmount = addressData?.amount != null;
 
+  //WebLN
+  const webLnForOutput =
+    outputChainData?.chain?.name === 'Lightning' && outputChainData?.wallet != null;
+  useEffect(() => {
+    if (!webLnForOutput) {
+      setAddressFromWebLn(null);
+      return;
+    }
+    if (exactIn) {
+      setAmount('');
+      setExactIn(false);
+    }
+    setAddress('');
+  }, [webLnForOutput]);
+
+  //Don't lock output amounts when WebLN wallet is connected
+  const amountsLocked = webLnForOutput ? false : isFixedAmount;
+
   //Amounts
-  const [_amount, setAmount] = useDecimalNumberState('');
-  const amount = isFixedAmount ? addressData.amount.amount : _amount;
+  const [_amount, _setAmount] = useDecimalNumberState('');
+  const setAmount = useCallback((value: string) => {
+    if(webLnForOutput) {
+      console.log("Set address to: ''");
+      setAddress('');
+    }
+    _setAmount(value);
+  }, [webLnForOutput]);
+  const amount = amountsLocked ? addressData.amount.amount : _amount;
   const [exactIn, setExactIn] = useStateWithOverride(true, isFixedAmount ? false : null);
   const { input: swapInputLimits, output: swapOutputLimits } = useAmountConstraints(
     inputToken,
@@ -396,18 +421,6 @@ export function useSwapPage(): SwapPageState {
     return [amount === '' || error != null ? null : new BigNumber(amount).toString(10), error];
   }, [inputAmountValidator, outputAmountValidator, amount, exactIn]);
 
-  //WebLN
-  const webLnForOutput =
-    outputChainData?.chain?.name === 'Lightning' && outputChainData?.wallet != null;
-  useEffect(() => {
-    if (!webLnForOutput) return;
-    if (exactIn) {
-      setAmount('');
-      setExactIn(false);
-    }
-    setAddress('');
-  }, [webLnForOutput]);
-
   //Quote
   const [refreshQuote, _quote, randomQuote, quoteLoading, quoteError] = useQuote(
     validatedAmount,
@@ -486,9 +499,6 @@ export function useSwapPage(): SwapPageState {
     setAddress('');
   }, [inputToken, outputToken, swapper]);
 
-  //Don't lock output amounts when WebLN wallet is connected
-  const amountsLocked = webLnForOutput ? false : isFixedAmount;
-
   //Show "Use external wallet" when amount is too high
   const showUseExternalWallet = useMemo(() => {
     if (maxSpendable?.balance == null || swapper == null) return false;
@@ -511,6 +521,19 @@ export function useSwapPage(): SwapPageState {
         status: 'error',
         text: addressError.message,
       };
+    if (quote?.getType() === SwapType.TO_BTCLN) {
+      const _quote = quote as ToBTCLNSwap;
+      if (_quote.isPayingToNonCustodialWallet())
+        return {
+          status: 'warning',
+          text: 'Non-custodial wallet detected: make sure the wallet is online!',
+        };
+      if (_quote.willLikelyFail())
+        return {
+          status: 'warning',
+          text: 'The payment will likely fail: destination not payable',
+        };
+    }
     if (isOutputWalletAddress || isFixedAmount)
       return {
         status: 'success',
@@ -518,20 +541,15 @@ export function useSwapPage(): SwapPageState {
           ? 'Wallet address fetched from ' + outputChainData.wallet?.name
           : 'Swap amount imported from lightning network invoice',
       };
-    if (quote?.getType() === SwapType.TO_BTCLN) {
-      const _quote = quote as ToBTCLNSwap;
-      if (_quote.isPayingToNonCustodialWallet())
-        return {
-          status: 'warning',
-          text: 'Please make sure your receiving wallet is online',
-        };
-      if (_quote.willLikelyFail())
-        return {
-          status: 'warning',
-          text: 'This destination is likely not payable',
-        };
-    }
-  }, [swapTypeData, addressError, address, isOutputWalletAddress, isFixedAmount, outputChainData]);
+  }, [
+    swapTypeData,
+    addressError,
+    address,
+    isOutputWalletAddress,
+    isFixedAmount,
+    outputChainData,
+    quote
+  ]);
 
   //Leaves existing swap
   const leaveExistingSwapOrRefresh = useCallback(
@@ -586,8 +604,8 @@ export function useSwapPage(): SwapPageState {
         onChange: useCallback((value) => {
           setAmount(value);
           setExactIn(true);
-        }, []),
-        disabled: amountsLocked || webLnForOutput || UIState === 'lock',
+        }, [setAmount]),
+        disabled: isFixedAmount || UIState === 'lock',
         loading: !exactIn && quoteLoading,
         step: inputTokenStep,
         min: inputLimits?.min,
@@ -628,7 +646,7 @@ export function useSwapPage(): SwapPageState {
         onChange: useCallback((value) => {
           setAmount(value);
           setExactIn(false);
-        }, []),
+        }, [setAmount]),
         disabled: amountsLocked || UIState === 'lock',
         loading: exactIn && quoteLoading,
         step: outputTokenStep,
