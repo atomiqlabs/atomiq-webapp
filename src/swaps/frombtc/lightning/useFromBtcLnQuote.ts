@@ -24,6 +24,8 @@ import { SwapsContext } from '../../context/SwapsContext';
 import { NFCStartResult } from '../../../nfc/NFCReader';
 import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
 import {SwapPageUIState} from "../../../pages/useSwapPage";
+import {ChainWalletData} from "../../../wallets/ChainDataProvider";
+import {WebLNProvider} from "webln";
 
 export type FromBtcLnQuotePage = {
   executionSteps?: SingleStep[];
@@ -52,6 +54,7 @@ export type FromBtcLnQuotePage = {
     };
     //Either wallet is connected and just these 2 buttons should be displayed
     walletConnected?: {
+      lightningWallet: ChainWalletData<WebLNProvider>["wallet"];
       //Pay via connected WebLN wallet
       payWithWebLn: {
         loading: boolean;
@@ -68,6 +71,7 @@ export type FromBtcLnQuotePage = {
       address: {
         value: string;
         hyperlink: string;
+        copy: () => true;
       };
       //Display the modal warning to user to come back after payment is initiated
       addressComeBackWarningModal?: {
@@ -467,6 +471,7 @@ export function useFromBtcLnQuote(
       walletConnected:
         lightningWallet != null && !payingWithNFC && paymentWaiting
           ? {
+              lightningWallet,
               payWithWebLn: {
                 onClick: () => {
                   pay();
@@ -490,6 +495,10 @@ export function useFromBtcLnQuote(
               address: {
                 value: quote.getAddress(),
                 hyperlink: quote.getHyperlink(),
+                copy: () => {
+                  navigator.clipboard.writeText(quote.getAddress());
+                  return true;
+                }
               },
               addressComeBackWarningModal: addressWarningModalOpened
                 ? {

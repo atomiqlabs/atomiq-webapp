@@ -75,7 +75,7 @@ export type FromBtcQuotePage = {
       address: {
         value: string;
         hyperlink: string;
-        copy: () => void;
+        copy: () => boolean;
       };
       //Display the modal warning to user to come back after payment is initiated
       addressCopyWarningModal?: {
@@ -445,9 +445,10 @@ export function useFromBtcQuote(
         copy: () => {
           if (!showCopyWarning) {
             navigator.clipboard.writeText(quote.getAddress());
-            return;
+            return true;
           }
-          setCopyWarningModalOpened(true)
+          setCopyWarningModalOpened(true);
+          return false;
         }
       },
       //Display the modal warning to user to come back after payment is initiated

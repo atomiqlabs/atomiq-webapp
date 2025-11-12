@@ -15,6 +15,8 @@ import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useFromBtcLnQuote } from './useFromBtcLnQuote';
 import {SwapPageUIState} from "../../../pages/useSwapPage";
 import {ImportantNoticeModal} from "../../components/ImportantNoticeModal";
+import {ConnectedWalletPayButtons} from "../../components/ConnectedWalletPayButtons";
+import {DisconnectedWalletQrAndAddress} from "../../components/DisconnectedWalletQrAndAddress";
 
 /*
 Steps:
@@ -106,91 +108,34 @@ export function FromBTCLNQuoteSummary(props: {
             )}
           />
 
-          {/*TODO: This should be a separate component to be re-used between FromBTCLN and FromBTC swaps*/}
           {page.step2paymentWait.walletConnected && (
-            <div className="swap-panel__card__group">
-              <div className="payment-awaiting-buttons">
-                <BaseButton
-                  variant="secondary"
-                  textSize="sm"
-                  className="d-flex flex-row align-items-center"
-                  onClick={page.step2paymentWait.walletConnected.payWithWebLn.onClick}
-                  disabled={page.step2paymentWait.walletConnected.payWithWebLn.loading}
-                >
-                  {page.step2paymentWait.walletConnected.payWithWebLn.loading ? (
-                    <Spinner animation="border" size="sm" className="mr-2"/>
-                  ) : (
-                    <img width={20} height={20} src="/wallets/WebLN-outline.svg" alt="WebLN"/>
-                  )}
-                  Pay via WebLN
-                </BaseButton>
-                <BaseButton
-                  variant="secondary"
-                  textSize="sm"
-                  onClick={page.step2paymentWait.walletConnected.useExternalWallet.onClick}
-                >
-                  Use external wallet
-                </BaseButton>
-              </div>
-            </div>
+            <ConnectedWalletPayButtons
+              wallet={page.step2paymentWait.walletConnected.lightningWallet}
+              payWithBrowserWallet={page.step2paymentWait.walletConnected.payWithWebLn}
+              useExternalWallet={page.step2paymentWait.walletConnected.useExternalWallet}
+            />
           )}
 
-          {/*TODO: This should be a separate component to be re-used between FromBTCLN and FromBTC swaps*/}
           {page.step2paymentWait?.walletDisconnected && (
-            <>
-              <div className="swap-panel__card__group">
-                <LightningQR quote={props.quote}/>
-
-                <div className="payment-awaiting-buttons">
-                  <BaseButton
-                    variant="secondary"
-                    onClick={page.step2paymentWait.walletDisconnected.payWithLnWallet.onClick}
-                  >
-                    <i className="icon icon-connect"></i>
-                    <div className="sc-text">Pay with LN Wallet</div>
-                  </BaseButton>
-                  <BaseButton
-                    variant="secondary"
-                    textSize="sm"
-                    className="d-flex flex-row align-items-center"
-                    onClick={page.step2paymentWait.walletDisconnected.payWithWebLn.onClick}
-                  >
-                    <img width={20} height={20} src="/wallets/WebLN-outline.svg" alt="WebLN"/>
-                    Pay via WebLN
-                  </BaseButton>
-                </div>
-              </div>
-
-              <div className="swap-panel__card__group">
-                <Form className="auto-claim">
-                  <div className="auto-claim__label">
-                    <label title="" htmlFor="autoclaim" className="form-check-label">
-                      Auto-claim
-                    </label>
-                    <OverlayTrigger
-                      overlay={
-                        <Tooltip id="autoclaim-pay-tooltip">
-                          Automatically requests authorization of the claim transaction through your
-                          wallet as soon as the lightning payment arrives.
-                        </Tooltip>
-                      }
-                    >
-                      <i className="icon icon-info"></i>
-                    </OverlayTrigger>
-                  </div>
-                  <Form.Check // prettier-ignore
-                    id="autoclaim"
-                    type="switch"
-                    onChange={(val) =>
-                      page.step2paymentWait.walletDisconnected.autoClaim.onChange(
-                        val.target.checked
-                      )
-                    }
-                    checked={page.step2paymentWait.walletDisconnected.autoClaim.value}
-                  />
-                </Form>
-              </div>
-            </>
+            <DisconnectedWalletQrAndAddress
+              address={{
+                ...page.step2paymentWait.walletDisconnected.address,
+                description: 'Lightning network invoice'
+              }}
+              payWithDeeplink={{
+                ...page.step2paymentWait.walletDisconnected.payWithLnWallet,
+                text: 'Pay with LN wallet'
+              }}
+              payWithBrowserWallet={{
+                ...page.step2paymentWait.walletDisconnected.payWithWebLn,
+                text: (<>
+                  <img className="mr-2" width={20} height={20} src="/wallets/WebLN-outline.svg" alt="WebLN"/>
+                  Pay with WebLN
+                </>)
+              }}
+              autoClaim={page.step2paymentWait.walletDisconnected.autoClaim}
+              nfcScanning={page.step2paymentWait.walletDisconnected.nfcScanning}
+            />
           )}
 
           {page.step2paymentWait?.walletDisconnected || page.step2paymentWait?.walletConnected ? (

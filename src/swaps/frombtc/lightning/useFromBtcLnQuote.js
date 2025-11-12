@@ -317,6 +317,7 @@ export function useFromBtcLnQuote(quote, UICallback) {
             error,
             walletConnected: lightningWallet != null && !payingWithNFC && paymentWaiting
                 ? {
+                    lightningWallet,
                     payWithWebLn: {
                         onClick: () => {
                             pay();
@@ -339,6 +340,10 @@ export function useFromBtcLnQuote(quote, UICallback) {
                     address: {
                         value: quote.getAddress(),
                         hyperlink: quote.getHyperlink(),
+                        copy: () => {
+                            navigator.clipboard.writeText(quote.getAddress());
+                            return true;
+                        }
                     },
                     addressComeBackWarningModal: addressWarningModalOpened
                         ? {

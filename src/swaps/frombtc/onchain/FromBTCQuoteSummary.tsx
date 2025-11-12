@@ -19,6 +19,8 @@ import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { useFromBtcQuote } from './useFromBtcQuote';
 import { SwapPageUIState } from '../../../pages/useSwapPage';
 import {ImportantNoticeModal} from "../../components/ImportantNoticeModal";
+import {ConnectedWalletPayButtons} from "../../components/ConnectedWalletPayButtons";
+import {DisconnectedWalletQrAndAddress} from "../../components/DisconnectedWalletQrAndAddress";
 
 /*
 Steps:
@@ -48,54 +50,6 @@ export function FromBTCQuoteSummary(props: {
     quote={props.quote}
     steps={page.executionSteps}
   />;
-
-  //TODO: This should be contained in a standalone component
-  const addressContent = useCallback(
-    (show) => (
-      <>
-        <div className="alert-message is-warning mb-3">
-          <i className="alert-message__icon icon icon-Notice"></i>
-          <div className="alert-message__body">
-            Send <strong>EXACTLY {props.quote.getInput().toString()}</strong> to the address below.
-          </div>
-        </div>
-
-        <QRCodeSVG
-          value={page.step2paymentWait?.walletDisconnected?.address.hyperlink}
-          size={240}
-          includeMargin={true}
-          className="cursor-pointer"
-          onClick={(event) => {
-            show(event.target, page.step2paymentWait?.walletDisconnected?.address.value);
-            page.step2paymentWait.walletDisconnected.address.copy();
-          }}
-        />
-        <WalletAddressPreview
-          address={page.step2paymentWait?.walletDisconnected?.address.value}
-          chainName={'Bitcoin'}
-          onCopy={page.step2paymentWait?.walletDisconnected?.address.copy}
-        />
-        <div className="payment-awaiting-buttons">
-          <BaseButton
-            variant="secondary"
-            onClick={page.step2paymentWait?.walletDisconnected?.payWithBitcoinWallet.onClick}
-          >
-            <i className="icon icon-connect"></i>
-            <div className="sc-text">Pay with BTC Wallet</div>
-          </BaseButton>
-          <BaseButton
-            variant="secondary"
-            onClick={page.step2paymentWait?.walletDisconnected?.payWithBrowserWallet.onClick}
-            disabled={page.step2paymentWait?.walletDisconnected?.payWithBrowserWallet.loading}
-          >
-            <i className="icon icon-new-window"></i>
-            <div className="sc-text">Pay via Browser Wallet</div>
-          </BaseButton>
-        </div>
-      </>
-    ),
-    [page.step2paymentWait?.walletDisconnected]
-  );
 
   if (page.step1init) {
     return (
@@ -169,47 +123,33 @@ export function FromBTCQuoteSummary(props: {
           />
 
           {page.step2paymentWait.walletConnected ? (
-            <div className="swap-panel__card__group">
-              <div className="payment-awaiting-buttons">
-                <BaseButton
-                  variant="secondary"
-                  textSize="sm"
-                  className="d-flex flex-row align-items-center"
-                  disabled={page.step2paymentWait.walletConnected.payWithBrowserWallet.loading}
-                  onClick={page.step2paymentWait.walletConnected.payWithBrowserWallet.onClick}
-                >
-                  {page.step2paymentWait.walletConnected.payWithBrowserWallet.loading ? (
-                    <Spinner animation="border" size="sm" className="mr-2" />
-                  ) : (
-                    ''
-                  )}
-                  Pay with{' '}
-                  <img
-                    width={20}
-                    height={20}
-                    src={page.step2paymentWait.walletConnected.bitcoinWallet.icon}
-                  />{' '}
-                  {page.step2paymentWait.walletConnected.bitcoinWallet.name}
-                </BaseButton>
-
-                <BaseButton
-                  variant="secondary"
-                  textSize="sm"
-                  className="d-flex flex-row align-items-center"
-                  onClick={page.step2paymentWait.walletConnected.useExternalWallet.onClick}
-                >
-                  Use a QR/wallet address
-                </BaseButton>
-              </div>
-            </div>
+            <ConnectedWalletPayButtons
+              wallet={page.step2paymentWait.walletConnected.bitcoinWallet}
+              payWithBrowserWallet={page.step2paymentWait.walletConnected.payWithBrowserWallet}
+              useExternalWallet={page.step2paymentWait.walletConnected.useExternalWallet}
+            />
           ) : (
             ''
           )}
 
           {page.step2paymentWait.walletDisconnected ? (
-            <div className="swap-panel__card__group">
-              <CopyOverlay placement={'top'}>{addressContent}</CopyOverlay>
-            </div>
+            <DisconnectedWalletQrAndAddress
+              address={{
+                ...page.step2paymentWait.walletDisconnected.address,
+                description: 'Bitcoin wallet address'
+              }}
+              payWithDeeplink={{
+                ...page.step2paymentWait.walletDisconnected.payWithBitcoinWallet,
+                text: 'Pay with BTC wallet'
+              }}
+              payWithBrowserWallet={{
+                ...page.step2paymentWait.walletDisconnected.payWithBrowserWallet,
+                text: 'Pay with browser wallet'
+              }}
+              alert={(
+                <>Send <strong>EXACTLY {props.quote.getInput().toString()}</strong> to the address below.</>
+              )}
+            />
           ) : (
             ''
           )}

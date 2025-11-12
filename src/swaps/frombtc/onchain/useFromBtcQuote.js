@@ -280,9 +280,10 @@ export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) 
                 copy: () => {
                     if (!showCopyWarning) {
                         navigator.clipboard.writeText(quote.getAddress());
-                        return;
+                        return true;
                     }
                     setCopyWarningModalOpened(true);
+                    return false;
                 }
             },
             //Display the modal warning to user to come back after payment is initiated
