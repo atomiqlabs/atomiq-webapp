@@ -1,22 +1,19 @@
-import { Alert, Button, Spinner } from 'react-bootstrap';
+import { Spinner } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SwapTopbar } from './SwapTopbar';
 import * as React from 'react';
 import { useCallback, useContext, useEffect } from 'react';
-import Icon from 'react-icons-kit';
-import { AbstractSigner, LnForGasSwapState } from '@atomiqlabs/sdk';
-import ValidatedInput from '../components/ValidatedInput';
-import { ic_south } from 'react-icons-kit/md/ic_south';
+import { AbstractSigner } from '@atomiqlabs/sdk';
 import { SwapperContext } from '../context/SwapperContext';
-import { TokenIcon } from '../components/tokens/TokenIcon';
 import { useAnchorNavigate } from '../hooks/navigation/useAnchorNavigate';
 import { useAsync } from '../hooks/utils/useAsync';
 import { ErrorAlert } from '../components/_deprecated/ErrorAlert';
-import { Tokens } from '../FEConstants';
 import { useChain } from '../hooks/chains/useChain';
 import { Chain } from '../providers/ChainsProvider';
-import {useSwapState} from "../hooks/swaps/helpers/useSwapState";
 import { TrustedFromBTCLNSwapPanel } from '../components/swappanels/frombtc/trusted/TrustedFromBTCLNSwapPanel';
+import {SwapStepAlert} from "../components/swaps/SwapStepAlert";
+import {BaseButton} from "../components/BaseButton";
+import {ic_warning} from "react-icons-kit/md/ic_warning";
 
 const defaultSwapAmount = '12500000';
 
@@ -43,110 +40,73 @@ export function SwapForGas() {
       amount
     );
   }, [swapper, outputChainData?.wallet, chainId]);
-  const { state: swapState } = useSwapState(swapData);
 
   useEffect(() => {
     createSwap();
   }, [createSwap]);
 
   const onContinue = useCallback(() => {
-    navigate(state.returnPath);
+    navigate(state.returnPath ?? "/");
   }, [swapData]);
 
   return (
     <>
-      <SwapTopbar selected={3} enabled={true} />
+      <div className="d-flex flex-column align-items-center text-white">
+        <div className="swap-panel">
+          <div className="alert-message is-info mb-3">
+            <i className="alert-message__icon icon icon-info"></i>
+            <div className="alert-message__body">
+              Swap for gas is a trusted service allowing you to swap BTCLN to{' '}
+              {nativeCurrency?.ticker}, so you can then cover the gas fees of a trustless atomiq
+              swap. Note that this is a trusted service and is therefore only used for small
+              amounts! You can read more about it in our{' '}
+              <a href="/faq?tabOpen=11" onClick={navigateHref}>
+                FAQ
+              </a>
+              .
+            </div>
+          </div>
 
-      <div className="d-flex flex-column flex-fill justify-content-center align-items-center text-white">
-        <div className="quickscan-summary-panel d-flex flex-column flex-fill">
-          <div className="p-3 d-flex flex-column tab-bg border-0 card mb-3">
-            <ErrorAlert className="mb-3" title="Loading error" error={error} />
-
-            <Alert
-              className="text-center mb-3 d-flex align-items-center flex-column"
-              show={!error}
-              variant="success"
-              closeVariant="white"
-            >
-              <label>
-                Swap for gas is a trusted service allowing you to swap BTCLN to{' '}
-                {nativeCurrency?.ticker}, so you can then cover the gas fees of a trustless atomiq
-                swap. Note that this is a trusted service and is therefore only used for small
-                amounts! You can read more about it in our{' '}
-                <a href="/faq?tabOpen=11" onClick={navigateHref}>
-                  FAQ
-                </a>
-                .
-              </label>
-            </Alert>
+          <div className="swap-panel__card">
+            <SwapStepAlert
+              className="mt-0"
+              show={!!error}
+              type="error"
+              icon={ic_warning}
+              title="Swap cannot be created"
+              error={error}
+              actionElement={(
+                <BaseButton
+                  className="swap-step-alert__button"
+                  onClick={createSwap}
+                  variant="secondary"
+                >
+                  <i className="icon icon-retry"/>
+                  Retry
+                </BaseButton>
+              )}
+            />
 
             {loading ? (
-              <div className="d-flex flex-column align-items-center justify-content-center tab-accent">
-                <Spinner animation="border" />
-                Creating gas swap...
+              <div className="d-flex flex-column align-items-center p-2 gap-3">
+                <Spinner/>
+                <label>Creating gas swap...</label>
               </div>
-            ) : (
-              ''
-            )}
-
-            {swapData != null ? (
-              <div className="mb-3 tab-accent-p3 text-center">
-                <ValidatedInput
-                  type={'number'}
-                  textEnd={
-                    <span className="text-white font-bigger d-flex align-items-center">
-                      <TokenIcon tokenOrTicker={Tokens.BITCOIN.BTCLN} className="currency-icon" />
-                      BTCLN
-                    </span>
-                  }
-                  disabled={true}
-                  size={'lg'}
-                  value={swapData.getInput().amount}
-                  onChange={() => {}}
-                  placeholder={'Input amount'}
-                />
-
-                <Icon size={24} icon={ic_south} className="my-1" />
-
-                <ValidatedInput
-                  type={'number'}
-                  textEnd={
-                    <span className="text-white font-bigger d-flex align-items-center">
-                      <TokenIcon tokenOrTicker={nativeCurrency} className="currency-icon" />
-                      {nativeCurrency.ticker}
-                    </span>
-                  }
-                  disabled={true}
-                  size={'lg'}
-                  value={swapData.getOutput().amount}
-                  onChange={() => {}}
-                  placeholder={'Output amount'}
-                />
-              </div>
-            ) : (
-              ''
-            )}
-
-            {swapData != null ? (
-              <TrustedFromBTCLNSwapPanel
-                quote={swapData}
-                refreshQuote={createSwap}
-                abortSwap={() => {
-                  if (state?.returnPath != null) navigate(state.returnPath);
-                }}
-              />
-            ) : (
-              ''
-            )}
-
-            {swapState === LnForGasSwapState.FINISHED && state?.returnPath != null ? (
-              <Button onClick={onContinue} variant="primary" className="mt-3">
-                Continue
-              </Button>
             ) : (
               ''
             )}
           </div>
+
+          {swapData != null ? (
+            <TrustedFromBTCLNSwapPanel
+              quote={swapData}
+              refreshQuote={createSwap}
+              abortSwap={onContinue}
+              continue={onContinue}
+            />
+          ) : (
+            ''
+          )}
         </div>
       </div>
     </>

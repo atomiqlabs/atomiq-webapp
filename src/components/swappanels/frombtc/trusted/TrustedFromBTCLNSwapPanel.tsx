@@ -1,29 +1,15 @@
 import * as React from 'react';
-import { useEffect } from 'react';
-import { Button, Spinner } from 'react-bootstrap';
-import { LnForGasSwap, LnForGasSwapState } from '@atomiqlabs/sdk';
-
-import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
-import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
-import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
-import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
-import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
-import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
-import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
-import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
+import { LnForGasSwap } from '@atomiqlabs/sdk';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import {useAsync} from "../../../../hooks/utils/useAsync";
-import {useSwapState} from "../../../../hooks/swaps/helpers/useSwapState";
-import {useStateRef} from "../../../../hooks/utils/useStateRef";
-import {useAbortSignalRef} from "../../../../hooks/utils/useAbortSignal";
-import {SingleStep, StepByStep} from "../../../swaps/StepByStep";
-import {ErrorAlert} from "../../../_deprecated/ErrorAlert";
-import {LightningQR} from "../../../_deprecated/LightningQR";
+import { StepByStep} from "../../../swaps/StepByStep";
 import {SwapExpiryProgressBar} from "../../../swaps/SwapExpiryProgressBar";
 import {SwapStepAlert} from "../../../swaps/SwapStepAlert";
 import {BaseButton} from "../../../BaseButton";
 import {ScrollAnchor} from "../../../ScrollAnchor";
+import {useTrustedFromBtcLnQuote} from "../../../../hooks/swaps/useTrustedFromBtcLnQuote";
+import {ConnectedWalletPayButtons} from "../../../swaps/ConnectedWalletPayButtons";
+import {DisconnectedWalletQrAndAddress} from "../../../swaps/DisconnectedWalletQrAndAddress";
 
 /*
 Steps:
@@ -35,184 +21,161 @@ Steps:
 export function TrustedFromBTCLNSwapPanel(props: {
   quote: LnForGasSwap;
   refreshQuote: () => void;
-  setAmountLock?: (isLocked: boolean) => void;
   abortSwap?: () => void;
+  continue?: () => void;
 }) {
-  const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(props.quote);
+  const page = useTrustedFromBtcLnQuote(props.quote);
 
-  const setAmountLockRef = useStateRef(props.setAmountLock);
+  const stepByStep = page.executionSteps ? <StepByStep
+    quote={props.quote}
+    steps={page.executionSteps}
+  /> : '';
 
-  const abortSignalRef = useAbortSignalRef([props.quote]);
+  if(page.step1paymentWait) {
+    return (
+      <>
+        <div className="swap-panel__card">
+          {stepByStep}
 
-  const [onCommit, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
-    if (setAmountLockRef.current != null) setAmountLockRef.current(true);
-    return props.quote
-      .waitForPayment(abortSignalRef.current, 2)
-      .then(() => true)
-      .catch((err) => {
-        if (setAmountLockRef.current != null) setAmountLockRef.current(false);
-        throw err;
-      });
-  }, [props.quote]);
-
-  useEffect(() => {
-    if (props.quote != null && props.quote.getState() === LnForGasSwapState.PR_CREATED) {
-      onCommit();
-    }
-  }, [props.quote]);
-
-  const isQuoteExpired = state === LnForGasSwapState.EXPIRED && !paymentWaiting;
-  const isFailed = state === LnForGasSwapState.FAILED;
-  const isCreated = state === LnForGasSwapState.PR_CREATED;
-  const isPaid = state === LnForGasSwapState.PR_PAID;
-  const isSuccess = state === LnForGasSwapState.FINISHED;
-
-  useEffect(() => {
-    if (isQuoteExpired || isFailed || isSuccess) {
-      if (setAmountLockRef.current != null) setAmountLockRef.current(false);
-    }
-  }, [isQuoteExpired, isFailed, isSuccess]);
-
-  const executionSteps: SingleStep[] = [
-    {
-      icon: ic_check_outline,
-      text: 'Lightning payment received',
-      type: 'success',
-    },
-    {
-      icon: ic_swap_horizontal_circle_outline,
-      text: 'Receive funds',
-      type: 'disabled',
-    },
-  ];
-  if (isPaid)
-    executionSteps[1] = {
-      icon: ic_hourglass_top_outline,
-      text: 'Receiving funds',
-      type: 'loading',
-    };
-  if (isCreated)
-    executionSteps[0] = {
-      icon: ic_flash_on_outline,
-      text: 'Awaiting lightning paymenxxt',
-      type: 'loading',
-    };
-  if (isQuoteExpired)
-    executionSteps[0] = {
-      icon: ic_hourglass_disabled_outline,
-      text: 'Quote expired',
-      type: 'failed',
-    };
-  if (isFailed) {
-    executionSteps[0] = {
-      icon: ic_refresh,
-      text: 'Lightning payment reverted',
-      type: 'failed',
-    };
-    executionSteps[1] = {
-      icon: ic_watch_later_outline,
-      text: 'Swap failed',
-      type: 'failed',
-    };
-  }
-  if (isSuccess)
-    executionSteps[1] = {
-      icon: ic_verified_outline,
-      text: 'Payout success',
-      type: 'success',
-    };
-
-  return (
-    <>
-      <StepByStep quote={props.quote} steps={executionSteps} />
-
-      {isCreated && !paymentWaiting ? (
-        <>
-          <ErrorAlert className="mb-3" title="Swap initialization error" error={paymentError} />
-
-          <Button
-            variant="secondary"
-            onClick={() => {
-              onCommit();
-            }}
-          >
-            Retry
-          </Button>
-        </>
-      ) : (
-        ''
-      )}
-
-      {isCreated && paymentWaiting ? (
-        <>
-          <LightningQR quote={props.quote} payInstantly={state === LnForGasSwapState.PR_CREATED} />
-
-          <SwapExpiryProgressBar
-            timeRemaining={quoteTimeRemaining}
-            totalTime={totalQuoteTime}
-            show={true}
-          />
-
-          <Button onClick={props.abortSwap} variant="danger">
-            Abort swap
-          </Button>
-        </>
-      ) : (
-        ''
-      )}
-
-      {isPaid ? (
-        <>
-          <div className="tab-accent">
-            <div className="d-flex flex-column align-items-center p-2">
-              <Spinner />
-              <label>Receiving funds...</label>
-            </div>
-          </div>
-        </>
-      ) : (
-        ''
-      )}
-
-      {isSuccess ? (
-        <SwapStepAlert
-          type="success"
-          icon={ic_check_circle}
-          title="Swap success"
-          description="Your swap was executed successfully!"
-        />
-      ) : (
-        ''
-      )}
-
-      {isQuoteExpired || isFailed ? (
-        <>
           <SwapStepAlert
-            type="danger"
-            title="Swap failed"
+            show={!!page.step1paymentWait.error}
+            type={page.step1paymentWait.error?.type}
             icon={ic_warning}
-            description="Swap failed, your lightning payment will be refunded shortly!"
-            show={isFailed}
+            title={page.step1paymentWait.error?.title}
+            error={page.step1paymentWait.error?.error}
+            actionElement={page.step1paymentWait.error?.retry && (
+              <BaseButton
+                className="swap-step-alert__button"
+                onClick={page.step1paymentWait.error?.retry}
+                variant="secondary"
+              >
+                <i className="icon icon-retry"/>
+                Retry
+              </BaseButton>
+            )}
           />
 
-          <SwapExpiryProgressBar
-            show={isQuoteExpired}
-            expired={true}
-            timeRemaining={quoteTimeRemaining}
-            totalTime={totalQuoteTime}
-            expiryText={'Swap expired!'}
-            quoteAlias="Swap"
+          {page.step1paymentWait.walletConnected && (
+            <ConnectedWalletPayButtons
+              wallet={page.step1paymentWait.walletConnected.lightningWallet}
+              payWithBrowserWallet={page.step1paymentWait.walletConnected.payWithWebLn}
+              useExternalWallet={page.step1paymentWait.walletConnected.useExternalWallet}
+            />
+          )}
+
+          {page.step1paymentWait?.walletDisconnected && (
+            <DisconnectedWalletQrAndAddress
+              address={{
+                ...page.step1paymentWait.walletDisconnected.address,
+                description: 'Lightning network invoice'
+              }}
+              payWithDeeplink={{
+                ...page.step1paymentWait.walletDisconnected.payWithLnWallet,
+                text: 'Pay with LN wallet'
+              }}
+              payWithBrowserWallet={{
+                ...page.step1paymentWait.walletDisconnected.payWithWebLn,
+                text: (<>
+                  <img className="mr-2" width={20} height={20} src="/wallets/WebLN-outline.svg" alt="WebLN"/>
+                  Pay with WebLN
+                </>)
+              }}
+            />
+          )}
+
+          {page.step1paymentWait?.walletDisconnected || page.step1paymentWait?.walletConnected ? (
+            <div className="swap-panel__card__group">
+              <SwapExpiryProgressBar
+                timeRemaining={page.step1paymentWait.expiry.remaining}
+                totalTime={page.step1paymentWait.expiry.total}
+                show={true}
+                expiryText="Lighnting network invoice expired, please do not send any funds!"
+                quoteAlias="Lightning invoice"
+              />
+            </div>
+          ) : ''}
+        </div>
+
+        <ScrollAnchor trigger={!!page.step1paymentWait.walletDisconnected} />
+
+        <BaseButton
+          onClick={props.abortSwap}
+          variant="danger"
+          className="swap-panel__action is-large"
+        >
+          Abort swap
+        </BaseButton>
+      </>
+    );
+  }
+
+  if(page.step2receivingFunds) {
+    return (
+      <>
+        <div className="swap-panel__card">
+          {stepByStep}
+
+          <SwapStepAlert
+            show={!!page.step2receivingFunds.error}
+            type={page.step2receivingFunds.error?.type}
+            icon={ic_warning}
+            title={page.step2receivingFunds.error?.title}
+            error={page.step2receivingFunds.error?.error}
+            actionElement={page.step2receivingFunds.error?.retry && (
+              <BaseButton
+                className="swap-step-alert__button"
+                onClick={page.step2receivingFunds.error?.retry}
+                variant="secondary"
+              >
+                <i className="icon icon-retry"/>
+                Retry
+              </BaseButton>
+            )}
+          />
+        </div>
+      </>
+    );
+  }
+
+  if(page.step3) {
+    return (
+      <>
+        <div className="swap-panel__card">
+          {stepByStep}
+
+          <SwapStepAlert
+            show={page.step3.state === 'success'}
+            type="success"
+            icon={ic_check_circle}
+            title="Swap success"
+            description="Your swap was executed successfully!"
           />
 
-          <BaseButton onClick={props.refreshQuote} variant="primary" size="large">
-            New quote
-          </BaseButton>
-        </>
-      ) : (
-        ''
-      )}
+          <SwapStepAlert
+            show={page.step3.state === 'failed'}
+            type="danger"
+            icon={ic_warning}
+            title="Swap failed"
+            description="Swap HTLC expired, your lightning payment will be refunded shortly!"
+          />
 
-      <ScrollAnchor trigger={isInitiated}></ScrollAnchor>
-    </>
-  );
+          <SwapStepAlert
+            show={page.step3.state === 'expired'}
+            type="danger"
+            icon={ic_warning}
+            title="Swap expired"
+            description="Swap has expired without being paid!"
+          />
+        </div>
+
+        <BaseButton
+          onClick={page.step3.state === 'success' ? props.continue : props.refreshQuote}
+          variant="primary"
+          className="swap-panel__action"
+        >
+          {page.step3.state === 'success' ? 'Continue' : 'New quote'}
+        </BaseButton>
+      </>
+    )
+  }
 }
