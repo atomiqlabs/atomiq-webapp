@@ -207,7 +207,7 @@ export function SpvVaultFromBTCSwapPanel(props: {
           variant="primary"
           size="large"
         >
-          New quote
+          New Swap
         </BaseButton>
       </>
     );

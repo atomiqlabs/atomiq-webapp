@@ -311,7 +311,7 @@ export function FromBTCSwapPanel(props: {
         {gasAlert}
 
         <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
-          New quote
+          New Swap
         </BaseButton>
       </>
     );
