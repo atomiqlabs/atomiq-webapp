@@ -111,6 +111,7 @@ export function TokensDropdown(props: {
             <Dropdown.Item
               key={toTokenIdentifier(token)}
               onClick={() => {
+                setShow(false);
                 props.onSelect(token);
               }}
             >

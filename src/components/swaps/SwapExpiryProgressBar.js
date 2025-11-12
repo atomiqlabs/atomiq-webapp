@@ -3,16 +3,17 @@ export function SwapExpiryProgressBar(props) {
     const timeRemaining = Math.max(0, props.timeRemaining ?? 0);
     const progress = props.totalTime > 0 ? (timeRemaining / props.totalTime) * 100 : 0;
     // Format time remaining (timeRemaining is in seconds)
-    const formatTime = (seconds) => {
-        const totalSeconds = Math.floor(seconds);
+    const formatTime = (_seconds) => {
+        const totalSeconds = Math.floor(_seconds);
         const totalMinutes = Math.floor(totalSeconds / 60);
         const hours = Math.floor(totalMinutes / 60);
         const minutes = totalMinutes % 60;
+        const seconds = totalSeconds % 60;
         if (hours > 0) {
             return `${hours}h : ${minutes}m`;
         }
         if (minutes > 0) {
-            return `${minutes}m`;
+            return `${minutes}m : ${seconds}s`;
         }
         return `${totalSeconds}s`;
     };
