@@ -17,6 +17,7 @@ import {SwapPageUIState} from "../../../hooks/pages/useSwapPage";
 import {ButtonWithWallet} from "../../wallets/ButtonWithWallet";
 import {BaseButton} from "../../BaseButton";
 import {FEConstants} from "../../../FEConstants";
+import {SwapFeePanel} from "../../fees/SwapFeePanel";
 
 /*
 Steps lightning:
@@ -46,9 +47,21 @@ export function ToBTCSwapPanel(props: {
     steps={page.executionSteps}
   /> : '';
 
-  if(page.step1init) {
+  const swapFees = <div className="mt-3">
+    <SwapFeePanel
+      swap={props.quote}
+      isExpired={page.step4?.state === 'expired'}
+      onRefreshQuote={props.refreshQuote}
+      totalTime={page.step1init?.expiry.total}
+      remainingTime={page.step1init?.expiry.remaining}
+    />
+  </div>;
+
+  if (page.step1init) {
     return (
       <>
+        {swapFees}
+
         <SwapStepAlert
           show={!!page.step1init.additionalGasRequired}
           type="danger"
@@ -73,14 +86,14 @@ export function ToBTCSwapPanel(props: {
           disabled={page.step1init.init?.disabled}
           size="lg"
         >
-          {page.step1init.init?.loading ? <Spinner animation="border" size="sm" className="mr-2" /> : ''}
+          {page.step1init.init?.loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ''}
           {page.step1init.init?.text}
         </ButtonWithWallet>
       </>
     )
   }
 
-  if(page.step2paying) {
+  if (page.step2paying) {
     return (
       <>
         <div className="swap-panel__card">
@@ -107,7 +120,7 @@ export function ToBTCSwapPanel(props: {
     )
   }
 
-  if(page.step3refund) {
+  if (page.step3refund) {
     return (
       <>
         <div className="swap-panel__card">
@@ -137,7 +150,7 @@ export function ToBTCSwapPanel(props: {
               >
                 <div className="base-button__icon">
                   {page.step3refund.refund?.loading ? (
-                    <Spinner animation="border" size="sm" className="mr-2" />
+                    <Spinner animation="border" size="sm" className="mr-2"/>
                   ) : (
                     <i className={'icon icon-refund'}></i>
                   )}
@@ -151,14 +164,16 @@ export function ToBTCSwapPanel(props: {
     );
   }
 
-  if(page.step4) {
+  if (page.step4) {
     return (
       <>
+        {page.step4.state === 'expired' && swapFees}
+
         <div className="swap-panel__card">
           {page.step4.state !== 'expired' && stepByStep}
 
           <SwapStepAlert
-            show={page.step4.state==="refunded"}
+            show={page.step4.state === "refunded"}
             type="info"
             icon={ic_settings_backup_restore_outline}
             title="Funds returning"
@@ -166,7 +181,7 @@ export function ToBTCSwapPanel(props: {
           />
 
           <SwapStepAlert
-            show={page.step4.state==="success"}
+            show={page.step4.state === "success"}
             type="success"
             icon={ic_check_circle}
             title="Swap success"

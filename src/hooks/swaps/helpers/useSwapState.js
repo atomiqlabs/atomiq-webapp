@@ -71,11 +71,14 @@ export function useSwapState(quote, onSwapStateChange) {
             setInitialQuoteTimeout(Math.max(dt, 1));
             setQuoteTimeRemaining(dt);
         };
-        checkExpiry(quote.getState());
+        let oldState = quote.getState();
+        checkExpiry(oldState);
         let listener;
         quote.events.on('swapState', (listener = (quote) => {
             const state = quote.getState();
-            checkExpiry(state);
+            if (oldState !== state)
+                checkExpiry(state);
+            oldState = state;
             setState(state);
             setInitiated(quote.isInitiated());
             if (onSwapStateChangeRef.current)

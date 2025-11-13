@@ -87,14 +87,16 @@ export function useSwapState<S extends number>(quote: ISwap<any, S>, onSwapState
       setQuoteTimeRemaining(dt);
     };
 
-    checkExpiry(quote.getState());
+    let oldState = quote.getState();
+    checkExpiry(oldState);
 
     let listener;
     quote.events.on(
       'swapState',
       (listener = (quote: ISwap<any, S>) => {
         const state = quote.getState();
-        checkExpiry(state);
+        if(oldState !== state) checkExpiry(state);
+        oldState = state;
         setState(state);
         setInitiated(quote.isInitiated());
         if(onSwapStateChangeRef.current) onSwapStateChangeRef.current(state, quote.isInitiated());

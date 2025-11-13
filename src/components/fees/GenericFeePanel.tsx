@@ -10,6 +10,7 @@ import { FeeDetails, useSwapFees } from '../../hooks/fees/useSwapFees';
 import { usePricing } from '../../hooks/pricing/usePricing';
 import {SwapExpiryProgressCircle} from "../swaps/SwapExpiryProgressCircle";
 import {useSwapState} from "../../hooks/swaps/helpers/useSwapState";
+import {FEConstants} from "../../FEConstants";
 
 function FeePart(props: FeeDetails) {
   return (
@@ -95,7 +96,7 @@ function FeePart(props: FeeDetails) {
           }
         >
           <span className="text-decoration-dotted font-monospace">
-            ${(props.usdValue == null ? 0 : props.usdValue).toFixed(2)}
+            {FEConstants.USDollar.format(props.usdValue == null ? 0 : props.usdValue)}
           </span>
         </OverlayTrigger>
       </span>
@@ -103,60 +104,17 @@ function FeePart(props: FeeDetails) {
   );
 }
 
-export function SimpleFeeSummaryScreen(props: {
-  swap: ISwap | null;
-  btcFeeRate?: number;
-  className?: string;
-  onRefreshQuote?: () => void;
+export function GenericFeePanel(props: {
+  fees: FeeDetails[];
+  isExpired?: boolean;
   inputToken?: Token;
   outputToken?: Token;
+  price?: number;
+  totalUsdFee?: number;
+  totalTime?: number;
+  remainingTime?: number;
+  onRefreshQuote?: () => void;
 }) {
-  const { fees: swapFees, totalUsdFee } = useSwapFees(props.swap, props.btcFeeRate);
-
-  const fees = useMemo(() => {
-    if (swapFees?.length > 0) return swapFees;
-    if (!props.inputToken || !props.outputToken) return [];
-
-    // Return default fees with 0 values when no swap
-    const zeroSrcAmount = {
-      token: props.inputToken,
-      amount: '0',
-      rawAmount: BigInt(0),
-      _amount: BigInt(0),
-      usdValue: async () => 0,
-    };
-
-    return [
-      {
-        text: 'Swap fee',
-        fee: {
-          amountInSrcToken: zeroSrcAmount,
-          amountInDstToken: null,
-          usdValue: async () => 0,
-        },
-        usdValue: 0,
-      },
-    ];
-  }, [swapFees, props.inputToken, props.outputToken]);
-
-  const inputToken: Token = props.swap?.getInput()?.token ?? props.inputToken;
-  const outputToken: Token = props.swap?.getOutput()?.token ?? props.outputToken;
-
-  const inputTokenUsdPrice = usePricing('1', inputToken);
-  const outputTokenUsdPrice = usePricing('1', outputToken);
-
-  const calculatedSwapPrice = useMemo(() => {
-    if (!inputTokenUsdPrice || !outputTokenUsdPrice || inputTokenUsdPrice === 0) return null;
-    return outputTokenUsdPrice / inputTokenUsdPrice;
-  }, [inputTokenUsdPrice, outputTokenUsdPrice]);
-
-  const { totalQuoteTime, quoteTimeRemaining, state } = useSwapState(props.swap);
-
-  const isExpired = useMemo(
-    () => props.swap?.isQuoteSoftExpired() || props.swap?.isQuoteExpired(),
-    [state]
-  );
-
   return (
     <>
       <Accordion className="simple-fee-screen">
@@ -164,55 +122,38 @@ export function SimpleFeeSummaryScreen(props: {
           <Accordion.Header className="font-bigger d-flex flex-row" bsPrefix="fee-accordion-header">
             <div className="simple-fee-screen__quote">
               <div className="sc-text">
-                {isExpired ? (
+                {props.isExpired ? (
                   <span className="simple-fee-screen__quote__error">
                     <span className="icon icon-invalid-error"></span>
                     <span className="sc-text">Quote expired</span>
                   </span>
-                ) : !outputToken || !inputToken ? (
+                ) : !props.outputToken || !props.outputToken ? (
                   <div className="simple-fee-screen__skeleton"></div>
-                ) : !props.swap ? (
-                  <>
-                    1 {outputToken.ticker} ={' '}
-                    {calculatedSwapPrice != null
-                      ? calculatedSwapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals)
-                      : '-'}{' '}
-                    {inputToken.ticker}
-                  </>
                 ) : (
                   <>
-                    1 {outputToken.ticker} ={' '}
-                    {props.swap
-                      .getPriceInfo()
-                      .swapPrice.toFixed(inputToken.displayDecimals ?? inputToken.decimals)}{' '}
-                    {inputToken.ticker}
+                    1 {props.outputToken.ticker} ={' '}
+                    {props.price?.toFixed(props.inputToken.displayDecimals ?? props.inputToken.decimals)
+                      ?? '-'}{' '}
+                    {props.inputToken.ticker}
                   </>
                 )}
               </div>
               <SwapExpiryProgressCircle
-                expired={isExpired}
-                timeRemaining={quoteTimeRemaining}
-                totalTime={totalQuoteTime}
-                show={props.swap != null}
+                expired={props.isExpired}
+                timeRemaining={props.remainingTime}
+                totalTime={props.totalTime}
+                show={props.isExpired || (props.totalTime != null && props.remainingTime != null)}
                 onRefreshQuote={props.onRefreshQuote}
               />
             </div>
             <div className="icon icon-receipt-fees"></div>
             <span className="simple-fee-screen__fee">
-              {totalUsdFee == null ? (
-                props.swap == null ? (
-                  '$0.00'
-                ) : (
-                  <div className="simple-fee-screen__skeleton"></div>
-                )
-              ) : (
-                '$' + totalUsdFee.toFixed(2)
-              )}
+              {props.totalUsdFee == null ? '$0.00' : FEConstants.USDollar.format(props.totalUsdFee)}
             </span>
             <div className="icon icon-caret-down"></div>
           </Accordion.Header>
           <Accordion.Body className="simple-fee-screen__body">
-            {fees.map((e, index) => (
+            {props.fees.map((e, index) => (
               <FeePart key={index} {...e} />
             ))}
           </Accordion.Body>

@@ -10,6 +10,7 @@ import {SwapStepAlert} from "../../../swaps/SwapStepAlert";
 import {ButtonWithWallet} from "../../../wallets/ButtonWithWallet";
 import {BaseButton} from "../../../BaseButton";
 import {SwapConfirmations} from "../../../swaps/SwapConfirmations";
+import {SwapFeePanel} from "../../../fees/SwapFeePanel";
 
 /*
 Steps:
@@ -34,9 +35,22 @@ export function SpvVaultFromBTCSwapPanel(props: {
     ''
   );
 
+  const swapFees = <div className="mt-3">
+    <SwapFeePanel
+      swap={props.quote}
+      isExpired={page.step5?.state === 'expired'}
+      onRefreshQuote={props.refreshQuote}
+      totalTime={page.step1init?.expiry.total}
+      remainingTime={page.step1init?.expiry.remaining}
+      btcFeeRate={props.feeRate}
+    />
+  </div>;
+
   if (page.step1init) {
     return (
       <>
+        {swapFees}
+
         <SwapStepAlert
           show={!!page.step1init.error}
           type="error"
@@ -175,6 +189,8 @@ export function SpvVaultFromBTCSwapPanel(props: {
   if (page.step5) {
     return (
       <>
+        {page.step5.state === 'expired' && swapFees}
+
         <div className="swap-panel__card">
           {page.step5.state !== 'expired' ? stepByStep : ''}
 

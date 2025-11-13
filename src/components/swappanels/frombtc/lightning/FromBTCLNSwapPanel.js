@@ -13,6 +13,7 @@ import { ConnectedWalletPayButtons } from "../../../swaps/ConnectedWalletPayButt
 import { DisconnectedWalletQrAndAddress } from "../../../swaps/DisconnectedWalletQrAndAddress";
 import { SwapExpiryProgressBar } from "../../../swaps/SwapExpiryProgressBar";
 import { ScrollAnchor } from "../../../ScrollAnchor";
+import { SwapFeePanel } from "../../../fees/SwapFeePanel";
 /*
 Steps:
 1. Awaiting lightning payment -> Lightning payment received
@@ -23,8 +24,9 @@ export function FromBTCLNSwapPanel(props) {
     const page = useFromBtcLnQuote(props.quote, props.UICallback);
     const gasAlert = _jsx(SwapForGasAlert, { notEnoughForGas: page.additionalGasRequired, quote: props.quote });
     const stepByStep = page.executionSteps ? _jsx(StepByStep, { quote: props.quote, steps: page.executionSteps }) : '';
+    const swapFees = _jsx("div", { className: "mt-3", children: _jsx(SwapFeePanel, { swap: props.quote, isExpired: page.step4?.state === 'expired_uninitialized', onRefreshQuote: props.refreshQuote, totalTime: page.step1init?.expiry.total, remainingTime: page.step1init?.expiry.remaining }) });
     if (page.step1init) {
-        return (_jsxs(_Fragment, { children: [gasAlert, !!page.step1init.init && _jsx(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote?.chainIdentifier, className: "swap-panel__action", onClick: page.step1init.init?.onClick, disabled: page.step1init.init?.disabled, size: "lg", children: "Swap" })] }));
+        return (_jsxs(_Fragment, { children: [swapFees, gasAlert, !!page.step1init.init && _jsx(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), chainId: props.quote?.chainIdentifier, className: "swap-panel__action", onClick: page.step1init.init?.onClick, disabled: page.step1init.init?.disabled, size: "lg", children: "Swap" })] }));
     }
     if (page.step2paymentWait) {
         return (_jsxs(_Fragment, { children: [_jsx(ImportantNoticeModal, { opened: !!page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal, close: page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal?.close, setShowAgain: page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal?.showAgain
@@ -45,6 +47,6 @@ export function FromBTCLNSwapPanel(props) {
                                     : _jsx("i", { className: "icon icon-claim" }), "Claim your payment"] }) })] }) }));
     }
     if (page.step4) {
-        return (_jsxs(_Fragment, { children: [_jsxs("div", { className: "swap-panel__card", children: [page.step4.state !== "expired_uninitialized" ? stepByStep : '', _jsx(SwapStepAlert, { show: page.step4?.state === 'success', type: "success", icon: ic_check_circle, title: "Swap success", description: "Your swap was executed successfully!" }), _jsx(SwapStepAlert, { show: page.step4?.state === 'failed', type: "danger", icon: ic_warning, title: "Swap failed", description: "Swap HTLC expired, your lightning payment will be refunded shortly!" }), _jsx(SwapStepAlert, { show: page.step4?.state === 'expired', type: "danger", icon: ic_warning, title: "Swap expired", description: page.step4?.expiryMessage })] }), gasAlert, _jsx(BaseButton, { onClick: props.refreshQuote, variant: "primary", className: "swap-panel__action", children: "New Swap" })] }));
+        return (_jsxs(_Fragment, { children: [page.step4.state === "expired_uninitialized" && swapFees, _jsxs("div", { className: "swap-panel__card", children: [page.step4.state !== "expired_uninitialized" ? stepByStep : '', _jsx(SwapStepAlert, { show: page.step4?.state === 'success', type: "success", icon: ic_check_circle, title: "Swap success", description: "Your swap was executed successfully!" }), _jsx(SwapStepAlert, { show: page.step4?.state === 'failed', type: "danger", icon: ic_warning, title: "Swap failed", description: "Swap HTLC expired, your lightning payment will be refunded shortly!" }), _jsx(SwapStepAlert, { show: page.step4?.state === 'expired', type: "danger", icon: ic_warning, title: "Swap expired", description: page.step4?.expiryMessage })] }), gasAlert, _jsx(BaseButton, { onClick: props.refreshQuote, variant: "primary", className: "swap-panel__action", children: "New Swap" })] }));
     }
 }

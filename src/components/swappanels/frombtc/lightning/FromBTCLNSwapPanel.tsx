@@ -15,6 +15,7 @@ import {ConnectedWalletPayButtons} from "../../../swaps/ConnectedWalletPayButton
 import {DisconnectedWalletQrAndAddress} from "../../../swaps/DisconnectedWalletQrAndAddress";
 import {SwapExpiryProgressBar} from "../../../swaps/SwapExpiryProgressBar";
 import {ScrollAnchor} from "../../../ScrollAnchor";
+import {SwapFeePanel} from "../../../fees/SwapFeePanel";
 
 /*
 Steps:
@@ -43,9 +44,21 @@ export function FromBTCLNSwapPanel(props: {
     steps={page.executionSteps}
   /> : '';
 
+  const swapFees = <div className="mt-3">
+    <SwapFeePanel
+      swap={props.quote}
+      isExpired={page.step4?.state === 'expired_uninitialized'}
+      onRefreshQuote={props.refreshQuote}
+      totalTime={page.step1init?.expiry.total}
+      remainingTime={page.step1init?.expiry.remaining}
+    />
+  </div>;
+
   if(page.step1init) {
     return (
       <>
+        {swapFees}
+
         {gasAlert}
 
         {!!page.step1init.init && <ButtonWithWallet
@@ -202,6 +215,8 @@ export function FromBTCLNSwapPanel(props: {
   if(page.step4) {
     return (
       <>
+        {page.step4.state==="expired_uninitialized" && swapFees}
+
         <div className="swap-panel__card">
           {page.step4.state!=="expired_uninitialized" ? stepByStep : ''}
 

@@ -3,7 +3,6 @@ import { useState } from 'react';
 import ValidatedInput from '../components/ValidatedInput';
 import { Alert, Button, OverlayTrigger, Spinner, Tooltip } from 'react-bootstrap';
 import { TokensDropdown } from '../components/tokens/TokensDropdown';
-import { SimpleFeeSummaryScreen } from '../components/fees/SimpleFeeScreen';
 import { SwapStepAlert } from '../components/swaps/SwapStepAlert';
 import { WalletInfoBadge } from '../components/wallets/WalletInfoBadge';
 import { AuditedBy } from '../components/_deprecated/AuditedBy';
@@ -12,6 +11,8 @@ import { useSwapPage } from '../hooks/pages/useSwapPage';
 import { BaseButton } from '../components/BaseButton';
 import {QRScannerModal} from "../components/qrscanner/QRScannerModal";
 import {SwapPanel} from "../components/swappanels/SwapPanel";
+import {PlaceholderFeePanel} from "../components/fees/PlaceholderFeePanel";
+import {SwapFeePanel} from "../components/fees/SwapFeePanel";
 
 export function SwapNew() {
   const swapPage = useSwapPage();
@@ -346,16 +347,6 @@ export function SwapNew() {
                   </div>
                 </div>
               </div>
-
-              <div className="mt-3">
-                <SimpleFeeSummaryScreen
-                  swap={swapPage.quote.quote}
-                  btcFeeRate={swapPage.input.wallet?.btcFeeRate}
-                  inputToken={swapPage.input.token.value}
-                  outputToken={swapPage.output.token.value}
-                  onRefreshQuote={swapPage.quote.refresh}
-                />
-              </div>
             </>
           )}
 
@@ -372,14 +363,29 @@ export function SwapNew() {
               />
             </div>
           ) : (
-            <BaseButton
-              variant="primary"
-              className="swap-panel__action"
-              disabled={true}
-              size="lg"
-            >
-              Swap
-            </BaseButton>
+            <>
+              <div className="mt-3">
+                {swapPage.quote.quote ? (
+                  <SwapFeePanel
+                    swap={swapPage.quote.quote}
+                    btcFeeRate={swapPage.input.wallet?.btcFeeRate}
+                  />
+                ) : (
+                  <PlaceholderFeePanel
+                    inputToken={swapPage.input.token.value}
+                    outputToken={swapPage.output.token.value}
+                  />
+                )}
+              </div>
+              <BaseButton
+                variant="primary"
+                className="swap-panel__action"
+                disabled={true}
+                size="lg"
+              >
+                Swap
+              </BaseButton>
+            </>
           )}
         </div>
       </div>
