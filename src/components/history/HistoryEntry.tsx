@@ -31,11 +31,9 @@ export function HistoryEntry(props: { swap: ISwap }) {
 
   const inputAddress =
     props.swap instanceof IToBTCSwap
-      ? props.swap._getInitiator()
-      : props.swap instanceof IFromBTCSwap
-        ? props.swap._getInitiator()
-        : '';
-  const outputAddress = props.swap.getOutputAddress();
+      ? props.swap._getInitiator() // For TO_BTC: smart chain address (source)
+      : ''; // For FROM_BTC: Bitcoin sender address (not available from swap object)
+  const outputAddress = props.swap.getOutputAddress(); // Destination address for both swap types
 
   const refundable =
     props.swap.getDirection() === SwapDirection.TO_BTC && (props.swap as IToBTCSwap).isRefundable();
