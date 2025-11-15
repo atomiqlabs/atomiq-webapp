@@ -13,6 +13,9 @@
   }
   &__head {
     @apply uppercase text-white/75 font-semibold text-[12px];
+    @media (max-width: 992px) {
+      display: none;
+    }
   }
 }
 
@@ -28,14 +31,25 @@
 
     .is-arrow {
       @apply opacity-50 text-[20px] ml-auto pr-[12px] flex items-center;
+      @media (max-width: 992px) {
+        display: none;
+      }
     }
 
     &.is-value {
       @apply justify-end;
+
+      @media (max-width: 992px) {
+        @apply justify-start;
+      }
     }
 
     &.is-date {
       @apply items-end;
+
+      @media (max-width: 992px) {
+        @apply items-start;
+      }
 
       .sc-time {
         @apply opacity-75 text-[14px];
@@ -47,6 +61,9 @@
     }
     &.is-status {
       @apply items-start;
+      @media (max-width: 992px) {
+        @apply items-end;
+      }
     }
   }
 
@@ -72,7 +89,7 @@
       }
     }
     .icon {
-      @apply opacity-50;
+      @apply opacity-50 ml-1;
     }
   }
 }

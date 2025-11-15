@@ -107,14 +107,14 @@ export function HistoryEntry(props: { swap: ISwap }) {
           label="to"
         />
       </Col>
-      <Col md={1} sm={12} className="is-value is-right">
+      <Col md={1} sm={2} className="is-value is-right">
         <div>{outputUsdValue != null ? FEConstants.USDollar.format(outputUsdValue) : '-'}</div>
       </Col>
-      <Col md={2} sm={12} className="d-flex text-end flex-column is-date is-right">
+      <Col md={2} sm={6} xs={8} className="d-flex text-end flex-column is-date is-right">
         <div className="sc-date">{formatDate(props.swap.createdAt)}</div>
         <div className="sc-time">{formatTime(props.swap.createdAt)}</div>
       </Col>
-      <Col md={1} sm={12} className="d-flex text-end flex-column is-status">
+      <Col md={1} sm={4} xs={4} className="d-flex text-end flex-column is-status">
         {claimable || refundable ? (
           <Button
             variant={claimable || refundable ? 'primary' : 'secondary'}
