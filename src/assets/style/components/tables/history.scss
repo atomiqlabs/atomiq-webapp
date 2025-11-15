@@ -2,6 +2,7 @@
   .list-group {
     @apply gap-[10px];
   }
+
   .list-group-item {
     @apply p-0 text-white border-transparent border-1 border-solid rounded-[12px] transition-all;
 
@@ -11,6 +12,7 @@
       border-color: rgba(255, 255, 255, 0.2);
     }
   }
+
   &__head {
     @apply uppercase text-white/75 font-semibold text-[12px];
     @media (max-width: 992px) {
@@ -20,7 +22,11 @@
 }
 
 .history-entry {
-  @apply justify-between cursor-pointer;
+  @apply justify-between;
+
+  &.is-clickable {
+    @apply cursor-pointer;
+  }
 
   & > div {
     @apply flex items-center justify-center m-0 p-3;

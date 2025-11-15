@@ -4,4 +4,25 @@
   &__title h2 {
     @apply text-left font-semibold text-[32px] mb-[24px];
   }
+
+  &__filter {
+    @apply flex gap-[12px] items-center mb-[24px];
+
+    &__title {
+      @apply font-medium;
+    }
+
+    &__items {
+      @apply flex gap-[12px] items-center;
+    }
+
+    .sc-item {
+      @apply p-2 text-[14px] flex gap-2 items-center border-1 border-solid border-white/20 rounded-[8px] pr-[10px] bg-transparent text-white;
+
+      &.is-selected {
+        @apply outline-2 outline-pink bg-pink/10 border-pink;
+        outline-style: solid;
+      }
+    }
+  }
 }

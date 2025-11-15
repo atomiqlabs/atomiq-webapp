@@ -87,7 +87,7 @@ export function HistoryEntry(props: { swap: ISwap }) {
   );
 
   return (
-    <Row className="history-entry gx-1 gy-1" onClick={navigateToSwap}>
+    <Row className="history-entry is-clickable gx-1 gy-1" onClick={navigateToSwap}>
       <Col md={4} sm={12} className="is-token">
         <HistoryToken
           token={input.token}

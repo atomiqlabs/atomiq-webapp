@@ -61,6 +61,22 @@ export function History() {
         <div className="history-page__title">
           <h2>Your Swap History</h2>
         </div>
+        {/* Hidden until filter will be implemented */}
+        {false && (
+          <div className="history-page__filter">
+            <div className="history-page__filter__title">Filter by chain:</div>
+            <div className="history-page__filter__items">
+              <button className="sc-item is-selected">
+                <img src={'/icons/chains/solana.svg'} alt="solana" />
+                Solana
+              </button>
+              <button className="sc-item">
+                <img src={'/icons/chains/bitcoin.svg'} alt="bitcoin" />
+                Bitcoin
+              </button>
+            </div>
+          </div>
+        )}
         <div className="history-table">
           <div className="history-table__head">
             <Row className="history-entry gx-1 gy-1">
