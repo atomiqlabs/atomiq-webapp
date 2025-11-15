@@ -2,13 +2,13 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { Spinner } from 'react-bootstrap';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import { useSpvVaultFromBtcQuote } from "../../../../hooks/swaps/useSpvVaultFromBtcQuote";
-import { StepByStep } from "../../../swaps/StepByStep";
-import { SwapStepAlert } from "../../../swaps/SwapStepAlert";
-import { ButtonWithWallet } from "../../../wallets/ButtonWithWallet";
-import { BaseButton } from "../../../BaseButton";
-import { SwapConfirmations } from "../../../swaps/SwapConfirmations";
-import { SwapFeePanel } from "../../../fees/SwapFeePanel";
+import { useSpvVaultFromBtcQuote } from '../../../../hooks/swaps/useSpvVaultFromBtcQuote';
+import { StepByStep } from '../../../swaps/StepByStep';
+import { SwapStepAlert } from '../../../swaps/SwapStepAlert';
+import { ButtonWithWallet } from '../../../wallets/ButtonWithWallet';
+import { BaseButton } from '../../../common/BaseButton';
+import { SwapConfirmations } from '../../../swaps/SwapConfirmations';
+import { SwapFeePanel } from '../../../fees/SwapFeePanel';
 /*
 Steps:
 1. Bitcoin payment -> Broadcasting bitcoin transaction -> Waiting bitcoin confirmations -> Bitcoin confirmed
@@ -17,15 +17,15 @@ Steps:
 export function SpvVaultFromBTCSwapPanel(props) {
     const page = useSpvVaultFromBtcQuote(props.quote, props.UICallback, props.feeRate, props.balance);
     const stepByStep = page.executionSteps ? (_jsx(StepByStep, { quote: props.quote, steps: page.executionSteps })) : ('');
-    const swapFees = _jsx("div", { className: "mt-3", children: _jsx(SwapFeePanel, { swap: props.quote, isExpired: page.step5?.state === 'expired', onRefreshQuote: props.refreshQuote, totalTime: page.step1init?.expiry.total, remainingTime: page.step1init?.expiry.remaining, btcFeeRate: props.feeRate }) });
+    const swapFees = (_jsx("div", { className: "mt-3", children: _jsx(SwapFeePanel, { swap: props.quote, isExpired: page.step5?.state === 'expired', onRefreshQuote: props.refreshQuote, totalTime: page.step1init?.expiry.total, remainingTime: page.step1init?.expiry.remaining, btcFeeRate: props.feeRate }) }));
     if (page.step1init) {
         return (_jsxs(_Fragment, { children: [swapFees, _jsx(SwapStepAlert, { show: !!page.step1init.error, type: "error", icon: ic_warning, title: page.step1init.error?.title, error: page.step1init.error?.error }), _jsxs(ButtonWithWallet, { chainId: "BITCOIN", onClick: page.step1init.init?.onClick, className: "swap-panel__action", disabled: page.step1init.init?.disabled, size: "lg", children: [page.step1init.init?.loading ? (_jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" })) : (''), "Pay with ", _jsx("img", { width: 20, height: 20, src: page.step1init.bitcoinWallet?.icon }), ' ', page.step1init.bitcoinWallet?.name] })] }));
     }
     if (page.step2broadcasting) {
-        return (_jsxs("div", { className: "swap-panel__card", children: [stepByStep, _jsx(SwapStepAlert, { show: !!page.step2broadcasting.error, type: "warning", icon: ic_warning, title: page.step2broadcasting.error?.title, error: page.step2broadcasting.error?.error, actionElement: page.step2broadcasting.error?.retry && (_jsxs(BaseButton, { className: "swap-step-alert__button", onClick: page.step2broadcasting.error?.retry, variant: "secondary", children: [_jsx("i", { className: "icon icon-retry" }), "Retry"] })) })] }));
+        return (_jsxs("div", { className: "swap-panel__card", children: [stepByStep, _jsx(SwapStepAlert, { show: !!page.step2broadcasting.error, type: 'warning', icon: ic_warning, title: page.step2broadcasting.error?.title, error: page.step2broadcasting.error?.error, actionElement: page.step2broadcasting.error?.retry && (_jsxs(BaseButton, { className: "swap-step-alert__button", onClick: page.step2broadcasting.error?.retry, variant: "secondary", children: [_jsx("i", { className: "icon icon-retry" }), "Retry"] })) })] }));
     }
     if (page.step3awaitingConfirmations) {
-        return (_jsxs("div", { className: "swap-panel__card", children: [stepByStep, _jsx(SwapStepAlert, { show: !!page.step3awaitingConfirmations.error, type: "error", icon: ic_warning, title: page.step3awaitingConfirmations.error?.title, error: page.step3awaitingConfirmations.error?.error, actionElement: page.step3awaitingConfirmations.error?.retry && (_jsxs(BaseButton, { className: "swap-step-alert__button", onClick: page.step3awaitingConfirmations.error?.retry, variant: "secondary", children: [_jsx("i", { className: "icon icon-retry" }), "Retry"] })) }), _jsx(SwapConfirmations, { txData: page.step3awaitingConfirmations.txData })] }));
+        return (_jsxs("div", { className: "swap-panel__card", children: [stepByStep, _jsx(SwapStepAlert, { show: !!page.step3awaitingConfirmations.error, type: 'error', icon: ic_warning, title: page.step3awaitingConfirmations.error?.title, error: page.step3awaitingConfirmations.error?.error, actionElement: page.step3awaitingConfirmations.error?.retry && (_jsxs(BaseButton, { className: "swap-step-alert__button", onClick: page.step3awaitingConfirmations.error?.retry, variant: "secondary", children: [_jsx("i", { className: "icon icon-retry" }), "Retry"] })) }), _jsx(SwapConfirmations, { txData: page.step3awaitingConfirmations.txData })] }));
     }
     if (page.step4claim) {
         return (_jsxs("div", { className: "swap-panel__card", children: [stepByStep, page.step4claim.waitingForWatchtowerClaim ? (_jsxs("div", { className: "swap-confirmations", children: [_jsx("div", { className: "swap-confirmations__estimate", children: _jsx(Spinner, {}) }), _jsx("div", { className: "swap-confirmations__name", children: "Transaction received & confirmed, waiting for claim by watchtowers..." })] })) : (_jsxs(_Fragment, { children: [_jsx(SwapStepAlert, { show: !!page.step4claim.error, type: "error", icon: ic_warning, title: page.step4claim.error?.title, error: page.step4claim.error?.error }), _jsx(SwapStepAlert, { show: true, type: "success", icon: ic_check_circle, title: "Bitcoin transaction confirmed", description: "Claim your payment to finish the swap.", actionElement: _jsxs(ButtonWithWallet, { requiredWalletAddress: props.quote._getInitiator(), className: "swap-step-alert__button", chainId: props.quote?.chainIdentifier, onClick: page.step4claim.claim.onClick, disabled: page.step4claim.claim.disabled, variant: "secondary", children: [page.step4claim.claim.loading ? (_jsx(Spinner, { animation: "border", size: "sm", className: "mr-2" })) : (_jsx("i", { className: "icon icon-claim" })), "Claim your payment"] }) })] }))] }));

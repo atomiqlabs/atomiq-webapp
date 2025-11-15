@@ -5,7 +5,7 @@ import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
 import Icon from 'react-icons-kit';
 import { isBtcToken } from '@atomiqlabs/sdk';
 import { useChain } from '../../hooks/chains/useChain';
-import { BaseButton } from '../BaseButton';
+import { BaseButton } from '../common/BaseButton';
 import { useContext } from 'react';
 import { ChainsContext } from '../../context/ChainsContext';
 const ConnectedWallet = React.forwardRef(({ name, onClick, noText }) => (_jsx(BaseButton, { icon: _jsx(Icon, { size: 12, icon: ic_brightness_1, className: "wallet-connections__indicator" }), variant: "transparent", className: "w-100 justify-content-start", size: "smaller", onClick: onClick, children: !noText ? name : '' })));

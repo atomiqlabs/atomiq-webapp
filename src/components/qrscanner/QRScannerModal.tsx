@@ -1,6 +1,6 @@
 import { QRScanner } from './QRScanner';
 import * as React from 'react';
-import { GenericModal } from '../GenericModal';
+import { GenericModal } from '../common/GenericModal';
 
 export function QRScannerModal(props: {
   onScanned: (value: string) => void;

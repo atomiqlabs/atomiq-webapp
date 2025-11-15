@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { GenericModal } from '../GenericModal';
-import { BaseButton } from '../BaseButton';
+import { GenericModal } from '../common/GenericModal';
+import { BaseButton } from '../common/BaseButton';
 import ValidatedInput from '../ValidatedInput';
 
 export function ImportantNoticeModal(props: {
@@ -20,19 +20,13 @@ export function ImportantNoticeModal(props: {
       title="Important notice"
       enableClose={true}
     >
-      <p className="sc-text">
-        {props.text}
-      </p>
+      <p className="sc-text">{props.text}</p>
       <ValidatedInput
         type="checkbox"
         placeholder="Don't show this warning again"
         onChange={(checked: boolean) => props.setShowAgain(!checked)}
       />
-      <BaseButton
-        variant="secondary"
-        className="sc-button"
-        onClick={() => props.close(true)}
-      >
+      <BaseButton variant="secondary" className="sc-button" onClick={() => props.close(true)}>
         {props.buttonText}
       </BaseButton>
     </GenericModal>

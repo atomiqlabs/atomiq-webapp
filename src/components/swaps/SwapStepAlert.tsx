@@ -2,11 +2,11 @@ import * as React from 'react';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Icon from 'react-icons-kit';
 import { ic_content_copy } from 'react-icons-kit/md/ic_content_copy';
-import { BaseButton } from '../BaseButton';
+import { BaseButton } from '../common/BaseButton';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_info } from 'react-icons-kit/md/ic_info';
-import { ic_error} from 'react-icons-kit/md/ic_error';
+import { ic_error } from 'react-icons-kit/md/ic_error';
 
 type SwapStepAlertType = 'success' | 'error' | 'warning' | 'info' | 'danger';
 
@@ -15,7 +15,7 @@ const DefaultIcons = {
   error: ic_warning,
   warning: ic_warning,
   info: ic_info,
-  danger: ic_error
+  danger: ic_error,
 };
 
 interface SwapStepAlertAction {
@@ -63,14 +63,9 @@ export function SwapStepAlert(props: SwapStepAlertProps) {
     return null;
   }
 
-  const icon = props.icon === null ? undefined : props.icon ?? DefaultIcons[props.type];
+  const icon = props.icon === null ? undefined : (props.icon ?? DefaultIcons[props.type]);
 
-  const classNames = [
-    'swap-step-alert',
-    `is-${props.type}`,
-    !icon && 'no-icon',
-    props.className,
-  ]
+  const classNames = ['swap-step-alert', `is-${props.type}`, !icon && 'no-icon', props.className]
     .filter(Boolean)
     .join(' ');
 
@@ -103,9 +98,7 @@ export function SwapStepAlert(props: SwapStepAlertProps) {
       </strong>
 
       {/* Dont need to type error 2 times, if description is not really description */}
-      {description && (
-        <label className="swap-step-alert__description">{description}</label>
-      )}
+      {description && <label className="swap-step-alert__description">{description}</label>}
 
       {props.action && (
         <>

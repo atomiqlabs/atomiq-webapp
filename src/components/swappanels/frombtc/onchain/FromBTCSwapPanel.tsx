@@ -3,20 +3,20 @@ import { Spinner } from 'react-bootstrap';
 import { FromBTCSwap, ISwap } from '@atomiqlabs/sdk';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
-import {SwapPageUIState} from "../../../../hooks/pages/useSwapPage";
-import {useFromBtcQuote} from "../../../../hooks/swaps/useFromBtcQuote";
-import {SwapForGasAlert} from "../../../swaps/SwapForGasAlert";
-import {StepByStep} from "../../../swaps/StepByStep";
-import {SwapStepAlert} from "../../../swaps/SwapStepAlert";
-import {ButtonWithWallet} from "../../../wallets/ButtonWithWallet";
-import {ImportantNoticeModal} from "../../../swaps/ImportantNoticeModal";
-import {BaseButton} from "../../../BaseButton";
-import {ConnectedWalletPayButtons} from "../../../swaps/ConnectedWalletPayButtons";
-import {DisconnectedWalletQrAndAddress} from "../../../swaps/DisconnectedWalletQrAndAddress";
-import {SwapExpiryProgressBar} from "../../../swaps/SwapExpiryProgressBar";
-import {ScrollAnchor} from "../../../ScrollAnchor";
-import {SwapConfirmations} from "../../../swaps/SwapConfirmations";
-import {SwapFeePanel} from "../../../fees/SwapFeePanel";
+import { SwapPageUIState } from '../../../../hooks/pages/useSwapPage';
+import { useFromBtcQuote } from '../../../../hooks/swaps/useFromBtcQuote';
+import { SwapForGasAlert } from '../../../swaps/SwapForGasAlert';
+import { StepByStep } from '../../../swaps/StepByStep';
+import { SwapStepAlert } from '../../../swaps/SwapStepAlert';
+import { ButtonWithWallet } from '../../../wallets/ButtonWithWallet';
+import { ImportantNoticeModal } from '../../../swaps/ImportantNoticeModal';
+import { BaseButton } from '../../../common/BaseButton';
+import { ConnectedWalletPayButtons } from '../../../swaps/ConnectedWalletPayButtons';
+import { DisconnectedWalletQrAndAddress } from '../../../swaps/DisconnectedWalletQrAndAddress';
+import { SwapExpiryProgressBar } from '../../../swaps/SwapExpiryProgressBar';
+import { ScrollAnchor } from '../../../ScrollAnchor';
+import { SwapConfirmations } from '../../../swaps/SwapConfirmations';
+import { SwapFeePanel } from '../../../fees/SwapFeePanel';
 
 /*
 Steps:
@@ -37,26 +37,26 @@ export function FromBTCSwapPanel(props: {
 }) {
   const page = useFromBtcQuote(props.quote, props.UICallback, props.feeRate, props.balance);
 
-  const gasAlert = <SwapForGasAlert
-    notEnoughForGas={page.additionalGasRequired}
-    quote={props.quote}
-  />;
+  const gasAlert = (
+    <SwapForGasAlert notEnoughForGas={page.additionalGasRequired} quote={props.quote} />
+  );
 
-  const stepByStep = page.executionSteps && <StepByStep
-    quote={props.quote}
-    steps={page.executionSteps}
-  />;
+  const stepByStep = page.executionSteps && (
+    <StepByStep quote={props.quote} steps={page.executionSteps} />
+  );
 
-  const swapFees = <div className="mt-3">
-    <SwapFeePanel
-      swap={props.quote}
-      isExpired={page.step5?.state === 'expired'}
-      onRefreshQuote={props.refreshQuote}
-      totalTime={page.step1init?.expiry.total}
-      remainingTime={page.step1init?.expiry.remaining}
-      btcFeeRate={props.feeRate}
-    />
-  </div>;
+  const swapFees = (
+    <div className="mt-3">
+      <SwapFeePanel
+        swap={props.quote}
+        isExpired={page.step5?.state === 'expired'}
+        onRefreshQuote={props.refreshQuote}
+        totalTime={page.step1init?.expiry.total}
+        remainingTime={page.step1init?.expiry.remaining}
+        btcFeeRate={props.feeRate}
+      />
+    </div>
+  );
 
   if (page.step1init) {
     return (
@@ -100,14 +100,19 @@ export function FromBTCSwapPanel(props: {
         <ImportantNoticeModal
           opened={!!page.step2paymentWait.walletDisconnected?.addressCopyWarningModal}
           close={page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.close}
-          setShowAgain={page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.showAgain.onChange}
-          text={(
+          setShowAgain={
+            page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.showAgain.onChange
+          }
+          text={
             <>
               Make sure you send{' '}
-              <b>EXACTLY {page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.btcAmount.toString()}</b>
+              <b>
+                EXACTLY{' '}
+                {page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.btcAmount.toString()}
+              </b>
               , as sending a different amount will not be accepted, and you might lose your funds!
             </>
-          )}
+          }
           buttonText="Understood, copy address"
         />
 
@@ -119,16 +124,18 @@ export function FromBTCSwapPanel(props: {
             type={page.step2paymentWait.error?.type}
             title={page.step2paymentWait.error?.title}
             error={page.step2paymentWait.error?.error}
-            actionElement={page.step2paymentWait.error?.retry && (
-              <BaseButton
-                className="swap-step-alert__button"
-                onClick={page.step2paymentWait.error?.retry}
-                variant="secondary"
-              >
-                <i className="icon icon-retry"/>
-                Retry
-              </BaseButton>
-            )}
+            actionElement={
+              page.step2paymentWait.error?.retry && (
+                <BaseButton
+                  className="swap-step-alert__button"
+                  onClick={page.step2paymentWait.error?.retry}
+                  variant="secondary"
+                >
+                  <i className="icon icon-retry" />
+                  Retry
+                </BaseButton>
+              )
+            }
           />
 
           {page.step2paymentWait.walletConnected ? (
@@ -145,19 +152,22 @@ export function FromBTCSwapPanel(props: {
             <DisconnectedWalletQrAndAddress
               address={{
                 ...page.step2paymentWait.walletDisconnected.address,
-                description: 'Bitcoin wallet address'
+                description: 'Bitcoin wallet address',
               }}
               payWithDeeplink={{
                 ...page.step2paymentWait.walletDisconnected.payWithBitcoinWallet,
-                text: 'Pay with BTC wallet'
+                text: 'Pay with BTC wallet',
               }}
               payWithBrowserWallet={{
                 ...page.step2paymentWait.walletDisconnected.payWithBrowserWallet,
-                text: 'Pay with browser wallet'
+                text: 'Pay with browser wallet',
               }}
-              alert={(
-                <>Send <strong>EXACTLY {props.quote.getInput().toString()}</strong> to the address below.</>
-              )}
+              alert={
+                <>
+                  Send <strong>EXACTLY {props.quote.getInput().toString()}</strong> to the address
+                  below.
+                </>
+              }
             />
           ) : (
             ''
@@ -172,7 +182,9 @@ export function FromBTCSwapPanel(props: {
                 quoteAlias="Swap address"
               />
             </div>
-          ) : ''}
+          ) : (
+            ''
+          )}
 
           <ScrollAnchor trigger={true} />
         </div>
@@ -196,20 +208,22 @@ export function FromBTCSwapPanel(props: {
 
           <SwapStepAlert
             show={!!page.step3awaitingConfirmations.error}
-            type={"warning"}
+            type={'warning'}
             icon={ic_warning}
             title={page.step3awaitingConfirmations.error?.title}
             error={page.step3awaitingConfirmations.error?.error}
-            actionElement={page.step3awaitingConfirmations.error?.retry && (
-              <BaseButton
-                className="swap-step-alert__button"
-                onClick={page.step3awaitingConfirmations.error?.retry}
-                variant="secondary"
-              >
-                <i className="icon icon-retry"/>
-                Retry
-              </BaseButton>
-            )}
+            actionElement={
+              page.step3awaitingConfirmations.error?.retry && (
+                <BaseButton
+                  className="swap-step-alert__button"
+                  onClick={page.step3awaitingConfirmations.error?.retry}
+                  variant="secondary"
+                >
+                  <i className="icon icon-retry" />
+                  Retry
+                </BaseButton>
+              )
+            }
           />
 
           {page.step3awaitingConfirmations.broadcasting ? (

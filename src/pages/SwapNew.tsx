@@ -8,11 +8,11 @@ import { WalletInfoBadge } from '../components/wallets/WalletInfoBadge';
 import { AuditedBy } from '../components/_deprecated/AuditedBy';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useSwapPage } from '../hooks/pages/useSwapPage';
-import { BaseButton } from '../components/BaseButton';
-import {QRScannerModal} from "../components/qrscanner/QRScannerModal";
-import {SwapPanel} from "../components/swappanels/SwapPanel";
-import {PlaceholderFeePanel} from "../components/fees/PlaceholderFeePanel";
-import {SwapFeePanel} from "../components/fees/SwapFeePanel";
+import { BaseButton } from '../components/common/BaseButton';
+import { QRScannerModal } from '../components/qrscanner/QRScannerModal';
+import { SwapPanel } from '../components/swappanels/SwapPanel';
+import { PlaceholderFeePanel } from '../components/fees/PlaceholderFeePanel';
+import { SwapFeePanel } from '../components/fees/SwapFeePanel';
 
 export function SwapNew() {
   const swapPage = useSwapPage();
@@ -87,7 +87,9 @@ export function SwapNew() {
                 <div className="swap-panel__card__body">
                   <TokensDropdown
                     tokensList={swapPage.input.token.values}
-                    onSelect={swapPage.input.token.disabled ? undefined : swapPage.input.token.onChange}
+                    onSelect={
+                      swapPage.input.token.disabled ? undefined : swapPage.input.token.onChange
+                    }
                     value={swapPage.input.token.value}
                     className="round-right text-white bg-black bg-opacity-10"
                   />
@@ -99,7 +101,7 @@ export function SwapNew() {
                     value={swapPage.input.amount.value}
                     size={'lg'}
                     textStart={
-                      swapPage.input.amount.loading ? <Spinner className="text-white"/> : null
+                      swapPage.input.amount.loading ? <Spinner className="text-white" /> : null
                     }
                     onChange={swapPage.input.amount.onChange}
                     inputId="amount-input"
@@ -166,7 +168,9 @@ export function SwapNew() {
                   <div className="swap-panel__card__body">
                     <TokensDropdown
                       tokensList={swapPage.output.token.values}
-                      onSelect={swapPage.output.token.disabled ? undefined : swapPage.output.token.onChange}
+                      onSelect={
+                        swapPage.output.token.disabled ? undefined : swapPage.output.token.onChange
+                      }
                       value={swapPage.output.token.value}
                       className="round-right text-white bg-black bg-opacity-10"
                     />
@@ -177,7 +181,7 @@ export function SwapNew() {
                       value={swapPage.output.amount.value}
                       size={'lg'}
                       textStart={
-                        swapPage.output.amount.loading ? <Spinner className="text-white"/> : null
+                        swapPage.output.amount.loading ? <Spinner className="text-white" /> : null
                       }
                       onChange={swapPage.output.amount.onChange}
                       inputId="amount-output"
@@ -266,7 +270,7 @@ export function SwapNew() {
                               disabled={swapPage.output.address?.disabled}
                               textEnd={
                                 swapPage.output.address?.loading ? (
-                                  <Spinner className="text-white"/>
+                                  <Spinner className="text-white" />
                                 ) : swapPage.output.address?.validation?.status === 'success' ? (
                                   <span className="icon icon-check"></span>
                                 ) : swapPage.output.address?.validation?.status === 'error' ? (
@@ -350,7 +354,8 @@ export function SwapNew() {
             </>
           )}
 
-          {swapPage.quote.quote != null && (!swapPage.quote.isRandom || swapPage.swapTypeData.requiresOutputWallet) ? (
+          {swapPage.quote.quote != null &&
+          (!swapPage.quote.isRandom || swapPage.swapTypeData.requiresOutputWallet) ? (
             <div className="d-flex flex-column text-white">
               <SwapPanel
                 type="swap"
@@ -390,7 +395,7 @@ export function SwapNew() {
         </div>
       </div>
 
-      <AuditedBy chainId={swapPage.smartChainId}/>
+      <AuditedBy chainId={swapPage.smartChainId} />
     </>
   );
 }

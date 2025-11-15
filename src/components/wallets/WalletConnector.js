@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useContext, useMemo, useState } from 'react';
 import { Badge, Dropdown } from 'react-bootstrap';
 import { ChainsContext } from '../../context/ChainsContext';
-import { BaseButton } from '../BaseButton';
+import { BaseButton } from '../common/BaseButton';
 function MultichainWalletMenuItem(props) {
     const { changeWallet, disconnectWallet } = useContext(ChainsContext);
     const chains = Object.keys(props.wallet.chains).map((chain) => props.wallet.chains[chain]);

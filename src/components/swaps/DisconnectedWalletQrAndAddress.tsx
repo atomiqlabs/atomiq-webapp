@@ -1,9 +1,9 @@
-import {useCallback} from "react";
-import {QRCodeSVG} from "qrcode.react";
-import {BaseButton} from "../BaseButton";
-import * as React from "react";
-import {Form, OverlayTrigger, Tooltip} from "react-bootstrap";
-import {TemporaryTooltip} from "../TemporaryTooltip";
+import { useCallback } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
+import { BaseButton } from '../common/BaseButton';
+import * as React from 'react';
+import { Form, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { TemporaryTooltip } from '../TemporaryTooltip';
 
 export type DisconnectedWalletQrAndAddressProps = {
   //Displayed in the QR code and in text field
@@ -35,16 +35,15 @@ export type DisconnectedWalletQrAndAddressProps = {
 };
 
 export function DisconnectedWalletQrAndAddress(props: DisconnectedWalletQrAndAddressProps) {
-
   const addressContent = useCallback(
     (show) => (
       <div className="swap-panel__card__group">
-        {!!props.alert && <div className="alert-message is-warning mb-3">
-          <i className="alert-message__icon icon icon-Notice"></i>
-          <div className="alert-message__body">
-            {props.alert}
+        {!!props.alert && (
+          <div className="alert-message is-warning mb-3">
+            <i className="alert-message__icon icon icon-Notice"></i>
+            <div className="alert-message__body">{props.alert}</div>
           </div>
-        </div>}
+        )}
 
         <QRCodeSVG
           value={props.address.hyperlink}
@@ -52,33 +51,34 @@ export function DisconnectedWalletQrAndAddress(props: DisconnectedWalletQrAndAdd
           includeMargin={true}
           className="cursor-pointer"
           onClick={(event) => {
-            if(props.address.copy()) show(event.target);
+            if (props.address.copy()) show(event.target);
           }}
           imageSettings={
             props.nfcScanning
               ? {
-                src: '/icons/contactless.png',
-                excavate: true,
-                height: 50,
-                width: 50,
-              }
+                  src: '/icons/contactless.png',
+                  excavate: true,
+                  height: 50,
+                  width: 50,
+                }
               : null
           }
         />
 
         <div className="wallet-address-preview">
           <div className="wallet-address-preview__content">
-            <div className="wallet-address-preview__title">
-              {props.address.description}
-            </div>
+            <div className="wallet-address-preview__title">{props.address.description}</div>
             <div className="wallet-address-preview__address">
               <div className="sc-text">{props.address.value}</div>
               <div className="wallet-address-preview__indicator"></div>
             </div>
           </div>
-          <div className="wallet-address-preview__action" onClick={(event) => {
-            if(props.address.copy()) show(event.target);
-          }}>
+          <div
+            className="wallet-address-preview__action"
+            onClick={(event) => {
+              if (props.address.copy()) show(event.target);
+            }}
+          >
             <div className="icon icon-copy"></div>
           </div>
         </div>
@@ -89,23 +89,24 @@ export function DisconnectedWalletQrAndAddress(props: DisconnectedWalletQrAndAdd
             onClick={props.payWithBrowserWallet.onClick}
             disabled={props.payWithBrowserWallet.loading}
           >
-            {typeof(props.payWithBrowserWallet.text) === 'string' ? (
+            {typeof props.payWithBrowserWallet.text === 'string' ? (
               <>
                 <i className="icon icon-new-window"></i>
                 <div className="sc-text">{props.payWithBrowserWallet.text}</div>
               </>
-            ) : props.payWithBrowserWallet.text}
+            ) : (
+              props.payWithBrowserWallet.text
+            )}
           </BaseButton>
-          <BaseButton
-            variant="secondary"
-            onClick={props.payWithDeeplink.onClick}
-          >
-            {typeof(props.payWithDeeplink.text) === 'string' ? (
+          <BaseButton variant="secondary" onClick={props.payWithDeeplink.onClick}>
+            {typeof props.payWithDeeplink.text === 'string' ? (
               <>
                 <i className="icon icon-new-window"></i>
                 <div className="sc-text">{props.payWithDeeplink.text}</div>
               </>
-            ) : props.payWithDeeplink.text}
+            ) : (
+              props.payWithDeeplink.text
+            )}
           </BaseButton>
         </div>
       </div>
@@ -115,15 +116,17 @@ export function DisconnectedWalletQrAndAddress(props: DisconnectedWalletQrAndAdd
       props.payWithBrowserWallet,
       props.address,
       props.alert,
-      props.nfcScanning
+      props.nfcScanning,
     ]
   );
 
   return (
     <>
-      <TemporaryTooltip placement="top" text="Copied to clipboard!">{addressContent}</TemporaryTooltip>
+      <TemporaryTooltip placement="top" text="Copied to clipboard!">
+        {addressContent}
+      </TemporaryTooltip>
 
-      {!!props.autoClaim &&
+      {!!props.autoClaim && (
         <div className="swap-panel__card__group">
           <Form className="auto-claim">
             <div className="auto-claim__label">
@@ -148,8 +151,8 @@ export function DisconnectedWalletQrAndAddress(props: DisconnectedWalletQrAndAdd
               checked={props.autoClaim.value}
             />
           </Form>
-        </div>}
+        </div>
+      )}
     </>
-  )
-
+  );
 }

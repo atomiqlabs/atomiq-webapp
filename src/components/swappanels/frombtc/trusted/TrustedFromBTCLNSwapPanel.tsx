@@ -2,14 +2,14 @@ import * as React from 'react';
 import { LnForGasSwap } from '@atomiqlabs/sdk';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import { StepByStep} from "../../../swaps/StepByStep";
-import {SwapExpiryProgressBar} from "../../../swaps/SwapExpiryProgressBar";
-import {SwapStepAlert} from "../../../swaps/SwapStepAlert";
-import {BaseButton} from "../../../BaseButton";
-import {ScrollAnchor} from "../../../ScrollAnchor";
-import {useTrustedFromBtcLnQuote} from "../../../../hooks/swaps/useTrustedFromBtcLnQuote";
-import {ConnectedWalletPayButtons} from "../../../swaps/ConnectedWalletPayButtons";
-import {DisconnectedWalletQrAndAddress} from "../../../swaps/DisconnectedWalletQrAndAddress";
+import { StepByStep } from '../../../swaps/StepByStep';
+import { SwapExpiryProgressBar } from '../../../swaps/SwapExpiryProgressBar';
+import { SwapStepAlert } from '../../../swaps/SwapStepAlert';
+import { BaseButton } from '../../../common/BaseButton';
+import { ScrollAnchor } from '../../../ScrollAnchor';
+import { useTrustedFromBtcLnQuote } from '../../../../hooks/swaps/useTrustedFromBtcLnQuote';
+import { ConnectedWalletPayButtons } from '../../../swaps/ConnectedWalletPayButtons';
+import { DisconnectedWalletQrAndAddress } from '../../../swaps/DisconnectedWalletQrAndAddress';
 
 /*
 Steps:
@@ -26,12 +26,13 @@ export function TrustedFromBTCLNSwapPanel(props: {
 }) {
   const page = useTrustedFromBtcLnQuote(props.quote);
 
-  const stepByStep = page.executionSteps ? <StepByStep
-    quote={props.quote}
-    steps={page.executionSteps}
-  /> : '';
+  const stepByStep = page.executionSteps ? (
+    <StepByStep quote={props.quote} steps={page.executionSteps} />
+  ) : (
+    ''
+  );
 
-  if(page.step1paymentWait) {
+  if (page.step1paymentWait) {
     return (
       <>
         <div className="swap-panel__card">
@@ -43,16 +44,18 @@ export function TrustedFromBTCLNSwapPanel(props: {
             icon={ic_warning}
             title={page.step1paymentWait.error?.title}
             error={page.step1paymentWait.error?.error}
-            actionElement={page.step1paymentWait.error?.retry && (
-              <BaseButton
-                className="swap-step-alert__button"
-                onClick={page.step1paymentWait.error?.retry}
-                variant="secondary"
-              >
-                <i className="icon icon-retry"/>
-                Retry
-              </BaseButton>
-            )}
+            actionElement={
+              page.step1paymentWait.error?.retry && (
+                <BaseButton
+                  className="swap-step-alert__button"
+                  onClick={page.step1paymentWait.error?.retry}
+                  variant="secondary"
+                >
+                  <i className="icon icon-retry" />
+                  Retry
+                </BaseButton>
+              )
+            }
           />
 
           {page.step1paymentWait.walletConnected && (
@@ -67,18 +70,26 @@ export function TrustedFromBTCLNSwapPanel(props: {
             <DisconnectedWalletQrAndAddress
               address={{
                 ...page.step1paymentWait.walletDisconnected.address,
-                description: 'Lightning network invoice'
+                description: 'Lightning network invoice',
               }}
               payWithDeeplink={{
                 ...page.step1paymentWait.walletDisconnected.payWithLnWallet,
-                text: 'Pay with LN wallet'
+                text: 'Pay with LN wallet',
               }}
               payWithBrowserWallet={{
                 ...page.step1paymentWait.walletDisconnected.payWithWebLn,
-                text: (<>
-                  <img className="mr-2" width={20} height={20} src="/wallets/WebLN-outline.svg" alt="WebLN"/>
-                  Pay with WebLN
-                </>)
+                text: (
+                  <>
+                    <img
+                      className="mr-2"
+                      width={20}
+                      height={20}
+                      src="/wallets/WebLN-outline.svg"
+                      alt="WebLN"
+                    />
+                    Pay with WebLN
+                  </>
+                ),
               }}
             />
           )}
@@ -93,7 +104,9 @@ export function TrustedFromBTCLNSwapPanel(props: {
                 quoteAlias="Lightning invoice"
               />
             </div>
-          ) : ''}
+          ) : (
+            ''
+          )}
         </div>
 
         <ScrollAnchor trigger={!!page.step1paymentWait.walletDisconnected} />
@@ -109,7 +122,7 @@ export function TrustedFromBTCLNSwapPanel(props: {
     );
   }
 
-  if(page.step2receivingFunds) {
+  if (page.step2receivingFunds) {
     return (
       <>
         <div className="swap-panel__card">
@@ -121,23 +134,25 @@ export function TrustedFromBTCLNSwapPanel(props: {
             icon={ic_warning}
             title={page.step2receivingFunds.error?.title}
             error={page.step2receivingFunds.error?.error}
-            actionElement={page.step2receivingFunds.error?.retry && (
-              <BaseButton
-                className="swap-step-alert__button"
-                onClick={page.step2receivingFunds.error?.retry}
-                variant="secondary"
-              >
-                <i className="icon icon-retry"/>
-                Retry
-              </BaseButton>
-            )}
+            actionElement={
+              page.step2receivingFunds.error?.retry && (
+                <BaseButton
+                  className="swap-step-alert__button"
+                  onClick={page.step2receivingFunds.error?.retry}
+                  variant="secondary"
+                >
+                  <i className="icon icon-retry" />
+                  Retry
+                </BaseButton>
+              )
+            }
           />
         </div>
       </>
     );
   }
 
-  if(page.step3) {
+  if (page.step3) {
     return (
       <>
         <div className="swap-panel__card">
@@ -176,6 +191,6 @@ export function TrustedFromBTCLNSwapPanel(props: {
           {page.step3.state === 'success' ? 'Continue' : 'New quote'}
         </BaseButton>
       </>
-    )
+    );
   }
 }

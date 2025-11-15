@@ -1,11 +1,12 @@
 import { IFromBTCSwap, isSCToken, ISwap, IToBTCSwap, SwapDirection } from '@atomiqlabs/sdk';
 import { useNavigate } from 'react-router-dom';
 import { FEConstants } from '../../FEConstants';
-import { Badge, Button, Col, Row } from 'react-bootstrap';
+import { Button, Col, Row } from 'react-bootstrap';
 import * as React from 'react';
 import { usePricing } from '../../hooks/pricing/usePricing';
 import { useChain } from '../../hooks/chains/useChain';
 import { HistoryToken } from './HistoryToken';
+import { TextPill } from '../common/TextPill';
 
 export function HistoryEntry(props: { swap: ISwap }) {
   const navigate = useNavigate();
@@ -72,29 +73,17 @@ export function HistoryEntry(props: { swap: ISwap }) {
   };
 
   const badge = props.swap.isSuccessful() ? (
-    <Badge bg="success" className="width-fill">
-      Success
-    </Badge>
+    <TextPill variant="success">Success</TextPill>
   ) : props.swap.isFailed() ? (
-    <Badge bg="danger" className="width-fill">
-      Failed
-    </Badge>
+    <TextPill variant="danger">Failed</TextPill>
   ) : props.swap.isQuoteSoftExpired() ? (
-    <Badge bg="danger" className="width-fill">
-      Quote expired
-    </Badge>
+    <TextPill variant="danger">Quote expired</TextPill>
   ) : refundable ? (
-    <Badge bg="warning" className="width-fill">
-      Refundable
-    </Badge>
+    <TextPill variant="warning">Refundable</TextPill>
   ) : claimable ? (
-    <Badge bg="warning" className="width-fill">
-      Claimable
-    </Badge>
+    <TextPill variant="warning">Claimable</TextPill>
   ) : (
-    <Badge bg="primary" className="width-fill">
-      Pending
-    </Badge>
+    <TextPill variant="warning">Pending</TextPill>
   );
 
   return (
@@ -188,7 +177,6 @@ export function HistoryEntry(props: { swap: ISwap }) {
         <div className="sc-time">{formatTime(props.swap.createdAt)}</div>
       </Col>
       <Col md={2} sm={12} className="d-flex text-end flex-column is-status">
-        <div className="d-none d-md-block mb-1">{badge}</div>
         {claimable || refundable ? (
           <Button
             variant={claimable || refundable ? 'primary' : 'secondary'}
@@ -200,7 +188,7 @@ export function HistoryEntry(props: { swap: ISwap }) {
             {refundable ? 'Refund' : claimable ? 'Claim' : 'View'}
           </Button>
         ) : (
-          ''
+          badge
         )}
       </Col>
     </Row>

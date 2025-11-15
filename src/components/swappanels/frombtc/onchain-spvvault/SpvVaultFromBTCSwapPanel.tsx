@@ -3,14 +3,14 @@ import { Spinner } from 'react-bootstrap';
 import { ISwap, SpvFromBTCSwap } from '@atomiqlabs/sdk';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import {SwapPageUIState} from "../../../../hooks/pages/useSwapPage";
-import {useSpvVaultFromBtcQuote} from "../../../../hooks/swaps/useSpvVaultFromBtcQuote";
-import {StepByStep} from "../../../swaps/StepByStep";
-import {SwapStepAlert} from "../../../swaps/SwapStepAlert";
-import {ButtonWithWallet} from "../../../wallets/ButtonWithWallet";
-import {BaseButton} from "../../../BaseButton";
-import {SwapConfirmations} from "../../../swaps/SwapConfirmations";
-import {SwapFeePanel} from "../../../fees/SwapFeePanel";
+import { SwapPageUIState } from '../../../../hooks/pages/useSwapPage';
+import { useSpvVaultFromBtcQuote } from '../../../../hooks/swaps/useSpvVaultFromBtcQuote';
+import { StepByStep } from '../../../swaps/StepByStep';
+import { SwapStepAlert } from '../../../swaps/SwapStepAlert';
+import { ButtonWithWallet } from '../../../wallets/ButtonWithWallet';
+import { BaseButton } from '../../../common/BaseButton';
+import { SwapConfirmations } from '../../../swaps/SwapConfirmations';
+import { SwapFeePanel } from '../../../fees/SwapFeePanel';
 
 /*
 Steps:
@@ -35,16 +35,18 @@ export function SpvVaultFromBTCSwapPanel(props: {
     ''
   );
 
-  const swapFees = <div className="mt-3">
-    <SwapFeePanel
-      swap={props.quote}
-      isExpired={page.step5?.state === 'expired'}
-      onRefreshQuote={props.refreshQuote}
-      totalTime={page.step1init?.expiry.total}
-      remainingTime={page.step1init?.expiry.remaining}
-      btcFeeRate={props.feeRate}
-    />
-  </div>;
+  const swapFees = (
+    <div className="mt-3">
+      <SwapFeePanel
+        swap={props.quote}
+        isExpired={page.step5?.state === 'expired'}
+        onRefreshQuote={props.refreshQuote}
+        totalTime={page.step1init?.expiry.total}
+        remainingTime={page.step1init?.expiry.remaining}
+        btcFeeRate={props.feeRate}
+      />
+    </div>
+  );
 
   if (page.step1init) {
     return (
@@ -85,20 +87,22 @@ export function SpvVaultFromBTCSwapPanel(props: {
 
         <SwapStepAlert
           show={!!page.step2broadcasting.error}
-          type={"warning"}
+          type={'warning'}
           icon={ic_warning}
           title={page.step2broadcasting.error?.title}
           error={page.step2broadcasting.error?.error}
-          actionElement={page.step2broadcasting.error?.retry && (
-            <BaseButton
-              className="swap-step-alert__button"
-              onClick={page.step2broadcasting.error?.retry}
-              variant="secondary"
-            >
-              <i className="icon icon-retry"/>
-              Retry
-            </BaseButton>
-          )}
+          actionElement={
+            page.step2broadcasting.error?.retry && (
+              <BaseButton
+                className="swap-step-alert__button"
+                onClick={page.step2broadcasting.error?.retry}
+                variant="secondary"
+              >
+                <i className="icon icon-retry" />
+                Retry
+              </BaseButton>
+            )
+          }
         />
       </div>
     );
@@ -111,20 +115,22 @@ export function SpvVaultFromBTCSwapPanel(props: {
 
         <SwapStepAlert
           show={!!page.step3awaitingConfirmations.error}
-          type={"error"}
+          type={'error'}
           icon={ic_warning}
           title={page.step3awaitingConfirmations.error?.title}
           error={page.step3awaitingConfirmations.error?.error}
-          actionElement={page.step3awaitingConfirmations.error?.retry && (
-            <BaseButton
-              className="swap-step-alert__button"
-              onClick={page.step3awaitingConfirmations.error?.retry}
-              variant="secondary"
-            >
-              <i className="icon icon-retry"/>
-              Retry
-            </BaseButton>
-          )}
+          actionElement={
+            page.step3awaitingConfirmations.error?.retry && (
+              <BaseButton
+                className="swap-step-alert__button"
+                onClick={page.step3awaitingConfirmations.error?.retry}
+                variant="secondary"
+              >
+                <i className="icon icon-retry" />
+                Retry
+              </BaseButton>
+            )
+          }
         />
 
         <SwapConfirmations txData={page.step3awaitingConfirmations.txData} />

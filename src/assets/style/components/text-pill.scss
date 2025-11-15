@@ -1,0 +1,19 @@
+.text-pill {
+  @apply inline-block px-[10px] py-2 rounded-full text-sm font-medium text-center border border-transparent uppercase text-[12px] leading-none;
+
+  // Variant styles
+  &--success {
+    @apply border-green/10 bg-green/10 text-green;
+    // Add success variant styles
+  }
+
+  &--danger {
+    @apply border-red/10 bg-red/10 text-red;
+    // Add danger variant styles
+  }
+
+  &--warning {
+    @apply border-yellow/10 bg-yellow/10 text-yellow;
+    // Add warning variant styles
+  }
+}

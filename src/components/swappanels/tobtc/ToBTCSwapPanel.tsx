@@ -1,23 +1,19 @@
 import * as React from 'react';
 import { Button, Spinner } from 'react-bootstrap';
-import {
-  ISwap,
-  IToBTCSwap,
-  SwapType,
-} from '@atomiqlabs/sdk';
+import { ISwap, IToBTCSwap, SwapType } from '@atomiqlabs/sdk';
 
 import { ic_settings_backup_restore_outline } from 'react-icons-kit/md/ic_settings_backup_restore_outline';
 import { ic_error_outline_outline } from 'react-icons-kit/md/ic_error_outline_outline';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import {useToBtcQuote} from "../../../hooks/swaps/useToBtcQuote";
-import {StepByStep} from "../../swaps/StepByStep";
-import {SwapStepAlert} from "../../swaps/SwapStepAlert";
-import {SwapPageUIState} from "../../../hooks/pages/useSwapPage";
-import {ButtonWithWallet} from "../../wallets/ButtonWithWallet";
-import {BaseButton} from "../../BaseButton";
-import {FEConstants} from "../../../FEConstants";
-import {SwapFeePanel} from "../../fees/SwapFeePanel";
+import { useToBtcQuote } from '../../../hooks/swaps/useToBtcQuote';
+import { StepByStep } from '../../swaps/StepByStep';
+import { SwapStepAlert } from '../../swaps/SwapStepAlert';
+import { SwapPageUIState } from '../../../hooks/pages/useSwapPage';
+import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
+import { BaseButton } from '../../common/BaseButton';
+import { FEConstants } from '../../../FEConstants';
+import { SwapFeePanel } from '../../fees/SwapFeePanel';
 
 /*
 Steps lightning:
@@ -39,23 +35,25 @@ export function ToBTCSwapPanel(props: {
   notEnoughForGas: bigint;
   balance?: bigint;
 }) {
-
   const page = useToBtcQuote(props.quote, props.UICallback, props.type, props.balance);
 
-  const stepByStep = page.executionSteps ? <StepByStep
-    quote={props.quote}
-    steps={page.executionSteps}
-  /> : '';
+  const stepByStep = page.executionSteps ? (
+    <StepByStep quote={props.quote} steps={page.executionSteps} />
+  ) : (
+    ''
+  );
 
-  const swapFees = <div className="mt-3">
-    <SwapFeePanel
-      swap={props.quote}
-      isExpired={page.step4?.state === 'expired'}
-      onRefreshQuote={props.refreshQuote}
-      totalTime={page.step1init?.expiry.total}
-      remainingTime={page.step1init?.expiry.remaining}
-    />
-  </div>;
+  const swapFees = (
+    <div className="mt-3">
+      <SwapFeePanel
+        swap={props.quote}
+        isExpired={page.step4?.state === 'expired'}
+        onRefreshQuote={props.refreshQuote}
+        totalTime={page.step1init?.expiry.total}
+        remainingTime={page.step1init?.expiry.remaining}
+      />
+    </div>
+  );
 
   if (page.step1init) {
     return (
@@ -86,11 +84,15 @@ export function ToBTCSwapPanel(props: {
           disabled={page.step1init.init?.disabled}
           size="lg"
         >
-          {page.step1init.init?.loading ? <Spinner animation="border" size="sm" className="mr-2"/> : ''}
+          {page.step1init.init?.loading ? (
+            <Spinner animation="border" size="sm" className="mr-2" />
+          ) : (
+            ''
+          )}
           {page.step1init.init?.text}
         </ButtonWithWallet>
       </>
-    )
+    );
   }
 
   if (page.step2paying) {
@@ -104,20 +106,22 @@ export function ToBTCSwapPanel(props: {
             type="error"
             title={page.step2paying.error?.title}
             error={page.step2paying.error?.error}
-            actionElement={page.step2paying.error?.retry && (
-              <BaseButton
-                className="swap-step-alert__button"
-                onClick={page.step2paying.error?.retry}
-                variant="secondary"
-              >
-                <i className="icon icon-retry"/>
-                Retry
-              </BaseButton>
-            )}
+            actionElement={
+              page.step2paying.error?.retry && (
+                <BaseButton
+                  className="swap-step-alert__button"
+                  onClick={page.step2paying.error?.retry}
+                  variant="secondary"
+                >
+                  <i className="icon icon-retry" />
+                  Retry
+                </BaseButton>
+              )
+            }
           />
         </div>
       </>
-    )
+    );
   }
 
   if (page.step3refund) {
@@ -150,7 +154,7 @@ export function ToBTCSwapPanel(props: {
               >
                 <div className="base-button__icon">
                   {page.step3refund.refund?.loading ? (
-                    <Spinner animation="border" size="sm" className="mr-2"/>
+                    <Spinner animation="border" size="sm" className="mr-2" />
                   ) : (
                     <i className={'icon icon-refund'}></i>
                   )}
@@ -173,7 +177,7 @@ export function ToBTCSwapPanel(props: {
           {page.step4.state !== 'expired' && stepByStep}
 
           <SwapStepAlert
-            show={page.step4.state === "refunded"}
+            show={page.step4.state === 'refunded'}
             type="info"
             icon={ic_settings_backup_restore_outline}
             title="Funds returning"
@@ -181,7 +185,7 @@ export function ToBTCSwapPanel(props: {
           />
 
           <SwapStepAlert
-            show={page.step4.state === "success"}
+            show={page.step4.state === 'success'}
             type="success"
             icon={ic_check_circle}
             title="Swap success"
@@ -189,10 +193,10 @@ export function ToBTCSwapPanel(props: {
             action={
               props.quote.getType() === SwapType.TO_BTC
                 ? {
-                  type: 'link',
-                  text: 'View transaction',
-                  href: FEConstants.btcBlockExplorer + props.quote.getOutputTxId(),
-                }
+                    type: 'link',
+                    text: 'View transaction',
+                    href: FEConstants.btcBlockExplorer + props.quote.getOutputTxId(),
+                  }
                 : undefined
             }
           />
@@ -202,6 +206,6 @@ export function ToBTCSwapPanel(props: {
           New Swap
         </BaseButton>
       </>
-    )
+    );
   }
 }

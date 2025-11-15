@@ -2,10 +2,11 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { IFromBTCSwap, isSCToken, IToBTCSwap, SwapDirection } from '@atomiqlabs/sdk';
 import { useNavigate } from 'react-router-dom';
 import { FEConstants } from '../../FEConstants';
-import { Badge, Button, Col, Row } from 'react-bootstrap';
+import { Button, Col, Row } from 'react-bootstrap';
 import { usePricing } from '../../hooks/pricing/usePricing';
 import { useChain } from '../../hooks/chains/useChain';
 import { HistoryToken } from './HistoryToken';
+import { TextPill } from '../common/TextPill';
 export function HistoryEntry(props) {
     const navigate = useNavigate();
     const input = props.swap.getInput();
@@ -56,8 +57,8 @@ export function HistoryEntry(props) {
             timeZoneName: 'short',
         });
     };
-    const badge = props.swap.isSuccessful() ? (_jsx(Badge, { bg: "success", className: "width-fill", children: "Success" })) : props.swap.isFailed() ? (_jsx(Badge, { bg: "danger", className: "width-fill", children: "Failed" })) : props.swap.isQuoteSoftExpired() ? (_jsx(Badge, { bg: "danger", className: "width-fill", children: "Quote expired" })) : refundable ? (_jsx(Badge, { bg: "warning", className: "width-fill", children: "Refundable" })) : claimable ? (_jsx(Badge, { bg: "warning", className: "width-fill", children: "Claimable" })) : (_jsx(Badge, { bg: "primary", className: "width-fill", children: "Pending" }));
-    return (_jsxs(Row, { className: "history-entry d-flex flex-row gx-1 gy-1", onClick: navigateToSwap, style: { cursor: 'pointer' }, children: [_jsxs(Col, { md: 4, sm: 12, className: "is-token", children: [_jsx(HistoryToken, { token: input.token, amount: input.amount, address: inputAddress, label: "from" }), _jsx("div", { className: "is-arrow", children: _jsx("i", { className: "icon icon-arrow-right" }) })] }), _jsx(Col, { md: 3, sm: 12, className: "is-token", children: _jsx(HistoryToken, { token: output.token, amount: output.amount, address: outputAddress, label: "to" }) }), _jsx(Col, { md: 1, sm: 12, className: "is-value is-right", children: _jsx("div", { children: outputUsdValue != null ? FEConstants.USDollar.format(outputUsdValue) : '-' }) }), _jsxs(Col, { md: 2, sm: 12, className: "d-flex text-end flex-column is-date is-right", children: [_jsx("div", { className: "sc-date", children: formatDate(props.swap.createdAt) }), _jsx("div", { className: "sc-time", children: formatTime(props.swap.createdAt) })] }), _jsxs(Col, { md: 2, sm: 12, className: "d-flex text-end flex-column is-status", children: [_jsx("div", { className: "d-none d-md-block mb-1", children: badge }), claimable || refundable ? (_jsx(Button, { variant: claimable || refundable ? 'primary' : 'secondary', size: "sm", 
-                        // href removed to prevent navigation conflicts
-                        className: "width-fill", onClick: navigateToSwap, children: refundable ? 'Refund' : claimable ? 'Claim' : 'View' })) : ('')] })] }));
+    const badge = props.swap.isSuccessful() ? (_jsx(TextPill, { variant: "success", children: "Success" })) : props.swap.isFailed() ? (_jsx(TextPill, { variant: "danger", children: "Failed" })) : props.swap.isQuoteSoftExpired() ? (_jsx(TextPill, { variant: "danger", children: "Quote expired" })) : refundable ? (_jsx(TextPill, { variant: "warning", children: "Refundable" })) : claimable ? (_jsx(TextPill, { variant: "warning", children: "Claimable" })) : (_jsx(TextPill, { variant: "warning", children: "Pending" }));
+    return (_jsxs(Row, { className: "history-entry d-flex flex-row gx-1 gy-1", onClick: navigateToSwap, style: { cursor: 'pointer' }, children: [_jsxs(Col, { md: 4, sm: 12, className: "is-token", children: [_jsx(HistoryToken, { token: input.token, amount: input.amount, address: inputAddress, label: "from" }), _jsx("div", { className: "is-arrow", children: _jsx("i", { className: "icon icon-arrow-right" }) })] }), _jsx(Col, { md: 3, sm: 12, className: "is-token", children: _jsx(HistoryToken, { token: output.token, amount: output.amount, address: outputAddress, label: "to" }) }), _jsx(Col, { md: 1, sm: 12, className: "is-value is-right", children: _jsx("div", { children: outputUsdValue != null ? FEConstants.USDollar.format(outputUsdValue) : '-' }) }), _jsxs(Col, { md: 2, sm: 12, className: "d-flex text-end flex-column is-date is-right", children: [_jsx("div", { className: "sc-date", children: formatDate(props.swap.createdAt) }), _jsx("div", { className: "sc-time", children: formatTime(props.swap.createdAt) })] }), _jsx(Col, { md: 2, sm: 12, className: "d-flex text-end flex-column is-status", children: claimable || refundable ? (_jsx(Button, { variant: claimable || refundable ? 'primary' : 'secondary', size: "sm", 
+                    // href removed to prevent navigation conflicts
+                    className: "width-fill", onClick: navigateToSwap, children: refundable ? 'Refund' : claimable ? 'Claim' : 'View' })) : (badge) })] }));
 }

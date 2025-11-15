@@ -1,7 +1,7 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { useContext } from 'react';
 import { ChainsContext } from '../../context/ChainsContext';
-import { BaseButton } from '../BaseButton';
+import { BaseButton } from '../common/BaseButton';
 export function ButtonWithWallet(props) {
     const chainData = useContext(ChainsContext);
     const requestedChain = chainData.chains[props.chainId];

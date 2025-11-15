@@ -4,7 +4,7 @@ import { ic_brightness_1 } from 'react-icons-kit/md/ic_brightness_1';
 import Icon from 'react-icons-kit';
 import { Token, isBtcToken, TokenAmount } from '@atomiqlabs/sdk';
 import { useChain } from '../../hooks/chains/useChain';
-import { BaseButton, BaseButtonVariantProps } from '../BaseButton';
+import { BaseButton, BaseButtonVariantProps } from '../common/BaseButton';
 import { WalletBalanceResult } from '../../hooks/wallets/useWalletBalance';
 import { useContext } from 'react';
 import { ChainsContext } from '../../context/ChainsContext';

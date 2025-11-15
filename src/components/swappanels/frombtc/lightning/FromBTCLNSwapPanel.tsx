@@ -1,21 +1,21 @@
 import * as React from 'react';
 import { Spinner } from 'react-bootstrap';
-import {FromBTCLNSwap, ISwap} from '@atomiqlabs/sdk';
+import { FromBTCLNSwap, ISwap } from '@atomiqlabs/sdk';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { SwapPageUIState } from '../../../../hooks/pages/useSwapPage';
-import {useFromBtcLnQuote} from "../../../../hooks/swaps/useFromBtcLnQuote";
-import {SwapForGasAlert} from "../../../swaps/SwapForGasAlert";
-import {StepByStep} from "../../../swaps/StepByStep";
-import {ButtonWithWallet} from "../../../wallets/ButtonWithWallet";
-import {ImportantNoticeModal} from "../../../swaps/ImportantNoticeModal";
-import {SwapStepAlert} from "../../../swaps/SwapStepAlert";
-import {BaseButton} from "../../../BaseButton";
-import {ConnectedWalletPayButtons} from "../../../swaps/ConnectedWalletPayButtons";
-import {DisconnectedWalletQrAndAddress} from "../../../swaps/DisconnectedWalletQrAndAddress";
-import {SwapExpiryProgressBar} from "../../../swaps/SwapExpiryProgressBar";
-import {ScrollAnchor} from "../../../ScrollAnchor";
-import {SwapFeePanel} from "../../../fees/SwapFeePanel";
+import { useFromBtcLnQuote } from '../../../../hooks/swaps/useFromBtcLnQuote';
+import { SwapForGasAlert } from '../../../swaps/SwapForGasAlert';
+import { StepByStep } from '../../../swaps/StepByStep';
+import { ButtonWithWallet } from '../../../wallets/ButtonWithWallet';
+import { ImportantNoticeModal } from '../../../swaps/ImportantNoticeModal';
+import { SwapStepAlert } from '../../../swaps/SwapStepAlert';
+import { BaseButton } from '../../../common/BaseButton';
+import { ConnectedWalletPayButtons } from '../../../swaps/ConnectedWalletPayButtons';
+import { DisconnectedWalletQrAndAddress } from '../../../swaps/DisconnectedWalletQrAndAddress';
+import { SwapExpiryProgressBar } from '../../../swaps/SwapExpiryProgressBar';
+import { ScrollAnchor } from '../../../ScrollAnchor';
+import { SwapFeePanel } from '../../../fees/SwapFeePanel';
 
 /*
 Steps:
@@ -34,48 +34,52 @@ export function FromBTCLNSwapPanel(props: {
 }) {
   const page = useFromBtcLnQuote(props.quote, props.UICallback);
 
-  const gasAlert = <SwapForGasAlert
-    notEnoughForGas={page.additionalGasRequired}
-    quote={props.quote}
-  />;
+  const gasAlert = (
+    <SwapForGasAlert notEnoughForGas={page.additionalGasRequired} quote={props.quote} />
+  );
 
-  const stepByStep = page.executionSteps ? <StepByStep
-    quote={props.quote}
-    steps={page.executionSteps}
-  /> : '';
+  const stepByStep = page.executionSteps ? (
+    <StepByStep quote={props.quote} steps={page.executionSteps} />
+  ) : (
+    ''
+  );
 
-  const swapFees = <div className="mt-3">
-    <SwapFeePanel
-      swap={props.quote}
-      isExpired={page.step4?.state === 'expired_uninitialized'}
-      onRefreshQuote={props.refreshQuote}
-      totalTime={page.step1init?.expiry.total}
-      remainingTime={page.step1init?.expiry.remaining}
-    />
-  </div>;
+  const swapFees = (
+    <div className="mt-3">
+      <SwapFeePanel
+        swap={props.quote}
+        isExpired={page.step4?.state === 'expired_uninitialized'}
+        onRefreshQuote={props.refreshQuote}
+        totalTime={page.step1init?.expiry.total}
+        remainingTime={page.step1init?.expiry.remaining}
+      />
+    </div>
+  );
 
-  if(page.step1init) {
+  if (page.step1init) {
     return (
       <>
         {swapFees}
 
         {gasAlert}
 
-        {!!page.step1init.init && <ButtonWithWallet
-          requiredWalletAddress={props.quote._getInitiator()}
-          chainId={props.quote?.chainIdentifier}
-          className="swap-panel__action"
-          onClick={page.step1init.init?.onClick}
-          disabled={page.step1init.init?.disabled}
-          size="lg"
-        >
-          Swap
-        </ButtonWithWallet>}
+        {!!page.step1init.init && (
+          <ButtonWithWallet
+            requiredWalletAddress={props.quote._getInitiator()}
+            chainId={props.quote?.chainIdentifier}
+            className="swap-panel__action"
+            onClick={page.step1init.init?.onClick}
+            disabled={page.step1init.init?.disabled}
+            size="lg"
+          >
+            Swap
+          </ButtonWithWallet>
+        )}
       </>
     );
   }
 
-  if(page.step2paymentWait) {
+  if (page.step2paymentWait) {
     return (
       <>
         <ImportantNoticeModal
@@ -85,12 +89,12 @@ export function FromBTCLNSwapPanel(props: {
             page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal?.showAgain
               .onChange
           }
-          text={(
+          text={
             <>
               The payment will not succeed unless you{' '}
               <strong>return to the web app and claim the swap.</strong>
             </>
-          )}
+          }
           buttonText="Understood, pay with LN wallet"
         />
 
@@ -103,16 +107,18 @@ export function FromBTCLNSwapPanel(props: {
             icon={ic_warning}
             title={page.step2paymentWait.error?.title}
             error={page.step2paymentWait.error?.error}
-            actionElement={page.step2paymentWait.error?.retry && (
-              <BaseButton
-                className="swap-step-alert__button"
-                onClick={page.step2paymentWait.error?.retry}
-                variant="secondary"
-              >
-                <i className="icon icon-retry"/>
-                Retry
-              </BaseButton>
-            )}
+            actionElement={
+              page.step2paymentWait.error?.retry && (
+                <BaseButton
+                  className="swap-step-alert__button"
+                  onClick={page.step2paymentWait.error?.retry}
+                  variant="secondary"
+                >
+                  <i className="icon icon-retry" />
+                  Retry
+                </BaseButton>
+              )
+            }
           />
 
           {page.step2paymentWait.walletConnected && (
@@ -127,18 +133,26 @@ export function FromBTCLNSwapPanel(props: {
             <DisconnectedWalletQrAndAddress
               address={{
                 ...page.step2paymentWait.walletDisconnected.address,
-                description: 'Lightning network invoice'
+                description: 'Lightning network invoice',
               }}
               payWithDeeplink={{
                 ...page.step2paymentWait.walletDisconnected.payWithLnWallet,
-                text: 'Pay with LN wallet'
+                text: 'Pay with LN wallet',
               }}
               payWithBrowserWallet={{
                 ...page.step2paymentWait.walletDisconnected.payWithWebLn,
-                text: (<>
-                  <img className="mr-2" width={20} height={20} src="/wallets/WebLN-outline.svg" alt="WebLN"/>
-                  Pay with WebLN
-                </>)
+                text: (
+                  <>
+                    <img
+                      className="mr-2"
+                      width={20}
+                      height={20}
+                      src="/wallets/WebLN-outline.svg"
+                      alt="WebLN"
+                    />
+                    Pay with WebLN
+                  </>
+                ),
               }}
               autoClaim={page.step2paymentWait.walletDisconnected.autoClaim}
               nfcScanning={page.step2paymentWait.walletDisconnected.nfcScanning}
@@ -155,7 +169,9 @@ export function FromBTCLNSwapPanel(props: {
                 quoteAlias="Lightning invoice"
               />
             </div>
-          ) : ''}
+          ) : (
+            ''
+          )}
         </div>
 
         <ScrollAnchor trigger={!!page.step2paymentWait.walletDisconnected} />
@@ -171,7 +187,7 @@ export function FromBTCLNSwapPanel(props: {
     );
   }
 
-  if(page.step3claim) {
+  if (page.step3claim) {
     return (
       <>
         <div className="swap-panel__card">
@@ -200,25 +216,27 @@ export function FromBTCLNSwapPanel(props: {
                 disabled={page.step3claim.commit.disabled}
                 variant="secondary"
               >
-                {page.step3claim.commit.loading
-                  ? <Spinner animation="border" size="sm" className="mr-2" />
-                  : <i className="icon icon-claim"></i>}
+                {page.step3claim.commit.loading ? (
+                  <Spinner animation="border" size="sm" className="mr-2" />
+                ) : (
+                  <i className="icon icon-claim"></i>
+                )}
                 Claim your payment
               </ButtonWithWallet>
             }
           />
         </div>
       </>
-    )
+    );
   }
 
-  if(page.step4) {
+  if (page.step4) {
     return (
       <>
-        {page.step4.state==="expired_uninitialized" && swapFees}
+        {page.step4.state === 'expired_uninitialized' && swapFees}
 
         <div className="swap-panel__card">
-          {page.step4.state!=="expired_uninitialized" ? stepByStep : ''}
+          {page.step4.state !== 'expired_uninitialized' ? stepByStep : ''}
 
           <SwapStepAlert
             show={page.step4?.state === 'success'}
@@ -251,6 +269,6 @@ export function FromBTCLNSwapPanel(props: {
           New Swap
         </BaseButton>
       </>
-    )
+    );
   }
 }

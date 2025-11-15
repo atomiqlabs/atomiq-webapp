@@ -11,9 +11,9 @@ import { ErrorAlert } from '../components/_deprecated/ErrorAlert';
 import { useChain } from '../hooks/chains/useChain';
 import { Chain } from '../providers/ChainsProvider';
 import { TrustedFromBTCLNSwapPanel } from '../components/swappanels/frombtc/trusted/TrustedFromBTCLNSwapPanel';
-import {SwapStepAlert} from "../components/swaps/SwapStepAlert";
-import {BaseButton} from "../components/BaseButton";
-import {ic_warning} from "react-icons-kit/md/ic_warning";
+import { SwapStepAlert } from '../components/swaps/SwapStepAlert';
+import { BaseButton } from '../components/common/BaseButton';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 
 const defaultSwapAmount = '12500000';
 
@@ -46,7 +46,7 @@ export function SwapForGas() {
   }, [createSwap]);
 
   const onContinue = useCallback(() => {
-    navigate(state.returnPath ?? "/");
+    navigate(state.returnPath ?? '/');
   }, [swapData]);
 
   return (
@@ -75,21 +75,21 @@ export function SwapForGas() {
               icon={ic_warning}
               title="Swap cannot be created"
               error={error}
-              actionElement={(
+              actionElement={
                 <BaseButton
                   className="swap-step-alert__button"
                   onClick={createSwap}
                   variant="secondary"
                 >
-                  <i className="icon icon-retry"/>
+                  <i className="icon icon-retry" />
                   Retry
                 </BaseButton>
-              )}
+              }
             />
 
             {loading ? (
               <div className="d-flex flex-column align-items-center p-2 gap-3">
-                <Spinner/>
+                <Spinner />
                 <label>Creating gas swap...</label>
               </div>
             ) : (

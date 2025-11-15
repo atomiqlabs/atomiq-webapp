@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { ChainsContext } from '../../context/ChainsContext';
 import { Chain } from '../../providers/ChainsProvider';
-import { BaseButton, BaseButtonVariantProps } from '../BaseButton';
+import { BaseButton, BaseButtonVariantProps } from '../common/BaseButton';
 
 export function ButtonWithWallet(props: {
   chainId: string;

@@ -3,7 +3,7 @@ import { Badge, Dropdown } from 'react-bootstrap';
 import * as React from 'react';
 import { ChainsContext } from '../../context/ChainsContext';
 import { Chain } from '../../providers/ChainsProvider';
-import { BaseButton } from '../BaseButton';
+import { BaseButton } from '../common/BaseButton';
 
 type MultichainWallet = {
   name: string;
@@ -18,7 +18,7 @@ type MultichainWallet = {
 };
 
 function MultichainWalletMenuItem(props: { wallet: MultichainWallet; className?: string }) {
-  const {changeWallet, disconnectWallet} = useContext(ChainsContext);
+  const { changeWallet, disconnectWallet } = useContext(ChainsContext);
   const chains = Object.keys(props.wallet.chains).map((chain) => props.wallet.chains[chain]);
 
   const [show, setShow] = useState<boolean>(false);

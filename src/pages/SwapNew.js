@@ -8,11 +8,11 @@ import { WalletInfoBadge } from '../components/wallets/WalletInfoBadge';
 import { AuditedBy } from '../components/_deprecated/AuditedBy';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { useSwapPage } from '../hooks/pages/useSwapPage';
-import { BaseButton } from '../components/BaseButton';
-import { QRScannerModal } from "../components/qrscanner/QRScannerModal";
-import { SwapPanel } from "../components/swappanels/SwapPanel";
-import { PlaceholderFeePanel } from "../components/fees/PlaceholderFeePanel";
-import { SwapFeePanel } from "../components/fees/SwapFeePanel";
+import { BaseButton } from '../components/common/BaseButton';
+import { QRScannerModal } from '../components/qrscanner/QRScannerModal';
+import { SwapPanel } from '../components/swappanels/SwapPanel';
+import { PlaceholderFeePanel } from '../components/fees/PlaceholderFeePanel';
+import { SwapFeePanel } from '../components/fees/SwapFeePanel';
 export function SwapNew() {
     const swapPage = useSwapPage();
     const [reversed, setReversed] = useState(false);
@@ -51,5 +51,6 @@ export function SwapNew() {
                                                                             }, children: _jsx("span", { className: "icon icon-disconnect" }) }) })) : (_jsx(OverlayTrigger, { placement: "top", overlay: _jsx(Tooltip, { id: "scan-qr-tooltip", children: "Scan QR code" }), children: _jsx("a", { href: "#", className: "wallet-address__action__button", onClick: (e) => {
                                                                                 e.preventDefault();
                                                                                 setQrScanning(true);
-                                                                            }, children: _jsx("span", { className: "icon icon-qr-scan" }) }) })) })] })), _jsx(Alert, { variant: 'success', className: "wallet-address__alert mb-0 text-center", show: swapPage.output.showLightningAlert, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] }) }) })] })] })), swapPage.quote.quote != null && (!swapPage.quote.isRandom || swapPage.swapTypeData.requiresOutputWallet) ? (_jsx("div", { className: "d-flex flex-column text-white", children: _jsx(SwapPanel, { type: "swap", quote: swapPage.quote.quote, balance: swapPage.input.wallet?.spendable?.rawAmount, refreshQuote: swapPage.quote.refresh, UICallback: swapPage.quote.UICallback, abortSwap: swapPage.quote.abort, feeRate: swapPage.input.wallet?.btcFeeRate }) })) : (_jsxs(_Fragment, { children: [_jsx("div", { className: "mt-3", children: swapPage.quote.quote ? (_jsx(SwapFeePanel, { swap: swapPage.quote.quote, btcFeeRate: swapPage.input.wallet?.btcFeeRate })) : (_jsx(PlaceholderFeePanel, { inputToken: swapPage.input.token.value, outputToken: swapPage.output.token.value })) }), _jsx(BaseButton, { variant: "primary", className: "swap-panel__action", disabled: true, size: "lg", children: "Swap" })] }))] }) }), _jsx(AuditedBy, { chainId: swapPage.smartChainId })] }));
+                                                                            }, children: _jsx("span", { className: "icon icon-qr-scan" }) }) })) })] })), _jsx(Alert, { variant: 'success', className: "wallet-address__alert mb-0 text-center", show: swapPage.output.showLightningAlert, children: _jsx("label", { children: "Only lightning invoices with pre-set amount are supported! Use lightning address/LNURL for variable amount." }) })] }) }) })] })] })), swapPage.quote.quote != null &&
+                            (!swapPage.quote.isRandom || swapPage.swapTypeData.requiresOutputWallet) ? (_jsx("div", { className: "d-flex flex-column text-white", children: _jsx(SwapPanel, { type: "swap", quote: swapPage.quote.quote, balance: swapPage.input.wallet?.spendable?.rawAmount, refreshQuote: swapPage.quote.refresh, UICallback: swapPage.quote.UICallback, abortSwap: swapPage.quote.abort, feeRate: swapPage.input.wallet?.btcFeeRate }) })) : (_jsxs(_Fragment, { children: [_jsx("div", { className: "mt-3", children: swapPage.quote.quote ? (_jsx(SwapFeePanel, { swap: swapPage.quote.quote, btcFeeRate: swapPage.input.wallet?.btcFeeRate })) : (_jsx(PlaceholderFeePanel, { inputToken: swapPage.input.token.value, outputToken: swapPage.output.token.value })) }), _jsx(BaseButton, { variant: "primary", className: "swap-panel__action", disabled: true, size: "lg", children: "Swap" })] }))] }) }), _jsx(AuditedBy, { chainId: swapPage.smartChainId })] }));
 }
