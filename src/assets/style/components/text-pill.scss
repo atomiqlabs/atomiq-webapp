@@ -1,5 +1,5 @@
 .text-pill {
-  @apply inline-block px-[10px] py-2 rounded-full text-sm font-medium text-center border border-transparent uppercase text-[12px] leading-none;
+  @apply inline-block px-[10px] py-2 rounded-full text-sm font-semibold text-center border border-transparent uppercase text-[12px] leading-none;
 
   // Variant styles
   &--success {

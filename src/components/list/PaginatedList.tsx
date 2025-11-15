@@ -115,10 +115,7 @@ export function PaginatedList<T>(props: {
 
   if (tbody.length === 0) {
     tbody.push(
-      <ListGroup.Item
-        key={'0'}
-        className="bg-dark bg-opacity-25 border-light border-opacity-25 text-white"
-      >
+      <ListGroup.Item key={'0'} className="bg-dark bg-opacity-25 text-white">
         <div className="d-flex align-items-center justify-content-center text-light text-opacity-75">
           <Icon size={24} className="pb-1 me-2" icon={ic_not_interested} />
           <h4 className="my-3">No data</h4>
