@@ -4,9 +4,9 @@ import { useContext, useEffect, useState } from 'react';
 import { SwapperContext } from '../context/SwapperContext';
 import { HistoryEntry } from '../components/history/HistoryEntry';
 import { ArrayDataPaginatedList } from '../components/list/ArrayDataPaginatedList';
-import { Button, Col, Row } from 'react-bootstrap';
-import { HistoryToken } from '../components/history/HistoryToken';
-import { FEConstants } from '../FEConstants';
+import { Col, Row } from 'react-bootstrap';
+
+const SHOW_FILTER = false;
 
 export function History() {
   const { swapper } = useContext(SwapperContext);
@@ -62,7 +62,7 @@ export function History() {
           <h2>Your Swap History</h2>
         </div>
         {/* Hidden until filter will be implemented */}
-        {false && (
+        {SHOW_FILTER && (
           <div className="history-page__filter">
             <div className="history-page__filter__title">Filter by chain:</div>
             <div className="history-page__filter__items">

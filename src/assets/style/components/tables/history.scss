@@ -7,9 +7,28 @@
     @apply p-0 text-white border-transparent border-1 border-solid rounded-[12px] transition-all;
 
     background: rgba(255, 255, 255, 0.05);
+
     &:hover {
       background: rgba(255, 255, 255, 0.1);
       border-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  // Add separator between last alert item and first non-alert item
+  .list-group-item:has(.history-entry__alert) {
+    & + .list-group-item:not(:has(.history-entry__alert)) {
+      margin-top: 32px;
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: -22px;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+      }
     }
   }
 
