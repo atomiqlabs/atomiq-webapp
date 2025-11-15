@@ -1,13 +1,11 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { isSCToken, IToBTCSwap, SwapDirection } from '@atomiqlabs/sdk';
+import { IFromBTCSwap, isSCToken, IToBTCSwap, SwapDirection } from '@atomiqlabs/sdk';
 import { useNavigate } from 'react-router-dom';
 import { FEConstants } from '../../FEConstants';
 import { Badge, Button, Col, Row } from 'react-bootstrap';
-import { getTimeDeltaText } from '../../utils/Utils';
-import { TokenIcon } from '../tokens/TokenIcon';
-import Icon from 'react-icons-kit';
-import { ic_arrow_downward } from 'react-icons-kit/md/ic_arrow_downward';
-import { ic_arrow_forward } from 'react-icons-kit/md/ic_arrow_forward';
+import { usePricing } from '../../hooks/pricing/usePricing';
+import { useChain } from '../../hooks/chains/useChain';
+import { HistoryToken } from './HistoryToken';
 export function HistoryEntry(props) {
     const navigate = useNavigate();
     const input = props.swap.getInput();
@@ -24,19 +22,42 @@ export function HistoryEntry(props) {
             : null;
     const txIdInput = props.swap.getInputTxId();
     const txIdOutput = props.swap.getOutputTxId();
-    const inputAddress = props.swap instanceof IToBTCSwap ? props.swap._getInitiator() : '';
+    const inputAddress = props.swap instanceof IToBTCSwap
+        ? props.swap._getInitiator()
+        : props.swap instanceof IFromBTCSwap
+            ? props.swap._getInitiator()
+            : '';
     const outputAddress = props.swap.getOutputAddress();
     const refundable = props.swap.getDirection() === SwapDirection.TO_BTC && props.swap.isRefundable();
     const claimable = props.swap.getDirection() === SwapDirection.FROM_BTC &&
         props.swap.isClaimable();
+    const inputUsdValue = usePricing(input.amount, input.token);
+    const outputUsdValue = usePricing(output.amount, output.token);
+    const inputChain = useChain(input.token);
+    const outputChain = useChain(output.token);
     const navigateToSwap = (event) => {
         event.preventDefault();
         navigate('/?swapId=' + props.swap.getId());
     };
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    };
+    const formatTime = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+            timeZoneName: 'short',
+        });
+    };
     const badge = props.swap.isSuccessful() ? (_jsx(Badge, { bg: "success", className: "width-fill", children: "Success" })) : props.swap.isFailed() ? (_jsx(Badge, { bg: "danger", className: "width-fill", children: "Failed" })) : props.swap.isQuoteSoftExpired() ? (_jsx(Badge, { bg: "danger", className: "width-fill", children: "Quote expired" })) : refundable ? (_jsx(Badge, { bg: "warning", className: "width-fill", children: "Refundable" })) : claimable ? (_jsx(Badge, { bg: "warning", className: "width-fill", children: "Claimable" })) : (_jsx(Badge, { bg: "primary", className: "width-fill", children: "Pending" }));
-    return (_jsxs(Row, { className: "d-flex flex-row gx-1 gy-1", children: [_jsx(Col, { xs: 12, className: "d-md-none text-end", children: _jsxs(Row, { className: "gx-1 gy-0 width-fill", children: [_jsx(Col, { xs: 6, children: badge }), _jsx(Col, { xs: 6, children: _jsxs("small", { className: "", children: [getTimeDeltaText(props.swap.createdAt), " ago"] }) })] }) }), _jsx(Col, { md: 10, sm: 12, className: "d-flex", children: _jsx("div", { className: "card border-0 bg-transparent p-2 width-fill container-fluid", children: _jsxs(Row, { className: "", children: [_jsxs(Col, { md: 6, xs: 12, className: "d-flex flex-row align-items-center", children: [_jsxs("div", { className: "min-width-0 me-md-2", children: [_jsx("a", { className: "font-small single-line-ellipsis", target: "_blank", href: inputExplorer == null || txIdInput == null ? null : inputExplorer + txIdInput, children: txIdInput || 'None' }), _jsxs("span", { className: "d-flex align-items-center font-weight-500 my-1", children: [_jsx(TokenIcon, { tokenOrTicker: input.token, className: "currency-icon-medium" }), input.amount, " ", input.token.ticker || '???'] }), _jsx("small", { className: "single-line-ellipsis", children: inputAddress })] }), _jsx(Icon, { size: 22, icon: ic_arrow_forward, className: "d-md-block d-none", style: {
-                                            marginLeft: 'auto',
-                                            marginRight: '-22px',
-                                            marginBottom: '6px',
-                                        } })] }), _jsx(Col, { md: 0, xs: 12, className: "d-md-none d-flex justify-content-center", children: _jsx(Icon, { size: 22, icon: ic_arrow_downward, className: "", style: { marginBottom: '6px' } }) }), _jsxs(Col, { md: 6, xs: 12, className: "ps-md-4", children: [_jsx("a", { className: "font-small single-line-ellipsis", target: "_blank", href: outputExplorer == null || txIdOutput == null ? null : outputExplorer + txIdOutput, children: txIdOutput || '...' }), _jsxs("span", { className: "d-flex align-items-center font-weight-500 my-1", children: [_jsx(TokenIcon, { tokenOrTicker: output.token, className: "currency-icon-medium" }), output.amount, " ", output.token.ticker || '???'] }), _jsx("small", { className: "single-line-ellipsis", children: outputAddress })] })] }) }) }), _jsxs(Col, { md: 2, sm: 12, className: "d-flex text-end flex-column", children: [_jsx("div", { className: "d-none d-md-block", children: _jsxs("small", { className: "", children: [getTimeDeltaText(props.swap.createdAt), " ago"] }) }), _jsx("div", { className: "d-none d-md-block mb-1", children: badge }), _jsx(Button, { variant: claimable || refundable ? 'primary' : 'secondary', size: "sm", href: '/?swapId=' + props.swap.getId(), className: "width-fill", onClick: navigateToSwap, children: refundable ? 'Refund' : claimable ? 'Claim' : 'View' })] })] }));
+    return (_jsxs(Row, { className: "history-entry d-flex flex-row gx-1 gy-1", onClick: navigateToSwap, style: { cursor: 'pointer' }, children: [_jsxs(Col, { md: 4, sm: 12, className: "is-token", children: [_jsx(HistoryToken, { token: input.token, amount: input.amount, address: inputAddress, label: "from" }), _jsx("div", { className: "is-arrow", children: _jsx("i", { className: "icon icon-arrow-right" }) })] }), _jsx(Col, { md: 3, sm: 12, className: "is-token", children: _jsx(HistoryToken, { token: output.token, amount: output.amount, address: outputAddress, label: "to" }) }), _jsx(Col, { md: 1, sm: 12, className: "is-value is-right", children: _jsx("div", { children: outputUsdValue != null ? FEConstants.USDollar.format(outputUsdValue) : '-' }) }), _jsxs(Col, { md: 2, sm: 12, className: "d-flex text-end flex-column is-date is-right", children: [_jsx("div", { className: "sc-date", children: formatDate(props.swap.createdAt) }), _jsx("div", { className: "sc-time", children: formatTime(props.swap.createdAt) })] }), _jsxs(Col, { md: 2, sm: 12, className: "d-flex text-end flex-column is-status", children: [_jsx("div", { className: "d-none d-md-block mb-1", children: badge }), claimable || refundable ? (_jsx(Button, { variant: claimable || refundable ? 'primary' : 'secondary', size: "sm", 
+                        // href removed to prevent navigation conflicts
+                        className: "width-fill", onClick: navigateToSwap, children: refundable ? 'Refund' : claimable ? 'Claim' : 'View' })) : ('')] })] }));
 }

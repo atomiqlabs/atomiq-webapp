@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useContext, useEffect, useState } from 'react';
 import { SwapperContext } from '../context/SwapperContext';
 import { HistoryEntry } from '../components/history/HistoryEntry';
-import {ArrayDataPaginatedList} from "../components/list/ArrayDataPaginatedList";
+import { ArrayDataPaginatedList } from '../components/list/ArrayDataPaginatedList';
 
 export function History() {
   const { swapper } = useContext(SwapperContext);
@@ -53,16 +53,21 @@ export function History() {
   }, [swapper]);
 
   return (
-    <>
-      <div className="flex-fill text-white container text-start">
-        <ArrayDataPaginatedList<ISwap>
-          renderer={(row) => {
-            return <HistoryEntry swap={row} />;
-          }}
-          data={swaps}
-          itemsPerPage={10}
-        />
+    <div className="history-page">
+      <div className="container">
+        <div className="history-page__title">
+          <h2>Your Swap History</h2>
+        </div>
+        <div className="history-table">
+          <ArrayDataPaginatedList<ISwap>
+            renderer={(row) => {
+              return <HistoryEntry swap={row} />;
+            }}
+            data={swaps}
+            itemsPerPage={10}
+          />
+        </div>
       </div>
-    </>
+    </div>
   );
 }

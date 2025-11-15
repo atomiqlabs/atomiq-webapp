@@ -106,3 +106,9 @@ export function capitalizeFirstLetter(txt) {
 export function timeoutPromise(timeout) {
     return new Promise((resolve) => setTimeout(resolve, timeout));
 }
+export function truncateAddress(address, startChars = 5, endChars = 5) {
+    if (!address || address.length <= startChars + endChars) {
+        return address;
+    }
+    return `${address.substring(0, startChars)}...${address.substring(address.length - endChars)}`;
+}

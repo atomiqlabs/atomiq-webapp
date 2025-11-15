@@ -118,3 +118,10 @@ export function capitalizeFirstLetter(txt: string) {
 export function timeoutPromise(timeout: number): Promise<void> {
   return new Promise<void>((resolve) => setTimeout(resolve, timeout));
 }
+
+export function truncateAddress(address: string, startChars: number = 5, endChars: number = 5): string {
+  if (!address || address.length <= startChars + endChars) {
+    return address;
+  }
+  return `${address.substring(0, startChars)}...${address.substring(address.length - endChars)}`;
+}

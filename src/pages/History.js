@@ -1,9 +1,9 @@
-import { jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { SwapType } from '@atomiqlabs/sdk';
 import { useContext, useEffect, useState } from 'react';
 import { SwapperContext } from '../context/SwapperContext';
 import { HistoryEntry } from '../components/history/HistoryEntry';
-import { ArrayDataPaginatedList } from "../components/list/ArrayDataPaginatedList";
+import { ArrayDataPaginatedList } from '../components/list/ArrayDataPaginatedList';
 export function History() {
     const { swapper } = useContext(SwapperContext);
     const [swaps, setSwaps] = useState([]);
@@ -45,7 +45,7 @@ export function History() {
             console.log('History: Set swaps to []');
         };
     }, [swapper]);
-    return (_jsx(_Fragment, { children: _jsx("div", { className: "flex-fill text-white container text-start", children: _jsx(ArrayDataPaginatedList, { renderer: (row) => {
-                    return _jsx(HistoryEntry, { swap: row });
-                }, data: swaps, itemsPerPage: 10 }) }) }));
+    return (_jsx("div", { className: "history-page", children: _jsxs("div", { className: "container", children: [_jsx("div", { className: "history-page__title", children: _jsx("h2", { children: "Your Swap History" }) }), _jsx("div", { className: "history-table", children: _jsx(ArrayDataPaginatedList, { renderer: (row) => {
+                            return _jsx(HistoryEntry, { swap: row });
+                        }, data: swaps, itemsPerPage: 10 }) })] }) }));
 }

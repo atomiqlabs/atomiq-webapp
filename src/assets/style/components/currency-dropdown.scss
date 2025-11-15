@@ -13,18 +13,6 @@
     }
   }
 
-  &__token {
-    & {
-      @apply mr-4 relative;
-    }
-    &__img {
-      @apply w-8 h-8 rounded-full;
-    }
-    &__currency {
-      @apply w-4 h-4 rounded absolute -right-1 -bottom-1;
-    }
-  }
-
   &__details {
     @apply flex flex-col items-start flex-1;
 

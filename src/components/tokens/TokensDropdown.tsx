@@ -5,6 +5,7 @@ import { TokenIcon } from './TokenIcon';
 import { useEffect, useMemo, useState } from 'react';
 import { toTokenIdentifier } from '../../utils/Tokens';
 import {useChain} from "../../hooks/chains/useChain";
+import { ChainIcon } from './ChainIcon';
 
 export function TokensDropdown(props: {
   tokensList: Token[];
@@ -61,17 +62,11 @@ export function TokensDropdown(props: {
         id="dropdown-basic"
         className={'currency-dropdown__toggle ' + props.className}
       >
-        <div className="currency-dropdown__token">
-          {props.value == null ? (
-            ''
-          ) : (
-            <TokenIcon tokenOrTicker={props.value} className="currency-dropdown__token__img" />
-          )}
-          <img
-            src={tokenChain?.chain.icon}
-            className="currency-dropdown__token__currency"
-          />
-        </div>
+        {props.value == null ? (
+          <div className="currency-dropdown__token"></div>
+        ) : (
+          <ChainIcon token={props.value} />
+        )}
         <div className="currency-dropdown__details">
           <div className="currency-dropdown__currency">
             {props.value == null ? 'Select currency' : props.value.ticker}

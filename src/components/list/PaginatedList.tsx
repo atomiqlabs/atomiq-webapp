@@ -110,14 +110,7 @@ export function PaginatedList<T>(props: {
   for (let i = 0; i < itemsPerPage; i++) {
     const obj = state.pageData[i];
     if (obj != null)
-      tbody.push(
-        <ListGroup.Item
-          className="bg-dark bg-opacity-25 border-light border-opacity-25 text-white"
-          key={i.toString()}
-        >
-          {props.renderer(obj)}
-        </ListGroup.Item>
-      );
+      tbody.push(<ListGroup.Item key={i.toString()}>{props.renderer(obj)}</ListGroup.Item>);
   }
 
   if (tbody.length === 0) {

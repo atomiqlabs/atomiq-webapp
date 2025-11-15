@@ -1,0 +1,72 @@
+.history-table {
+  .list-group {
+    @apply gap-[10px];
+  }
+  .list-group-item {
+    @apply p-0 text-white border-transparent border-1 border-solid rounded-[12px] transition-all;
+
+    background: rgba(255, 255, 255, 0.05);
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+.history-entry {
+  @apply justify-between;
+
+  & > div {
+    @apply flex items-center justify-center m-0 p-3;
+
+    &.is-right {
+      @apply text-right;
+    }
+
+    .is-arrow {
+      @apply opacity-50 text-[20px] ml-auto pr-[12px] flex items-center;
+    }
+
+    &.is-value {
+      @apply justify-end;
+    }
+
+    &.is-date {
+      @apply items-end;
+
+      .sc-time {
+        @apply opacity-75 text-[14px];
+      }
+    }
+
+    &.is-token {
+      @apply justify-start;
+    }
+  }
+
+  &__token {
+    @apply flex items-center;
+
+    &__data {
+      @apply flex flex-col items-start;
+    }
+
+    &__amount {
+      @apply font-medium;
+    }
+
+    &__address {
+      @apply text-[14px] flex gap-1 items-center;
+
+      .sc-sub {
+        @apply opacity-50;
+      }
+      .sc-address {
+        @apply opacity-75;
+      }
+    }
+    .icon {
+      @apply opacity-50;
+    }
+  }
+}
