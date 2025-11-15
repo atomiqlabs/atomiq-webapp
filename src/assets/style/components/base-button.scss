@@ -57,7 +57,7 @@
   }
 
   &--clear {
-    @apply text-white font-medium;
+    @apply text-white font-medium disabled:border-0;
   }
 
   &__content {

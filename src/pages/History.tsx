@@ -86,7 +86,7 @@ export function History() {
               return <HistoryEntry swap={row} />;
             }}
             data={swaps}
-            itemsPerPage={10}
+            itemsPerPage={100}
           />
         </div>
       </div>

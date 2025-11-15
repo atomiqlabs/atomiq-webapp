@@ -9,6 +9,7 @@ import { angleLeft } from 'react-icons-kit/fa/angleLeft';
 import { angleDoubleRight } from 'react-icons-kit/fa/angleDoubleRight';
 import { angleDoubleLeft } from 'react-icons-kit/fa/angleDoubleLeft';
 import { ic_not_interested } from 'react-icons-kit/md/ic_not_interested';
+import { BaseButton } from '../common/BaseButton';
 
 function PaginationButton(props: {
   page: number;
@@ -17,18 +18,17 @@ function PaginationButton(props: {
   disabled: boolean;
 }) {
   return (
-    <Button
+    <BaseButton
       onClick={() => {
         props.onClick(props.page);
       }}
       key={'page-' + props.page}
-      variant={props.currentPage === props.page ? 'light' : 'outline-light'}
+      variant={props.currentPage === props.page ? 'secondary' : 'clear'}
       disabled={props.disabled}
       className={'px-3'}
-      size="lg"
     >
       {props.page + 1}
-    </Button>
+    </BaseButton>
   );
 }
 
@@ -166,9 +166,9 @@ export function PaginatedList<T>(props: {
       );
     }
     buttons.push(
-      <Button key={'ellipsis2'} variant="outline-light px-2" size="lg">
+      <BaseButton key={'ellipsis2'} variant="clear">
         ...
-      </Button>
+      </BaseButton>
     );
   } else if (numPages - state.page - 1 < numPageButtons / 2) {
     for (let i = 0; i < numPageButtons / 2 + 1; i++) {
@@ -183,16 +183,16 @@ export function PaginatedList<T>(props: {
       );
     }
     buttons.push(
-      <Button key={'ellipsis1'} variant="outline-light px-2" size="lg">
+      <BaseButton key={'ellipsis1'} variant="clear">
         ...
-      </Button>
+      </BaseButton>
     );
     buttons.reverse();
   } else {
     buttons.push(
-      <Button key={'ellipsis1'} variant="outline-light px-2" size="lg">
+      <BaseButton key={'ellipsis1'} variant="clear">
         ...
-      </Button>
+      </BaseButton>
     );
     for (let i = state.page - 1; i <= state.page + 1; i++) {
       buttons.push(
@@ -206,9 +206,9 @@ export function PaginatedList<T>(props: {
       );
     }
     buttons.push(
-      <Button key={'ellipsis2'} variant="outline-light px-2" size="lg">
+      <BaseButton key={'ellipsis2'} variant="clear">
         ...
-      </Button>
+      </BaseButton>
     );
   }
 
@@ -219,51 +219,45 @@ export function PaginatedList<T>(props: {
           <ListGroup variant="flush">{tbody}</ListGroup>
         </Card>
         {loading ? (
-          <div className="table-loading-pane d-flex align-items-center justify-content-center flex-column">
+          <div className="table-loading-pane d-flex align-items-center justify-content-center flex-row gap-3 mt-4">
             <Spinner animation="border" role="status" />
-            <span>Loading...</span>
+            <span>Loading Swaps...</span>
           </div>
         ) : (
           ''
         )}
       </div>
-      <div className="d-flex align-items-center justify-content-center mt-2 mb-4">
-        <ButtonGroup className="bg-dark bg-opacity-25" aria-label="Second group">
-          <Button
-            variant="outline-light px-2"
-            onClick={() => handlePageClick(0)}
-            size="lg"
-            disabled={loading}
-          >
-            <Icon size={20} style={{ marginTop: '-8px' }} icon={angleDoubleLeft} />
-          </Button>
-          <Button
-            variant="outline-light px-2"
-            onClick={() => handlePageClick(state.page - 1)}
-            size="lg"
-            disabled={loading}
-          >
-            <Icon size={20} style={{ marginTop: '-8px' }} icon={angleLeft} />
-          </Button>
-          {buttons}
-          <Button
-            variant="outline-light px-2"
-            onClick={() => handlePageClick(state.page + 1)}
-            size="lg"
-            disabled={loading}
-          >
-            <Icon size={20} style={{ marginTop: '-8px' }} icon={angleRight} />
-          </Button>
-          <Button
-            variant="outline-light px-2"
-            onClick={() => handlePageClick(numPages - 1)}
-            size="lg"
-            disabled={loading}
-          >
-            <Icon size={20} style={{ marginTop: '-8px' }} icon={angleDoubleRight} />
-          </Button>
-        </ButtonGroup>
-      </div>
+      {numPages > 1 && (
+        <div className="d-flex align-items-center justify-content-center mt-5 mb-4">
+          <ButtonGroup className="bg-dark bg-opacity-25" aria-label="Second group">
+            <BaseButton variant="clear" onClick={() => handlePageClick(0)} disabled={loading}>
+              <Icon size={20} style={{ marginTop: '-8px' }} icon={angleDoubleLeft} />
+            </BaseButton>
+            <BaseButton
+              variant="clear"
+              onClick={() => handlePageClick(state.page - 1)}
+              disabled={loading}
+            >
+              <Icon size={20} style={{ marginTop: '-8px' }} icon={angleLeft} />
+            </BaseButton>
+            {buttons}
+            <BaseButton
+              variant="clear"
+              onClick={() => handlePageClick(state.page + 1)}
+              disabled={loading}
+            >
+              <Icon size={20} style={{ marginTop: '-8px' }} icon={angleRight} />
+            </BaseButton>
+            <BaseButton
+              variant="clear"
+              onClick={() => handlePageClick(numPages - 1)}
+              disabled={loading}
+            >
+              <Icon size={20} style={{ marginTop: '-8px' }} icon={angleDoubleRight} />
+            </BaseButton>
+          </ButtonGroup>
+        </div>
+      )}
     </div>
   );
 }

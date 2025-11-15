@@ -48,5 +48,5 @@ export function History() {
     }, [swapper]);
     return (_jsx("div", { className: "history-page", children: _jsxs("div", { className: "container", children: [_jsx("div", { className: "history-page__title", children: _jsx("h2", { children: "Your Swap History" }) }), _jsxs("div", { className: "history-table", children: [_jsx("div", { className: "history-table__head", children: _jsxs(Row, { className: "history-entry gx-1 gy-1", children: [_jsx(Col, { md: 4, sm: 12, className: "is-token", children: "From" }), _jsx(Col, { md: 3, sm: 12, className: "is-token", children: "To" }), _jsx(Col, { md: 1, sm: 12, className: "is-value is-right", children: "Value" }), _jsx(Col, { md: 2, sm: 12, className: "d-flex text-end flex-column is-date is-right", children: "Date" }), _jsx(Col, { md: 1, sm: 12, className: "d-flex text-end flex-column is-status", children: "Status" })] }) }), _jsx(ArrayDataPaginatedList, { renderer: (row) => {
                                 return _jsx(HistoryEntry, { swap: row });
-                            }, data: swaps, itemsPerPage: 10 })] })] }) }));
+                            }, data: swaps, itemsPerPage: 100 })] })] }) }));
 }
