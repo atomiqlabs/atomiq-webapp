@@ -67,6 +67,14 @@
     }
     &.is-status {
       @apply items-start;
+
+      .base-button {
+        @apply h-[44px];
+      }
+      @media (min-width: 768px) {
+        @apply w-[13.5%];
+      }
+
       @media (max-width: 992px) {
         @apply items-end;
       }
@@ -97,5 +105,9 @@
     .icon {
       @apply opacity-50 ml-1;
     }
+  }
+
+  &__alert {
+    @apply w-[8px] h-[8px] bg-blue rounded-full absolute left-2 top-[10px] m-0 pointer-events-none z-40;
   }
 }

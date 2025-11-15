@@ -7,6 +7,7 @@ import { usePricing } from '../../hooks/pricing/usePricing';
 import { useChain } from '../../hooks/chains/useChain';
 import { HistoryToken } from './HistoryToken';
 import { TextPill } from '../common/TextPill';
+import { BaseButton } from '../common/BaseButton';
 
 export function HistoryEntry(props: { swap: ISwap }) {
   const navigate = useNavigate();
@@ -49,7 +50,9 @@ export function HistoryEntry(props: { swap: ISwap }) {
   const outputChain = useChain(output.token);
 
   const navigateToSwap = (event) => {
-    event.preventDefault();
+    if (event) {
+      event.preventDefault();
+    }
     navigate('/?swapId=' + props.swap.getId());
   };
 
@@ -72,6 +75,14 @@ export function HistoryEntry(props: { swap: ISwap }) {
     });
   };
 
+  const requiresAction = props.swap.requiresAction();
+  const isPending =
+    !props.swap.isSuccessful() &&
+    !props.swap.isFailed() &&
+    !props.swap.isQuoteSoftExpired() &&
+    !refundable &&
+    !claimable;
+
   const badge = props.swap.isSuccessful() ? (
     <TextPill variant="success">Success</TextPill>
   ) : props.swap.isFailed() ? (
@@ -82,12 +93,14 @@ export function HistoryEntry(props: { swap: ISwap }) {
     <TextPill variant="warning">Refundable</TextPill>
   ) : claimable ? (
     <TextPill variant="warning">Claimable</TextPill>
+  ) : requiresAction && isPending ? (
+    <TextPill variant="warning">Awaiting payment</TextPill>
   ) : (
     <TextPill variant="warning">Pending</TextPill>
   );
-
   return (
     <Row className="history-entry is-clickable gx-1 gy-1" onClick={navigateToSwap}>
+      {props.swap.requiresAction() && <span className="history-entry__alert"></span>}
       <Col md={4} sm={12} className="is-token">
         <HistoryToken
           token={input.token}
@@ -114,17 +127,16 @@ export function HistoryEntry(props: { swap: ISwap }) {
         <div className="sc-date">{formatDate(props.swap.createdAt)}</div>
         <div className="sc-time">{formatTime(props.swap.createdAt)}</div>
       </Col>
-      <Col md={1} sm={4} xs={4} className="d-flex text-end flex-column is-status">
-        {claimable || refundable ? (
-          <Button
-            variant={claimable || refundable ? 'primary' : 'secondary'}
-            size="sm"
-            // href removed to prevent navigation conflicts
+      <Col md={2} sm={4} xs={4} className="d-flex text-end flex-column is-status">
+        {requiresAction ? (
+          <BaseButton
+            variant="secondary"
             className="width-fill"
-            onClick={navigateToSwap}
+            customIcon={refundable ? 'refund' : claimable || isPending ? 'claim' : null}
+            onClick={() => navigateToSwap(null)}
           >
-            {refundable ? 'Refund' : claimable ? 'Claim' : 'View'}
-          </Button>
+            {refundable ? 'Refund' : claimable ? 'Claim' : isPending ? 'Pay' : 'View'}
+          </BaseButton>
         ) : (
           badge
         )}
