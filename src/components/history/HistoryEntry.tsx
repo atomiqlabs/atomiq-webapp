@@ -87,69 +87,7 @@ export function HistoryEntry(props: { swap: ISwap }) {
   );
 
   return (
-    <Row
-      className="history-entry d-flex flex-row gx-1 gy-1"
-      onClick={navigateToSwap}
-      style={{ cursor: 'pointer' }}
-    >
-      {/*<Col md={10} sm={12} className="d-flex">*/}
-      {/*  <div className="card border-0 bg-transparent p-2 width-fill container-fluid">*/}
-      {/*    <Row className="">*/}
-      {/*      <Col md={6} xs={12} className="d-flex flex-row align-items-center">*/}
-      {/*        <div className="min-width-0 me-md-2">*/}
-      {/*          <a*/}
-      {/*            className="font-small single-line-ellipsis"*/}
-      {/*            target="_blank"*/}
-      {/*            href={*/}
-      {/*              inputExplorer == null || txIdInput == null ? null : inputExplorer + txIdInput*/}
-      {/*            }*/}
-      {/*          >*/}
-      {/*            {txIdInput || 'None'}*/}
-      {/*          </a>*/}
-      {/*          <span className="d-flex align-items-center font-weight-500 my-1">*/}
-      {/*            <TokenIcon tokenOrTicker={input.token} className="currency-icon-medium" />*/}
-      {/*            {input.amount} {input.token.ticker || '???'}*/}
-      {/*          </span>*/}
-      {/*          <small className="single-line-ellipsis">{inputAddress}</small>*/}
-      {/*        </div>*/}
-      {/*        <Icon*/}
-      {/*          size={22}*/}
-      {/*          icon={ic_arrow_forward}*/}
-      {/*          className="d-md-block d-none"*/}
-      {/*          style={{*/}
-      {/*            marginLeft: 'auto',*/}
-      {/*            marginRight: '-22px',*/}
-      {/*            marginBottom: '6px',*/}
-      {/*          }}*/}
-      {/*        />*/}
-      {/*      </Col>*/}
-      {/*      <Col md={0} xs={12} className="d-md-none d-flex justify-content-center">*/}
-      {/*        <Icon*/}
-      {/*          size={22}*/}
-      {/*          icon={ic_arrow_downward}*/}
-      {/*          className=""*/}
-      {/*          style={{ marginBottom: '6px' }}*/}
-      {/*        />*/}
-      {/*      </Col>*/}
-      {/*      <Col md={6} xs={12} className="ps-md-4">*/}
-      {/*        <a*/}
-      {/*          className="font-small single-line-ellipsis"*/}
-      {/*          target="_blank"*/}
-      {/*          href={*/}
-      {/*            outputExplorer == null || txIdOutput == null ? null : outputExplorer + txIdOutput*/}
-      {/*          }*/}
-      {/*        >*/}
-      {/*          {txIdOutput || '...'}*/}
-      {/*        </a>*/}
-      {/*        <span className="d-flex align-items-center font-weight-500 my-1">*/}
-      {/*          <TokenIcon tokenOrTicker={output.token} className="currency-icon-medium" />*/}
-      {/*          {output.amount} {output.token.ticker || '???'}*/}
-      {/*        </span>*/}
-      {/*        <small className="single-line-ellipsis">{outputAddress}</small>*/}
-      {/*      </Col>*/}
-      {/*    </Row>*/}
-      {/*  </div>*/}
-      {/*</Col>*/}
+    <Row className="history-entry gx-1 gy-1" onClick={navigateToSwap}>
       <Col md={4} sm={12} className="is-token">
         <HistoryToken
           token={input.token}
@@ -176,7 +114,7 @@ export function HistoryEntry(props: { swap: ISwap }) {
         <div className="sc-date">{formatDate(props.swap.createdAt)}</div>
         <div className="sc-time">{formatTime(props.swap.createdAt)}</div>
       </Col>
-      <Col md={2} sm={12} className="d-flex text-end flex-column is-status">
+      <Col md={1} sm={12} className="d-flex text-end flex-column is-status">
         {claimable || refundable ? (
           <Button
             variant={claimable || refundable ? 'primary' : 'secondary'}

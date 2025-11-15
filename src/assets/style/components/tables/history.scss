@@ -11,10 +11,13 @@
       border-color: rgba(255, 255, 255, 0.2);
     }
   }
+  &__head {
+    @apply uppercase text-white/75 font-semibold text-[12px];
+  }
 }
 
 .history-entry {
-  @apply justify-between;
+  @apply justify-between cursor-pointer;
 
   & > div {
     @apply flex items-center justify-center m-0 p-3;
@@ -41,6 +44,9 @@
 
     &.is-token {
       @apply justify-start;
+    }
+    &.is-status {
+      @apply items-start;
     }
   }
 
