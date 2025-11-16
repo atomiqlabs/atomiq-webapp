@@ -66,7 +66,7 @@ export function PaginatedList(props) {
         if (obj != null)
             tbody.push(_jsx(ListGroup.Item, { children: props.renderer(obj) }, i.toString()));
     }
-    if (tbody.length === 0) {
+    if (tbody.length === 0 && !loading) {
         tbody.push(_jsx(ListGroup.Item, { className: "bg-dark bg-opacity-25 text-white", children: _jsxs("div", { className: "d-flex align-items-center justify-content-center text-light text-opacity-75", children: [_jsx(Icon, { size: 24, className: "pb-1 me-2", icon: ic_not_interested }), _jsx("h4", { className: "my-3", children: "No data" })] }) }, '0'));
     }
     const numPageButtons = props.numPageButtons || 5;

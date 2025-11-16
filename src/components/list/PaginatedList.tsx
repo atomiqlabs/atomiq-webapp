@@ -113,7 +113,7 @@ export function PaginatedList<T>(props: {
       tbody.push(<ListGroup.Item key={i.toString()}>{props.renderer(obj)}</ListGroup.Item>);
   }
 
-  if (tbody.length === 0) {
+  if (tbody.length === 0 && !loading) {
     tbody.push(
       <ListGroup.Item key={'0'} className="bg-dark bg-opacity-25 text-white">
         <div className="d-flex align-items-center justify-content-center text-light text-opacity-75">
