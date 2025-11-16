@@ -1,0 +1,32 @@
+.faqs-page {
+  & {
+    @apply mb-14;
+  }
+  .accordion {
+    @apply flex flex-col gap-2;
+  }
+  .accordion-header {
+    @apply bg-white/10 rounded-[11px] hover:bg-white/20 border-1 border-solid border-transparent hover:border-white/10 transition-all;
+  }
+
+  .faq-number {
+    @apply opacity-50 mr-6;
+  }
+
+  .accordion-button {
+    @apply p-6 text-[18px] font-semibold;
+
+    // Custom arrow icon
+    &::after {
+      display: none;
+    }
+
+    .faq-arrow {
+      @apply ml-auto transition-all text-[15px];
+    }
+
+    &:not(.collapsed) .faq-arrow {
+      transform: rotate(-180deg);
+    }
+  }
+}

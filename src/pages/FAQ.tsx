@@ -18,7 +18,7 @@ export function FAQ(props: {}) {
   }, [tabOpen]);
 
   return (
-    <div className="faq-page">
+    <div className="faqs-page">
       <div className="container">
         <h1 className="page-title">FAQs</h1>
         <div className="mb-3 border-0">
@@ -26,6 +26,7 @@ export function FAQ(props: {}) {
             <Accordion.Item eventKey="0" id="0">
               <Accordion.Header>
                 <span className="faq-number">1</span>What is atomiq.exchange?
+                <i className="faq-arrow icon icon-caret-down"></i>
               </Accordion.Header>
               <Accordion.Body>
                 <p>
@@ -45,6 +46,9 @@ export function FAQ(props: {}) {
             <Accordion.Item eventKey="2" id="2">
               <Accordion.Header>
                 <span className="faq-number">2</span>How does it work?
+                <span className="faq-arrow">
+                  <i className="icon icon-caret-down"></i>
+                </span>
               </Accordion.Header>
               <Accordion.Body>
                 <h4>Connect your Solana or Starknet wallet and Bitcoin wallet</h4>
