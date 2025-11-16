@@ -127,6 +127,6 @@
   }
 
   &__alert {
-    @apply w-[8px] h-[8px] bg-blue rounded-full absolute left-2 top-[10px] m-0 pointer-events-none z-40;
+    @apply w-[8px] h-[8px] bg-blue rounded-full absolute left-2 top-[10px] m-0 pointer-events-none z-10;
   }
 }

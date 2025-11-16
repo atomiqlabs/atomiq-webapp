@@ -223,3 +223,30 @@
 .navbar {
   --bs-navbar-active-color: #fff;
 }
+
+.mobile-bottom-nav {
+  @apply fixed bottom-0 left-0 right-0 bg-[#201f1f] text-[#777777] z-30 flex justify-around items-center;
+
+  @media (min-width: 993px) {
+    @apply hidden;
+  }
+
+  &__item {
+    @apply flex flex-col items-center justify-center gap-1 text-white  transition-all relative no-underline border-0 border-t border-solid border-transparent py-3;
+    min-width: 80px;
+
+    &.is-active {
+      border-top: 2px solid #9785e5;
+
+      .mobile-bottom-nav__item__icon {
+        @apply text-[#9785e5];
+      }
+    }
+    &__icon {
+      @apply text-[#777777];
+    }
+    &__icon {
+      @apply text-2xl transition-colors text-[#777777];
+    }
+  }
+}
