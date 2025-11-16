@@ -27,7 +27,7 @@
 
   & &__nav .main-navigation__nav__item {
     & {
-      @apply px-3 py-3 flex gap-2 border-solid border-b-2 border-transparent hover:border-pinkSlate items-center opacity-75 hover:opacity-100;
+      @apply px-3 py-3 flex gap-2 relative border-solid border-b-2 border-transparent hover:border-pinkSlate items-center opacity-75 hover:opacity-100;
     }
 
     @media (max-width: 992px) {
@@ -60,6 +60,10 @@
         background-color: rgba(255, 255, 255, 0.1);
         display: flex !important; // because somehow for some reason there is inline style
       }
+    }
+
+    &__count {
+      @apply w-4 h-4 text-[12px] font-semibold text-white bg-blue rounded-full flex items-center justify-center absolute left-2 top-[12px];
     }
 
     &:nth-child(5) {

@@ -3,20 +3,13 @@ import classNames from 'classnames';
 import { Navbar, Container, Nav, Badge, NavDropdown } from 'react-bootstrap';
 import Icon from 'react-icons-kit';
 import { FEConstants } from '../../FEConstants';
-import { BitcoinNetwork } from '@atomiqlabs/sdk';
+import { BitcoinNetwork, SwapType } from '@atomiqlabs/sdk';
 import { WalletConnector } from '../wallets/WalletConnector';
 import { angleDown } from 'react-icons-kit/fa/angleDown';
 import { close } from 'react-icons-kit/fa/close';
 import { useLocation } from 'react-router-dom';
 import { SocialFooter } from './SocialFooter';
-
-const navItems = [
-  { link: '/', icon: 'swap-nav', title: 'Swap' },
-  { link: '/history', icon: 'Swap-History', title: 'Swap History' },
-  { link: '/faq', icon: 'Explorer', title: 'Explorer' },
-  { link: '/more', icon: 'info', title: 'About' },
-  { link: '/more-daco', icon: 'quesitons', title: 'FAQs' },
-];
+import { SwapperContext } from '../../context/SwapperContext';
 
 interface MainNavigationProps {
   affiliateLink?: string;
@@ -25,7 +18,9 @@ interface MainNavigationProps {
 export function MainNavigation({ affiliateLink }: MainNavigationProps) {
   const location = useLocation();
   const [isOpen, setIsOpen] = React.useState(false);
+  const [actionRequiredCount, setActionRequiredCount] = React.useState<number>(0);
   const collapseRef = React.useRef<HTMLDivElement>(null);
+  const { swapper } = React.useContext(SwapperContext);
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -44,6 +39,52 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  React.useEffect(() => {
+    console.log('MainNavigation: swapper is', swapper);
+    if (swapper == null) {
+      console.log('MainNavigation: swapper is null, returning early');
+      return;
+    }
+
+    const updateActionCount = async () => {
+      const swaps = await swapper.getAllSwaps();
+      const initiated = swaps.filter((swap) => swap.isInitiated());
+      const notTrusted = initiated.filter(
+        (swap) =>
+          swap.getType() !== SwapType.TRUSTED_FROM_BTC &&
+          swap.getType() !== SwapType.TRUSTED_FROM_BTCLN
+      );
+      const requiresAction = notTrusted.filter((swap) => swap.requiresAction());
+      setActionRequiredCount(requiresAction.length);
+    };
+
+    updateActionCount();
+
+    const listener = () => {
+      updateActionCount();
+    };
+    swapper.on('swapState', listener);
+
+    return () => {
+      swapper.off('swapState', listener);
+    };
+  }, [swapper]);
+
+  console.log('actionRequiredCount', actionRequiredCount);
+
+  const navItems = [
+    { link: '/', icon: 'swap-nav', title: 'Swap' },
+    {
+      link: '/history',
+      icon: 'Swap-History',
+      title: 'Swap History',
+      count: actionRequiredCount > 0 ? actionRequiredCount : undefined,
+    },
+    { link: '/faq', icon: 'Explorer', title: 'Explorer' },
+    { link: '/more', icon: 'info', title: 'About' },
+    { link: '/more-daco', icon: 'quesitons', title: 'FAQs' },
+  ];
 
   return (
     <Container className="max-width-100">
@@ -97,7 +138,9 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
                     'is-mobile': index >= 3,
                   })}
                 >
-                  {/*TODO ADD count BADGE*/}
+                  {item.count && (
+                    <span className="main-navigation__nav__item__count">{item.count}</span>
+                  )}
                   {item.icon && (
                     <span
                       className={`main-navigation__nav__item__icon icon icon-${item.icon}`}
