@@ -5,8 +5,21 @@
   .accordion {
     @apply flex flex-col gap-2;
   }
+
+  .accordion-body {
+    @apply bg-white/20 rounded-b-[11px] text-left pt-0 pl-[57px] text-white/75 text-[16px] tracking-[-1%] leading-[24px];
+  }
+
   .accordion-header {
-    @apply bg-white/10 rounded-[11px] hover:bg-white/20 border-1 border-solid border-transparent hover:border-white/10 transition-all;
+    @apply bg-white/10 rounded-[11px] hover:bg-white/20 border-1 border-solid border-transparent hover:border-white/10;
+    transition:
+      background 0.2s ease-in-out,
+      border-radius 0.35s ease-in-out;
+
+    &:not(:has(.collapsed)) {
+      @apply rounded-b-none border-0 hover:bg-white/20 bg-white/20;
+      transition: background 0.2s ease-in-out;
+    }
   }
 
   .faq-number {
@@ -14,7 +27,7 @@
   }
 
   .accordion-button {
-    @apply p-6 text-[18px] font-semibold;
+    @apply p-6 text-[18px] font-semibold transition-all;
 
     // Custom arrow icon
     &::after {
@@ -25,8 +38,11 @@
       @apply ml-auto transition-all text-[15px];
     }
 
-    &:not(.collapsed) .faq-arrow {
-      transform: rotate(-180deg);
+    &:not(.collapsed) {
+      @apply pb-3;
+      .faq-arrow {
+        transform: rotate(-180deg);
+      }
     }
   }
 }
