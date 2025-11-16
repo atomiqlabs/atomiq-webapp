@@ -516,6 +516,10 @@ td {
   animation: glow 0.5s ease-in-out alternate infinite;
 }
 
+.page-title {
+  @apply text-left font-semibold text-[32px] mb-[24px] text-white;
+}
+
 .App > .social-footer {
   @media (max-width: 992px) {
     @apply hidden;

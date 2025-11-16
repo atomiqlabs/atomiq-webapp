@@ -56,9 +56,7 @@ export function History() {
   return (
     <div className="history-page">
       <div className="container">
-        <div className="history-page__title">
-          <h2>Your Swap History</h2>
-        </div>
+        <h1 className="page-title">Your Swap History</h1>
         {/* Hidden until filter will be implemented */}
         {SHOW_FILTER && (
           <div className="history-page__filter">

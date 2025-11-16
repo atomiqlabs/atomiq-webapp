@@ -81,9 +81,9 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
       title: 'Swap History',
       count: actionRequiredCount > 0 ? actionRequiredCount : undefined,
     },
-    { link: '/faq', icon: 'Explorer', title: 'Explorer' },
+    { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
     { link: '/more', icon: 'info', title: 'About' },
-    { link: '/more-daco', icon: 'quesitons', title: 'FAQs' },
+    { link: '/faq', icon: 'quesitons', title: 'FAQs' },
   ];
 
   return (

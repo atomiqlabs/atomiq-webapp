@@ -64,9 +64,9 @@ export function MainNavigation({ affiliateLink }) {
             title: 'Swap History',
             count: actionRequiredCount > 0 ? actionRequiredCount : undefined,
         },
-        { link: '/faq', icon: 'Explorer', title: 'Explorer' },
+        { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
         { link: '/more', icon: 'info', title: 'About' },
-        { link: '/more-daco', icon: 'quesitons', title: 'FAQs' },
+        { link: '/faq', icon: 'quesitons', title: 'FAQs' },
     ];
     return (_jsx(Container, { className: "max-width-100", children: _jsx("div", { children: _jsxs(Navbar, { expand: "lg", collapseOnSelect: true, className: "main-navigation", children: [isOpen && _jsx("div", { className: "main-navigation__overlay" }), _jsx(Navbar.Brand, { href: "/", children: _jsxs("div", { className: "d-flex flex-row", style: { fontSize: '1.5rem' }, children: [_jsx("img", { src: "/main_logo.png", className: "main-navigation__logo is-desktop" }), _jsx("img", { src: "/logo192.png", className: "main-navigation__logo is-mobile" }), FEConstants.bitcoinNetwork !== BitcoinNetwork.MAINNET ? (_jsx(Badge, { className: "main-navigation__network ms-2 my-0 align-items-center font-smallest", bg: "danger", children: "DEVNETO" })) : ('')] }) }), _jsx(Navbar.Toggle, { "aria-controls": "basic-navbar-nav", onClick: () => setIsOpen(!isOpen) }), _jsx("div", { className: "main-navigation__wallet", children: _jsx(WalletConnector, {}) }), _jsx(Navbar.Collapse, { ref: collapseRef, in: isOpen, role: "navigation", id: "basic-navbar-nav", className: classNames('main-navigation__collapse', { show: isOpen }), children: _jsxs(Nav, { className: "main-navigation__nav", children: [_jsxs("div", { className: "main-navigation__nav__mobile-header", children: [_jsx(Nav.Link, { href: "/", children: _jsx("img", { src: "/main_logo.png", className: "main-navigation__nav__logo", alt: "logo" }) }), _jsx("div", { className: "main-navigation__nav__close", onClick: () => setIsOpen(false), children: _jsx(Icon, { size: 20, icon: close }) })] }), navItems.map((item, index) => (_jsxs(Nav.Link, { href: item.link, className: classNames('main-navigation__nav__item', {
                                         'is-active': location.pathname === item.link,
