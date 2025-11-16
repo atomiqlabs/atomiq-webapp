@@ -9,7 +9,7 @@ import { HistoryToken } from './HistoryToken';
 import { TextPill } from '../common/TextPill';
 import { BaseButton } from '../common/BaseButton';
 
-export function HistoryEntry(props: { swap: ISwap }) {
+export function TransactionEntry(props: { swap: ISwap }) {
   const navigate = useNavigate();
 
   const input = props.swap.getInput();

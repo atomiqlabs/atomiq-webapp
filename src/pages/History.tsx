@@ -2,9 +2,7 @@ import { ISwap, SwapType } from '@atomiqlabs/sdk';
 import * as React from 'react';
 import { useContext, useEffect, useState } from 'react';
 import { SwapperContext } from '../context/SwapperContext';
-import { HistoryEntry } from '../components/history/HistoryEntry';
-import { ArrayDataPaginatedList } from '../components/list/ArrayDataPaginatedList';
-import { Col, Row } from 'react-bootstrap';
+import { TransactionsTable } from '../components/table/TransactionsTable';
 
 const SHOW_FILTER = false;
 
@@ -77,34 +75,7 @@ export function History() {
             </div>
           </div>
         )}
-        <div className="history-table">
-          <div className="history-table__head">
-            <Row className="history-entry gx-1 gy-1">
-              <Col md={4} sm={12} className="is-token">
-                From
-              </Col>
-              <Col md={3} sm={12} className="is-token">
-                To
-              </Col>
-              <Col md={1} sm={12} className="is-value is-right">
-                Value
-              </Col>
-              <Col md={2} sm={12} className="d-flex text-end flex-column is-date is-right">
-                Date
-              </Col>
-              <Col md={1} sm={12} className="d-flex text-end flex-column is-status">
-                Status
-              </Col>
-            </Row>
-          </div>
-          <ArrayDataPaginatedList<ISwap>
-            renderer={(row) => {
-              return <HistoryEntry swap={row} />;
-            }}
-            data={swaps}
-            itemsPerPage={100}
-          />
-        </div>
+        <TransactionsTable data={swaps} itemsPerPage={50} />
       </div>
     </div>
   );
