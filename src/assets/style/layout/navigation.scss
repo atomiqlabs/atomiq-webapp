@@ -64,6 +64,9 @@
 
     &__count {
       @apply w-4 h-4 text-[12px] font-semibold text-white bg-blue rounded-full flex items-center justify-center absolute left-2 top-[12px];
+      @media (max-width: 992px) {
+        @apply inline-flex static w-6 h-6 text-[16px];
+      }
     }
 
     &:nth-child(5) {
