@@ -2,8 +2,20 @@
   @apply rounded-lg py-[16px] px-[20px] flex gap-[12px] items-center;
   border: 1px solid rgba(255, 255, 255, 0.1);
 
+  @media (max-width: 992px) {
+    @apply px-[12px];
+  }
+
   &__icon {
     @apply text-[18px];
+  }
+
+  &__body {
+    @apply text-left;
+
+    @media (max-width: 992px) {
+      @apply text-[14px];
+    }
   }
 
   &.is-success {
@@ -31,5 +43,9 @@
     @apply text-blue;
     background-color: rgba(96, 165, 250, 0.1);
     border-color: rgba(96, 165, 250, 0.2);
+  }
+
+  strong {
+    @apply font-semibold;
   }
 }

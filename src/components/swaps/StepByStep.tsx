@@ -1,9 +1,9 @@
 import Icon from 'react-icons-kit';
 import * as React from 'react';
 import classNames from 'classnames';
-import {ISwap} from "@atomiqlabs/sdk";
-import {TokenIcons} from "../../utils/Tokens";
-import {useQuoteAmountsAndAddress} from "../../hooks/swaps/helpers/useQuoteAmountsAndAddress";
+import { ISwap } from '@atomiqlabs/sdk';
+import { TokenIcons } from '../../utils/Tokens';
+import { useQuoteAmountsAndAddress } from '../../hooks/swaps/helpers/useQuoteAmountsAndAddress';
 
 export type SingleStep = {
   icon: any;
@@ -25,14 +25,10 @@ export type WalletData = {
 export function StepByStep(props: {
   steps: SingleStep[];
   quote?: ISwap;
-  sourceWallet?: any,
-  destinationWallet?: any
+  sourceWallet?: any;
+  destinationWallet?: any;
 }) {
-  const {
-    input,
-    output,
-    address
-  } = useQuoteAmountsAndAddress(props.quote);
+  const { input, output, address } = useQuoteAmountsAndAddress(props.quote);
 
   return (
     <div className="swap-steps">
@@ -60,9 +56,7 @@ export function StepByStep(props: {
                   {input.amount.toString()}
                 </div>
                 {input.usdValue && (
-                  <div className="swap-steps-wallet__ammounts__dolars">
-                    {input.usdValue}
-                  </div>
+                  <div className="swap-steps-wallet__ammounts__dolars">{input.usdValue}</div>
                 )}
               </div>
             </div>
@@ -90,9 +84,7 @@ export function StepByStep(props: {
                   {output.amount.toString()}
                 </div>
                 {output.amount.usdValue && (
-                  <div className="swap-steps-wallet__ammounts__dolars">
-                    {output.usdValue}
-                  </div>
+                  <div className="swap-steps-wallet__ammounts__dolars">{output.usdValue}</div>
                 )}
               </div>
             </div>
@@ -101,10 +93,12 @@ export function StepByStep(props: {
       </div>
       {address && output && (
         <div className="swap-steps__address">
-          <div>Destination {output.chain.chain.name ?? ''} Wallet Address:</div>
           <div>
-            {address.short}
+            Dest<span className="is-desktop">ination</span> {output.chain.chain.name ?? ''}{' '}
+            <span className="is-desktop">Wallet</span>
+            Address:
           </div>
+          <div>{address.short}</div>
         </div>
       )}
       <div className="swap-steps__indicator">

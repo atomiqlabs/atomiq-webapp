@@ -4,6 +4,10 @@
   &__data {
     @apply flex justify-between items-start px-6 mb-8 relative;
 
+    @media (max-width: 992px) {
+      @apply p-0;
+    }
+
     &__in,
     &__out {
       @apply flex-1;
@@ -11,10 +15,18 @@
 
     &__in {
       @apply flex justify-start;
+
+      @media (max-width: 992px) {
+        @apply justify-center;
+      }
     }
 
     &__out {
       @apply flex justify-end;
+
+      @media (max-width: 992px) {
+        @apply justify-center;
+      }
     }
 
     &__arrow {
@@ -26,19 +38,53 @@
     @apply py-6 rounded-lg flex justify-around items-start gap-4 relative;
     background-color: rgb(255 255 255 / 0.05);
 
+    @media (max-width: 992px) {
+      @apply flex-col p-3 gap-[9px];
+    }
+
     &__text {
       @apply mt-[12px] text-[14px];
+
+      @media (max-width: 992px) {
+        @apply m-0;
+      }
     }
 
     &__icon {
       @apply w-[38px] h-[38px] rounded-full border-2 border-solid border-white/30 flex items-center justify-center leading-none;
 
+      @media (max-width: 992px) {
+        @apply w-[20px] h-[20px];
+      }
+
+      @media (max-width: 992px) {
+        i {
+          display: none !important;
+        }
+      }
+
       &.is-failed {
         @apply border-red text-red bg-red/10;
+
+        @media (max-width: 992px) {
+          @apply bg-red text-black;
+
+          i {
+            display: inline-block !important;
+          }
+        }
       }
 
       &.is-success {
         @apply border-green text-green bg-green/10;
+
+        @media (max-width: 992px) {
+          @apply bg-green text-black;
+
+          i {
+            display: inline-block !important;
+          }
+        }
       }
 
       &.is-loading {
@@ -56,11 +102,19 @@
 
     &__step {
       @apply flex-1 flex flex-col items-center;
+
+      @media (max-width: 992px) {
+        @apply flex-row gap-[12px];
+      }
     }
   }
 
   &__dots {
     @apply flex items-center gap-[20px] absolute pointer-events-none top-[42px];
+
+    @media (max-width: 992px) {
+      @apply hidden;
+    }
 
     &.is-success {
       .swap-steps__dot {
@@ -80,6 +134,11 @@
   &__address {
     @apply w-full flex justify-between px-3 py-2 mb-3 text-[14px] rounded-[4px];
 
+    @media (max-width: 992px) {
+      .is-desktop {
+        @apply hidden;
+      }
+    }
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
@@ -87,8 +146,16 @@
 .payment-awaiting-buttons {
   @apply flex justify-center gap-3 w-full;
 
+  @media (max-width: 992px) {
+    @apply flex-col;
+  }
+
   .base-button {
     @apply text-[16px] flex-1 rounded-lg p-1;
+
+    @media (max-width: 992px) {
+      @apply py-[12px];
+    }
 
     .icon {
       @apply text-[14px];
@@ -98,6 +165,10 @@
 
 .swap-steps-wallet {
   @apply flex items-center gap-3;
+
+  @media (max-width: 992px) {
+    @apply flex-col;
+  }
 
   &__icon {
     @apply w-8 h-8 rounded-full flex items-center justify-center relative;
@@ -114,8 +185,16 @@
   &__ammounts {
     @apply flex flex-col items-start;
 
+    @media (max-width: 992px) {
+      @apply items-center;
+    }
+
     &__original {
       @apply text-[18px] font-semibold text-white leading-none;
+
+      @media (max-width: 992px) {
+        @apply text-[14px];
+      }
     }
 
     &__dolars {
