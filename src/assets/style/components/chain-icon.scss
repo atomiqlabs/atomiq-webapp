@@ -2,10 +2,24 @@
   & {
     @apply mr-4 relative;
   }
+
+  @media (max-width: 992px) {
+    @apply mr-3;
+  }
+
   &__img {
     @apply w-8 h-8 rounded-full;
+
+    @media (max-width: 992px) {
+      @apply w-6 h-6;
+    }
   }
+
   &__currency {
     @apply w-4 h-4 rounded absolute -right-1 -bottom-1;
+
+    @media (max-width: 992px) {
+      @apply w-3 h-3 rounded-[2px];
+    }
   }
 }

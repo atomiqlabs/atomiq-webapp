@@ -27,6 +27,10 @@
   &__quote {
     @apply flex gap-2 mr-auto items-center;
 
+    @media (max-width: 992px) {
+      @apply text-[12px];
+    }
+
     &__error {
       @apply text-red flex items-center gap-2 mr-1 pr-3;
 

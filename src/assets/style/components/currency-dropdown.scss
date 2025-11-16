@@ -4,6 +4,10 @@
 
     background-color: rgba(255, 255, 255, 0.1) !important;
 
+    @media (max-width: 992px) {
+      @apply w-[139px] p-2;
+    }
+
     &:after {
       @apply hidden;
     }
@@ -22,14 +26,26 @@
 
   &__currency {
     @apply font-bold;
+
+    @media (max-width: 992px) {
+      @apply text-[14px];
+    }
   }
 
   &__second {
     @apply opacity-50 text-[14px];
+
+    @media (max-width: 992px) {
+      @apply text-[12px];
+    }
   }
 
   &__dropdown {
-    font-size: 12px;
+    @apply text-[12px];
+
+    @media (max-width: 992px) {
+      @apply text-[10px] mr-1;
+    }
   }
 
   &__nav-link {

@@ -1,9 +1,17 @@
 .swap-panel {
   @apply text-white max-w-full w-[590px] relative;
 
+  @media (max-width: 600px) {
+    @apply px-4;
+  }
+
   &__card {
     @apply py-3 px-[20px] rounded-xl;
     background: rgba(255, 255, 255, 0.1);
+
+    @media (max-width: 992px) {
+      @apply py-[14px] px-3;
+    }
 
     &:empty {
       @apply p-0;
@@ -15,7 +23,12 @@
 
     &__title {
       @apply text-[14px] font-bold uppercase;
+
+      @media (max-width: 992px) {
+        @apply text-[12px];
+      }
     }
+
     &__subtitle {
       @apply flex gap-2 font-semibold justify-center items-center mb-4;
 
@@ -77,6 +90,10 @@
       @apply h-[44px] w-[44px] p-0 flex items-center justify-center rounded-full bg-black hover:bg-pink hover:border-pink transition-all;
 
       border: 1px solid rgba(255, 255, 255, 0.2);
+
+      @media (max-width: 992px) {
+        @apply h-[40px] w-[40px] text-[15px];
+      }
     }
   }
 
@@ -117,9 +134,11 @@
   }
 
   &__input {
-    @apply border-none !p-0 bg-transparent text-right h-8 min-h-0 appearance-none font-medium !bg-none;
+    @apply border-none !p-0 bg-transparent text-right h-8 min-h-0 appearance-none font-medium !bg-none text-[32px];
 
-    font-size: 32px;
+    @media (max-width: 992px) {
+      @apply text-[24px];
+    }
 
     &::placeholder {
       @apply opacity-30;
@@ -140,6 +159,10 @@
 
   &__label {
     @apply w-full text-right opacity-50;
+
+    @media (max-width: 992px) {
+      @apply text-[12px];
+    }
   }
 
   input::-webkit-outer-spin-button,
@@ -173,6 +196,10 @@
 
     &.btn-primary {
       @apply h-[64px] font-semibold;
+
+      @media (max-width: 992px) {
+        @apply h-[56px] rounded-[12px];
+      }
     }
 
     .base-button__content {
