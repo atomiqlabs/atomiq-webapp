@@ -1,0 +1,13 @@
+.about-page {
+  & {
+    @apply mb-20;
+  }
+  .card {
+    & {
+      @apply bg-white/10;
+    }
+    a {
+      @apply text-inherit;
+    }
+  }
+}

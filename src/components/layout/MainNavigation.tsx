@@ -82,7 +82,7 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
       count: actionRequiredCount > 0 ? actionRequiredCount : undefined,
     },
     { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
-    { link: '/more', icon: 'info', title: 'About' },
+    { link: '/about', icon: 'info', title: 'About' },
     { link: '/faq', icon: 'quesitons', title: 'FAQs' },
   ];
 
@@ -138,15 +138,15 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
                     'is-mobile': index >= 3,
                   })}
                 >
-                  {item.count && (
-                    <span className="main-navigation__nav__item__count">{item.count}</span>
-                  )}
                   {item.icon && (
                     <span
                       className={`main-navigation__nav__item__icon icon icon-${item.icon}`}
                     ></span>
                   )}
                   <span className="main-navigation__nav__item__text">{item.title}</span>
+                  {item.count && (
+                    <div className="main-navigation__nav__item__count">{item.count}</div>
+                  )}
                 </Nav.Link>
               ))}
 
