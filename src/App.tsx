@@ -15,19 +15,17 @@ import { SwapForGas } from './pages/SwapForGas';
 import { SwapExplorer } from './pages/SwapExplorer';
 import { Affiliate } from './pages/Affiliate';
 import { SwapNew } from './pages/SwapNew';
-import { useAnchorNavigate } from './hooks/navigation/useAnchorNavigate';
 import { ErrorAlert } from './components/_deprecated/ErrorAlert';
 import { ChainsContext } from './context/ChainsContext';
 import { ChainsProvider } from './providers/ChainsProvider';
 import { SocialFooter } from './components/layout/SocialFooter';
+import { NotFound } from './pages/NotFound';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
 const noWalletPaths = new Set(['/about', '/faq', '/46jh456f45f']);
 
 function WrappedApp() {
-  const navigateHref = useAnchorNavigate();
-
   const [swapper, setSwapper] = useState<Swapper<any>>();
   const [swapperLoadingError, setSwapperLoadingError] = useState<any>();
   const [swapperLoading, setSwapperLoading] = useState<boolean>(false);
@@ -138,6 +136,7 @@ function WrappedApp() {
               <Route path="about" element={<About />} />
               <Route path="explorer" element={<SwapExplorer />} />
               <Route path="referral" element={<Affiliate />} />
+              <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </div>
