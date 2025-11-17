@@ -81,9 +81,7 @@ export function SwapExplorer(props: {}) {
   }, [search]);
 
   return (
-    <div className="flex-fill text-white container mt-5 text-start">
-      <h1 className="section-title">Statistics</h1>
-
+    <div className="container">
       <Row>
         <Col xs={12} md={6} className="pb-3">
           <Card className="px-3 pt-3 bg-dark bg-opacity-25 height-100 border-0">
@@ -148,7 +146,7 @@ export function SwapExplorer(props: {}) {
         </Col>
       </Row>
 
-      <h1 className="section-title mt-4">Explorer</h1>
+      <h1 className="page-title">Explorer</h1>
 
       <div className="d-flex flex-row mb-3">
         <ValidatedInput
@@ -325,9 +323,9 @@ export function SwapExplorer(props: {}) {
                       <small className="">{getTimeDeltaText(row.timestampInit * 1000)} ago</small>
                     </Col>
                     <Col xl={12} md={2} xs={3} className="text-end">
-                        <span className="font-weight-500">
-                          {FEConstants.USDollar.format(row._usdValue)}
-                        </span>
+                      <span className="font-weight-500">
+                        {FEConstants.USDollar.format(row._usdValue)}
+                      </span>
                     </Col>
                   </Row>
                 </Col>
@@ -348,10 +346,10 @@ export function SwapExplorer(props: {}) {
                             {txIdInput || 'None'}
                           </a>
                           <span className="d-flex align-items-center font-weight-500 my-1">
-                              <TokenIcon
-                                tokenOrTicker={inputCurrency}
-                                className="currency-icon-medium"
-                              />
+                            <TokenIcon
+                              tokenOrTicker={inputCurrency}
+                              className="currency-icon-medium"
+                            />
                             {inputAmount == null || inputCurrency == null
                               ? '???'
                               : toHumanReadableString(inputAmount, inputCurrency)}{' '}
@@ -371,7 +369,7 @@ export function SwapExplorer(props: {}) {
                             ) : (
                               ''
                             )}
-                            </span>
+                          </span>
                           <small className="single-line-ellipsis">{inputAddress}</small>
                         </div>
                         <Icon
@@ -406,10 +404,10 @@ export function SwapExplorer(props: {}) {
                           {txIdOutput || '...'}
                         </a>
                         <span className="d-flex align-items-center font-weight-500 my-1">
-                            <TokenIcon
-                              tokenOrTicker={outputCurrency}
-                              className="currency-icon-medium"
-                            />
+                          <TokenIcon
+                            tokenOrTicker={outputCurrency}
+                            className="currency-icon-medium"
+                          />
                           {outputAmount == null || outputCurrency == null
                             ? '???'
                             : toHumanReadableString(outputAmount, outputCurrency)}{' '}
@@ -429,7 +427,7 @@ export function SwapExplorer(props: {}) {
                           ) : (
                             ''
                           )}
-                          </span>
+                        </span>
                         <small className="single-line-ellipsis">{outputAddress}</small>
                       </Col>
                     </Row>
