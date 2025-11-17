@@ -113,7 +113,7 @@
   }
 
   &__amount {
-    @apply font-medium;
+    @apply font-medium text-nowrap;
   }
 
   &__address {

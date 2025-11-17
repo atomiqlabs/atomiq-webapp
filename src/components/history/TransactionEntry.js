@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { isSCToken, IToBTCSwap, SwapDirection } from '@atomiqlabs/sdk';
+import { isSCToken, SwapDirection } from '@atomiqlabs/sdk';
 import { useNavigate } from 'react-router-dom';
 import { FEConstants } from '../../FEConstants';
 import { Col, Row } from 'react-bootstrap';
@@ -24,9 +24,8 @@ export function TransactionEntry(props) {
             : null;
     const txIdInput = props.swap.getInputTxId();
     const txIdOutput = props.swap.getOutputTxId();
-    const inputAddress = props.swap instanceof IToBTCSwap
-        ? props.swap._getInitiator() // For TO_BTC: smart chain address (source)
-        : ''; // For FROM_BTC: Bitcoin sender address (not available from swap object)
+    // Get input address - for TO_BTC it's the smart chain address, for FROM_BTC it's the Bitcoin sender address
+    const inputAddress = props.swap._getInitiator ? props.swap._getInitiator() : '';
     const outputAddress = props.swap.getOutputAddress(); // Destination address for both swap types
     const refundable = props.swap.getDirection() === SwapDirection.TO_BTC && props.swap.isRefundable();
     const claimable = props.swap.getDirection() === SwapDirection.FROM_BTC &&

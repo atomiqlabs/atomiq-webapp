@@ -29,10 +29,8 @@ export function TransactionEntry(props: { swap: ISwap }) {
   const txIdInput = props.swap.getInputTxId();
   const txIdOutput = props.swap.getOutputTxId();
 
-  const inputAddress =
-    props.swap instanceof IToBTCSwap
-      ? props.swap._getInitiator() // For TO_BTC: smart chain address (source)
-      : ''; // For FROM_BTC: Bitcoin sender address (not available from swap object)
+  // Get input address - for TO_BTC it's the smart chain address, for FROM_BTC it's the Bitcoin sender address
+  const inputAddress = props.swap._getInitiator ? props.swap._getInitiator() : '';
   const outputAddress = props.swap.getOutputAddress(); // Destination address for both swap types
 
   const refundable =

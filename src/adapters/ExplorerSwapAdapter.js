@@ -2,7 +2,14 @@ import { SwapDirection, SwapType } from '@atomiqlabs/sdk';
 import { TokenResolver, Tokens } from '../FEConstants';
 /**
  * Adapter to make explorer backend data compatible with TransactionEntry component
- * Duck-typed to match ISwap interface without strict implementation
+ *
+ * Why this exists:
+ * - SwapExplorer page receives raw data from the backend API with a different structure
+ * - TransactionEntry component expects ISwap objects with methods like getInput(), getOutput(), etc.
+ * - To reuse TransactionEntry and keep both History and SwapExplorer tables looking identical,
+ *   this adapter transforms the backend data structure into an ISwap-compatible object
+ * - Uses duck-typing (implements the methods TransactionEntry needs without strict type inheritance)
+ *   to avoid complex TypeScript type conflicts
  */
 export class ExplorerSwapAdapter {
     constructor(data) {
@@ -90,8 +97,18 @@ export class ExplorerSwapAdapter {
         return SwapType.FROM_BTC;
     }
     // For instanceof checks in TransactionEntry
+    // Returns the source/input address for the swap
     _getInitiator() {
-        return this.data.direction === 'ToBTC' ? this.data.clientWallet : '';
+        if (this.data.direction === 'ToBTC') {
+            return this.data.clientWallet;
+        }
+        else {
+            // For FROM_BTC swaps, return the BTC input address if available
+            if (this.data.type === 'CHAIN' && this.data.btcInAddresses != null && this.data.btcInAddresses.length > 0) {
+                return this.data.btcInAddresses[0];
+            }
+            return '';
+        }
     }
     // Additional methods to support instanceof checks
     isRefundable() {
