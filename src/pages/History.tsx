@@ -73,7 +73,7 @@ export function History() {
             </div>
           </div>
         )}
-        <TransactionsTable data={swaps} itemsPerPage={5} />
+        <TransactionsTable data={swaps} itemsPerPage={20} />
       </div>
     </div>
   );

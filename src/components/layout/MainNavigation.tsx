@@ -10,6 +10,7 @@ import { close } from 'react-icons-kit/fa/close';
 import { useLocation } from 'react-router-dom';
 import { SocialFooter } from './SocialFooter';
 import { SwapperContext } from '../../context/SwapperContext';
+import {useAnchorNavigate} from "../../hooks/navigation/useAnchorNavigate";
 
 interface MainNavigationProps {
   affiliateLink?: string;
@@ -95,6 +96,8 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
     { link: '/faq', icon: 'quesitons', title: 'FAQs' },
   ];
 
+  const anchorNavigate = useAnchorNavigate();
+
   return (
     <Container className="max-width-100">
       <div>
@@ -142,6 +145,7 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
                 <Nav.Link
                   key={item.link}
                   href={item.link}
+                  onClick={anchorNavigate}
                   className={classNames('main-navigation__nav__item', {
                     'is-active': location.pathname === item.link,
                     'is-mobile': index >= 3,

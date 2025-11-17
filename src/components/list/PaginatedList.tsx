@@ -26,7 +26,7 @@ export function PaginatedList<T>(props: {
     page: number;
     allData: any[]; // Store all loaded data
     maxPages: number;
-    loading: boolean;
+    loading: number;
     hasMore: boolean;
   }>({
     page: 0,
@@ -34,40 +34,44 @@ export function PaginatedList<T>(props: {
     sortedDescending: false,
     allData: [],
     maxPages: 0,
-    loading: false,
+    loading: null,
     hasMore: true,
   });
 
   const loading = props.loading || state.loading;
   const itemsPerPage = props.itemsPerPage || 10;
   const containerRef = useRef<HTMLDivElement>(null);
+  const getPageUpdateCounter = useRef<number>(0);
 
   useEffect(() => {
     setState((val) => {
       return { ...val, page: 0, allData: [], hasMore: true };
     });
+    getPageUpdateCounter.current++;
   }, [props.getPage]);
 
   const loadNextPageRef = useRef<() => void>();
 
   loadNextPageRef.current = () => {
-    if (state.loading || !state.hasMore) return;
+    const getPageIndex = getPageUpdateCounter.current;
+    if (state.loading===getPageIndex || !state.hasMore) return;
 
     const maybePromise = props.getPage(state.page, itemsPerPage);
 
     if (maybePromise instanceof Promise) {
       setState((val) => {
-        return { ...val, loading: true };
+        return { ...val, loading: getPageIndex };
       });
       maybePromise.then((obj) => {
         setState((val) => {
+          if(val.loading!==getPageIndex) return val;
           const newData = [...val.allData, ...obj.data];
           const hasMore = val.page + 1 < obj.maxPages;
           return {
             ...val,
             maxPages: obj.maxPages,
             allData: newData,
-            loading: false,
+            loading: null,
             hasMore: hasMore,
             page: hasMore ? val.page + 1 : val.page,
           };
@@ -95,7 +99,7 @@ export function PaginatedList<T>(props: {
       sortedDescending: false,
       allData: [],
       maxPages: 0,
-      loading: false,
+      loading: null,
       hasMore: true,
     });
   }, []);
@@ -104,7 +108,7 @@ export function PaginatedList<T>(props: {
 
   // Load first page on mount, when getPage changes, or after reset
   useEffect(() => {
-    if (state.allData.length === 0 && state.hasMore && !state.loading) {
+    if (state.allData.length === 0) {
       loadNextPageRef.current?.();
     }
   }, [props.getPage, state.allData.length, state.hasMore, state.loading]);

@@ -107,7 +107,7 @@ export function useSolanaChain(enabled: boolean): Chain<SolanaSigner> {
     return {
       chain: {
         name: 'Solana',
-        icon: '/icons/chains/solana.svg',
+        icon: '/icons/chains/SOLANA.svg',
       },
       wallet:
         wallet == null
