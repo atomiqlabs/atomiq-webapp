@@ -130,7 +130,11 @@
     @apply opacity-50 ml-1;
   }
   .sc-link {
-    @apply text-white no-underline opacity-50 hover:opacity-75 transition-all pl-3 ml-3;
-    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    @apply text-white no-underline opacity-50 hover:opacity-75 transition-all;
+
+    &:not(:first-child) {
+      @apply pl-3 ml-3;
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+    }
   }
 }

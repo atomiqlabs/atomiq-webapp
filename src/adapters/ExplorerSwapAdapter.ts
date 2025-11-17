@@ -1,0 +1,155 @@
+import { SwapDirection, SwapType } from '@atomiqlabs/sdk';
+import { TokenResolver, Tokens } from '../FEConstants';
+
+export interface ExplorerSwapData {
+  chainId?: string;
+  paymentHash: string;
+  timestampInit: number;
+  timestampFinish: number;
+  type: 'LN' | 'CHAIN';
+  direction: 'ToBTC' | 'FromBTC';
+  kind: number;
+  nonce: string;
+  lpWallet: string;
+  clientWallet: string;
+  token: string;
+  tokenName: string;
+  tokenAmount: string;
+  rawAmount: string;
+  txInit: string;
+  txFinish: string;
+  btcTx: string;
+  btcOutput?: number;
+  btcAddress?: string;
+  btcAmount?: string;
+  btcRawAmount?: string;
+  btcInAddresses?: string[];
+  success: boolean;
+  finished: boolean;
+  price: string;
+  usdValue: string;
+  id: string;
+  _tokenAmount: number;
+  _rawAmount: number;
+  _usdValue: number;
+  _btcRawAmount: number;
+  _btcAmount: number;
+}
+
+/**
+ * Adapter to make explorer backend data compatible with TransactionEntry component
+ * Duck-typed to match ISwap interface without strict implementation
+ */
+export class ExplorerSwapAdapter {
+  private data: ExplorerSwapData;
+  public createdAt: number;
+
+  constructor(data: ExplorerSwapData) {
+    this.data = data;
+    this.createdAt = data.timestampInit * 1000; // Convert to milliseconds
+  }
+
+  getInput() {
+    const chainId = this.data.chainId ?? 'SOLANA';
+
+    if (this.data.direction === 'ToBTC') {
+      return {
+        token: TokenResolver[chainId].getToken(this.data.token),
+        amount: this.data.tokenAmount,
+      };
+    } else {
+      return {
+        token: this.data.type === 'CHAIN' ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN,
+        amount: this.data.btcAmount || '???',
+      };
+    }
+  }
+
+  getOutput() {
+    const chainId = this.data.chainId ?? 'SOLANA';
+
+    if (this.data.direction === 'ToBTC') {
+      return {
+        token: this.data.type === 'CHAIN' ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN,
+        amount: this.data.btcAmount || '???',
+      };
+    } else {
+      return {
+        token: TokenResolver[chainId].getToken(this.data.token),
+        amount: this.data.tokenAmount,
+      };
+    }
+  }
+
+  getInputTxId() {
+    if (this.data.direction === 'ToBTC') {
+      return this.data.txInit;
+    } else {
+      return this.data.type === 'CHAIN' ? this.data.btcTx : this.data.paymentHash;
+    }
+  }
+
+  getOutputTxId() {
+    if (this.data.direction === 'ToBTC') {
+      return this.data.type === 'CHAIN' ? this.data.btcTx : this.data.paymentHash;
+    } else {
+      return this.data.txInit;
+    }
+  }
+
+  getOutputAddress() {
+    if (this.data.direction === 'ToBTC') {
+      return this.data.type === 'CHAIN' ? this.data.btcAddress || 'Unknown' : 'Unknown';
+    } else {
+      return this.data.clientWallet;
+    }
+  }
+
+  getDirection() {
+    return this.data.direction === 'ToBTC' ? SwapDirection.TO_BTC : SwapDirection.FROM_BTC;
+  }
+
+  getId() {
+    return this.data.id;
+  }
+
+  requiresAction() {
+    // Explorer swaps don't require action from the viewer
+    return false;
+  }
+
+  isSuccessful() {
+    return this.data.success && this.data.finished;
+  }
+
+  isFailed() {
+    return !this.data.success && this.data.finished;
+  }
+
+  isQuoteSoftExpired() {
+    return false;
+  }
+
+  isInitiated() {
+    return true;
+  }
+
+  getType() {
+    // Return a generic type since we don't have enough info
+    return SwapType.FROM_BTC;
+  }
+
+  // For instanceof checks in TransactionEntry
+  _getInitiator() {
+    return this.data.direction === 'ToBTC' ? this.data.clientWallet : '';
+  }
+
+  // Additional methods to support instanceof checks
+  isRefundable() {
+    return false;
+  }
+
+  isClaimable() {
+    return false;
+  }
+}
