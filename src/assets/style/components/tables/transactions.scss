@@ -15,8 +15,8 @@
   }
 
   // Add separator between last alert item and first non-alert item
-  .list-group-item:has(.history-entry__alert) {
-    & + .list-group-item:not(:has(.history-entry__alert)) {
+  .list-group-item:has(.transaction-entry__alert) {
+    & + .list-group-item:not(:has(.transaction-entry__alert)) {
       margin-top: 32px;
       position: relative;
 
@@ -40,7 +40,7 @@
   }
 }
 
-.history-entry {
+.transaction-entry {
   @apply justify-between;
 
   &.is-clickable {
@@ -100,33 +100,37 @@
     }
   }
 
-  &__token {
-    @apply flex items-center;
-
-    &__data {
-      @apply flex flex-col items-start;
-    }
-
-    &__amount {
-      @apply font-medium;
-    }
-
-    &__address {
-      @apply text-[14px] flex gap-1 items-center;
-
-      .sc-sub {
-        @apply opacity-50;
-      }
-      .sc-address {
-        @apply opacity-75;
-      }
-    }
-    .icon {
-      @apply opacity-50 ml-1;
-    }
-  }
-
   &__alert {
     @apply w-[8px] h-[8px] bg-blue rounded-full absolute left-2 top-[10px] m-0 pointer-events-none z-10;
+  }
+}
+
+.transaction-token {
+  @apply flex items-center;
+
+  &__data {
+    @apply flex flex-col items-start;
+  }
+
+  &__amount {
+    @apply font-medium;
+  }
+
+  &__address {
+    @apply text-[14px] flex gap-1 items-center;
+
+    .sc-sub {
+      @apply opacity-50;
+    }
+    .sc-address {
+      @apply opacity-75;
+    }
+  }
+  .icon {
+    @apply opacity-50 ml-1;
+  }
+  .sc-link {
+    @apply text-white no-underline opacity-50 hover:opacity-75 transition-all pl-3 ml-3;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
   }
 }

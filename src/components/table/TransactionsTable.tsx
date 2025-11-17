@@ -13,7 +13,7 @@ export function TransactionsTable({ data, itemsPerPage = 100 }: TransactionsTabl
   return (
     <div className="transactions-table">
       <div className="transactions-table__head">
-        <Row className="history-entry gx-1 gy-1">
+        <Row className="transaction-entry gx-1 gy-1">
           <Col md={4} sm={12} className="is-token">
             From
           </Col>

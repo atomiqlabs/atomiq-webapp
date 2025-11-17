@@ -5,7 +5,7 @@ import { Button, Col, Row } from 'react-bootstrap';
 import * as React from 'react';
 import { usePricing } from '../../hooks/pricing/usePricing';
 import { useChain } from '../../hooks/chains/useChain';
-import { HistoryToken } from './HistoryToken';
+import { TransactionToken } from './TransactionToken';
 import { TextPill } from '../common/TextPill';
 import { BaseButton } from '../common/BaseButton';
 
@@ -97,25 +97,29 @@ export function TransactionEntry(props: { swap: ISwap }) {
     <TextPill variant="warning">Pending</TextPill>
   );
   return (
-    <Row className="history-entry is-clickable gx-1 gy-1" onClick={navigateToSwap}>
-      {props.swap.requiresAction() && <span className="history-entry__alert"></span>}
+    <Row className="transaction-entry is-clickable gx-1 gy-1" onClick={navigateToSwap}>
+      {props.swap.requiresAction() && <span className="transaction-entry__alert"></span>}
       <Col md={4} sm={12} className="is-token">
-        <HistoryToken
+        <TransactionToken
           token={input.token}
           amount={input.amount}
           address={inputAddress}
           label="from"
+          explorer={inputExplorer}
+          txId={txIdInput}
         />
         <div className="is-arrow">
           <i className="icon icon-arrow-right"></i>
         </div>
       </Col>
       <Col md={3} sm={12} className="is-token">
-        <HistoryToken
+        <TransactionToken
           token={output.token}
           amount={output.amount}
           address={outputAddress}
           label="to"
+          explorer={outputExplorer}
+          txId={txIdOutput}
         />
       </Col>
       <Col md={1} sm={2} className="is-value is-right">

@@ -7,9 +7,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { SwapperContext } from './context/SwapperContext';
 import { Swapper } from '@atomiqlabs/sdk';
 import { History } from './pages/History';
-import {
-  Spinner,
-} from 'react-bootstrap';
+import { Spinner } from 'react-bootstrap';
 import { MainNavigation } from './components/layout/MainNavigation';
 import { FAQ } from './pages/FAQ';
 import { About } from './pages/About';
@@ -138,7 +136,7 @@ function WrappedApp() {
               <Route path="gas" element={<SwapForGas />} />
               <Route path="faq" element={<FAQ />} />
               <Route path="about" element={<About />} />
-              <Route path="46jh456f45f" element={<SwapExplorer />} />
+              <Route path="explorer" element={<SwapExplorer />} />
               <Route path="referral" element={<Affiliate />} />
             </Route>
           </Routes>
