@@ -154,7 +154,7 @@ export function PaginatedList<T>(props: {
           <ListGroup variant="flush">{tbody}</ListGroup>
         </Card>
         {loading && (
-          <div className="table-loading-pane d-flex align-items-center justify-content-center flex-row gap-3 mt-5">
+          <div className="table-loading-pane d-flex align-items-center justify-content-center flex-row gap-3 mt-5 mb-5 text-white">
             <Spinner animation="border" role="status" style={{ width: '24px', height: '24px' }} />
             <span>Loading {state.allData.length > 0 ? 'more' : ''} Swaps...</span>
           </div>
