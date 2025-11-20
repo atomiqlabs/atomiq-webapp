@@ -6,7 +6,7 @@ import { BackendDataPaginatedList } from '../components/list/BackendDataPaginate
 import ValidatedInput, { ValidatedInputRef } from '../components/ValidatedInput';
 import { ChainSwapType } from '@atomiqlabs/sdk';
 import { TransactionEntry } from '../components/history/TransactionEntry';
-import { ExplorerSwapAdapter } from '../adapters/ExplorerSwapAdapter';
+import { explorerSwapToProps, ExplorerSwapData } from '../adapters/transactionAdapters';
 
 const timeframes = ['24h', '7d', '30d'];
 
@@ -178,50 +178,8 @@ export function SwapExplorer() {
             </Col>
           </Row>
         </div>
-        <BackendDataPaginatedList<{
-          chainId?: string;
-          paymentHash: string;
-
-          timestampInit: number;
-          timestampFinish: number;
-
-          type: 'LN' | 'CHAIN';
-          direction: 'ToBTC' | 'FromBTC';
-          kind: ChainSwapType | -1;
-          nonce: string;
-
-          lpWallet: string;
-          clientWallet: string;
-
-          token: string;
-          tokenName: string;
-          tokenAmount: string;
-          rawAmount: string;
-
-          txInit: string;
-          txFinish: string;
-
-          btcTx: string;
-          btcOutput?: number;
-          btcAddress?: string;
-          btcAmount?: string;
-          btcRawAmount?: string;
-          btcInAddresses?: string[];
-
-          success: boolean;
-          finished: boolean;
-
-          price: string;
-          usdValue: string;
-
-          id: string;
-          _tokenAmount: number;
-          _rawAmount: number;
-          _usdValue: number;
-          _btcRawAmount: number;
-          _btcAmount: number;
-        }>
-          renderer={(row) => <TransactionEntry swap={new ExplorerSwapAdapter(row) as any} />}
+        <BackendDataPaginatedList<ExplorerSwapData>
+          renderer={(row) => <TransactionEntry {...explorerSwapToProps(row)} />}
           endpoint={FEConstants.statsUrl + '/GetSwapList'}
           itemsPerPage={10}
           refreshFunc={refreshTable}

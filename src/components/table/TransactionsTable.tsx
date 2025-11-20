@@ -3,6 +3,7 @@ import { Col, Row } from 'react-bootstrap';
 import { ArrayDataPaginatedList } from '../list/ArrayDataPaginatedList';
 import { ISwap } from '@atomiqlabs/sdk';
 import { TransactionEntry } from '../history/TransactionEntry';
+import { swapToProps } from '../../adapters/transactionAdapters';
 
 interface TransactionsTableProps {
   data: ISwap[];
@@ -32,7 +33,7 @@ export function TransactionsTable({ data, itemsPerPage = 100 }: TransactionsTabl
         </Row>
       </div>
       <ArrayDataPaginatedList<ISwap>
-        renderer={(row) => <TransactionEntry swap={row} />}
+        renderer={(row) => <TransactionEntry {...swapToProps(row)} />}
         data={data}
         itemsPerPage={itemsPerPage}
       />
