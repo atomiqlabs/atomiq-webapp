@@ -37,11 +37,11 @@ export function ExplorerTotals({
       <div className="explorer-totals__header">
         <div className="explorer-totals__header__content">
           <div className="explorer-totals__header__content__title">{title}</div>
-          <div className="explorer-totals__header__content__count">
-            <div className="sc-amount">{loading ? '...' : count}</div>
+          <div className={`explorer-totals__header__content__count ${loading ? 'is-loading' : ''}`}>
+            <div className="sc-amount">{loading ? '' : count}</div>
             <div className="sc-difference">
               {loading ? (
-                '...'
+                ''
               ) : (
                 <>
                   {formatDifference(difference)}

@@ -20,6 +20,10 @@
 
       &__count {
         @apply flex gap-2 text-[16px] leading-none items-center;
+
+        &.is-loading {
+          @apply w-24 h-[20px] animate-pulse rounded bg-white/20;
+        }
       }
     }
 
