@@ -65,3 +65,23 @@
     @apply rounded-b-[12px] pt-4;
   }
 }
+
+.explorer-filter {
+  @apply flex justify-between;
+
+  &__search {
+    @apply flex gap-2;
+
+    .form-control {
+      @apply w-[460px] h-12 bg-white/10 border-0;
+
+      &::placeholder {
+        @apply text-white/30;
+      }
+    }
+
+    .base-button {
+      @apply w-[52px];
+    }
+  }
+}

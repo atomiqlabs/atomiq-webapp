@@ -1,4 +1,7 @@
 .transactions-table {
+  & {
+    @apply mb-20;
+  }
   .list-group {
     @apply gap-[10px];
   }

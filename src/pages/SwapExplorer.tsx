@@ -8,6 +8,7 @@ import { ChainSwapType } from '@atomiqlabs/sdk';
 import { TransactionEntry } from '../components/history/TransactionEntry';
 import { explorerSwapToProps, ExplorerSwapData } from '../adapters/transactionAdapters';
 import { ExplorerTotals } from '../components/explorer/ExplorerTotals';
+import { BaseButton } from '../components/common/BaseButton';
 
 export function SwapExplorer() {
   const refreshTable = useRef<() => void>(null);
@@ -88,26 +89,36 @@ export function SwapExplorer() {
 
       <h1 className="page-title">Explorer</h1>
 
-      <div className="d-flex flex-row mb-3">
-        <ValidatedInput
-          className="width-300px"
-          type={'text'}
-          placeholder={'Search by tx ID or wallet address'}
-          inputRef={searchRef}
-        />
-        <Button
-          className="ms-2"
-          onClick={() => {
-            const val = searchRef.current.getValue();
-            if (val === '') {
-              setSearch(null);
-            } else {
-              setSearch(val);
-            }
-          }}
-        >
-          Search
-        </Button>
+      <div className="explorer-filter">
+        <div className="explorer-filter__buttons">TODO</div>
+        <div className="explorer-filter__search">
+          <ValidatedInput
+            type={'text'}
+            placeholder={'Search by tx ID or wallet address'}
+            inputRef={searchRef}
+            onSubmit={() => {
+              const val = searchRef.current.getValue();
+              if (val === '') {
+                setSearch(null);
+              } else {
+                setSearch(val);
+              }
+            }}
+          />
+          <BaseButton
+            variant="primary"
+            customIcon="search"
+            textSize="sm"
+            onClick={() => {
+              const val = searchRef.current.getValue();
+              if (val === '') {
+                setSearch(null);
+              } else {
+                setSearch(val);
+              }
+            }}
+          ></BaseButton>
+        </div>
       </div>
 
       <div className="transactions-table">

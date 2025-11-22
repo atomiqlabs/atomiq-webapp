@@ -11,7 +11,7 @@ export type BaseButtonVariantProps =
   | 'border-only';
 
 interface BaseButtonProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
   onClick?: () => void;
   size?: 'smaller' | 'small' | 'large' | 'lg' | 'sm' | 'md';
