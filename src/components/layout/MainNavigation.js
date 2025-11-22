@@ -11,7 +11,7 @@ import { close } from 'react-icons-kit/fa/close';
 import { useLocation } from 'react-router-dom';
 import { SocialFooter } from './SocialFooter';
 import { SwapperContext } from '../../context/SwapperContext';
-import { useAnchorNavigate } from "../../hooks/navigation/useAnchorNavigate";
+import { useAnchorNavigate } from '../../hooks/navigation/useAnchorNavigate';
 const mobileNavItems = [
     { link: '/', icon: 'swap-nav' },
     {
@@ -42,9 +42,7 @@ export function MainNavigation({ affiliateLink }) {
         };
     }, []);
     React.useEffect(() => {
-        console.log('MainNavigation: swapper is', swapper);
         if (swapper == null) {
-            console.log('MainNavigation: swapper is null, returning early');
             return;
         }
         const updateActionCount = async () => {
@@ -64,7 +62,6 @@ export function MainNavigation({ affiliateLink }) {
             swapper.off('swapState', listener);
         };
     }, [swapper]);
-    console.log('actionRequiredCount', actionRequiredCount);
     const navItems = [
         { link: '/', icon: 'swap-nav', title: 'Swap' },
         {

@@ -1,0 +1,57 @@
+.explorer-totals-wrapper {
+  @apply flex flex-col gap-2 mb-12;
+}
+
+.explorer-totals {
+  @apply bg-[#180931] text-white p-6 rounded-[12px] gap-4;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  &__header {
+    & {
+      @apply flex justify-between items-center;
+    }
+
+    &__content {
+      @apply flex flex-col gap-[12px] items-start;
+
+      &__title {
+        @apply font-semibold opacity-75 uppercase text-[12px] leading-none;
+      }
+
+      &__count {
+        @apply flex gap-2 text-[16px] leading-none items-center;
+      }
+    }
+
+    .sc-amount {
+      @apply font-semibold;
+    }
+
+    .sc-difference {
+      @apply text-green;
+    }
+    .badge {
+      @apply ml-2;
+    }
+  }
+
+  &__more {
+    @apply text-[14px] w-[40px] h-[40px] flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 cursor-pointer;
+
+    .icon {
+      @apply transition-all;
+
+      &.is-rotated {
+        transform: rotate(-180deg);
+      }
+    }
+  }
+
+  &__body {
+    @apply pt-0;
+  }
+
+  &.is-expanded {
+    @apply rounded-b-[12px] pt-4;
+  }
+}

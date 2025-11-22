@@ -7,16 +7,11 @@ import ValidatedInput, { ValidatedInputRef } from '../components/ValidatedInput'
 import { ChainSwapType } from '@atomiqlabs/sdk';
 import { TransactionEntry } from '../components/history/TransactionEntry';
 import { explorerSwapToProps, ExplorerSwapData } from '../adapters/transactionAdapters';
-
-const timeframes = ['24h', '7d', '30d'];
+import { ExplorerTotals } from '../components/explorer/ExplorerTotals';
 
 export function SwapExplorer() {
   const refreshTable = useRef<() => void>(null);
 
-  const [displayTimeframeIndex, setDisplayTimeframeIndex] = useState<number>(0);
-  const changeTimeframe = () =>
-    setDisplayTimeframeIndex((prevState) => (prevState + 1) % timeframes.length);
-  const displayTimeframe = timeframes[displayTimeframeIndex];
   const [statsLoading, setStatsLoading] = useState<boolean>(false);
   const [stats, setStats] = useState<{
     totalSwapCount: number;
@@ -70,69 +65,26 @@ export function SwapExplorer() {
 
   return (
     <div className="container">
-      <Row>
-        <Col xs={12} md={6} className="pb-3">
-          <Card className="px-3 pt-3 bg-dark bg-opacity-25 height-100 border-0">
-            <span className="">Total swaps</span>
-            <div className={'flex-row align-items-baseline' + (statsLoading ? '' : ' d-flex')}>
-              {statsLoading ? (
-                <h3>
-                  <Placeholder xs={6} />
-                </h3>
-              ) : (
-                <>
-                  <h3 className="">{stats?.totalSwapCount}</h3>
-                  <h6
-                    className="ms-1 text-success d-flex flex-row align-items-center cursor-pointer"
-                    onClick={changeTimeframe}
-                  >
-                    <span>+{stats?.timeframes?.[displayTimeframe]?.count}</span>
-                    <Badge className="font-smallest ms-1 text-dark" bg="light">
-                      {displayTimeframe}
-                    </Badge>
-                  </h6>
-                </>
-              )}
-            </div>
-          </Card>
-        </Col>
-        <Col xs={12} md={6} className="pb-3">
-          <Card className="px-3 pt-3 bg-dark bg-opacity-25 height-100 border-0">
-            <span>Total volume</span>
-            <div className={'flex-row align-items-baseline' + (statsLoading ? '' : ' d-flex')}>
-              {statsLoading ? (
-                <h3>
-                  <Placeholder xs={6} />
-                </h3>
-              ) : (
-                <>
-                  <h3 className="">
-                    {stats?.totalUsdVolume == null
-                      ? null
-                      : FEConstants.USDollar.format(stats.totalUsdVolume)}
-                  </h3>
-                  <h6
-                    className="ms-1 text-success d-flex flex-row align-items-center cursor-pointer"
-                    onClick={changeTimeframe}
-                  >
-                    <span>
-                      +
-                      {stats?.timeframes?.[displayTimeframe]?.volumeUsd == null
-                        ? null
-                        : FEConstants.USDollar.format(
-                            stats?.timeframes?.[displayTimeframe]?.volumeUsd
-                          )}
-                    </span>
-                    <Badge className="font-smallest ms-1 text-dark" bg="light">
-                      {displayTimeframe}
-                    </Badge>
-                  </h6>
-                </>
-              )}
-            </div>
-          </Card>
-        </Col>
-      </Row>
+      <div className="explorer-totals-wrapper">
+        <ExplorerTotals
+          title="Total swaps"
+          count={stats?.totalSwapCount}
+          getDifference={(timeframe) => stats?.timeframes?.[timeframe]?.count}
+          loading={statsLoading}
+        />
+        <ExplorerTotals
+          title="Total volume"
+          count={
+            stats?.totalUsdVolume == null ? null : FEConstants.USDollar.format(stats.totalUsdVolume)
+          }
+          getDifference={(timeframe) =>
+            stats?.timeframes?.[timeframe]?.volumeUsd == null
+              ? null
+              : FEConstants.USDollar.format(stats?.timeframes?.[timeframe]?.volumeUsd)
+          }
+          loading={statsLoading}
+        />
+      </div>
 
       <h1 className="page-title">Explorer</h1>
 

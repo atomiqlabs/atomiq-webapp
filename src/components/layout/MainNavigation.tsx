@@ -10,7 +10,7 @@ import { close } from 'react-icons-kit/fa/close';
 import { useLocation } from 'react-router-dom';
 import { SocialFooter } from './SocialFooter';
 import { SwapperContext } from '../../context/SwapperContext';
-import {useAnchorNavigate} from "../../hooks/navigation/useAnchorNavigate";
+import { useAnchorNavigate } from '../../hooks/navigation/useAnchorNavigate';
 
 interface MainNavigationProps {
   affiliateLink?: string;
@@ -51,9 +51,7 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
   }, []);
 
   React.useEffect(() => {
-    console.log('MainNavigation: swapper is', swapper);
     if (swapper == null) {
-      console.log('MainNavigation: swapper is null, returning early');
       return;
     }
 
@@ -80,8 +78,6 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
       swapper.off('swapState', listener);
     };
   }, [swapper]);
-
-  console.log('actionRequiredCount', actionRequiredCount);
 
   const navItems = [
     { link: '/', icon: 'swap-nav', title: 'Swap' },
