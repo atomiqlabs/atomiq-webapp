@@ -28,7 +28,17 @@
     }
 
     .sc-difference {
-      @apply text-green;
+      @apply text-green flex gap-2 items-center;
+
+      .dropdown {
+        & {
+          @apply h-[20px] uppercase;
+        }
+
+        .dropdown-toggle {
+          @apply px-[6px] py-0 bg-white/10 text-[14px] gap-[2px] uppercase;
+        }
+      }
     }
     .badge {
       @apply ml-2;
@@ -36,7 +46,7 @@
   }
 
   &__more {
-    @apply text-[14px] w-[40px] h-[40px] flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 cursor-pointer;
+    @apply text-[14px] w-[40px] h-[40px] flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 cursor-pointer transition-all;
 
     .icon {
       @apply transition-all;

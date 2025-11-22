@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Badge, Collapse } from 'react-bootstrap';
+import { Collapse, Dropdown } from 'react-bootstrap';
 
 interface ExplorerTotalsProps {
   title: string;
@@ -17,18 +17,13 @@ export function ExplorerTotals({
   loading = false,
   timeframes = ['24h', '7d', '30d'],
 }: ExplorerTotalsProps) {
-  const [displayTimeframeIndex, setDisplayTimeframeIndex] = useState<number>(0);
+  const [displayTimeframe, setDisplayTimeframe] = useState<string>(timeframes[0]);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-
-  const changeTimeframe = () => {
-    setDisplayTimeframeIndex((prevState) => (prevState + 1) % timeframes.length);
-  };
 
   const toggleExpanded = () => {
     setIsExpanded((prev) => !prev);
   };
 
-  const displayTimeframe = timeframes[displayTimeframeIndex];
   const difference = getDifference(displayTimeframe);
 
   const formatDifference = (diff: number | string | null | undefined) => {
@@ -44,15 +39,28 @@ export function ExplorerTotals({
           <div className="explorer-totals__header__content__title">{title}</div>
           <div className="explorer-totals__header__content__count">
             <div className="sc-amount">{loading ? '...' : count}</div>
-            <div className="sc-difference cursor-pointer" onClick={changeTimeframe}>
+            <div className="sc-difference">
               {loading ? (
                 '...'
               ) : (
                 <>
                   {formatDifference(difference)}
-                  <Badge className="font-smallest text-dark" bg="light">
-                    {displayTimeframe}
-                  </Badge>
+                  <Dropdown onSelect={(eventKey) => setDisplayTimeframe(eventKey)}>
+                    <Dropdown.Toggle variant="dark" size="sm">
+                      {displayTimeframe}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      {timeframes.map((timeframe) => (
+                        <Dropdown.Item
+                          key={timeframe}
+                          eventKey={timeframe}
+                          active={timeframe === displayTimeframe}
+                        >
+                          {timeframe}
+                        </Dropdown.Item>
+                      ))}
+                    </Dropdown.Menu>
+                  </Dropdown>
                 </>
               )}
             </div>

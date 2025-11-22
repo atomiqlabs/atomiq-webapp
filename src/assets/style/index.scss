@@ -533,3 +533,9 @@ td {
     opacity: 1;
   }
 }
+
+.dropdown-menu {
+  --bs-dropdown-bg: #302246;
+  --bs-dropdown-color: #fff;
+  --bs-dropdown-link-color: #fff;
+}
