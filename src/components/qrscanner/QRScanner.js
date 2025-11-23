@@ -9,10 +9,17 @@ export function QRScanner(props) {
     const callbackRef = useRef(null);
     const qrScannerRef = useRef(null);
     const [error, setError] = useState();
+    const [loading, setLoading] = useState(true);
     useEffect(() => {
         callbackRef.current = props.onResult;
     }, [props.onResult]);
+    useEffect(() => {
+        if (props.onLoadingChange) {
+            props.onLoadingChange(loading);
+        }
+    }, [loading, props.onLoadingChange]);
     const startCamera = useCallback(() => {
+        setLoading(true);
         if (qrScannerRef.current != null)
             qrScannerRef.current.stop();
         qrScannerRef.current = new QrScanner(videoRef.current, (result) => callbackRef.current(result.data, null), {
@@ -24,13 +31,14 @@ export function QRScanner(props) {
         qrScannerRef.current
             .start()
             .then(() => {
-            //camera started
+            setLoading(false);
         })
             .catch((err) => {
             console.error(err);
             setError(err);
+            setLoading(false);
         });
-    }, []);
+    }, [props.camera]);
     useEffect(() => {
         return () => {
             if (qrScannerRef.current != null) {
@@ -41,7 +49,7 @@ export function QRScanner(props) {
     }, []);
     useEffect(() => {
         startCamera();
-    }, [props.camera]);
+    }, [startCamera]);
     return (_jsxs(_Fragment, { children: [_jsxs(Modal, { contentClassName: "text-white bg-dark", size: "sm", centered: true, show: !!error, onHide: () => setError(null), dialogClassName: "min-width-400px", children: [_jsx(Modal.Header, { className: "border-0", children: _jsxs(Modal.Title, { id: "contained-modal-title-vcenter", className: "d-flex flex-grow-1", children: [_jsx(Icon, { icon: info, className: "d-flex align-items-center me-2" }), " Camera error", _jsx(CloseButton, { className: "ms-auto", variant: "white", onClick: () => setError(null) })] }) }), _jsx(Modal.Body, { children: _jsxs("p", { children: ["atomiq.exchange cannot access your camera, please make sure you've", ' ', _jsx("b", { children: "allowed camera access permission" }), " to your wallet app & to atomiq.exchange website."] }) }), _jsxs(Modal.Footer, { className: "border-0 d-flex flex-column", children: [_jsx(Button, { variant: "primary", className: "flex-grow-1 width-fill", onClick: () => {
                                     setError(null);
                                     startCamera();

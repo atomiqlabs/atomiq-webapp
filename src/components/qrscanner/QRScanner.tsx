@@ -8,18 +8,27 @@ import { Button, CloseButton, Modal } from 'react-bootstrap';
 export function QRScanner(props: {
   onResult: (data: string, err) => void;
   camera: 'user' | 'environment';
+  onLoadingChange?: (loading: boolean) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const callbackRef = useRef<(data: string, err) => void>(null);
   const qrScannerRef = useRef<QrScanner>(null);
 
   const [error, setError] = useState<Error>();
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     callbackRef.current = props.onResult;
   }, [props.onResult]);
 
+  useEffect(() => {
+    if (props.onLoadingChange) {
+      props.onLoadingChange(loading);
+    }
+  }, [loading, props.onLoadingChange]);
+
   const startCamera = useCallback(() => {
+    setLoading(true);
     if (qrScannerRef.current != null) qrScannerRef.current.stop();
     qrScannerRef.current = new QrScanner(
       videoRef.current,
@@ -35,13 +44,14 @@ export function QRScanner(props: {
     qrScannerRef.current
       .start()
       .then(() => {
-        //camera started
+        setLoading(false);
       })
       .catch((err) => {
         console.error(err);
         setError(err);
+        setLoading(false);
       });
-  }, []);
+  }, [props.camera]);
 
   useEffect(() => {
     return () => {
@@ -54,7 +64,7 @@ export function QRScanner(props: {
 
   useEffect(() => {
     startCamera();
-  }, [props.camera]);
+  }, [startCamera]);
 
   return (
     <>
