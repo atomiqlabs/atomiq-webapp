@@ -53,11 +53,20 @@ export function BackendDataPaginatedList(props) {
                     params[key] = props.additionalData[key];
                 }
             }
-            const httpResponse = await fetch(props.endpoint +
-                '?' +
-                Object.keys(params)
-                    .map((e) => e + '=' + encodeURIComponent('' + params[e]))
-                    .join('&'), {
+            const queryParams = [];
+            for (const key in params) {
+                const value = params[key];
+                if (Array.isArray(value)) {
+                    // For arrays, add multiple params with the same key
+                    value.forEach((item) => {
+                        queryParams.push(`${key}=${encodeURIComponent('' + item)}`);
+                    });
+                }
+                else {
+                    queryParams.push(`${key}=${encodeURIComponent('' + value)}`);
+                }
+            }
+            const httpResponse = await fetch(props.endpoint + '?' + queryParams.join('&'), {
                 signal: _abortSignal.signal,
             });
             if (httpResponse == null || httpResponse.status !== 200) {

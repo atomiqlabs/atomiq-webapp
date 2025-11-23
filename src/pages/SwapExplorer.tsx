@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Badge, Button, Card, Col, Placeholder, Row } from 'react-bootstrap';
+import { Badge, Button, Card, Col, Dropdown, Form, Placeholder, Row } from 'react-bootstrap';
 import { FEConstants } from '../FEConstants';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BackendDataPaginatedList } from '../components/list/BackendDataPaginatedList';
@@ -10,9 +10,28 @@ import { explorerSwapToProps, ExplorerSwapData } from '../adapters/transactionAd
 import { ExplorerTotals } from '../components/explorer/ExplorerTotals';
 import { BaseButton } from '../components/common/BaseButton';
 
+const CHAINS = ['BITCOIN', 'LIGHTNING', 'SOLANA', 'STARKNET', 'BOTANIX'];
+
+const formatChainName = (chain: string) => {
+  return chain.charAt(0) + chain.slice(1).toLowerCase();
+};
+
+const getChainIcon = (chain: string) => {
+  const iconMap: { [key: string]: string } = {
+    BITCOIN: '/icons/chains/BITCOIN.svg',
+    LIGHTNING: '/icons/chains/LIGHTNING.svg',
+    SOLANA: '/icons/chains/SOLANA.svg',
+    STARKNET: '/icons/chains/STARKNET.svg',
+    BOTANIX: '/icons/chains/BITCOIN.svg', // Using Bitcoin icon for Botanix
+  };
+  return iconMap[chain];
+};
+
 export function SwapExplorer() {
   const refreshTable = useRef<() => void>(null);
 
+  const [selectedChains, setSelectedChains] = useState<string[]>([]);
+  const [showChainDropdown, setShowChainDropdown] = useState<boolean>(false);
   const [statsLoading, setStatsLoading] = useState<boolean>(false);
   const [stats, setStats] = useState<{
     totalSwapCount: number;
@@ -58,11 +77,18 @@ export function SwapExplorer() {
     return () => abortController.abort();
   }, []);
 
+  const toggleChain = (chain: string) => {
+    setSelectedChains((prev) =>
+      prev.includes(chain) ? prev.filter((c) => c !== chain) : [...prev, chain]
+    );
+  };
+
   const additionalData = useMemo(() => {
     const additionalData: any = {};
     if (search != null) additionalData.search = search;
+    if (selectedChains.length > 0) additionalData.chain = selectedChains;
     return additionalData;
-  }, [search]);
+  }, [search, selectedChains]);
 
   return (
     <div className="container">
@@ -90,7 +116,63 @@ export function SwapExplorer() {
       <h1 className="page-title">Explorer</h1>
 
       <div className="explorer-filter">
-        <div className="explorer-filter__buttons">TODO</div>
+        <div className="explorer-filter__buttons">
+          <Dropdown
+            show={showChainDropdown}
+            onToggle={(val) => setShowChainDropdown(val)}
+            autoClose="outside"
+          >
+            <Dropdown.Toggle id="chain-filter-dropdown">
+              {selectedChains.length > 0 && (
+                <span className="sc-count">{selectedChains.length}</span>
+              )}
+              All chains
+              {selectedChains.length > 0 && (
+                <span
+                  className="clear-filter icon icon-circle-x-clear"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedChains([]);
+                  }}
+                ></span>
+              )}
+            </Dropdown.Toggle>
+            {showChainDropdown && (
+              <div
+                className="currency-dropdown__overlay"
+                onClick={() => setShowChainDropdown(false)}
+              />
+            )}
+            <Dropdown.Menu>
+              {CHAINS.map((chain) => {
+                const icon = getChainIcon(chain);
+                return (
+                  <Dropdown.Item
+                    key={chain}
+                    as="div"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleChain(chain);
+                    }}
+                  >
+                    <Form.Check
+                      type="checkbox"
+                      id={`chain-${chain}`}
+                      label={
+                        <>
+                          {icon && <img src={icon} alt={chain} className="chain-icon" />}
+                          {formatChainName(chain)}
+                        </>
+                      }
+                      checked={selectedChains.includes(chain)}
+                      onChange={() => toggleChain(chain)}
+                    />
+                  </Dropdown.Item>
+                );
+              })}
+            </Dropdown.Menu>
+          </Dropdown>
+        </div>
         <div className="explorer-filter__search">
           <ValidatedInput
             type={'text'}

@@ -80,12 +80,21 @@ export function BackendDataPaginatedList<T>(props: {
           }
         }
 
+        const queryParams: string[] = [];
+        for (const key in params) {
+          const value = params[key];
+          if (Array.isArray(value)) {
+            // For arrays, add multiple params with the same key
+            value.forEach((item) => {
+              queryParams.push(`${key}=${encodeURIComponent('' + item)}`);
+            });
+          } else {
+            queryParams.push(`${key}=${encodeURIComponent('' + value)}`);
+          }
+        }
+
         const httpResponse = await fetch(
-          props.endpoint +
-            '?' +
-            Object.keys(params)
-              .map((e) => e + '=' + encodeURIComponent('' + params[e]))
-              .join('&'),
+          props.endpoint + '?' + queryParams.join('&'),
           {
             signal: _abortSignal.signal,
           }
