@@ -121,6 +121,7 @@ export function SwapExplorer() {
         />
         <ExplorerTotals
           title="Total volume"
+          shortenOnMobile={true}
           count={
             stats?.totalUsdVolume == null ? null : FEConstants.USDollar.format(stats.totalUsdVolume)
           }
