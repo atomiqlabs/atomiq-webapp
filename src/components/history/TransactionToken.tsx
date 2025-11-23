@@ -37,22 +37,22 @@ export function TransactionToken(props: {
           {props.amount} {props.token.ticker || '???'}
         </div>
         <div className="transaction-token__address">
-          {props.address && (
-            <>
-              {props.label && <span className="sc-sub">{props.label}</span>}
-              <span className="sc-address">{truncateAddress(props.address)}</span>
-              <OverlayTrigger
-                placement="top"
-                overlay={<Tooltip id="copy-address-tooltip">Copy address</Tooltip>}
-              >
-                <i
-                  className="icon icon-copy"
-                  onClick={handleCopyAddress}
-                  style={{ cursor: 'pointer' }}
-                ></i>
-              </OverlayTrigger>
-            </>
-          )}
+          <>
+            {props.label && <span className="sc-sub">{props.label}</span>}
+            <span className="sc-address">
+              {!!props.address ? truncateAddress(props.address) : 'Unknown'}
+            </span>
+            {props.address && <OverlayTrigger
+              placement="top"
+              overlay={<Tooltip id="copy-address-tooltip">Copy address</Tooltip>}
+            >
+              <i
+                className="icon icon-copy"
+                onClick={handleCopyAddress}
+                style={{ cursor: 'pointer' }}
+              ></i>
+            </OverlayTrigger>}
+          </>
           {props.explorer != null && props.txId != null && (
             <OverlayTrigger
               placement="top"

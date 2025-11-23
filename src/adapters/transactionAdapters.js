@@ -61,7 +61,7 @@ export function explorerSwapToProps(data) {
         // Output is BTC
         outputToken = data.type === 'CHAIN' ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
         outputAmount = data.btcAmount || '???';
-        outputAddress = data.type === 'CHAIN' ? data.btcAddress || 'Unknown' : 'Unknown';
+        outputAddress = data.type === 'CHAIN' ? data.btcAddress : null;
         outputTxId = data.type === 'CHAIN' ? data.btcTx : data.paymentHash;
     }
     else {
@@ -71,7 +71,7 @@ export function explorerSwapToProps(data) {
         inputAddress =
             data.type === 'CHAIN' && data.btcInAddresses != null && data.btcInAddresses.length > 0
                 ? data.btcInAddresses[0]
-                : '';
+                : null;
         inputTxId = data.type === 'CHAIN' ? data.btcTx : data.paymentHash;
         // Output is smart chain token
         outputToken = TokenResolver[data.chainId].getToken(data.token);
