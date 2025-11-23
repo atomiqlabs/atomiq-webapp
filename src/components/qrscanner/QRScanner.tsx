@@ -1,9 +1,8 @@
 import QrScanner from 'qr-scanner';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Icon from 'react-icons-kit';
-import { info } from 'react-icons-kit/fa/info';
-import { Button, CloseButton, Modal } from 'react-bootstrap';
+import { GenericModal } from '../common/GenericModal';
+import { BaseButton } from '../common/BaseButton';
 
 export function QRScanner(props: {
   onResult: (data: string, err) => void;
@@ -68,42 +67,34 @@ export function QRScanner(props: {
 
   return (
     <>
-      <Modal
-        contentClassName="text-white bg-dark"
+      <GenericModal
+        visible={!!error}
+        onClose={() => setError(null)}
+        title="Camera error"
         size="sm"
-        centered
-        show={!!error}
-        onHide={() => setError(null)}
-        dialogClassName="min-width-400px"
+        icon="invalid-error"
+        type="warning"
       >
-        <Modal.Header className="border-0">
-          <Modal.Title id="contained-modal-title-vcenter" className="d-flex flex-grow-1">
-            <Icon icon={info} className="d-flex align-items-center me-2" /> Camera error
-            <CloseButton className="ms-auto" variant="white" onClick={() => setError(null)} />
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>
-            atomiq.exchange cannot access your camera, please make sure you've{' '}
-            <b>allowed camera access permission</b> to your wallet app & to atomiq.exchange website.
-          </p>
-        </Modal.Body>
-        <Modal.Footer className="border-0 d-flex flex-column">
-          <Button
+        <p>
+          atomiq.exchange cannot access your camera, please make sure you've{' '}
+          <b>allowed camera access permission</b> to your wallet app & to atomiq.exchange website.
+        </p>
+        <div className="generic-modal__buttons">
+          <BaseButton
             variant="primary"
-            className="flex-grow-1 width-fill"
+            className="width-fill"
             onClick={() => {
               setError(null);
               startCamera();
             }}
           >
             Retry
-          </Button>
-          <Button variant="light" className="flex-grow-1 width-fill" onClick={() => setError(null)}>
+          </BaseButton>
+          <BaseButton variant="secondary" className="width-fill" onClick={() => setError(null)}>
             Cancel
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          </BaseButton>
+        </div>
+      </GenericModal>
       <video ref={videoRef} className="qr-video" style={{ height: '100%' }} />
     </>
   );

@@ -18,7 +18,13 @@
   &.generic-modal-fade-in {
     opacity: 1;
   }
-  &.is-notice {
+  &.is-warning {
+    .generic-modal-icon {
+      @apply text-red;
+    }
+  }
+  &.is-notice,
+  &.is-warning {
     @apply flex flex-col gap-[20px] text-white;
 
     .sc-text {
@@ -39,6 +45,14 @@
 
     .generic-modal-title {
       @apply text-center text-[18px] mb-3 leading-none font-semibold;
+    }
+  }
+
+  &__buttons {
+    @apply flex gap-2;
+
+    .base-button {
+      @apply font-medium;
     }
   }
 }
@@ -68,11 +82,13 @@
 }
 
 .generic-modal--md .generic-modal-wrapper {
-  max-width: 80vw;
+  max-width: 90vw;
+  width: 80vw;
 }
 
 .generic-modal--lg .generic-modal-wrapper {
-  max-width: 900px;
+  width: 900px;
+  max-width: 90vw;
 }
 
 .generic-modal-icon {

@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 
 import { copy } from 'react-icons-kit/fa/copy';
-import { exclamationTriangle } from 'react-icons-kit/fa/exclamationTriangle';
 import Icon from 'react-icons-kit';
 
 export type ValidatedInputRef = {

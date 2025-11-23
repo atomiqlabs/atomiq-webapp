@@ -10,7 +10,7 @@ export interface GenericModalProps {
   title: string;
   children: ReactNode;
   size?: 'sm' | 'md' | 'lg';
-  type?: 'default' | 'notice';
+  type?: 'default' | 'notice' | 'warning';
   icon?: string;
   enableClose?: boolean;
 }

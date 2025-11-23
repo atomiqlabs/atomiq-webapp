@@ -19,7 +19,7 @@ export function QRScannerModal(props: {
   }, [props.show]);
 
   return (
-    <GenericModal visible={props.show} onClose={props.onHide} title="Scan QR code" size="lg">
+    <GenericModal visible={props.show} onClose={props.onHide} title="Scan QR code">
       {loading && (
         <div
           className="d-flex justify-content-center align-items-center"

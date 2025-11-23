@@ -11,7 +11,7 @@ export function QRScannerModal(props) {
             setLoading(true);
         }
     }, [props.show]);
-    return (_jsxs(GenericModal, { visible: props.show, onClose: props.onHide, title: "Scan QR code", size: "lg", children: [loading && (_jsx("div", { className: "d-flex justify-content-center align-items-center", style: { minHeight: '200px' }, children: _jsx(Spinner, { animation: "border", role: "status", variant: "light", children: _jsx("span", { className: "visually-hidden", children: "Loading camera..." }) }) })), _jsx("div", { style: { display: loading ? 'none' : 'block' }, children: _jsx(QRScanner, { onResult: (result, err) => {
+    return (_jsxs(GenericModal, { visible: props.show, onClose: props.onHide, title: "Scan QR code", children: [loading && (_jsx("div", { className: "d-flex justify-content-center align-items-center", style: { minHeight: '200px' }, children: _jsx(Spinner, { animation: "border", role: "status", variant: "light", children: _jsx("span", { className: "visually-hidden", children: "Loading camera..." }) }) })), _jsx("div", { style: { display: loading ? 'none' : 'block' }, children: _jsx(QRScanner, { onResult: (result, err) => {
                         if (result != null) {
                             if (props.onScanned != null) {
                                 props.onScanned(result);
