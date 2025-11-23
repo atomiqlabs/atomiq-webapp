@@ -90,7 +90,6 @@ export function explorerSwapToProps(data) {
             ? FEConstants.btcBlockExplorer
             : null;
     return {
-        id: data.id,
         createdAt: data.timestampInit * 1000,
         requiresAction: false,
         inputToken,

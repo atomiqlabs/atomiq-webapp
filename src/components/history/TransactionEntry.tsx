@@ -7,6 +7,7 @@ import { TransactionToken } from './TransactionToken';
 import { TextPill } from '../common/TextPill';
 import { BaseButton } from '../common/BaseButton';
 import { TransactionEntryProps } from '../../adapters/transactionAdapters';
+import {useCallback} from "react";
 
 export function TransactionEntry(props: TransactionEntryProps) {
   const navigate = useNavigate();
@@ -18,12 +19,13 @@ export function TransactionEntry(props: TransactionEntryProps) {
         ? FEConstants.USDollar.format(usdValueHook)
         : null;
 
-  const navigateToSwap = (event) => {
+  const navigateToSwap = useCallback((event) => {
     if (event) {
       event.preventDefault();
     }
+    if (props.id == null) return;
     navigate('/?swapId=' + props.id);
-  };
+  }, [props.id]);
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -66,8 +68,12 @@ export function TransactionEntry(props: TransactionEntryProps) {
   ) : (
     <TextPill variant="warning">Pending</TextPill>
   );
+
+  const classNames = ['transaction-entry', 'gx-1', 'gy-1'];
+  if (props.id != null) classNames.push('is-clickable');
+
   return (
-    <Row className="transaction-entry is-clickable gx-1 gy-1" onClick={navigateToSwap}>
+    <Row className={classNames.join(' ')} onClick={navigateToSwap}>
       {props.requiresAction && <span className="transaction-entry__alert"></span>}
       <Col md={4} sm={12} className="is-token">
         <TransactionToken

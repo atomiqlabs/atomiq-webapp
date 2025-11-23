@@ -2,7 +2,7 @@ import {IFromBTCSwap, isSCToken, ISwap, IToBTCSwap, SwapDirection, toHumanReadab
 import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
 
 export interface TransactionEntryProps {
-  id: string;
+  id?: string;
   createdAt: number;
   requiresAction: boolean;
 
@@ -176,7 +176,6 @@ export function explorerSwapToProps(data: ExplorerSwapData): TransactionEntryPro
       : null;
 
   return {
-    id: data.id,
     createdAt: data.timestampInit * 1000, // Convert to milliseconds
     requiresAction: false, // Explorer swaps don't require action from the viewer
 
