@@ -1,5 +1,5 @@
-import type {FC, MouseEvent, ReactNode} from 'react';
-import { WalletModal } from './WalletModal';
+import type { FC, MouseEvent, ReactNode } from 'react';
+import { GenericModal } from '../common/GenericModal';
 import { WalletListData } from '../../providers/ChainsProvider';
 
 export const WalletListItem: FC<{
@@ -8,13 +8,7 @@ export const WalletListItem: FC<{
   isInstalled: boolean;
   onClick: (event: MouseEvent) => void;
   tabIndex?: number;
-}> = ({
-  name,
-  icon,
-  isInstalled,
-  onClick,
-  tabIndex = 0,
-}) => {
+}> = ({ name, icon, isInstalled, onClick, tabIndex = 0 }) => {
   return (
     <li>
       <button className="wallet-modal__item" onClick={onClick} tabIndex={tabIndex}>
@@ -37,7 +31,7 @@ export const WalletListItem: FC<{
   );
 };
 
-export interface ConnectWalletModalProps<T = any> {
+export interface ConnectWalletModalProps {
   visible: boolean;
   onClose: () => void;
   title: string;
@@ -59,12 +53,13 @@ export const ConnectWalletModal: FC<ConnectWalletModalProps> = ({
   container = 'body',
 }) => {
   return (
-    <WalletModal
-      className={className}
+    <GenericModal
+      className={`wallet-modal ${className}`}
       container={container}
       visible={visible}
       onClose={onClose}
       title={title}
+      size="sm"
     >
       {installedWallets.length > 0 && (
         <ul className="wallet-adapter-modal-list">
@@ -94,6 +89,6 @@ export const ConnectWalletModal: FC<ConnectWalletModalProps> = ({
           ))}
         </ul>
       )}
-    </WalletModal>
+    </GenericModal>
   );
 };

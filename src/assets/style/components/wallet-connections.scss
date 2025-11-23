@@ -2,6 +2,8 @@
 
 .wallet-connections {
   --bs-btn-active-bg: rgba(255, 255, 255, 0.2);
+  --bs-btn-hover-bg: rgba(255, 255, 255, 0.2);
+  --bs-btn-hover-color: #ffffff;
   --bs-btn-active-border-color: rgba(255, 255, 255, 0.2);
 
   @apply flex gap-[2px] justify-end items-center;

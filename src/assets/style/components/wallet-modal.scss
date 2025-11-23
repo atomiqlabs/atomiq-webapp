@@ -1,51 +1,13 @@
-.wallet-adapter-modal.wallet-modal,
-.wallet-modal {
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(5px);
-  max-width: 100%;
-  height: 100%;
-  width: 100vw;
-  margin-top: 0;
+// Wallet modal list styling
+.wallet-adapter-modal-list {
+  @apply rounded-xl overflow-hidden mb-0;
 
-  .wallet-adapter-modal-wrapper {
-    background-color: #180931;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    max-width: 437px;
-    padding: 32px;
-    margin: auto;
+  &:not(:last-child) {
+    @apply mb-3;
   }
 
-  .modal-body {
-    @apply p-0 w-full static;
-  }
-
-  .wallet-adapter-modal-overlay {
-    @apply bg-transparent;
-  }
-
-  .wallet-adapter-modal-button-close {
-    @apply bg-transparent;
-    top: 8px;
-    right: 8px;
-  }
-
-  .wallet-adapter-modal-title {
-    @apply p-0 w-full text-left;
-
-    font-family: WorkSans, sans-serif;
-    margin-bottom: 24px;
-    font-weight: 600;
-    font-size: 24px;
-    line-height: 32px;
-    letter-spacing: -1px;
-  }
-
-  .wallet-adapter-modal-list {
-    @apply rounded-xl overflow-hidden mb-3;
-
-    li:not(:last-child) {
-      @apply mb-[2px];
-    }
+  li:not(:last-child) {
+    @apply mb-[2px];
   }
 }
 
