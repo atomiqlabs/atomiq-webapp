@@ -2,6 +2,13 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Collapse, Dropdown } from 'react-bootstrap';
 
+interface BreakdownItem {
+  name: string;
+  icon?: string;
+  value: number;
+  isUsd?: boolean;
+}
+
 interface ExplorerTotalsProps {
   title: string;
   count: number | string | null | undefined;
@@ -9,6 +16,7 @@ interface ExplorerTotalsProps {
   loading?: boolean;
   timeframes?: string[];
   shortenOnMobile?: boolean;
+  breakdownData?: BreakdownItem[];
 }
 
 export function ExplorerTotals({
@@ -18,6 +26,7 @@ export function ExplorerTotals({
   loading = false,
   timeframes = ['24h', '7d', '30d'],
   shortenOnMobile = false,
+  breakdownData = [],
 }: ExplorerTotalsProps) {
   const [displayTimeframe, setDisplayTimeframe] = useState<string>(timeframes[0]);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
@@ -132,7 +141,22 @@ export function ExplorerTotals({
         </div>
       </div>
       <Collapse in={isExpanded}>
-        <div className="explorer-totals__body">Body content will go here</div>
+        <div className="explorer-totals__body">
+          {breakdownData
+            .filter((item) => item.value !== 0)
+            .map((item, index) => (
+              <div key={index} className="explorer-totals__body__item">
+                {item.icon && <img className="sc-image" src={item.icon} alt={item.name} />}
+                <div className="sc-name">{item.name}</div>
+                <div className="sc-amount">
+                  {item.isUsd
+                    ? `$${item.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    : item.value.toLocaleString('en-US')}
+                </div>
+                {/*<div className="sc-difference">+$47,908.10</div>*/}
+              </div>
+            ))}
+        </div>
       </Collapse>
     </div>
   );

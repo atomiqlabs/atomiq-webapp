@@ -4,7 +4,6 @@ import { FEConstants } from '../FEConstants';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BackendDataPaginatedList } from '../components/list/BackendDataPaginatedList';
 import ValidatedInput, { ValidatedInputRef } from '../components/ValidatedInput';
-import { ChainSwapType } from '@atomiqlabs/sdk';
 import { TransactionEntry } from '../components/history/TransactionEntry';
 import { explorerSwapToProps, ExplorerSwapData } from '../adapters/transactionAdapters';
 import { ExplorerTotals } from '../components/explorer/ExplorerTotals';
@@ -30,10 +29,14 @@ const getChainIcon = (chain: string) => {
 
 const getTokenIcon = (token: string) => {
   const iconMap: { [key: string]: string } = {
+    BONK: '/icons/crypto/BONK.svg',
     BTC: '/icons/crypto/BTC.svg',
+    ETH: '/icons/crypto/ETH.png',
     SOL: '/icons/crypto/SOL.svg',
+    STRK: '/icons/crypto/STRK.png',
     USDC: '/icons/crypto/USDC.svg',
     USDT: '/icons/crypto/USDC.svg', // Using USDC icon as fallback for USDT
+    WBTC: '/icons/crypto/WBTC.png',
   };
   return iconMap[token];
 };
@@ -50,7 +53,14 @@ export function SwapExplorer() {
     totalSwapCount: number;
     totalUsdVolume: number;
     currencyData: {
-      [currency in 'USDC' | 'SOL']: {
+      [currency: string]: {
+        count: number;
+        volume: number;
+        volumeUsd: number;
+      };
+    };
+    chainData: {
+      [chain: string]: {
         count: number;
         volume: number;
         volumeUsd: number;
@@ -110,6 +120,26 @@ export function SwapExplorer() {
     return additionalData;
   }, [search, selectedChains, selectedTokens]);
 
+  const chainBreakdownData = useMemo(() => {
+    if (!stats?.chainData) return [];
+    return Object.entries(stats.chainData).map(([chainName, data]: [string, any]) => ({
+      name: formatChainName(chainName),
+      icon: getChainIcon(chainName),
+      value: data.count,
+      isUsd: false,
+    }));
+  }, [stats]);
+
+  const tokenBreakdownData = useMemo(() => {
+    if (!stats?.currencyData) return [];
+    return Object.entries(stats.currencyData).map(([tokenName, data]: [string, any]) => ({
+      name: tokenName,
+      icon: getTokenIcon(tokenName),
+      value: data.volumeUsd,
+      isUsd: true,
+    }));
+  }, [stats]);
+
   return (
     <div className="container">
       <div className="explorer-totals-wrapper">
@@ -118,6 +148,7 @@ export function SwapExplorer() {
           count={stats?.totalSwapCount}
           getDifference={(timeframe) => stats?.timeframes?.[timeframe]?.count}
           loading={statsLoading}
+          breakdownData={chainBreakdownData}
         />
         <ExplorerTotals
           title="Total volume"
@@ -131,6 +162,7 @@ export function SwapExplorer() {
               : FEConstants.USDollar.format(stats?.timeframes?.[timeframe]?.volumeUsd)
           }
           loading={statsLoading}
+          breakdownData={tokenBreakdownData}
         />
       </div>
 

@@ -62,7 +62,31 @@
   }
 
   &__body {
-    @apply pt-0;
+    @apply pt-0 transition-all;
+
+    &__item {
+      @apply flex gap-2 items-center py-[12px];
+
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+      &:first-of-type {
+        @apply mt-3;
+
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .sc-image {
+        @apply w-6 h-6 rounded mr-1;
+      }
+
+      .sc-amount {
+        @apply ml-auto font-medium;
+      }
+
+      .sc-difference {
+        @apply text-green;
+      }
+    }
   }
 
   &.is-expanded {
