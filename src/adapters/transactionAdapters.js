@@ -109,5 +109,6 @@ export function explorerSwapToProps(data) {
         refundable: false,
         claimable: false,
         direction,
+        usdValue: data.usdValue
     };
 }

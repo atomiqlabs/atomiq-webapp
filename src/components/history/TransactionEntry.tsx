@@ -1,10 +1,8 @@
-import { SwapDirection } from '@atomiqlabs/sdk';
 import { useNavigate } from 'react-router-dom';
 import { FEConstants } from '../../FEConstants';
-import { Button, Col, Row } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 import * as React from 'react';
 import { usePricing } from '../../hooks/pricing/usePricing';
-import { useChain } from '../../hooks/chains/useChain';
 import { TransactionToken } from './TransactionToken';
 import { TextPill } from '../common/TextPill';
 import { BaseButton } from '../common/BaseButton';
@@ -13,11 +11,12 @@ import { TransactionEntryProps } from '../../adapters/transactionAdapters';
 export function TransactionEntry(props: TransactionEntryProps) {
   const navigate = useNavigate();
 
-  const inputUsdValue = usePricing(props.inputAmount, props.inputToken);
-  const outputUsdValue = usePricing(props.outputAmount, props.outputToken);
-
-  const inputChain = useChain(props.inputToken);
-  const outputChain = useChain(props.outputToken);
+  const usdValueHook = usePricing(props.outputAmount, !props.usdValue && props.outputToken);
+  const usdValue = !!props.usdValue
+      ? `$${props.usdValue}`
+      : usdValueHook!=null
+        ? FEConstants.USDollar.format(usdValueHook)
+        : null;
 
   const navigateToSwap = (event) => {
     if (event) {
@@ -94,7 +93,7 @@ export function TransactionEntry(props: TransactionEntryProps) {
         />
       </Col>
       <Col md={1} sm={2} className="is-value is-right">
-        <div>{outputUsdValue != null ? FEConstants.USDollar.format(outputUsdValue) : '-'}</div>
+        <div>{usdValue != null ? usdValue : '-'}</div>
       </Col>
       <Col md={2} sm={6} xs={8} className="d-flex text-end flex-column is-date is-right">
         <div className="sc-date">{formatDate(props.createdAt)}</div>

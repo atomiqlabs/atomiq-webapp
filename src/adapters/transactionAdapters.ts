@@ -27,6 +27,9 @@ export interface TransactionEntryProps {
   refundable: boolean;
   claimable: boolean;
   direction: SwapDirection;
+
+  // Pricing info
+  usdValue?: string;
 }
 
 /**
@@ -195,5 +198,7 @@ export function explorerSwapToProps(data: ExplorerSwapData): TransactionEntryPro
     refundable: false,
     claimable: false,
     direction,
+
+    usdValue: data.usdValue
   };
 }
