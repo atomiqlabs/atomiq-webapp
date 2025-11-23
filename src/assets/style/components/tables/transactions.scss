@@ -11,9 +11,10 @@
 
     background: rgba(255, 255, 255, 0.05);
 
-    &:hover {
+    &:has(.transaction-entry.is-clickable):hover {
       background: rgba(255, 255, 255, 0.1);
       border-color: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
     }
   }
 
@@ -45,10 +46,6 @@
 
 .transaction-entry {
   @apply justify-between;
-
-  &.is-clickable {
-    @apply cursor-pointer;
-  }
 
   & > div {
     @apply flex items-center justify-center m-0 p-3;

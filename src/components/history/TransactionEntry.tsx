@@ -7,25 +7,29 @@ import { TransactionToken } from './TransactionToken';
 import { TextPill } from '../common/TextPill';
 import { BaseButton } from '../common/BaseButton';
 import { TransactionEntryProps } from '../../adapters/transactionAdapters';
-import {useCallback} from "react";
+import { useCallback } from 'react';
+import classNames from 'classnames';
 
 export function TransactionEntry(props: TransactionEntryProps) {
   const navigate = useNavigate();
 
   const usdValueHook = usePricing(props.outputAmount, !props.usdValue && props.outputToken);
   const usdValue = !!props.usdValue
-      ? `$${props.usdValue}`
-      : usdValueHook!=null
-        ? FEConstants.USDollar.format(usdValueHook)
-        : null;
+    ? `$${props.usdValue}`
+    : usdValueHook != null
+      ? FEConstants.USDollar.format(usdValueHook)
+      : null;
 
-  const navigateToSwap = useCallback((event) => {
-    if (event) {
-      event.preventDefault();
-    }
-    if (props.id == null) return;
-    navigate('/?swapId=' + props.id);
-  }, [props.id]);
+  const navigateToSwap = useCallback(
+    (event) => {
+      if (event) {
+        event.preventDefault();
+      }
+      if (props.id == null) return;
+      navigate('/?swapId=' + props.id);
+    },
+    [props.id]
+  );
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -69,11 +73,13 @@ export function TransactionEntry(props: TransactionEntryProps) {
     <TextPill variant="warning">Pending</TextPill>
   );
 
-  const classNames = ['transaction-entry', 'gx-1', 'gy-1'];
-  if (props.id != null) classNames.push('is-clickable');
-
   return (
-    <Row className={classNames.join(' ')} onClick={navigateToSwap}>
+    <Row
+      className={classNames('transaction-entry', 'gx-1', 'gy-1', {
+        'is-clickable': props.id != null,
+      })}
+      onClick={navigateToSwap}
+    >
       {props.requiresAction && <span className="transaction-entry__alert"></span>}
       <Col md={4} sm={12} className="is-token">
         <TransactionToken
