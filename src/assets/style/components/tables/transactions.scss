@@ -87,17 +87,18 @@
     }
 
     &.is-status {
-      @apply items-start;
+      @apply items-start flex-col;
 
       .base-button {
         @apply h-[44px];
       }
+
       @media (min-width: 768px) {
         @apply w-[13.5%];
       }
 
       @media (max-width: 768px) {
-        @apply items-end pt-1;
+        @apply items-end pt-1 flex-row;
       }
     }
   }
