@@ -245,6 +245,21 @@ export function SwapExplorer() {
               }}
             />
           )}
+          {(selectedChains.length > 0 || selectedTokens.length > 0 || search != null) && (
+            <div
+              className="explorer-filter__clear"
+              onClick={() => {
+                setSelectedChains([]);
+                setSelectedTokens([]);
+                setSearch(null);
+                if (searchRef.current) {
+                  searchRef.current.setValue('');
+                }
+              }}
+            >
+              Clear All
+            </div>
+          )}
         </div>
         {/* SEARCH FILTER */}
         <div className="explorer-filter__search">

@@ -97,7 +97,14 @@ export function SwapExplorer() {
                                         }) })] }), (showChainDropdown || showTokenDropdown) && (_jsx("div", { className: "explorer-filter__overlay", onClick: () => {
                                     setShowChainDropdown(false);
                                     setShowTokenDropdown(false);
-                                } }))] }), _jsxs("div", { className: "explorer-filter__search", children: [_jsx(ValidatedInput, { type: 'text', placeholder: 'Search by tx ID or wallet address', inputRef: searchRef, onSubmit: () => {
+                                } })), (selectedChains.length > 0 || selectedTokens.length > 0 || search != null) && (_jsx("div", { className: "explorer-filter__clear", onClick: () => {
+                                    setSelectedChains([]);
+                                    setSelectedTokens([]);
+                                    setSearch(null);
+                                    if (searchRef.current) {
+                                        searchRef.current.setValue('');
+                                    }
+                                }, children: "Clear All" }))] }), _jsxs("div", { className: "explorer-filter__search", children: [_jsx(ValidatedInput, { type: 'text', placeholder: 'Search by tx ID or wallet address', inputRef: searchRef, onSubmit: () => {
                                     const val = searchRef.current.getValue();
                                     if (val === '') {
                                         setSearch(null);

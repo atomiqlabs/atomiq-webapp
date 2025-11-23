@@ -75,7 +75,7 @@
 
   &__buttons {
     & {
-      @apply flex gap-3 justify-between lg:justify-start;
+      @apply flex gap-3 justify-between lg:justify-start flex-wrap;
     }
     .dropdown {
       @apply flex-1 lg:flex-none;
@@ -154,6 +154,10 @@
     background: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(5px);
     z-index: 40;
+  }
+
+  &__clear {
+    @apply text-white opacity-75 hover:opacity-100 transition-all cursor-pointer flex items-center justify-center underline hover:no-underline text-[14px] px-1;
   }
 }
 
