@@ -1,4 +1,4 @@
-import { isSCToken, SwapDirection } from '@atomiqlabs/sdk';
+import { isSCToken, SwapDirection, toHumanReadableString } from '@atomiqlabs/sdk';
 import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
 /**
  * Converts an ISwap object to TransactionEntryProps
@@ -55,7 +55,7 @@ export function explorerSwapToProps(data) {
     if (data.direction === 'ToBTC') {
         // Input is smart chain token
         inputToken = TokenResolver[data.chainId].getToken(data.token);
-        inputAmount = data.tokenAmount;
+        inputAmount = toHumanReadableString(BigInt(data.rawAmount), inputToken);
         inputAddress = data.clientWallet;
         inputTxId = data.txInit;
         // Output is BTC
@@ -75,7 +75,7 @@ export function explorerSwapToProps(data) {
         inputTxId = data.type === 'CHAIN' ? data.btcTx : data.paymentHash;
         // Output is smart chain token
         outputToken = TokenResolver[data.chainId].getToken(data.token);
-        outputAmount = data.tokenAmount;
+        outputAmount = toHumanReadableString(BigInt(data.rawAmount), outputToken);
         outputAddress = data.clientWallet;
         outputTxId = data.txInit;
     }
