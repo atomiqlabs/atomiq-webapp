@@ -516,7 +516,7 @@ td {
 }
 
 .page-title {
-  @apply text-left font-semibold text-[32px] mb-[24px] text-white;
+  @apply text-left font-semibold text-[24px] md:text-[32px] mb-[24px] text-white;
 }
 
 .App > .social-footer {

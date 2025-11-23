@@ -92,7 +92,7 @@ function WrappedApp() {
     <>
       <SwapperContext.Provider value={{ swapper }}>
         <MainNavigation affiliateLink={affiliateLink} />
-        <div className="d-flex flex-grow-1 flex-column mt-5">
+        <div className="d-flex flex-grow-1 flex-column mt-4 mt-md-5">
           {!noWalletPaths.has(pathName) && swapper == null ? (
             <div className="no-wallet-overlay d-flex align-items-center">
               <div className="mt-auto height-50 d-flex justify-content-center align-items-center flex-fill">

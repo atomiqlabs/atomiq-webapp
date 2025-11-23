@@ -1,9 +1,9 @@
 .explorer-totals-wrapper {
-  @apply flex flex-col gap-2 mb-12;
+  @apply flex flex-col gap-2 mb-4 md:mb-12;
 }
 
 .explorer-totals {
-  @apply bg-[#180931] text-white p-6 rounded-[12px] gap-4;
+  @apply bg-[#180931] text-white p-3 md:p-6 rounded-[12px] gap-4;
   border: 1px solid rgba(255, 255, 255, 0.1);
 
   &__header {
@@ -66,20 +66,23 @@
   }
 
   &.is-expanded {
-    @apply rounded-b-[12px] pt-4;
+    @apply rounded-b-[12px] pt-3 md:pt-4;
   }
 }
 
 .explorer-filter {
-  @apply flex justify-between mb-10;
+  @apply flex justify-between mb-4 md:mb-10 flex-col lg:flex-row gap-3;
 
   &__buttons {
     & {
-      @apply flex gap-3;
+      @apply flex gap-3 justify-between lg:justify-start;
+    }
+    .dropdown {
+      @apply flex-1 lg:flex-none;
     }
     .dropdown-toggle {
       --bs-btn-active-bg: rgba(255, 255, 255, 0.15);
-      @apply bg-white/10 h-12 px-3 py-3 gap-2 font-medium focus:text-white relative z-[100];
+      @apply bg-white/10 h-12 px-3 py-3 gap-2 font-medium focus:text-white relative z-[100] w-full flex justify-between items-center;
       border: 1px solid transparent;
 
       &.show {
@@ -128,8 +131,12 @@
   &__search {
     @apply flex gap-2;
 
+    form {
+      @apply flex-1 lg:flex-none;
+    }
+
     .form-control {
-      @apply w-[460px] h-12 bg-white/10 border-0;
+      @apply w-full lg:w-[460px] h-12 bg-white/10 border-0;
 
       &::placeholder {
         @apply text-white/30;
