@@ -136,9 +136,11 @@ export function ExplorerTotals({
             </div>
           </div>
         </div>
-        <div className="explorer-totals__more cursor-pointer" onClick={toggleExpanded}>
-          <i className={`icon icon-caret-down ${isExpanded ? 'is-rotated' : ''}`}></i>
-        </div>
+        {!loading && (
+          <div className="explorer-totals__more cursor-pointer" onClick={toggleExpanded}>
+            <i className={`icon icon-caret-down ${isExpanded ? 'is-rotated' : ''}`}></i>
+          </div>
+        )}
       </div>
       <Collapse in={isExpanded}>
         <div className="explorer-totals__body">
