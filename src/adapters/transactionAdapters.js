@@ -45,28 +45,16 @@ export function swapToProps(swap) {
     };
 }
 /**
- * Detect chain ID from token address format
- * - Starknet addresses start with '0x'
- * - Solana addresses are base58 encoded (default)
- */
-function detectChainId(tokenAddress) {
-    if (tokenAddress.startsWith('0x')) {
-        return 'STARKNET';
-    }
-    return 'SOLANA';
-}
-/**
  * Converts an ExplorerSwapData object (from the explorer API) to TransactionEntryProps
  */
 export function explorerSwapToProps(data) {
-    const chainId = detectChainId(data.token);
     const direction = data.direction === 'ToBTC' ? SwapDirection.TO_BTC : SwapDirection.FROM_BTC;
     // Determine input/output based on direction
     let inputToken, inputAmount, inputAddress, inputTxId;
     let outputToken, outputAmount, outputAddress, outputTxId;
     if (data.direction === 'ToBTC') {
         // Input is smart chain token
-        inputToken = TokenResolver[chainId].getToken(data.token);
+        inputToken = TokenResolver[data.chainId].getToken(data.token);
         inputAmount = data.tokenAmount;
         inputAddress = data.clientWallet;
         inputTxId = data.txInit;
@@ -86,7 +74,7 @@ export function explorerSwapToProps(data) {
                 : '';
         inputTxId = data.type === 'CHAIN' ? data.btcTx : data.paymentHash;
         // Output is smart chain token
-        outputToken = TokenResolver[chainId].getToken(data.token);
+        outputToken = TokenResolver[data.chainId].getToken(data.token);
         outputAmount = data.tokenAmount;
         outputAddress = data.clientWallet;
         outputTxId = data.txInit;

@@ -1,4 +1,4 @@
-import { IFromBTCSwap, isSCToken, ISwap, IToBTCSwap, SwapDirection } from '@atomiqlabs/sdk';
+import {IFromBTCSwap, isSCToken, ISwap, IToBTCSwap, SwapDirection, Token} from '@atomiqlabs/sdk';
 import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
 
 export interface TransactionEntryProps {
@@ -7,14 +7,14 @@ export interface TransactionEntryProps {
   requiresAction: boolean;
 
   // Input token info
-  inputToken: any;
+  inputToken: Token;
   inputAmount: string;
   inputAddress: string;
   inputExplorer: string | null;
   inputTxId: string | undefined;
 
   // Output token info
-  outputToken: any;
+  outputToken: Token;
   outputAmount: string;
   outputAddress: string;
   outputExplorer: string | null;
@@ -92,6 +92,7 @@ export function swapToProps(swap: ISwap): TransactionEntryProps {
 export interface ExplorerSwapData {
   id: string;
   paymentHash: string;
+  chainId: string;
   timestampInit: number;
   timestampFinish: number;
   type: 'LN' | 'CHAIN';
@@ -121,22 +122,9 @@ export interface ExplorerSwapData {
 }
 
 /**
- * Detect chain ID from token address format
- * - Starknet addresses start with '0x'
- * - Solana addresses are base58 encoded (default)
- */
-function detectChainId(tokenAddress: string): string {
-  if (tokenAddress.startsWith('0x')) {
-    return 'STARKNET';
-  }
-  return 'SOLANA';
-}
-
-/**
  * Converts an ExplorerSwapData object (from the explorer API) to TransactionEntryProps
  */
 export function explorerSwapToProps(data: ExplorerSwapData): TransactionEntryProps {
-  const chainId = detectChainId(data.token);
   const direction = data.direction === 'ToBTC' ? SwapDirection.TO_BTC : SwapDirection.FROM_BTC;
 
   // Determine input/output based on direction
@@ -145,7 +133,7 @@ export function explorerSwapToProps(data: ExplorerSwapData): TransactionEntryPro
 
   if (data.direction === 'ToBTC') {
     // Input is smart chain token
-    inputToken = TokenResolver[chainId].getToken(data.token);
+    inputToken = TokenResolver[data.chainId].getToken(data.token);
     inputAmount = data.tokenAmount;
     inputAddress = data.clientWallet;
     inputTxId = data.txInit;
@@ -166,7 +154,7 @@ export function explorerSwapToProps(data: ExplorerSwapData): TransactionEntryPro
     inputTxId = data.type === 'CHAIN' ? data.btcTx : data.paymentHash;
 
     // Output is smart chain token
-    outputToken = TokenResolver[chainId].getToken(data.token);
+    outputToken = TokenResolver[data.chainId].getToken(data.token);
     outputAmount = data.tokenAmount;
     outputAddress = data.clientWallet;
     outputTxId = data.txInit;
