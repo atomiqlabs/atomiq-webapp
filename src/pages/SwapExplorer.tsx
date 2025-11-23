@@ -11,6 +11,7 @@ import { ExplorerTotals } from '../components/explorer/ExplorerTotals';
 import { BaseButton } from '../components/common/BaseButton';
 
 const CHAINS = ['BITCOIN', 'LIGHTNING', 'SOLANA', 'STARKNET', 'BOTANIX'];
+const TOKENS = ['USDC', 'SOL', 'USDT', 'BTC'];
 
 const formatChainName = (chain: string) => {
   return chain.charAt(0) + chain.slice(1).toLowerCase();
@@ -27,11 +28,23 @@ const getChainIcon = (chain: string) => {
   return iconMap[chain];
 };
 
+const getTokenIcon = (token: string) => {
+  const iconMap: { [key: string]: string } = {
+    BTC: '/icons/crypto/BTC.svg',
+    SOL: '/icons/crypto/SOL.svg',
+    USDC: '/icons/crypto/USDC.svg',
+    USDT: '/icons/crypto/USDC.svg', // Using USDC icon as fallback for USDT
+  };
+  return iconMap[token];
+};
+
 export function SwapExplorer() {
   const refreshTable = useRef<() => void>(null);
 
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
   const [showChainDropdown, setShowChainDropdown] = useState<boolean>(false);
+  const [selectedTokens, setSelectedTokens] = useState<string[]>([]);
+  const [showTokenDropdown, setShowTokenDropdown] = useState<boolean>(false);
   const [statsLoading, setStatsLoading] = useState<boolean>(false);
   const [stats, setStats] = useState<{
     totalSwapCount: number;
@@ -83,12 +96,19 @@ export function SwapExplorer() {
     );
   };
 
+  const toggleToken = (token: string) => {
+    setSelectedTokens((prev) =>
+      prev.includes(token) ? prev.filter((t) => t !== token) : [...prev, token]
+    );
+  };
+
   const additionalData = useMemo(() => {
     const additionalData: any = {};
     if (search != null) additionalData.search = search;
     if (selectedChains.length > 0) additionalData.chain = selectedChains;
+    if (selectedTokens.length > 0) additionalData.token = selectedTokens;
     return additionalData;
-  }, [search, selectedChains]);
+  }, [search, selectedChains, selectedTokens]);
 
   return (
     <div className="container">
@@ -117,32 +137,22 @@ export function SwapExplorer() {
 
       <div className="explorer-filter">
         <div className="explorer-filter__buttons">
+          {/* CHAIN FILTER */}
           <Dropdown
             show={showChainDropdown}
             onToggle={(val) => setShowChainDropdown(val)}
             autoClose="outside"
           >
             <Dropdown.Toggle id="chain-filter-dropdown">
-              {selectedChains.length > 0 && (
-                <span className="sc-count">{selectedChains.length}</span>
-              )}
-              All chains
-              {selectedChains.length > 0 && (
-                <span
-                  className="clear-filter icon icon-circle-x-clear"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedChains([]);
-                  }}
-                ></span>
+              {selectedChains.length > 0 ? (
+                <>
+                  <span className="sc-count">{selectedChains.length}</span>
+                  Chains
+                </>
+              ) : (
+                'All Chains'
               )}
             </Dropdown.Toggle>
-            {showChainDropdown && (
-              <div
-                className="currency-dropdown__overlay"
-                onClick={() => setShowChainDropdown(false)}
-              />
-            )}
             <Dropdown.Menu>
               {CHAINS.map((chain) => {
                 const icon = getChainIcon(chain);
@@ -172,7 +182,70 @@ export function SwapExplorer() {
               })}
             </Dropdown.Menu>
           </Dropdown>
+
+          {/* TOKEN FILTER */}
+          <Dropdown
+            show={showTokenDropdown}
+            onToggle={(val) => setShowTokenDropdown(val)}
+            autoClose="outside"
+          >
+            <Dropdown.Toggle id="token-filter-dropdown">
+              {selectedTokens.length > 0 ? (
+                <>
+                  <span className="sc-count">{selectedTokens.length}</span>
+                  Tokens
+                  <span
+                    className="clear-filter icon icon-circle-x-clear"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTokens([]);
+                    }}
+                  ></span>
+                </>
+              ) : (
+                'All Tokens'
+              )}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              {TOKENS.map((token) => {
+                const icon = getTokenIcon(token);
+                return (
+                  <Dropdown.Item
+                    key={token}
+                    as="div"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleToken(token);
+                    }}
+                  >
+                    <Form.Check
+                      type="checkbox"
+                      id={`token-${token}`}
+                      label={
+                        <>
+                          {icon && <img src={icon} alt={token} className="chain-icon" />}
+                          {token}
+                        </>
+                      }
+                      checked={selectedTokens.includes(token)}
+                      onChange={() => toggleToken(token)}
+                    />
+                  </Dropdown.Item>
+                );
+              })}
+            </Dropdown.Menu>
+          </Dropdown>
+          {(showChainDropdown || showTokenDropdown) && (
+            <div
+              className="explorer-filter__overlay"
+              onClick={() => {
+                setShowChainDropdown(false);
+                setShowTokenDropdown(false);
+              }}
+            />
+          )}
         </div>
+        {/* SEARCH FILTER */}
         <div className="explorer-filter__search">
           <ValidatedInput
             type={'text'}
