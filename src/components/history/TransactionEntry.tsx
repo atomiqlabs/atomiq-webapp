@@ -81,7 +81,7 @@ export function TransactionEntry(props: TransactionEntryProps) {
       onClick={navigateToSwap}
     >
       {props.requiresAction && <span className="transaction-entry__alert"></span>}
-      <Col md={4} sm={12} className="is-token">
+      <Col md={4} xs={7} className="is-token">
         <TransactionToken
           token={props.inputToken}
           amount={props.inputAmount}
@@ -94,7 +94,7 @@ export function TransactionEntry(props: TransactionEntryProps) {
           <i className="icon icon-arrow-right"></i>
         </div>
       </Col>
-      <Col md={3} sm={12} className="is-token">
+      <Col md={3} xs={5} className="is-token">
         <TransactionToken
           token={props.outputToken}
           amount={props.outputAmount}
@@ -105,13 +105,18 @@ export function TransactionEntry(props: TransactionEntryProps) {
         />
       </Col>
       <Col md={1} sm={2} className="is-value is-right">
+        <span className="sc-mobile-label">Value</span>
         <div>{usdValue != null ? usdValue : '-'}</div>
       </Col>
-      <Col md={2} sm={6} xs={8} className="d-flex text-end flex-column is-date is-right">
-        <div className="sc-date">{formatDate(props.createdAt)}</div>
+      <Col md={2} sm={12} className="d-flex text-end is-date is-right">
+        <span className="sc-mobile-label">Date</span>
+        <div className="sc-date">
+          {formatDate(props.createdAt)}
+          <span className="d-inline d-sm-hidden">,</span>
+        </div>
         <div className="sc-time">{formatTime(props.createdAt)}</div>
       </Col>
-      <Col md={2} sm={4} xs={4} className="d-flex text-end flex-column is-status">
+      <Col md={2} sm={12} className="d-flex text-end is-status">
         {props.requiresAction ? (
           <BaseButton
             variant="secondary"
@@ -122,7 +127,10 @@ export function TransactionEntry(props: TransactionEntryProps) {
             {props.refundable ? 'Refund' : props.claimable ? 'Claim' : isPending ? 'Pay' : 'View'}
           </BaseButton>
         ) : (
-          badge
+          <>
+            <span className="sc-mobile-label">Status</span>
+            {badge}
+          </>
         )}
       </Col>
     </Row>
