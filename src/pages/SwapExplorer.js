@@ -81,7 +81,7 @@ export function SwapExplorer() {
             additionalData.token = selectedTokens;
         return additionalData;
     }, [search, selectedChains, selectedTokens]);
-    const chainBreakdownData = useMemo(() => {
+    const chainBreakdownCountData = useMemo(() => {
         if (!stats?.chainData)
             return [];
         return Object.entries(stats.chainData).map(([chainName, data]) => ({
@@ -91,19 +91,19 @@ export function SwapExplorer() {
             isUsd: false,
         }));
     }, [stats]);
-    const tokenBreakdownData = useMemo(() => {
-        if (!stats?.currencyData)
+    const chainBreakdownVolumeData = useMemo(() => {
+        if (!stats?.chainData)
             return [];
-        return Object.entries(stats.currencyData).map(([tokenName, data]) => ({
-            name: tokenName,
-            icon: getTokenIcon(tokenName),
+        return Object.entries(stats.chainData).map(([chainName, data]) => ({
+            name: formatChainName(chainName),
+            icon: getChainIcon(chainName),
             value: data.volumeUsd,
-            isUsd: true,
+            isUsd: false,
         }));
     }, [stats]);
-    return (_jsxs("div", { className: "container", children: [_jsxs("div", { className: "explorer-totals-wrapper", children: [_jsx(ExplorerTotals, { title: "Total swaps", count: stats?.totalSwapCount, getDifference: (timeframe) => stats?.timeframes?.[timeframe]?.count, loading: statsLoading, breakdownData: chainBreakdownData }), _jsx(ExplorerTotals, { title: "Total volume", shortenOnMobile: true, count: stats?.totalUsdVolume == null ? null : FEConstants.USDollar.format(stats.totalUsdVolume), getDifference: (timeframe) => stats?.timeframes?.[timeframe]?.volumeUsd == null
+    return (_jsxs("div", { className: "container", children: [_jsxs("div", { className: "explorer-totals-wrapper", children: [_jsx(ExplorerTotals, { title: "Total swaps", count: stats?.totalSwapCount, getDifference: (timeframe) => stats?.timeframes?.[timeframe]?.count, loading: statsLoading, breakdownData: chainBreakdownCountData }), _jsx(ExplorerTotals, { title: "Total volume", shortenOnMobile: true, count: stats?.totalUsdVolume == null ? null : FEConstants.USDollar.format(stats.totalUsdVolume), getDifference: (timeframe) => stats?.timeframes?.[timeframe]?.volumeUsd == null
                             ? null
-                            : FEConstants.USDollar.format(stats?.timeframes?.[timeframe]?.volumeUsd), loading: statsLoading, breakdownData: tokenBreakdownData })] }), _jsx("h1", { className: "page-title", children: "Explorer" }), _jsxs("div", { className: "explorer-filter", children: [_jsxs("div", { className: "explorer-filter__buttons", children: [_jsxs(Dropdown, { show: showChainDropdown, onToggle: (val) => setShowChainDropdown(val), autoClose: "outside", children: [_jsx(Dropdown.Toggle, { id: "chain-filter-dropdown", children: selectedChains.length > 0 ? (_jsxs(_Fragment, { children: [_jsx("span", { className: "sc-count", children: selectedChains.length }), "Chains"] })) : ('All Chains') }), _jsx(Dropdown.Menu, { children: CHAINS.map((chain) => {
+                            : FEConstants.USDollar.format(stats?.timeframes?.[timeframe]?.volumeUsd), loading: statsLoading, breakdownData: chainBreakdownVolumeData })] }), _jsx("h1", { className: "page-title", children: "Explorer" }), _jsxs("div", { className: "explorer-filter", children: [_jsxs("div", { className: "explorer-filter__buttons", children: [_jsxs(Dropdown, { show: showChainDropdown, onToggle: (val) => setShowChainDropdown(val), autoClose: "outside", children: [_jsx(Dropdown.Toggle, { id: "chain-filter-dropdown", children: selectedChains.length > 0 ? (_jsxs(_Fragment, { children: [_jsx("span", { className: "sc-count", children: selectedChains.length }), "Chains"] })) : ('All Chains') }), _jsx(Dropdown.Menu, { children: CHAINS.map((chain) => {
                                             const icon = getChainIcon(chain);
                                             return (_jsx(Dropdown.Item, { as: "div", onClick: (e) => {
                                                     e.preventDefault();

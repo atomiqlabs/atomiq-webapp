@@ -52,13 +52,6 @@ export function SwapExplorer() {
   const [stats, setStats] = useState<{
     totalSwapCount: number;
     totalUsdVolume: number;
-    currencyData: {
-      [currency: string]: {
-        count: number;
-        volume: number;
-        volumeUsd: number;
-      };
-    };
     chainData: {
       [chain: string]: {
         count: number;
@@ -120,7 +113,7 @@ export function SwapExplorer() {
     return additionalData;
   }, [search, selectedChains, selectedTokens]);
 
-  const chainBreakdownData = useMemo(() => {
+  const chainBreakdownCountData = useMemo(() => {
     if (!stats?.chainData) return [];
     return Object.entries(stats.chainData).map(([chainName, data]: [string, any]) => ({
       name: formatChainName(chainName),
@@ -130,13 +123,13 @@ export function SwapExplorer() {
     }));
   }, [stats]);
 
-  const tokenBreakdownData = useMemo(() => {
-    if (!stats?.currencyData) return [];
-    return Object.entries(stats.currencyData).map(([tokenName, data]: [string, any]) => ({
-      name: tokenName,
-      icon: getTokenIcon(tokenName),
+  const chainBreakdownVolumeData = useMemo(() => {
+    if (!stats?.chainData) return [];
+    return Object.entries(stats.chainData).map(([chainName, data]: [string, any]) => ({
+      name: formatChainName(chainName),
+      icon: getChainIcon(chainName),
       value: data.volumeUsd,
-      isUsd: true,
+      isUsd: false,
     }));
   }, [stats]);
 
@@ -148,7 +141,7 @@ export function SwapExplorer() {
           count={stats?.totalSwapCount}
           getDifference={(timeframe) => stats?.timeframes?.[timeframe]?.count}
           loading={statsLoading}
-          breakdownData={chainBreakdownData}
+          breakdownData={chainBreakdownCountData}
         />
         <ExplorerTotals
           title="Total volume"
@@ -162,7 +155,7 @@ export function SwapExplorer() {
               : FEConstants.USDollar.format(stats?.timeframes?.[timeframe]?.volumeUsd)
           }
           loading={statsLoading}
-          breakdownData={tokenBreakdownData}
+          breakdownData={chainBreakdownVolumeData}
         />
       </div>
 
