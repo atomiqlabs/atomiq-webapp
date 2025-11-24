@@ -170,7 +170,7 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
                 menuVariant="dark"
               >
                 {navItems.slice(3).map((item) => (
-                  <NavDropdown.Item key={item.link} href={item.link}>
+                  <NavDropdown.Item key={item.link} href={item.link} onClick={anchorNavigate}>
                     <span
                       className={`me-2 main-navigation__item__icon icon icon-${item.icon}`}
                     ></span>
