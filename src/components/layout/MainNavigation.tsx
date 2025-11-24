@@ -47,7 +47,7 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
     }
 
     const updateActionCount = async () => {
-      const swaps = await swapper.getAllSwaps();
+      const swaps = await swapper.getActionableSwaps();
       const initiated = swaps.filter((swap) => swap.isInitiated());
       const notTrusted = initiated.filter(
         (swap) =>

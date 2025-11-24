@@ -38,7 +38,7 @@ export function MainNavigation({ affiliateLink }) {
             return;
         }
         const updateActionCount = async () => {
-            const swaps = await swapper.getAllSwaps();
+            const swaps = await swapper.getActionableSwaps();
             const initiated = swaps.filter((swap) => swap.isInitiated());
             const notTrusted = initiated.filter((swap) => swap.getType() !== SwapType.TRUSTED_FROM_BTC &&
                 swap.getType() !== SwapType.TRUSTED_FROM_BTCLN);
