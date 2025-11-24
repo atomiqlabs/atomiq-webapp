@@ -10,7 +10,7 @@ import { useCallback } from 'react';
 import classNames from 'classnames';
 export function TransactionEntry(props) {
     const navigate = useNavigate();
-    const usdValueHook = usePricing(props.outputAmount, !props.usdValue && props.outputToken);
+    const usdValueHook = usePricing(props.outputAmount, !props.usdValue ? props.outputToken : undefined);
     const usdValue = !!props.usdValue
         ? `$${props.usdValue}`
         : usdValueHook != null
