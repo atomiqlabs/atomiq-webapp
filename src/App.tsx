@@ -3,7 +3,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { QuickScan } from './pages/quickscan/QuickScan';
 import { QuickScanExecute } from './pages/quickscan/QuickScanExecute';
 import { Factory, FEConstants } from './FEConstants';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import {BrowserRouter, Route, Routes, useLocation} from 'react-router-dom';
 import { SwapperContext } from './context/SwapperContext';
 import { Swapper } from '@atomiqlabs/sdk';
 import { History } from './pages/History';
@@ -23,15 +23,14 @@ import { NotFound } from './pages/NotFound';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
-const noWalletPaths = new Set(['/about', '/faq', '/46jh456f45f']);
+const noWalletPaths = new Set(['/about', '/faq', '/explorer']);
 
 function WrappedApp() {
   const [swapper, setSwapper] = useState<Swapper<any>>();
   const [swapperLoadingError, setSwapperLoadingError] = useState<any>();
   const [swapperLoading, setSwapperLoading] = useState<boolean>(false);
 
-  // @ts-ignore
-  const pathName = window.location.pathname.split('?')[0];
+  const {pathname} = useLocation();
 
   const searchParams = new URLSearchParams(window.location.search);
   if (searchParams.has('affiliate')) {
@@ -85,15 +84,15 @@ function WrappedApp() {
   };
 
   useEffect(() => {
-    if (!noWalletPaths.has(pathName) && swapper == null) loadSwapper();
-  }, [pathName]);
+    if (!noWalletPaths.has(pathname) && swapper == null) loadSwapper();
+  }, [pathname]);
 
   return (
     <>
       <SwapperContext.Provider value={{ swapper }}>
         <MainNavigation affiliateLink={affiliateLink} />
         <div className="d-flex flex-grow-1 flex-column mt-4 mt-md-5">
-          {!noWalletPaths.has(pathName) && swapper == null ? (
+          {!noWalletPaths.has(pathname) && swapper == null ? (
             <div className="no-wallet-overlay d-flex align-items-center">
               <div className="mt-auto height-50 d-flex justify-content-center align-items-center flex-fill">
                 <div className="text-white text-center">
