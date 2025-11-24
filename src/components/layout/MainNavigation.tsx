@@ -16,15 +16,6 @@ interface MainNavigationProps {
   affiliateLink?: string;
 }
 
-const mobileNavItems = [
-  { link: '/', icon: 'swap-nav' },
-  {
-    link: '/history',
-    icon: 'Swap-History',
-  },
-  { link: '/explorer', icon: 'Explorer' },
-];
-
 export function MainNavigation({ affiliateLink }: MainNavigationProps) {
   const location = useLocation();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -183,19 +174,6 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
           </Navbar.Collapse>
         </Navbar>
       </div>
-      <nav className="mobile-bottom-nav">
-        {mobileNavItems.map((item) => (
-          <a
-            key={item.link}
-            href={item.link}
-            className={classNames('mobile-bottom-nav__item', {
-              'is-active': location.pathname === item.link,
-            })}
-          >
-            <span className={`mobile-bottom-nav__item__icon icon icon-${item.icon}`}></span>
-          </a>
-        ))}
-      </nav>
     </Container>
   );
 }
