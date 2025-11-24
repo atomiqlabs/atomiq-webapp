@@ -1,47 +1,22 @@
 import * as React from 'react';
-import { Badge, Button, Card, Col, Dropdown, Form, Placeholder, Row } from 'react-bootstrap';
+import { Col, Dropdown, Form, Row } from 'react-bootstrap';
 import { FEConstants } from '../FEConstants';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import { BackendDataPaginatedList } from '../components/list/BackendDataPaginatedList';
 import ValidatedInput, { ValidatedInputRef } from '../components/ValidatedInput';
 import { TransactionEntry } from '../components/history/TransactionEntry';
 import { explorerSwapToProps, ExplorerSwapData } from '../adapters/transactionAdapters';
 import { ExplorerTotals } from '../components/explorer/ExplorerTotals';
 import { BaseButton } from '../components/common/BaseButton';
+import {ChainsContext} from "../context/ChainsContext";
+import {Chain} from "../providers/ChainsProvider";
+import {smartChainTokenArray, TokenIcons} from "../utils/Tokens";
 
-const CHAINS = ['BITCOIN', 'LIGHTNING', 'SOLANA', 'STARKNET', 'BOTANIX'];
-const TOKENS = ['USDC', 'SOL', 'USDT', 'BTC'];
-
-const formatChainName = (chain: string) => {
-  return chain.charAt(0) + chain.slice(1).toLowerCase();
-};
-
-const getChainIcon = (chain: string) => {
-  const iconMap: { [key: string]: string } = {
-    BITCOIN: '/icons/chains/BITCOIN.svg',
-    LIGHTNING: '/icons/chains/LIGHTNING.svg',
-    SOLANA: '/icons/chains/SOLANA.svg',
-    STARKNET: '/icons/chains/STARKNET.svg',
-    BOTANIX: '/icons/chains/BITCOIN.svg', // Using Bitcoin icon for Botanix
-  };
-  return iconMap[chain];
-};
-
-const getTokenIcon = (token: string) => {
-  const iconMap: { [key: string]: string } = {
-    BONK: '/icons/crypto/BONK.svg',
-    BTC: '/icons/crypto/BTC.svg',
-    ETH: '/icons/crypto/ETH.png',
-    SOL: '/icons/crypto/SOL.svg',
-    STRK: '/icons/crypto/STRK.png',
-    USDC: '/icons/crypto/USDC.svg',
-    USDT: '/icons/crypto/USDC.svg', // Using USDC icon as fallback for USDT
-    WBTC: '/icons/crypto/WBTC.png',
-  };
-  return iconMap[token];
-};
+const tokenTickers = Array.from(new Set(smartChainTokenArray.map(val => val.ticker)));
 
 export function SwapExplorer() {
+  const {chains} = useContext(ChainsContext);
+
   const refreshTable = useRef<() => void>(null);
 
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
@@ -115,21 +90,19 @@ export function SwapExplorer() {
 
   const chainBreakdownCountData = useMemo(() => {
     if (!stats?.chainData) return [];
-    return Object.entries(stats.chainData).map(([chainName, data]: [string, any]) => ({
-      name: formatChainName(chainName),
-      icon: getChainIcon(chainName),
-      value: data.count,
-      isUsd: false,
+    return Object.entries(stats.chainData).map(([chainId, data]: [string, any]) => ({
+      name: chains[chainId]?.chain.name,
+      icon: chains[chainId]?.chain.icon,
+      value: data.count
     }));
   }, [stats]);
 
   const chainBreakdownVolumeData = useMemo(() => {
     if (!stats?.chainData) return [];
-    return Object.entries(stats.chainData).map(([chainName, data]: [string, any]) => ({
-      name: formatChainName(chainName),
-      icon: getChainIcon(chainName),
-      value: data.volumeUsd,
-      isUsd: false,
+    return Object.entries(stats.chainData).map(([chainId, data]: [string, any]) => ({
+      name: chains[chainId]?.chain.name,
+      icon: chains[chainId]?.chain.icon,
+      value: data.volumeUsd
     }));
   }, [stats]);
 
@@ -175,28 +148,28 @@ export function SwapExplorer() {
               )}
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              {CHAINS.map((chain) => {
-                const icon = getChainIcon(chain);
+              {Object.keys(chains).map((chainId) => {
+                const {chain} = chains[chainId] as Chain<any>;
                 return (
                   <Dropdown.Item
-                    key={chain}
+                    key={chainId}
                     as="div"
                     onClick={(e) => {
                       e.preventDefault();
-                      toggleChain(chain);
+                      toggleChain(chainId);
                     }}
                   >
                     <Form.Check
                       type="checkbox"
-                      id={`chain-${chain}`}
+                      id={`chain-${chainId}`}
                       label={
                         <>
-                          {icon && <img src={icon} alt={chain} className="chain-icon" />}
-                          {formatChainName(chain)}
+                          {chain.icon && <img src={chain.icon} alt={chain.name} className="chain-icon" />}
+                          {chain.name}
                         </>
                       }
-                      checked={selectedChains.includes(chain)}
-                      onChange={() => toggleChain(chain)}
+                      checked={selectedChains.includes(chainId)}
+                      onChange={() => toggleChain(chainId)}
                     />
                   </Dropdown.Item>
                 );
@@ -228,8 +201,8 @@ export function SwapExplorer() {
               )}
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              {TOKENS.map((token) => {
-                const icon = getTokenIcon(token);
+              {tokenTickers.map((token) => {
+                const icon = TokenIcons[token];
                 return (
                   <Dropdown.Item
                     key={token}

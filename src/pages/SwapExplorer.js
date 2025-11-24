@@ -1,42 +1,18 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { Col, Dropdown, Form, Row } from 'react-bootstrap';
 import { FEConstants } from '../FEConstants';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { BackendDataPaginatedList } from '../components/list/BackendDataPaginatedList';
 import ValidatedInput from '../components/ValidatedInput';
 import { TransactionEntry } from '../components/history/TransactionEntry';
 import { explorerSwapToProps } from '../adapters/transactionAdapters';
 import { ExplorerTotals } from '../components/explorer/ExplorerTotals';
 import { BaseButton } from '../components/common/BaseButton';
-const CHAINS = ['BITCOIN', 'LIGHTNING', 'SOLANA', 'STARKNET', 'BOTANIX'];
-const TOKENS = ['USDC', 'SOL', 'USDT', 'BTC'];
-const formatChainName = (chain) => {
-    return chain.charAt(0) + chain.slice(1).toLowerCase();
-};
-const getChainIcon = (chain) => {
-    const iconMap = {
-        BITCOIN: '/icons/chains/BITCOIN.svg',
-        LIGHTNING: '/icons/chains/LIGHTNING.svg',
-        SOLANA: '/icons/chains/SOLANA.svg',
-        STARKNET: '/icons/chains/STARKNET.svg',
-        BOTANIX: '/icons/chains/BITCOIN.svg', // Using Bitcoin icon for Botanix
-    };
-    return iconMap[chain];
-};
-const getTokenIcon = (token) => {
-    const iconMap = {
-        BONK: '/icons/crypto/BONK.svg',
-        BTC: '/icons/crypto/BTC.svg',
-        ETH: '/icons/crypto/ETH.png',
-        SOL: '/icons/crypto/SOL.svg',
-        STRK: '/icons/crypto/STRK.png',
-        USDC: '/icons/crypto/USDC.svg',
-        USDT: '/icons/crypto/USDC.svg',
-        WBTC: '/icons/crypto/WBTC.png',
-    };
-    return iconMap[token];
-};
+import { ChainsContext } from "../context/ChainsContext";
+import { smartChainTokenArray, TokenIcons } from "../utils/Tokens";
+const tokenTickers = Array.from(new Set(smartChainTokenArray.map(val => val.ticker)));
 export function SwapExplorer() {
+    const { chains } = useContext(ChainsContext);
     const refreshTable = useRef(null);
     const [selectedChains, setSelectedChains] = useState([]);
     const [showChainDropdown, setShowChainDropdown] = useState(false);
@@ -84,34 +60,32 @@ export function SwapExplorer() {
     const chainBreakdownCountData = useMemo(() => {
         if (!stats?.chainData)
             return [];
-        return Object.entries(stats.chainData).map(([chainName, data]) => ({
-            name: formatChainName(chainName),
-            icon: getChainIcon(chainName),
-            value: data.count,
-            isUsd: false,
+        return Object.entries(stats.chainData).map(([chainId, data]) => ({
+            name: chains[chainId]?.chain.name,
+            icon: chains[chainId]?.chain.icon,
+            value: data.count
         }));
     }, [stats]);
     const chainBreakdownVolumeData = useMemo(() => {
         if (!stats?.chainData)
             return [];
-        return Object.entries(stats.chainData).map(([chainName, data]) => ({
-            name: formatChainName(chainName),
-            icon: getChainIcon(chainName),
-            value: data.volumeUsd,
-            isUsd: false,
+        return Object.entries(stats.chainData).map(([chainId, data]) => ({
+            name: chains[chainId]?.chain.name,
+            icon: chains[chainId]?.chain.icon,
+            value: data.volumeUsd
         }));
     }, [stats]);
-    return (_jsxs("div", { className: "container", children: [_jsxs("div", { className: "explorer-totals-wrapper", children: [_jsx(ExplorerTotals, { title: "Total swaps", count: stats?.totalSwapCount, getDifference: (timeframe) => stats?.timeframes?.[timeframe]?.count, loading: statsLoading, breakdownData: chainBreakdownCountData }), _jsx(ExplorerTotals, { title: "Total volume", shortenOnMobile: true, isUsd: true, count: stats?.totalUsdVolume, getDifference: (timeframe) => stats?.timeframes?.[timeframe]?.volumeUsd, loading: statsLoading, breakdownData: chainBreakdownVolumeData })] }), _jsx("h1", { className: "page-title", children: "Explorer" }), _jsxs("div", { className: "explorer-filter", children: [_jsxs("div", { className: "explorer-filter__buttons", children: [_jsxs(Dropdown, { show: showChainDropdown, onToggle: (val) => setShowChainDropdown(val), autoClose: "outside", children: [_jsx(Dropdown.Toggle, { id: "chain-filter-dropdown", children: selectedChains.length > 0 ? (_jsxs(_Fragment, { children: [_jsx("span", { className: "sc-count", children: selectedChains.length }), "Chains"] })) : ('All Chains') }), _jsx(Dropdown.Menu, { children: CHAINS.map((chain) => {
-                                            const icon = getChainIcon(chain);
+    return (_jsxs("div", { className: "container", children: [_jsxs("div", { className: "explorer-totals-wrapper", children: [_jsx(ExplorerTotals, { title: "Total swaps", count: stats?.totalSwapCount, getDifference: (timeframe) => stats?.timeframes?.[timeframe]?.count, loading: statsLoading, breakdownData: chainBreakdownCountData }), _jsx(ExplorerTotals, { title: "Total volume", shortenOnMobile: true, isUsd: true, count: stats?.totalUsdVolume, getDifference: (timeframe) => stats?.timeframes?.[timeframe]?.volumeUsd, loading: statsLoading, breakdownData: chainBreakdownVolumeData })] }), _jsx("h1", { className: "page-title", children: "Explorer" }), _jsxs("div", { className: "explorer-filter", children: [_jsxs("div", { className: "explorer-filter__buttons", children: [_jsxs(Dropdown, { show: showChainDropdown, onToggle: (val) => setShowChainDropdown(val), autoClose: "outside", children: [_jsx(Dropdown.Toggle, { id: "chain-filter-dropdown", children: selectedChains.length > 0 ? (_jsxs(_Fragment, { children: [_jsx("span", { className: "sc-count", children: selectedChains.length }), "Chains"] })) : ('All Chains') }), _jsx(Dropdown.Menu, { children: Object.keys(chains).map((chainId) => {
+                                            const { chain } = chains[chainId];
                                             return (_jsx(Dropdown.Item, { as: "div", onClick: (e) => {
                                                     e.preventDefault();
-                                                    toggleChain(chain);
-                                                }, children: _jsx(Form.Check, { type: "checkbox", id: `chain-${chain}`, label: _jsxs(_Fragment, { children: [icon && _jsx("img", { src: icon, alt: chain, className: "chain-icon" }), formatChainName(chain)] }), checked: selectedChains.includes(chain), onChange: () => toggleChain(chain) }) }, chain));
+                                                    toggleChain(chainId);
+                                                }, children: _jsx(Form.Check, { type: "checkbox", id: `chain-${chainId}`, label: _jsxs(_Fragment, { children: [chain.icon && _jsx("img", { src: chain.icon, alt: chain.name, className: "chain-icon" }), chain.name] }), checked: selectedChains.includes(chainId), onChange: () => toggleChain(chainId) }) }, chainId));
                                         }) })] }), _jsxs(Dropdown, { show: showTokenDropdown, onToggle: (val) => setShowTokenDropdown(val), autoClose: "outside", children: [_jsx(Dropdown.Toggle, { id: "token-filter-dropdown", children: selectedTokens.length > 0 ? (_jsxs(_Fragment, { children: [_jsx("span", { className: "sc-count", children: selectedTokens.length }), "Tokens", _jsx("span", { className: "clear-filter icon icon-circle-x-clear", onClick: (e) => {
                                                         e.stopPropagation();
                                                         setSelectedTokens([]);
-                                                    } })] })) : ('All Tokens') }), _jsx(Dropdown.Menu, { children: TOKENS.map((token) => {
-                                            const icon = getTokenIcon(token);
+                                                    } })] })) : ('All Tokens') }), _jsx(Dropdown.Menu, { children: tokenTickers.map((token) => {
+                                            const icon = TokenIcons[token];
                                             return (_jsx(Dropdown.Item, { as: "div", onClick: (e) => {
                                                     e.preventDefault();
                                                     toggleToken(token);
