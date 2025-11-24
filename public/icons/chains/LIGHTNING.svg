@@ -1,7 +1,17 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Generator: Adobe Fireworks 10, Export SVG Extension by Aaron Beall (http://fireworks.abeall.com) . Version: 0.6.1  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg id="bitcoin_lightning_icon.fw-Page%201" viewBox="0 0 280 280" style="background-color:#ffffff00" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" x="0px" y="0px" width="280px" height="280px">
-	<path id="Ellipse" d="M 7 140.5 C 7 66.769 66.769 7 140.5 7 C 214.231 7 274 66.769 274 140.5 C 274 214.231 214.231 274 140.5 274 C 66.769 274 7 214.231 7 140.5 Z" fill="#f7931a"/>
-	<path d="M 161.1943 51.5 C 153.2349 72.1607 145.2756 94.4107 135.7244 116.6607 C 135.7244 116.6607 135.7244 119.8393 138.9081 119.8393 L 204.1747 119.8393 C 204.1747 119.8393 204.1747 121.4286 205.7667 123.0179 L 110.2545 229.5 C 108.6626 227.9107 108.6626 226.3214 108.6626 224.7321 L 142.0919 153.2143 L 142.0919 146.8571 L 75.2333 146.8571 L 75.2333 140.5 L 156.4187 51.5 L 161.1943 51.5 Z" fill="#ffffff"/>
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="100" height="100" fill="white"/>
+<rect width="100" height="100" fill="#F7931A"/>
+<rect width="100" height="100" fill="url(#paint0_linear_94_350)" fill-opacity="0.5"/>
+<g clip-path="url(#clip0_94_350)">
+<path d="M74.4869 43.922C74.0669 43.067 73.1969 42.527 72.2444 42.527H52.5369L54.7269 22.802C54.8519 21.687 54.2169 20.627 53.1769 20.207C52.1344 19.782 50.9419 20.112 50.2594 20.9995L25.2594 53.4995C24.6794 54.2545 24.5769 55.2745 24.9994 56.1295C25.4219 56.987 26.2919 57.527 27.2444 57.527H46.9519L44.7619 77.252C44.6369 78.367 45.2719 79.427 46.3119 79.847C46.6144 79.9695 46.9319 80.027 47.2444 80.027C48.0044 80.027 48.7444 79.6795 49.2269 79.052L74.2269 46.552C74.8069 45.797 74.9069 44.777 74.4869 43.922Z" fill="black"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_94_350" x1="50" y1="0" x2="50" y2="100" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="white" stop-opacity="0.7"/>
+</linearGradient>
+<clipPath id="clip0_94_350">
+<rect width="60" height="60" fill="white" transform="translate(19.7441 20.0269)"/>
+</clipPath>
+</defs>
 </svg>
