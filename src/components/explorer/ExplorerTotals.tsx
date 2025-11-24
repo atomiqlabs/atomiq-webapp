@@ -1,22 +1,25 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Collapse, Dropdown } from 'react-bootstrap';
+import {FEConstants} from "../../FEConstants";
+import {shortenNumber} from "../../utils/Utils";
+import {useIsMobile} from "../../hooks/utils/useIsMobile";
 
 interface BreakdownItem {
   name: string;
   icon?: string;
   value: number;
-  isUsd?: boolean;
 }
 
 interface ExplorerTotalsProps {
   title: string;
-  count: number | string | null | undefined;
-  getDifference: (timeframe: string) => number | string | null | undefined;
+  count: number;
+  getDifference: (timeframe: string) => number;
   loading?: boolean;
   timeframes?: string[];
   shortenOnMobile?: boolean;
   breakdownData?: BreakdownItem[];
+  isUsd?: boolean;
 }
 
 export function ExplorerTotals({
@@ -27,20 +30,11 @@ export function ExplorerTotals({
   timeframes = ['24h', '7d', '30d'],
   shortenOnMobile = false,
   breakdownData = [],
+  isUsd = false
 }: ExplorerTotalsProps) {
   const [displayTimeframe, setDisplayTimeframe] = useState<string>(timeframes[0]);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const isMobile = useIsMobile();
 
   const toggleExpanded = () => {
     setIsExpanded((prev) => !prev);
@@ -48,58 +42,22 @@ export function ExplorerTotals({
 
   const difference = getDifference(displayTimeframe);
 
-  const shortenNumber = (value: number): string => {
-    const absValue = Math.abs(value);
-    if (absValue >= 1_000_000_000) {
-      return (value / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
-    }
-    if (absValue >= 1_000_000) {
-      return (value / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
-    }
-    if (absValue >= 1_000) {
-      return (value / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
-    }
-    return value.toString();
-  };
-
-  const formatCount = (value: number | string | null | undefined) => {
+  const formatCount = (value: number) => {
     if (value == null) return '';
 
-    if (typeof value === 'string') {
-      if (shortenOnMobile && isMobile && value.startsWith('$')) {
-        const numericValue = parseFloat(value.replace(/[$,]/g, ''));
-        if (!isNaN(numericValue)) {
-          return '$' + shortenNumber(numericValue);
-        }
-      }
-      return value;
-    }
-
     if (shortenOnMobile && isMobile) {
-      return shortenNumber(value);
+      const shortenedNumber = shortenNumber(value);
+      return isUsd ? '$'+shortenedNumber : shortenedNumber;
     }
 
-    return value.toLocaleString('en-US');
+    return isUsd
+      ? FEConstants.USDollar.format(value)
+      : value.toLocaleString('en-US');
   };
 
-  const formatDifference = (diff: number | string | null | undefined) => {
+  const formatDifference = (diff: number) => {
     if (diff == null) return null;
-
-    if (typeof diff === 'string') {
-      if (shortenOnMobile && isMobile && diff.startsWith('$')) {
-        const numericValue = parseFloat(diff.replace(/[$,]/g, ''));
-        if (!isNaN(numericValue)) {
-          return '+$' + shortenNumber(numericValue);
-        }
-      }
-      return `+${diff}`;
-    }
-
-    if (shortenOnMobile && isMobile) {
-      return '+' + shortenNumber(diff);
-    }
-
-    return `+${diff.toLocaleString('en-US')}`;
+    return '+' + formatCount(diff);
   };
 
   return (
@@ -151,9 +109,7 @@ export function ExplorerTotals({
                 {item.icon && <img className="sc-image" src={item.icon} alt={item.name} />}
                 <div className="sc-name">{item.name}</div>
                 <div className="sc-amount">
-                  {item.isUsd
-                    ? `$${item.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                    : item.value.toLocaleString('en-US')}
+                  {formatCount(item.value)}
                 </div>
                 {/*<div className="sc-difference">+$47,908.10</div>*/}
               </div>

@@ -146,14 +146,9 @@ export function SwapExplorer() {
         <ExplorerTotals
           title="Total volume"
           shortenOnMobile={true}
-          count={
-            stats?.totalUsdVolume == null ? null : FEConstants.USDollar.format(stats.totalUsdVolume)
-          }
-          getDifference={(timeframe) =>
-            stats?.timeframes?.[timeframe]?.volumeUsd == null
-              ? null
-              : FEConstants.USDollar.format(stats?.timeframes?.[timeframe]?.volumeUsd)
-          }
+          isUsd={true}
+          count={stats?.totalUsdVolume}
+          getDifference={(timeframe) => stats?.timeframes?.[timeframe]?.volumeUsd}
           loading={statsLoading}
           breakdownData={chainBreakdownVolumeData}
         />

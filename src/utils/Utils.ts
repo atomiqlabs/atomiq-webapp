@@ -125,3 +125,17 @@ export function truncateAddress(address: string, startChars: number = 5, endChar
   }
   return `${address.substring(0, startChars)}...${address.substring(address.length - endChars)}`;
 }
+
+export function shortenNumber(value: number): string {
+  const absValue = Math.abs(value);
+  if (absValue >= 1_000_000_000) {
+    return (value / 1_000_000_000).toFixed(2).replace(/\.0$/, '') + 'B';
+  }
+  if (absValue >= 1_000_000) {
+    return (value / 1_000_000).toFixed(2).replace(/\.0$/, '') + 'M';
+  }
+  if (absValue >= 1_000) {
+    return (value / 1_000).toFixed(2).replace(/\.0$/, '') + 'K';
+  }
+  return value.toString();
+}
