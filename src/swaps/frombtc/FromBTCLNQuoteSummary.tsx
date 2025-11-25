@@ -39,9 +39,12 @@ export function FromBTCLNQuoteSummary(props: {
     const [autoClaim, setAutoClaim] = useLocalStorage("crossLightning-autoClaim", false);
     const [initClicked, setInitClicked] = useState<boolean>(false);
 
-    const openModalRef = useRef<() => void>(null);
+    const openModalRef = useRef<(type: string) => void>(null);
     const onHyperlink = useCallback(() => {
-        openModalRef.current();
+        openModalRef.current("hyperlink");
+    }, []);
+    const onCopy = useCallback(() => {
+        openModalRef.current("copy");
     }, []);
 
     const {
@@ -83,7 +86,12 @@ export function FromBTCLNQuoteSummary(props: {
 
     return (
         <>
-            <LightningHyperlinkModal openRef={openModalRef} hyperlink={props.quote.getHyperlink()} chainId={props.quote.chainIdentifier}/>
+            <LightningHyperlinkModal openRef={openModalRef} onAccept={(type: string) => {
+                if(type==="hyperlink") {
+                    window.location.href = props.quote.getHyperlink();
+                }
+                if(type==="copy") {}
+            }} chainId={props.quote.chainIdentifier}/>
 
             {isInitiated ? <StepByStep steps={executionSteps}/> : ""}
 
@@ -119,6 +127,7 @@ export function FromBTCLNQuoteSummary(props: {
                         setAutoClaim={props.quote?.getType()===SwapType.FROM_BTCLN_AUTO ? null : setAutoClaim}
                         autoClaim={autoClaim}
                         onHyperlink={onHyperlink}
+                        onCopy={onCopy}
                     />
 
                     <SwapExpiryProgressBar

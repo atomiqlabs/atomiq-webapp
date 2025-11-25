@@ -10,22 +10,22 @@ import {useState} from "react";
 import {capitalizeFirstLetter} from "../../utils/Utils";
 
 export function LightningHyperlinkModal(props: {
-    openRef: React.MutableRefObject<() => void>,
-    hyperlink: string,
+    openRef: React.MutableRefObject<(type: string) => void>,
+    onAccept: (type: string) => void,
     chainId: string
 }) {
-    const [openAppModalOpened, setOpenAppModalOpened] = useState<boolean>(false);
+    const [openAppModalOpened, setOpenAppModalOpened] = useState<string>(null);
 
-    props.openRef.current = () => {
-        setOpenAppModalOpened(true);
+    props.openRef.current = (type: string) => {
+        setOpenAppModalOpened(type);
     };
 
     return (
-        <Modal contentClassName="text-white bg-dark" size="sm" centered show={openAppModalOpened} onHide={() => setOpenAppModalOpened(false)} dialogClassName="min-width-400px">
+        <Modal contentClassName="text-white bg-dark" size="sm" centered show={!!openAppModalOpened} onHide={() => setOpenAppModalOpened(null)} dialogClassName="min-width-400px">
             <Modal.Header className="border-0">
                 <Modal.Title id="contained-modal-title-vcenter" className="d-flex flex-grow-1">
                     <Icon icon={info} className="d-flex align-items-center me-2"/> Important notice
-                    <CloseButton className="ms-auto" variant="white" onClick={() => setOpenAppModalOpened(false)}/>
+                    <CloseButton className="ms-auto" variant="white" onClick={() => setOpenAppModalOpened(null)}/>
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
@@ -33,8 +33,8 @@ export function LightningHyperlinkModal(props: {
             </Modal.Body>
             <Modal.Footer className="border-0 d-flex">
                 <Button variant="primary" className="flex-grow-1" onClick={() => {
-                    window.location.href = props.hyperlink;
-                    setOpenAppModalOpened(false);
+                    if(props.onAccept!=null) props.onAccept(openAppModalOpened);
+                    setOpenAppModalOpened(null);
                 }}>
                     Understood, continue
                 </Button>

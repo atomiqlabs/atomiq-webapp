@@ -21,7 +21,8 @@ export function LightningQR(props: {
     payInstantly: boolean,
     setAutoClaim?: (val: boolean) => void,
     autoClaim?: boolean,
-    onHyperlink?: () => void
+    onHyperlink?: () => void,
+    onCopy?: () => void
 }) {
     const {swapper} = useContext(SwapsContext);
     const lightningChainData = useContext(ChainDataContext).LIGHTNING;
@@ -61,6 +62,7 @@ export function LightningQR(props: {
                     className="cursor-pointer"
                     onClick={(event) => {
                         show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
+                        if(props.onCopy!=null) props.onCopy();
                     }}
                     imageSettings={NFCScanning === NFCStartResult.OK ? {
                         src: "/icons/contactless.png",
@@ -78,10 +80,15 @@ export function LightningQR(props: {
                     <a href="#" onClick={(event) => {
                         event.preventDefault();
                         show(event.target as HTMLElement, props.quote.getAddress(), textFieldRef.current?.input?.current);
+                        if(props.onCopy!=null) props.onCopy();
                     }}>
                         <Icon icon={clipboard}/>
                     </a>
                 )}
+                onCopy={() => {
+                    //Direct call to open the modal here breaks the copying, this is a workaround
+                    if(props.onCopy!=null) setTimeout(props.onCopy, 100);
+                }}
                 inputRef={textFieldRef}
             />
             <div className="d-flex justify-content-center mt-2">

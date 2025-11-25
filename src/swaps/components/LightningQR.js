@@ -41,6 +41,8 @@ export function LightningQR(props) {
     const qrContent = useCallback((show) => {
         return _jsxs(_Fragment, { children: [_jsx("div", { className: "mb-2", children: _jsx(QRCodeSVG, { value: props.quote.getHyperlink(), size: 300, includeMargin: true, className: "cursor-pointer", onClick: (event) => {
                             show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
+                            if (props.onCopy != null)
+                                props.onCopy();
                         }, imageSettings: NFCScanning === NFCStartResult.OK ? {
                             src: "/icons/contactless.png",
                             excavate: true,
@@ -49,7 +51,13 @@ export function LightningQR(props) {
                         } : null }) }), _jsx("label", { children: "Please initiate a payment to this lightning network invoice" }), _jsx(ValidatedInput, { type: "text", value: props.quote.getAddress(), textEnd: (_jsx("a", { href: "#", onClick: (event) => {
                             event.preventDefault();
                             show(event.target, props.quote.getAddress(), textFieldRef.current?.input?.current);
-                        }, children: _jsx(Icon, { icon: clipboard }) })), inputRef: textFieldRef }), _jsx("div", { className: "d-flex justify-content-center mt-2", children: _jsxs(Button, { variant: "light", onClick: props.onHyperlink || (() => {
+                            if (props.onCopy != null)
+                                props.onCopy();
+                        }, children: _jsx(Icon, { icon: clipboard }) })), onCopy: () => {
+                        //Direct call to open the modal here breaks the copying, this is a workaround
+                        if (props.onCopy != null)
+                            setTimeout(props.onCopy, 100);
+                    }, inputRef: textFieldRef }), _jsx("div", { className: "d-flex justify-content-center mt-2", children: _jsxs(Button, { variant: "light", onClick: props.onHyperlink || (() => {
                             window.location.href = props.quote.getHyperlink();
                         }), className: "d-flex flex-row align-items-center justify-content-center", children: [_jsx(Icon, { icon: externalLink, className: "d-flex align-items-center me-2" }), " Open in Lightning wallet app"] }) })] });
     }, [props.quote, props.onHyperlink]);
