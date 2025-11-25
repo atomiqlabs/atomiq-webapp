@@ -3,8 +3,8 @@ import { SwapType } from '@atomiqlabs/sdk';
 import { useContext, useEffect, useState } from 'react';
 import { SwapperContext } from '../context/SwapperContext';
 import { TransactionsTable } from '../components/table/TransactionsTable';
-const SHOW_FILTER = false;
-export function History() {
+const SHOW_FILTER = false; // TODO implement filter and uncomment this to display it
+export function HistoryPage() {
     const { swapper } = useContext(SwapperContext);
     const [swaps, setSwaps] = useState([]);
     useEffect(() => {
@@ -42,7 +42,6 @@ export function History() {
         return () => {
             swapper.off('swapState', listener);
             setSwaps([]);
-            console.log('History: Set swaps to []');
         };
     }, [swapper]);
     return (_jsx("div", { className: "history-page", children: _jsxs("div", { className: "container", children: [_jsx("h1", { className: "page-title", children: "Your Swap History" }), SHOW_FILTER && (_jsxs("div", { className: "history-page__filter", children: [_jsx("div", { className: "history-page__filter__title", children: "Filter by chain:" }), _jsxs("div", { className: "history-page__filter__items", children: [_jsxs("button", { className: "sc-item is-selected", children: [_jsx("img", { src: '/icons/chains/solana.svg', alt: "solana" }), "Solana"] }), _jsxs("button", { className: "sc-item", children: [_jsx("img", { src: '/icons/chains/bitcoin.svg', alt: "bitcoin" }), "Bitcoin"] })] })] })), _jsx(TransactionsTable, { data: swaps, itemsPerPage: 20 })] }) }));

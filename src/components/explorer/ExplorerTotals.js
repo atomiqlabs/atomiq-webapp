@@ -1,10 +1,10 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useState } from 'react';
 import { Collapse, Dropdown } from 'react-bootstrap';
-import { FEConstants } from "../../FEConstants";
-import { shortenNumber } from "../../utils/Utils";
-import { useIsMobile } from "../../hooks/utils/useIsMobile";
-export function ExplorerTotals({ title, count, getDifference, loading = false, timeframes = ['24h', '7d', '30d'], shortenOnMobile = false, breakdownData = [], isUsd = false }) {
+import { FEConstants } from '../../FEConstants';
+import { shortenNumber } from '../../utils/Utils';
+import { useIsMobile } from '../../hooks/utils/useIsMobile';
+export function ExplorerTotals({ title, count, getDifference, loading = false, timeframes = ['24h', '7d', '30d'], shortenOnMobile = false, breakdownData = [], isUsd = false, }) {
     const [displayTimeframe, setDisplayTimeframe] = useState(timeframes[0]);
     const [isExpanded, setIsExpanded] = useState(false);
     const isMobile = useIsMobile();
@@ -19,9 +19,7 @@ export function ExplorerTotals({ title, count, getDifference, loading = false, t
             const shortenedNumber = shortenNumber(value);
             return isUsd ? '$' + shortenedNumber : shortenedNumber;
         }
-        return isUsd
-            ? FEConstants.USDollar.format(value)
-            : value.toLocaleString('en-US');
+        return isUsd ? FEConstants.USDollar.format(value) : value.toLocaleString('en-US');
     };
     const formatDifference = (diff) => {
         if (diff == null)

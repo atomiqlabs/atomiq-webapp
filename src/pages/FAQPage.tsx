@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useAnchorNavigate } from '../hooks/navigation/useAnchorNavigate';
 import { FAQContent } from '../data/FAQContent';
 
-export function FAQ(props: {}) {
+export function FAQPage(props: {}) {
   const { search } = useLocation() as { search: string };
   const params = new URLSearchParams(search);
   const tabOpen = params.get('tabOpen');

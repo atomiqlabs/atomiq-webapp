@@ -3,14 +3,14 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { QuickScan } from './pages/quickscan/QuickScan';
 import { QuickScanExecute } from './pages/quickscan/QuickScanExecute';
 import { Factory, FEConstants } from './FEConstants';
-import {BrowserRouter, Route, Routes, useLocation} from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { SwapperContext } from './context/SwapperContext';
 import { Swapper } from '@atomiqlabs/sdk';
-import { History } from './pages/History';
+import { HistoryPage } from './pages/HistoryPage';
 import { Spinner } from 'react-bootstrap';
 import { MainNavigation } from './components/layout/MainNavigation';
-import { FAQ } from './pages/FAQ';
-import { About } from './pages/About';
+import { FAQPage } from './pages/FAQPage';
+import { AboutPage } from './pages/AboutPage';
 import { SwapForGas } from './pages/SwapForGas';
 import { SwapExplorer } from './pages/SwapExplorer';
 import { Affiliate } from './pages/Affiliate';
@@ -30,7 +30,7 @@ function WrappedApp() {
   const [swapperLoadingError, setSwapperLoadingError] = useState<any>();
   const [swapperLoading, setSwapperLoading] = useState<boolean>(false);
 
-  const {pathname} = useLocation();
+  const { pathname } = useLocation();
 
   const searchParams = new URLSearchParams(window.location.search);
   if (searchParams.has('affiliate')) {
@@ -129,10 +129,10 @@ function WrappedApp() {
                 <Route index element={<QuickScan />} />
                 <Route path="2" element={<QuickScanExecute />} />
               </Route>
-              <Route path="history" element={<History />} />
+              <Route path="history" element={<HistoryPage />} />
               <Route path="gas" element={<SwapForGas />} />
-              <Route path="faq" element={<FAQ />} />
-              <Route path="about" element={<About />} />
+              <Route path="faq" element={<FAQPage />} />
+              <Route path="about" element={<AboutPage />} />
               <Route path="explorer" element={<SwapExplorer />} />
               <Route path="referral" element={<Affiliate />} />
               <Route path="*" element={<NotFound />} />

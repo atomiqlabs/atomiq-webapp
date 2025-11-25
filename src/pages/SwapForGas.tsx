@@ -60,7 +60,7 @@ export function SwapForGas() {
               {nativeCurrency?.ticker}, so you can then cover the gas fees of a trustless atomiq
               swap. Note that this is a trusted service and is therefore only used for small
               amounts! You can read more about it in our{' '}
-              <a href="/faq?tabOpen=11" onClick={navigateHref}>
+              <a href="/FAQPage?tabOpen=11" onClick={navigateHref}>
                 FAQ
               </a>
               .

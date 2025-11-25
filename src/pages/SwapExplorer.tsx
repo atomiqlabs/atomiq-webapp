@@ -1,21 +1,22 @@
 import * as React from 'react';
-import { Col, Dropdown, Form, Row } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 import { FEConstants } from '../FEConstants';
-import {useContext, useEffect, useMemo, useRef, useState} from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { BackendDataPaginatedList } from '../components/list/BackendDataPaginatedList';
 import ValidatedInput, { ValidatedInputRef } from '../components/ValidatedInput';
 import { TransactionEntry } from '../components/history/TransactionEntry';
 import { explorerSwapToProps, ExplorerSwapData } from '../adapters/transactionAdapters';
 import { ExplorerTotals } from '../components/explorer/ExplorerTotals';
 import { BaseButton } from '../components/common/BaseButton';
-import {ChainsContext} from "../context/ChainsContext";
-import {Chain} from "../providers/ChainsProvider";
-import {smartChainTokenArray, TokenIcons} from "../utils/Tokens";
+import { ChainsContext } from '../context/ChainsContext';
+import { Chain } from '../providers/ChainsProvider';
+import { smartChainTokenArray, TokenIcons } from '../utils/Tokens';
+import { MultiSelectDropdown } from '../components/common/MultiSelectDropdown';
 
-const tokenTickers = Array.from(new Set(smartChainTokenArray.map(val => val.ticker)));
+const tokenTickers = Array.from(new Set(smartChainTokenArray.map((val) => val.ticker)));
 
 export function SwapExplorer() {
-  const {chains} = useContext(ChainsContext);
+  const { chains } = useContext(ChainsContext);
 
   const refreshTable = useRef<() => void>(null);
 
@@ -82,32 +83,62 @@ export function SwapExplorer() {
 
   const additionalData = useMemo(() => {
     const additionalData: any = {};
-    if (search != null) additionalData.search = search;
-    if (selectedChains.length > 0) additionalData.chain = selectedChains;
-    if (selectedTokens.length > 0) additionalData.token = selectedTokens;
+    if (search != null) {
+      additionalData.search = search;
+    }
+    if (selectedChains.length > 0) {
+      additionalData.chain = selectedChains;
+    }
+    if (selectedTokens.length > 0) {
+      additionalData.token = selectedTokens;
+    }
     return additionalData;
   }, [search, selectedChains, selectedTokens]);
 
   const chainBreakdownCountData = useMemo(() => {
     if (!stats?.chainData) return [];
-    return Object.entries(stats.chainData).map(([chainId, data]: [string, any]) => ({
-      name: chains[chainId]?.chain.name,
-      icon: chains[chainId]?.chain.icon,
-      value: data.count
-    }));
-  }, [stats]);
+    return Object.entries(stats.chainData)
+      .filter(([chainId]) => chains[chainId] != null)
+      .map(([chainId, data]: [string, any]) => ({
+        name: chains[chainId].chain.name,
+        icon: chains[chainId].chain.icon,
+        value: data.count,
+      }));
+  }, [stats, chains]);
 
   const chainBreakdownVolumeData = useMemo(() => {
     if (!stats?.chainData) return [];
-    return Object.entries(stats.chainData).map(([chainId, data]: [string, any]) => ({
-      name: chains[chainId]?.chain.name,
-      icon: chains[chainId]?.chain.icon,
-      value: data.volumeUsd
+    return Object.entries(stats.chainData)
+      .filter(([chainId]) => chains[chainId] != null)
+      .map(([chainId, data]: [string, any]) => ({
+        name: chains[chainId].chain.name,
+        icon: chains[chainId].chain.icon,
+        value: data.volumeUsd,
+      }));
+  }, [stats, chains]);
+
+  const chainOptions = useMemo(() => {
+    return Object.keys(chains).map((chainId) => {
+      const { chain } = chains[chainId] as Chain<any>;
+      return {
+        id: chainId,
+        label: chain.name,
+        icon: chain.icon,
+      };
+    });
+  }, [chains]);
+
+  const tokenOptions = useMemo(() => {
+    return tokenTickers.map((token) => ({
+      id: token,
+      label: token,
+      icon: TokenIcons[token],
     }));
-  }, [stats]);
+  }, []);
 
   return (
     <div className="container">
+      {/*TOTALS*/}
       <div className="explorer-totals-wrapper">
         <ExplorerTotals
           title="Total swaps"
@@ -127,108 +158,36 @@ export function SwapExplorer() {
         />
       </div>
 
+      {/*TITLE*/}
       <h1 className="page-title">Explorer</h1>
 
+      {/* FILTER */}
       <div className="explorer-filter">
         <div className="explorer-filter__buttons">
           {/* CHAIN FILTER */}
-          <Dropdown
+          <MultiSelectDropdown
+            id="chain-filter"
+            label="Chains"
+            allLabel="All Chains"
+            options={chainOptions}
+            selectedValues={selectedChains}
+            onToggle={toggleChain}
             show={showChainDropdown}
-            onToggle={(val) => setShowChainDropdown(val)}
-            autoClose="outside"
-          >
-            <Dropdown.Toggle id="chain-filter-dropdown">
-              {selectedChains.length > 0 ? (
-                <>
-                  <span className="sc-count">{selectedChains.length}</span>
-                  Chains
-                </>
-              ) : (
-                'All Chains'
-              )}
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              {Object.keys(chains).map((chainId) => {
-                const {chain} = chains[chainId] as Chain<any>;
-                return (
-                  <Dropdown.Item
-                    key={chainId}
-                    as="div"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleChain(chainId);
-                    }}
-                  >
-                    <Form.Check
-                      type="checkbox"
-                      id={`chain-${chainId}`}
-                      label={
-                        <>
-                          {chain.icon && <img src={chain.icon} alt={chain.name} className="chain-icon" />}
-                          {chain.name}
-                        </>
-                      }
-                      checked={selectedChains.includes(chainId)}
-                      onChange={() => toggleChain(chainId)}
-                    />
-                  </Dropdown.Item>
-                );
-              })}
-            </Dropdown.Menu>
-          </Dropdown>
+            onShowChange={setShowChainDropdown}
+          />
 
           {/* TOKEN FILTER */}
-          <Dropdown
+          <MultiSelectDropdown
+            id="token-filter"
+            label="Tokens"
+            allLabel="All Tokens"
+            options={tokenOptions}
+            selectedValues={selectedTokens}
+            onToggle={toggleToken}
+            onClear={() => setSelectedTokens([])}
             show={showTokenDropdown}
-            onToggle={(val) => setShowTokenDropdown(val)}
-            autoClose="outside"
-          >
-            <Dropdown.Toggle id="token-filter-dropdown">
-              {selectedTokens.length > 0 ? (
-                <>
-                  <span className="sc-count">{selectedTokens.length}</span>
-                  Tokens
-                  <span
-                    className="clear-filter icon icon-circle-x-clear"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedTokens([]);
-                    }}
-                  ></span>
-                </>
-              ) : (
-                'All Tokens'
-              )}
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              {tokenTickers.map((token) => {
-                const icon = TokenIcons[token];
-                return (
-                  <Dropdown.Item
-                    key={token}
-                    as="div"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleToken(token);
-                    }}
-                  >
-                    <Form.Check
-                      type="checkbox"
-                      id={`token-${token}`}
-                      label={
-                        <>
-                          {icon && <img src={icon} alt={token} className="chain-icon" />}
-                          {token}
-                        </>
-                      }
-                      checked={selectedTokens.includes(token)}
-                      onChange={() => toggleToken(token)}
-                    />
-                  </Dropdown.Item>
-                );
-              })}
-            </Dropdown.Menu>
-          </Dropdown>
+            onShowChange={setShowTokenDropdown}
+          />
           {(showChainDropdown || showTokenDropdown) && (
             <div
               className="explorer-filter__overlay"
@@ -254,6 +213,7 @@ export function SwapExplorer() {
             </div>
           )}
         </div>
+
         {/* SEARCH FILTER */}
         <div className="explorer-filter__search">
           <ValidatedInput
@@ -285,6 +245,7 @@ export function SwapExplorer() {
         </div>
       </div>
 
+      {/* TABLE */}
       <div className="transactions-table">
         <div className="transactions-table__head">
           <Row className="transaction-entry gx-1 gy-1">
@@ -308,7 +269,7 @@ export function SwapExplorer() {
         <BackendDataPaginatedList<ExplorerSwapData>
           renderer={(row) => <TransactionEntry {...explorerSwapToProps(row)} />}
           endpoint={FEConstants.statsUrl + '/GetSwapList'}
-          itemsPerPage={10}
+          itemsPerPage={1}
           refreshFunc={refreshTable}
           additionalData={additionalData}
         />

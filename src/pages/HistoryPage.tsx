@@ -4,9 +4,9 @@ import { useContext, useEffect, useState } from 'react';
 import { SwapperContext } from '../context/SwapperContext';
 import { TransactionsTable } from '../components/table/TransactionsTable';
 
-const SHOW_FILTER = false;
+const SHOW_FILTER = false; // TODO implement filter and uncomment this to display it
 
-export function History() {
+export function HistoryPage() {
   const { swapper } = useContext(SwapperContext);
 
   const [swaps, setSwaps] = useState<ISwap[]>([]);
@@ -49,15 +49,16 @@ export function History() {
     return () => {
       swapper.off('swapState', listener);
       setSwaps([]);
-      console.log('History: Set swaps to []');
     };
   }, [swapper]);
 
   return (
     <div className="history-page">
       <div className="container">
+        {/* TITLE */}
         <h1 className="page-title">Your Swap History</h1>
-        {/* Hidden until filter will be implemented */}
+
+        {/* FILTER */}
         {SHOW_FILTER && (
           <div className="history-page__filter">
             <div className="history-page__filter__title">Filter by chain:</div>
@@ -73,6 +74,8 @@ export function History() {
             </div>
           </div>
         )}
+
+        {/* TABLE */}
         <TransactionsTable data={swaps} itemsPerPage={20} />
       </div>
     </div>
