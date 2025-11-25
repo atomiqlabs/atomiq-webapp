@@ -42,6 +42,10 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
   }, []);
 
   React.useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  React.useEffect(() => {
     if (swapper == null) {
       return;
     }
@@ -94,7 +98,7 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
             <div className="d-flex flex-row" style={{ fontSize: '1.5rem' }}>
               <img src="/main_logo.png" className="main-navigation__logo is-desktop" />
               <img src="/logo192.png" className="main-navigation__logo is-mobile" />
-              {/*TODO not sure what is this*/}
+
               {FEConstants.bitcoinNetwork !== BitcoinNetwork.MAINNET ? (
                 <Badge
                   className="main-navigation__network ms-2 my-0 align-items-center font-smallest"
@@ -108,6 +112,9 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
             </div>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={() => setIsOpen(!isOpen)} />
+          {actionRequiredCount > 0 && (
+            <div className="main-navigation__alert">{actionRequiredCount}</div>
+          )}
           <div className="main-navigation__wallet">
             <WalletConnector />
           </div>

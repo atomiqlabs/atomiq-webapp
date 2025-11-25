@@ -83,6 +83,10 @@
 
       @media (max-width: 768px) {
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+        &:nth-child(2) {
+          @apply pl-0 -left-1 relative;
+        }
       }
     }
 
@@ -98,7 +102,11 @@
       }
 
       @media (max-width: 768px) {
-        @apply items-end pt-1 flex-row;
+        &:not(:has(.base-button)) {
+          @apply pt-1;
+        }
+
+        @apply items-end flex-row;
       }
     }
   }

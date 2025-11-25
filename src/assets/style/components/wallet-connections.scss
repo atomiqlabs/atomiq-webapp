@@ -12,10 +12,15 @@
     & {
       @apply rounded-[8px] w-full;
     }
+
     &.show {
       @apply text-white;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(10px);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    @media (max-width: 992px) {
+      @apply text-[14px] h-10 px-2;
     }
   }
 
@@ -25,9 +30,13 @@
     @apply font-medium p-3 w-[264px] rounded-xl;
 
     background-color: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.75);
+
+    @media (max-width: 992px) {
+      background-color: #473b5b;
+    }
   }
 
   &__item {
@@ -77,6 +86,10 @@
     @apply text-white font-medium rounded m-[12px];
 
     background: #180931;
+
+    @media (max-width: 992px) {
+      @apply m-2;
+    }
   }
 
   & > .dropdown {
@@ -110,9 +123,13 @@
     }
 
     .icon-dropdown {
-      @apply mr-3;
+      @apply mr-3 opacity-75;
 
       font-size: 12px;
+
+      @media (max-width: 992px) {
+        font-size: 10px;
+      }
     }
 
     .wallet-connections__badge > span {

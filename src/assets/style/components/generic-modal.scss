@@ -1,16 +1,9 @@
 .generic-modal {
+  @apply fixed top-0 left-0 mt-0 flex items-center justify-center h-full;
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(5px);
   max-width: 100%;
-  height: 100%;
   width: 100vw;
-  margin-top: 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 1050;
   opacity: 0;
   transition: opacity 0.15s linear;
@@ -66,29 +59,26 @@
 }
 
 .generic-modal-wrapper {
-  background-color: #180931;
+  @apply p-4 sm:p-8 bg-[#180931] relative rounded-[12px];
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
   max-width: 80vw;
-  padding: 32px;
-  position: relative;
   z-index: 1051;
   max-height: 90vh;
 }
 
 .generic-modal--sm .generic-modal-wrapper {
   width: 437px;
-  max-width: 100%;
+  max-width: 92vw;
 }
 
 .generic-modal--md .generic-modal-wrapper {
   max-width: 90vw;
-  width: 80vw;
+  width: 92vw;
 }
 
 .generic-modal--lg .generic-modal-wrapper {
   width: 900px;
-  max-width: 90vw;
+  max-width: 92vw;
 }
 
 .generic-modal-icon {
@@ -106,16 +96,7 @@
 }
 
 .generic-modal-button-close {
-  @apply bg-transparent;
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @apply bg-transparent absolute top-2 right-2 border-none cursor-pointer p-2 flex items-center justify-center;
 
   svg {
     fill: white;
