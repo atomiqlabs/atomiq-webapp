@@ -56,6 +56,10 @@
 
   &__body {
     @apply px-[20px] pt-0 pb-3 text-white;
+
+    @media (max-width: 992px) {
+      font-size: 14px;
+    }
   }
 
   .icon-receipt-fees {

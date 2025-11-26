@@ -1,5 +1,5 @@
 .swap-panel {
-  @apply text-white max-w-full w-[590px] relative m-auto;
+  @apply text-white max-w-full w-[590px] relative mx-auto;
 
   @media (max-width: 600px) {
     @apply px-3;
