@@ -105,7 +105,7 @@
 
     &:not(&:has(.wallet-connections__button.is-main)) {
       background-color: rgba(255, 255, 255, 0.1);
-      border-radius: var(--bs-border-radius);
+      border-radius: 0;
       border: 1px solid transparent;
 
       &:hover {
@@ -113,11 +113,11 @@
       }
 
       &:first-child {
-        @apply rounded-r-none;
+        @apply rounded-l-[6px];
       }
 
       &:last-child {
-        @apply rounded-l-none;
+        @apply rounded-r-[6px];
 
         .base-button.show {
           @apply rounded-l-none;

@@ -159,7 +159,11 @@
   }
 
   &__alert {
-    @apply sm:hidden w-[20px] h-[20px] text-[14px] font-semibold text-white bg-blue rounded-full flex items-center justify-center absolute left-[62px] top-[13px] pointer-events-none;
+    @apply hidden w-[20px] h-[20px] text-[14px] font-semibold text-white bg-blue rounded-full items-center justify-center absolute left-[62px] top-[13px] pointer-events-none;
+
+    @media (max-width: 992px) {
+      @apply flex;
+    }
   }
 
   .navbar-brand {
