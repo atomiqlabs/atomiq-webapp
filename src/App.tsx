@@ -70,7 +70,8 @@ function WrappedApp() {
                     STARKNET: chainsData.STARKNET?.swapperOptions,
                     CITREA: chainsData.CITREA?.swapperOptions,
                     BOTANIX: chainsData.BOTANIX?.swapperOptions,
-                    ALPEN: chainsData.ALPEN?.swapperOptions
+                    ALPEN: chainsData.ALPEN?.swapperOptions,
+                    GOAT: chainsData.GOAT?.swapperOptions
                 },
                 intermediaryUrl: useLp,
                 getRequestTimeout: 15000,

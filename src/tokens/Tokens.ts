@@ -61,6 +61,10 @@ if(FEConstants.allowedChains.has("ALPEN")) {
     smartChainTokenArray.push(Tokens.ALPEN.BTC);
 }
 
+if(FEConstants.allowedChains.has("GOAT")) {
+    smartChainTokenArray.push(Tokens.GOAT.BTC);
+}
+
 if(FEConstants.allowedChains.has("STARKNET")) {
     smartChainTokenArray.push(Tokens.STARKNET.WBTC);
     smartChainTokenArray.push(Tokens.STARKNET.STRK);

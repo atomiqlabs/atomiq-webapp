@@ -10,7 +10,7 @@ import {
     BotanixInitializer,
     BotanixInitializerType,
     CitreaInitializer,
-    CitreaInitializerType, JsonRpcProviderWithRetries,
+    CitreaInitializerType, GoatInitializer, GoatInitializerType, JsonRpcProviderWithRetries,
     WebSocketProviderWithRetries
 } from "@atomiqlabs/chain-evm";
 
@@ -38,6 +38,10 @@ const botanixBlockExplorer: string = process.env.REACT_APP_BOTANIX_BLOCK_EXPLORE
 const alpenRpcUrl: string = process.env.REACT_APP_ALPEN_RPC_URL;
 const alpenChain: "TESTNET" | "MAINNET" = process.env.REACT_APP_ALPEN_NETWORK as ("TESTNET" | "MAINNET");
 const alpenBlockExplorer: string = process.env.REACT_APP_ALPEN_BLOCK_EXPLORER;
+
+const goatRpcUrl: string = process.env.REACT_APP_GOAT_RPC_URL;
+const goatChain: "TESTNET" | "MAINNET" = process.env.REACT_APP_GOAT_NETWORK as ("TESTNET" | "MAINNET");
+const goatBlockExplorer: string = process.env.REACT_APP_GOAT_BLOCK_EXPLORER;
 
 const bitcoinNetwork: "TESTNET" | "MAINNET" | "TESTNET4" = process.env.REACT_APP_BITCOIN_NETWORK as ("TESTNET" | "MAINNET" | "TESTNET4");
 
@@ -67,9 +71,9 @@ const mempoolApi = new MempoolApi(
 const bitcoinRpc = new MempoolBitcoinRpc(mempoolApi);
 
 export const Factory = new SwapperFactory<
-    readonly [SolanaInitializerType, StarknetInitializerType, CitreaInitializerType, BotanixInitializerType, AlpenInitializerType]
+    readonly [SolanaInitializerType, StarknetInitializerType, CitreaInitializerType, BotanixInitializerType, AlpenInitializerType, GoatInitializerType]
 >(
-    [SolanaInitializer, StarknetInitializer, CitreaInitializer, BotanixInitializer, AlpenInitializer] as const
+    [SolanaInitializer, StarknetInitializer, CitreaInitializer, BotanixInitializer, AlpenInitializer, GoatInitializer] as const
 );
 
 export const Tokens = Factory.Tokens;
@@ -82,7 +86,8 @@ export const FEConstants = {
         STARKNET: starknetBlockExplorer,
         CITREA: citreaBlockExplorer,
         BOTANIX: botanixBlockExplorer,
-        ALPEN: alpenBlockExplorer
+        ALPEN: alpenBlockExplorer,
+        GOAT: goatBlockExplorer
     },
     scBalances: {
         "SOLANA:So11111111111111111111111111111111111111112": {
@@ -108,7 +113,11 @@ export const FEConstants = {
         "ALPEN:0x0000000000000000000000000000000000000000": {
             optimal: 500_0000000000n,
             minimum: 200_0000000000n
-        }
+        },
+        "GOAT:0x0000000000000000000000000000000000000000": {
+            optimal: 500_0000000000n,
+            minimum: 200_0000000000n
+        },
     },
     mempoolApi,
     bitcoinRpc,
@@ -117,7 +126,8 @@ export const FEConstants = {
         starknetRpcUrl!=null ? "STARKNET" : undefined,
         citreaRpcUrl!=null ? "CITREA": undefined,
         botanixRpcUrl!=null ? "BOTANIX": undefined,
-        alpenRpcUrl!=null ? "ALPEN": undefined
+        alpenRpcUrl!=null ? "ALPEN": undefined,
+        goatRpcUrl!=null ? "GOAT": undefined
     ]),
     statsUrl,
     solanaChain: solanaChain==="MAINNET" ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet,
@@ -142,6 +152,12 @@ export const FEConstants = {
         alpenRpcUrl.startsWith("ws")
             ? new WebSocketProviderWithRetries(alpenRpcUrl)
             : new JsonRpcProviderWithRetries(alpenRpcUrl)
+    ),
+    goatChainType: goatChain,
+    goatRpc: goatRpcUrl==null ? null : (
+        goatRpcUrl.startsWith("ws")
+            ? new WebSocketProviderWithRetries(goatRpcUrl)
+            : new JsonRpcProviderWithRetries(goatRpcUrl)
     ),
     bitcoinNetwork: bitcoinNetwork==="TESTNET" ? BitcoinNetwork.TESTNET : bitcoinNetwork==="TESTNET4" ? BitcoinNetwork.TESTNET4 : BitcoinNetwork.MAINNET,
     url: null,

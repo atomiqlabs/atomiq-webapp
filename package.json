@@ -6,7 +6,7 @@
     "legacy-peer-deps": true
   },
   "dependencies": {
-    "@atomiqlabs/chain-evm": "^1.1.10",
+    "@atomiqlabs/chain-evm": "^1.1.14",
     "@atomiqlabs/chain-solana": "^12.0.0",
     "@atomiqlabs/chain-starknet": "^7.0.16",
     "@atomiqlabs/sdk": "^7.0.5",

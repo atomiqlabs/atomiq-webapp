@@ -99,7 +99,32 @@ const citreaTestnetChain = {
     },
     testnet: true
 };
+const goatTestnetBlockscout = {
+    name: "Routescan - Goat Testnet3",
+    url: "https://explorer.testnet3.goat.network/"
+};
+const goatTestnetChain = {
+    blockExplorers: {
+        "Routescan": goatTestnetBlockscout,
+        default: goatTestnetBlockscout
+    },
+    blockTime: 3500,
+    id: 48816,
+    name: "GOAT Testnet3",
+    nativeCurrency: {
+        name: "Bitcoin",
+        symbol: "BTC",
+        decimals: 18
+    },
+    rpcUrls: {
+        "GOAT public": { http: ["https://rpc.testnet3.goat.network"] },
+        default: { http: ["https://rpc.testnet3.goat.network"] }
+    },
+    testnet: true
+};
 const chains = [];
+if (FEConstants.goatRpc != null)
+    chains.push(goatTestnetChain);
 if (FEConstants.alpenRpc != null)
     chains.push(alpenTestnetChain);
 if (FEConstants.citreaRpc != null)
@@ -245,6 +270,25 @@ export function useAlpenWallet() {
                 swapperOptions: {
                     rpcUrl: FEConstants.alpenRpc,
                     chainType: FEConstants.alpenChainType
+                },
+                ...base
+            }];
+    }, [base]);
+}
+export function useGoatWallet() {
+    const base = useEVMWallet();
+    return useMemo(() => {
+        if (!FEConstants.allowedChains.has("GOAT"))
+            return [null];
+        return [{
+                id: "GOAT",
+                chain: {
+                    name: "GOAT Network",
+                    icon: "/icons/chains/GOAT.svg",
+                },
+                swapperOptions: {
+                    rpcUrl: FEConstants.goatRpc,
+                    chainType: FEConstants.goatChainType
                 },
                 ...base
             }];

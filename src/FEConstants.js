@@ -4,7 +4,7 @@ import { constants, RpcProvider } from "starknet";
 import { BitcoinNetwork, MempoolApi, MempoolBitcoinRpc, SwapperFactory } from "@atomiqlabs/sdk";
 import { SolanaInitializer } from "@atomiqlabs/chain-solana";
 import { StarknetInitializer, WebSocketChannelWithRetries } from "@atomiqlabs/chain-starknet";
-import { AlpenInitializer, BotanixInitializer, CitreaInitializer, JsonRpcProviderWithRetries, WebSocketProviderWithRetries } from "@atomiqlabs/chain-evm";
+import { AlpenInitializer, BotanixInitializer, CitreaInitializer, GoatInitializer, JsonRpcProviderWithRetries, WebSocketProviderWithRetries } from "@atomiqlabs/chain-evm";
 const solanaRpcUrl = process.env.REACT_APP_SOLANA_RPC_URL;
 const solanaChain = process.env.REACT_APP_SOLANA_NETWORK; //DEVNET or MAINNET
 const btcBlockExplorer = process.env.REACT_APP_BTC_BLOCK_EXPLORER;
@@ -25,6 +25,9 @@ const botanixBlockExplorer = process.env.REACT_APP_BOTANIX_BLOCK_EXPLORER;
 const alpenRpcUrl = process.env.REACT_APP_ALPEN_RPC_URL;
 const alpenChain = process.env.REACT_APP_ALPEN_NETWORK;
 const alpenBlockExplorer = process.env.REACT_APP_ALPEN_BLOCK_EXPLORER;
+const goatRpcUrl = process.env.REACT_APP_GOAT_RPC_URL;
+const goatChain = process.env.REACT_APP_GOAT_NETWORK;
+const goatBlockExplorer = process.env.REACT_APP_GOAT_BLOCK_EXPLORER;
 const bitcoinNetwork = process.env.REACT_APP_BITCOIN_NETWORK;
 const mempoolApi = new MempoolApi(bitcoinNetwork === "MAINNET" ?
     [
@@ -47,7 +50,7 @@ const mempoolApi = new MempoolApi(bitcoinNetwork === "MAINNET" ?
     "https://mempool.tk7.mempool.space/testnet/api/"
 ]);
 const bitcoinRpc = new MempoolBitcoinRpc(mempoolApi);
-export const Factory = new SwapperFactory([SolanaInitializer, StarknetInitializer, CitreaInitializer, BotanixInitializer, AlpenInitializer]);
+export const Factory = new SwapperFactory([SolanaInitializer, StarknetInitializer, CitreaInitializer, BotanixInitializer, AlpenInitializer, GoatInitializer]);
 export const Tokens = Factory.Tokens;
 export const TokenResolver = Factory.TokenResolver;
 export const FEConstants = {
@@ -57,7 +60,8 @@ export const FEConstants = {
         STARKNET: starknetBlockExplorer,
         CITREA: citreaBlockExplorer,
         BOTANIX: botanixBlockExplorer,
-        ALPEN: alpenBlockExplorer
+        ALPEN: alpenBlockExplorer,
+        GOAT: goatBlockExplorer
     },
     scBalances: {
         "SOLANA:So11111111111111111111111111111111111111112": {
@@ -83,7 +87,11 @@ export const FEConstants = {
         "ALPEN:0x0000000000000000000000000000000000000000": {
             optimal: 5000000000000n,
             minimum: 2000000000000n
-        }
+        },
+        "GOAT:0x0000000000000000000000000000000000000000": {
+            optimal: 5000000000000n,
+            minimum: 2000000000000n
+        },
     },
     mempoolApi,
     bitcoinRpc,
@@ -92,7 +100,8 @@ export const FEConstants = {
         starknetRpcUrl != null ? "STARKNET" : undefined,
         citreaRpcUrl != null ? "CITREA" : undefined,
         botanixRpcUrl != null ? "BOTANIX" : undefined,
-        alpenRpcUrl != null ? "ALPEN" : undefined
+        alpenRpcUrl != null ? "ALPEN" : undefined,
+        goatRpcUrl != null ? "GOAT" : undefined
     ]),
     statsUrl,
     solanaChain: solanaChain === "MAINNET" ? WalletAdapterNetwork.Mainnet : WalletAdapterNetwork.Devnet,
@@ -112,6 +121,10 @@ export const FEConstants = {
     alpenRpc: alpenRpcUrl == null ? null : (alpenRpcUrl.startsWith("ws")
         ? new WebSocketProviderWithRetries(alpenRpcUrl)
         : new JsonRpcProviderWithRetries(alpenRpcUrl)),
+    goatChainType: goatChain,
+    goatRpc: goatRpcUrl == null ? null : (goatRpcUrl.startsWith("ws")
+        ? new WebSocketProviderWithRetries(goatRpcUrl)
+        : new JsonRpcProviderWithRetries(goatRpcUrl)),
     bitcoinNetwork: bitcoinNetwork === "TESTNET" ? BitcoinNetwork.TESTNET : bitcoinNetwork === "TESTNET4" ? BitcoinNetwork.TESTNET4 : BitcoinNetwork.MAINNET,
     url: null,
     satsPerBitcoin: new BigNumber(100000000),
