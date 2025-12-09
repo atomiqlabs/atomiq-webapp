@@ -17,6 +17,7 @@ export const TokenIcons = {
     ETH: "/icons/crypto/ETH.png",
     STRK: "/icons/crypto/STRK.png",
     CBTC: "/icons/crypto/BTC.svg",
+    PBTC: "/icons/crypto/BTC.svg",
     // BBTC: "/icons/crypto/BBTC.svg",
     // ABTC: "/icons/crypto/BTC.svg"
 };
@@ -43,6 +44,7 @@ if (FEConstants.allowedChains.has("ALPEN")) {
 }
 if (FEConstants.allowedChains.has("GOAT")) {
     smartChainTokenArray.push(Tokens.GOAT.BTC);
+    smartChainTokenArray.push(Tokens.GOAT.PBTC);
 }
 if (FEConstants.allowedChains.has("STARKNET")) {
     smartChainTokenArray.push(Tokens.STARKNET.WBTC);
