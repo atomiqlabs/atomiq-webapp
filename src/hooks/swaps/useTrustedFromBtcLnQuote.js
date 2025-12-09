@@ -30,7 +30,7 @@ export function useTrustedFromBtcLnQuote(quote) {
     const abortSignalRef = useAbortSignalRef([quote]);
     const [waitForPayment, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
         return quote
-            .waitForPayment(abortSignalRef.current, 2)
+            .waitForPayment(2, abortSignalRef.current)
             .then(() => true);
     }, [quote]);
     useEffect(() => {

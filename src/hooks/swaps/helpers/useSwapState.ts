@@ -31,7 +31,7 @@ function getStateToString(swapType: SwapType, state: number) {
   }
 }
 
-export function useSwapState<S extends number>(quote: ISwap<any, S>, onSwapStateChange?: (state: S, initiated: boolean) => void) {
+export function useSwapState<S extends number>(quote: ISwap<any, any, S>, onSwapStateChange?: (state: S, initiated: boolean) => void) {
   const [state, setState] = useState<S>(quote?.getState());
   const [isInitiated, setInitiated] = useState<boolean>(null);
 
@@ -93,7 +93,7 @@ export function useSwapState<S extends number>(quote: ISwap<any, S>, onSwapState
     let listener;
     quote.events.on(
       'swapState',
-      (listener = (quote: ISwap<any, S>) => {
+      (listener = (quote: ISwap<any, any, S>) => {
         const state = quote.getState();
         if(oldState !== state) checkExpiry(state);
         oldState = state;

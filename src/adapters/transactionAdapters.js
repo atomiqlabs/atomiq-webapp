@@ -1,4 +1,4 @@
-import { isSCToken, SwapDirection, toHumanReadableString } from '@atomiqlabs/sdk';
+import { isIClaimableSwap, isIRefundableSwap, isSCToken, SwapDirection, toHumanReadableString } from '@atomiqlabs/sdk';
 import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
 /**
  * Converts an ISwap object to TransactionEntryProps
@@ -20,8 +20,8 @@ export function swapToProps(swap) {
     const txIdOutput = swap.getOutputTxId();
     const inputAddress = swap._getInitiator ? swap._getInitiator() : '';
     const outputAddress = swap.getOutputAddress();
-    const refundable = swap.getDirection() === SwapDirection.TO_BTC && swap.isRefundable();
-    const claimable = swap.getDirection() === SwapDirection.FROM_BTC && swap.isClaimable();
+    const refundable = isIRefundableSwap(swap) && swap.isRefundable();
+    const claimable = isIClaimableSwap(swap) && swap.isClaimable();
     return {
         id: swap.getId(),
         createdAt: swap.createdAt,

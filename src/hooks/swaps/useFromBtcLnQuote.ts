@@ -209,7 +209,7 @@ export function useFromBtcLnQuote(
 
   const [waitForPayment, paymentWaiting, paymentSuccess, paymentError] = useAsync(() => {
     return quote
-      .waitForPayment(abortSignalRef.current, 2)
+      .waitForPayment(undefined, 2, abortSignalRef.current)
       .then(() => true)
   }, [quote]);
 

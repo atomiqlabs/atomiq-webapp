@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { wallet, WalletAccount } from 'starknet';
 import { getStarknet } from '@starknet-io/get-starknet-core';
-import { StarknetFees, StarknetSigner } from '@atomiqlabs/chain-starknet';
+import { StarknetBrowserSigner, StarknetFees } from '@atomiqlabs/chain-starknet';
 import { useLocalStorage } from '../../hooks/utils/useLocalStorage';
 import { FEConstants } from '../../FEConstants';
 import { timeoutPromise } from '../../utils/Utils';
@@ -48,7 +48,7 @@ export function useStarknetChain(enabled) {
             swo,
             listener: (accounts) => {
                 console.log('useStarknetWalletContext(): accountsChanged listener, new accounts: ', accounts);
-                const starknetSigner = new StarknetSigner(walletAccount);
+                const starknetSigner = new StarknetBrowserSigner(walletAccount);
                 wallet.requestChainId(walletAccount.walletProvider).then((chainId) => {
                     console.log('useStarknetWalletContext(): connected wallet chainId: ', chainId);
                     if (FEConstants.starknetChainId !== chainId) {
@@ -62,7 +62,7 @@ export function useStarknetChain(enabled) {
         };
         swo.on('accountsChanged', currentSWORef.current.listener);
         await waitTillAddressPopulated(walletAccount);
-        const starknetSigner = new StarknetSigner(walletAccount);
+        const starknetSigner = new StarknetBrowserSigner(walletAccount);
         setStarknetSigner(starknetSigner);
         setStarknetWalletData(swo);
     };

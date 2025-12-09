@@ -205,8 +205,6 @@ export function useFromBtcQuote(
   const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(
     () =>
       quote.waitForBitcoinTransaction(
-        abortSignalRef.current,
-        null,
         (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
           if (txId == null) {
             setTxData(null);
@@ -225,7 +223,9 @@ export function useFromBtcQuote(
                 : '~' + getDeltaText(txEtaMs)
             } : undefined,
           });
-        }
+        },
+        undefined,
+        abortSignalRef.current
       ),
     [quote]
   );

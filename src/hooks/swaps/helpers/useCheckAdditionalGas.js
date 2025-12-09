@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { ChainsContext } from "../../../context/ChainsContext";
 import { useWithAwait } from "../../utils/useWithAwait";
-import { IFromBTCSwap, IToBTCSwap, toTokenAmount } from "@atomiqlabs/sdk";
+import { IEscrowSelfInitSwap, toTokenAmount } from "@atomiqlabs/sdk";
 import { toTokenIdentifier } from "../../../utils/Tokens";
 import { FEConstants } from "../../../FEConstants";
 import { SwapperContext } from "../../../context/SwapperContext";
@@ -16,11 +16,7 @@ export function useCheckAdditionalGas(quote) {
             return;
         let result;
         let address;
-        if (quote instanceof IToBTCSwap) {
-            result = await quote.hasEnoughForTxFees();
-            address = quote._getInitiator();
-        }
-        else if (quote instanceof IFromBTCSwap) {
+        if (quote instanceof IEscrowSelfInitSwap) {
             result = await quote.hasEnoughForTxFees();
             address = quote._getInitiator();
         }

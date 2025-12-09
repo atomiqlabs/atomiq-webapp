@@ -65,7 +65,7 @@ export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) 
         }
     }, [quote, smartChainWallet, payBitcoin]);
     const abortSignalRef = useAbortSignalRef([quote]);
-    const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => quote.waitForBitcoinTransaction(abortSignalRef.current, null, (txId, confirmations, confirmationTarget, txEtaMs) => {
+    const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => quote.waitForBitcoinTransaction((txId, confirmations, confirmationTarget, txEtaMs) => {
         if (txId == null) {
             setTxData(null);
             return;
@@ -83,7 +83,7 @@ export function useFromBtcQuote(quote, UICallback, feeRate, inputWalletBalance) 
                     : '~' + getDeltaText(txEtaMs)
             } : undefined,
         });
-    }), [quote]);
+    }, undefined, abortSignalRef.current), [quote]);
     const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
         return quote.claim(smartChainWallet.instance);
     }, [quote, smartChainWallet]);

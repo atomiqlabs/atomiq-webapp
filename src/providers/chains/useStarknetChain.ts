@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { wallet, WalletAccount } from 'starknet';
 import { getStarknet, StarknetWindowObject } from '@starknet-io/get-starknet-core';
-import { StarknetFees, StarknetSigner } from '@atomiqlabs/chain-starknet';
+import { StarknetBrowserSigner, StarknetFees } from '@atomiqlabs/chain-starknet';
 import { Chain, WalletListData } from '../ChainsProvider';
 import { useLocalStorage } from '../../hooks/utils/useLocalStorage';
 import { FEConstants } from '../../FEConstants';
@@ -24,8 +24,8 @@ function waitTillAddressPopulated(acc: WalletAccount) {
   });
 }
 
-export function useStarknetChain(enabled: boolean): Chain<StarknetSigner> {
-  const [starknetSigner, setStarknetSigner] = useState<StarknetSigner>();
+export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner> {
+  const [starknetSigner, setStarknetSigner] = useState<StarknetBrowserSigner>();
   const [starknetWalletData, setStarknetWalletData] = useState<StarknetWindowObject>();
   const [defaultStarknetWallet, setStarknetAutoConnect] = useLocalStorage('starknet-wallet', null);
 
@@ -65,7 +65,7 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetSigner> {
           'useStarknetWalletContext(): accountsChanged listener, new accounts: ',
           accounts
         );
-        const starknetSigner = new StarknetSigner(walletAccount);
+        const starknetSigner = new StarknetBrowserSigner(walletAccount);
         wallet.requestChainId(walletAccount.walletProvider).then((chainId) => {
           console.log('useStarknetWalletContext(): connected wallet chainId: ', chainId);
           if (FEConstants.starknetChainId !== chainId) {
@@ -79,7 +79,7 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetSigner> {
     swo.on('accountsChanged', currentSWORef.current.listener);
 
     await waitTillAddressPopulated(walletAccount);
-    const starknetSigner = new StarknetSigner(walletAccount);
+    const starknetSigner = new StarknetBrowserSigner(walletAccount);
     setStarknetSigner(starknetSigner);
     setStarknetWalletData(swo);
   };

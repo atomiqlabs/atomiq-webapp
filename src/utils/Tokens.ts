@@ -26,6 +26,8 @@ export const TokenIcons: {
   BTCLN: '/icons/crypto/BTC.svg',
   ETH: '/icons/crypto/ETH.png',
   STRK: '/icons/crypto/STRK.png',
+  _TESTNET_WBTC_VESU: '/icons/crypto/WBTC.png',
+  TBTC: null
 };
 
 export const bitcoinTokenArray = [Tokens.BITCOIN.BTC, Tokens.BITCOIN.BTCLN];

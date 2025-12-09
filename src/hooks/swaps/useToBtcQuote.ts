@@ -120,7 +120,7 @@ export function useToBtcQuote(
 
   const [retryWaitForPayment, _, __, paymentError] = useAsync(async () => {
     try {
-      await quote.waitForPayment(abortSignalRef.current, 2);
+      await quote.waitForPayment(undefined, 2, abortSignalRef.current);
     } catch (e) {
       if (abortSignalRef.current.aborted) return;
       throw e;
