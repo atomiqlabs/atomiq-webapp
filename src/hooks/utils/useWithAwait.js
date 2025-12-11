@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useStateRef } from "./useStateRef";
 export function useWithAwait(executor, dependencies, parallel = true, callback, pause) {
     const [latestProcessed, setLatestProcessed] = useState({
         sequence: 0,
@@ -13,6 +14,7 @@ export function useWithAwait(executor, dependencies, parallel = true, callback, 
     });
     const sequence = useRef(0);
     const currentPromise = useRef(null);
+    const currentCallback = useStateRef(callback);
     const depsRef = useRef();
     useMemo(() => {
         if (pause)
@@ -35,8 +37,8 @@ export function useWithAwait(executor, dependencies, parallel = true, callback, 
                     error: e,
                     lastDeps: dependencies,
                 };
-                if (callback != null)
-                    callback(null, e);
+                if (currentCallback.current != null)
+                    currentCallback.current(null, e);
                 return [null, -1, e];
             }
             if (!(promise instanceof Promise)) {
@@ -45,8 +47,8 @@ export function useWithAwait(executor, dependencies, parallel = true, callback, 
                     value: promise,
                     lastDeps: dependencies,
                 };
-                if (callback != null)
-                    callback(promise, null);
+                if (currentCallback.current != null)
+                    currentCallback.current(promise, null);
                 return [promise, -1, null];
             }
             else {
@@ -60,8 +62,8 @@ export function useWithAwait(executor, dependencies, parallel = true, callback, 
                     };
                     if (currSequence !== sequence.current)
                         return;
-                    if (callback != null)
-                        callback(val, null);
+                    if (currentCallback.current != null)
+                        currentCallback.current(val, null);
                     setLatestProcessed(latestProcessedRef.current);
                 })
                     .catch((err) => {
@@ -74,8 +76,8 @@ export function useWithAwait(executor, dependencies, parallel = true, callback, 
                     };
                     if (currSequence !== sequence.current)
                         return;
-                    if (callback != null)
-                        callback(null, err);
+                    if (currentCallback.current != null)
+                        currentCallback.current(null, err);
                     setLatestProcessed(latestProcessedRef.current);
                 });
                 return [null, currSequence, null];

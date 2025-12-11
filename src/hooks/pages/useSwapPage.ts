@@ -1,8 +1,8 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { SwapperContext } from '../../context/SwapperContext';
-import { useSupportedTokens } from '../quoting/useSupportedTokens';
-import { useStateWithOverride } from '../utils/useStateWithOverride';
-import { FEConstants, Tokens } from '../../FEConstants';
+import {useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import {SwapperContext} from '../../context/SwapperContext';
+import {useSupportedTokens} from '../quoting/useSupportedTokens';
+import {useStateWithOverride} from '../utils/useStateWithOverride';
+import {FEConstants, Tokens} from '../../FEConstants';
 import {
   fromTokenIdentifier,
   getChainIdentifierForCurrency,
@@ -23,20 +23,20 @@ import {
   TokenAmount,
   toTokenAmount,
 } from '@atomiqlabs/sdk';
-import { useChain } from '../chains/useChain';
-import { ChainsContext } from '../../context/ChainsContext';
-import { useAddressData } from '../quoting/useAddressData';
-import { Chain } from '../../providers/ChainsProvider';
-import { useDecimalNumberState } from '../utils/useDecimalNumberState';
-import { useAmountConstraints } from '../quoting/useAmountConstraints';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useWalletBalance } from '../wallets/useWalletBalance';
+import {useChain} from '../chains/useChain';
+import {ChainsContext} from '../../context/ChainsContext';
+import {useAddressData} from '../quoting/useAddressData';
+import {Chain} from '../../providers/ChainsProvider';
+import {useDecimalNumberState} from '../utils/useDecimalNumberState';
+import {useAmountConstraints} from '../quoting/useAmountConstraints';
+import {useLocation, useNavigate} from 'react-router-dom';
+import {useWalletBalance} from '../wallets/useWalletBalance';
 import BigNumber from 'bignumber.js';
-import { numberValidator } from '../../components/ValidatedInput';
-import { useQuote } from '../quoting/useQuote';
-import { usePricing } from '../pricing/usePricing';
-import { WebLNProvider } from 'webln';
-import { useExistingSwap } from '../quoting/useExistingSwap';
+import {numberValidator} from '../../components/ValidatedInput';
+import {useQuote} from '../quoting/useQuote';
+import {usePricing} from '../pricing/usePricing';
+import {WebLNProvider} from 'webln';
+import {useExistingSwap} from '../quoting/useExistingSwap';
 
 export type SwapPageUIState = 'show' | 'lock' | 'hide';
 
@@ -229,7 +229,7 @@ export function useSwapPage(): SwapPageState {
       console.log('SwapNew(): Disconnecting wallet: ' + outputChainData.wallet.name);
       disconnectWallet(outputChainData.chainId);
     }
-    console.log('SwapNew(): Using token based on the address: ' + outputToken.ticker);
+    console.log('SwapNew(): Using token based on the address: ' + token.ticker);
     setOutputToken(token, false);
   });
   const isFixedAmount = addressData?.amount != null;
@@ -422,7 +422,7 @@ export function useSwapPage(): SwapPageState {
   }, [inputAmountValidator, outputAmountValidator, amount, exactIn]);
 
   //Quote
-  const [refreshQuote, _quote, randomQuote, quoteLoading, quoteError] = useQuote(
+  const [refreshQuote, _quote, _randomQuote, _quoteLoading, _quoteError] = useQuote(
     validatedAmount,
     exactIn,
     inputToken,
@@ -432,6 +432,9 @@ export function useSwapPage(): SwapPageState {
     maxSpendable?.feeRate,
     addressLoading || !!existingSwap
   );
+  const randomQuote = existingSwap!=null ? false : _randomQuote;
+  const quoteLoading = existingSwap!=null ? existingSwapLoading : _quoteLoading;
+  const quoteError = existingSwap!=null ? null : _quoteError;
   const quote = existingSwap ?? _quote;
   useEffect(() => {
     if (
@@ -521,6 +524,13 @@ export function useSwapPage(): SwapPageState {
         status: 'error',
         text: addressError.message,
       };
+    if (addressData.swapType===SwapType.TO_BTCLN && addressData.amount!=null && outputLimits?.max!=null) {
+      if (new BigNumber(addressData.amount.amount).gt(outputLimits.max))
+        return {
+          status: 'error',
+          text: 'Invoice value too high!'
+        };
+    }
     if (quote?.getType() === SwapType.TO_BTCLN) {
       const _quote = quote as ToBTCLNSwap;
       if (_quote.isPayingToNonCustodialWallet())
@@ -543,6 +553,7 @@ export function useSwapPage(): SwapPageState {
       };
   }, [
     swapTypeData,
+    addressData,
     addressError,
     address,
     isOutputWalletAddress,

@@ -97,7 +97,7 @@ export function useSwapPage() {
             console.log('SwapNew(): Disconnecting wallet: ' + outputChainData.wallet.name);
             disconnectWallet(outputChainData.chainId);
         }
-        console.log('SwapNew(): Using token based on the address: ' + outputToken.ticker);
+        console.log('SwapNew(): Using token based on the address: ' + token.ticker);
         setOutputToken(token, false);
     });
     const isFixedAmount = addressData?.amount != null;
@@ -255,7 +255,10 @@ export function useSwapPage() {
         return [amount === '' || error != null ? null : new BigNumber(amount).toString(10), error];
     }, [inputAmountValidator, outputAmountValidator, amount, exactIn]);
     //Quote
-    const [refreshQuote, _quote, randomQuote, quoteLoading, quoteError] = useQuote(validatedAmount, exactIn, inputToken, outputToken, addressData?.lnurl ?? addressData?.address, gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined, maxSpendable?.feeRate, addressLoading || !!existingSwap);
+    const [refreshQuote, _quote, _randomQuote, _quoteLoading, _quoteError] = useQuote(validatedAmount, exactIn, inputToken, outputToken, addressData?.lnurl ?? addressData?.address, gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined, maxSpendable?.feeRate, addressLoading || !!existingSwap);
+    const randomQuote = existingSwap != null ? false : _randomQuote;
+    const quoteLoading = existingSwap != null ? existingSwapLoading : _quoteLoading;
+    const quoteError = existingSwap != null ? null : _quoteError;
     const quote = existingSwap ?? _quote;
     useEffect(() => {
         if (quote == null ||
@@ -340,6 +343,13 @@ export function useSwapPage() {
                 status: 'error',
                 text: addressError.message,
             };
+        if (addressData.swapType === SwapType.TO_BTCLN && addressData.amount != null && outputLimits?.max != null) {
+            if (new BigNumber(addressData.amount.amount).gt(outputLimits.max))
+                return {
+                    status: 'error',
+                    text: 'Invoice value too high!'
+                };
+        }
         if (quote?.getType() === SwapType.TO_BTCLN) {
             const _quote = quote;
             if (_quote.isPayingToNonCustodialWallet())
@@ -362,6 +372,7 @@ export function useSwapPage() {
             };
     }, [
         swapTypeData,
+        addressData,
         addressError,
         address,
         isOutputWalletAddress,

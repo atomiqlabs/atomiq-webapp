@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import {useStateRef} from "./useStateRef";
 
 type AwaitLatestProcessedState<Result> = {
   sequence: number;
@@ -26,6 +27,7 @@ export function useWithAwait<Result>(
   });
   const sequence = useRef<number>(0);
   const currentPromise = useRef<Promise<void>>(null);
+  const currentCallback = useStateRef(callback);
 
   const depsRef = useRef<any[]>();
   useMemo(
@@ -53,7 +55,8 @@ export function useWithAwait<Result>(
             error: e,
             lastDeps: dependencies,
           };
-          if (callback != null) callback(null, e);
+          if (currentCallback.current != null)
+            currentCallback.current(null, e);
           return [null as Result, -1, e];
         }
 
@@ -63,7 +66,8 @@ export function useWithAwait<Result>(
             value: promise as Result,
             lastDeps: dependencies,
           };
-          if (callback != null) callback(promise, null);
+          if (currentCallback.current != null)
+            currentCallback.current(promise, null);
           return [promise as Result, -1, null];
         } else {
           currentPromise.current = promise
@@ -75,7 +79,8 @@ export function useWithAwait<Result>(
                 lastDeps: dependencies,
               };
               if (currSequence !== sequence.current) return;
-              if (callback != null) callback(val, null);
+              if (currentCallback.current != null)
+                currentCallback.current(val, null);
               setLatestProcessed(latestProcessedRef.current);
             })
             .catch((err) => {
@@ -87,7 +92,8 @@ export function useWithAwait<Result>(
                 lastDeps: dependencies,
               };
               if (currSequence !== sequence.current) return;
-              if (callback != null) callback(null, err);
+              if (currentCallback.current != null)
+                currentCallback.current(null, err);
               setLatestProcessed(latestProcessedRef.current);
             });
 
