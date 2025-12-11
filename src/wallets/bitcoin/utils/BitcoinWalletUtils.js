@@ -4,6 +4,8 @@ import { XverseBitcoinWallet } from '../XverseBitcoinWallet';
 import { UnisatBitcoinWallet } from '../UnisatBitcoinWallet';
 import { MagicEdenBitcoinWallet } from '../MagicEdenBitcoinWallet';
 import { KeplrBitcoinWallet } from '../KeplrBitcoinWallet';
+import { FEConstants } from "../../../FEConstants";
+import { OKXBitcoinWallet } from "../OKXBitcoinWallet";
 const bitcoinWalletList = [
     {
         iconUrl: PhantomBitcoinWallet.iconUrl,
@@ -11,6 +13,7 @@ const bitcoinWalletList = [
         installUrl: PhantomBitcoinWallet.installUrl,
         detect: PhantomBitcoinWallet.isInstalled,
         use: PhantomBitcoinWallet.init,
+        supportsCurrentBtcNetwork: PhantomBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork),
     },
     {
         iconUrl: XverseBitcoinWallet.iconUrl,
@@ -18,6 +21,7 @@ const bitcoinWalletList = [
         installUrl: XverseBitcoinWallet.installUrl,
         detect: XverseBitcoinWallet.isInstalled,
         use: XverseBitcoinWallet.init,
+        supportsCurrentBtcNetwork: XverseBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork),
     },
     {
         iconUrl: UnisatBitcoinWallet.iconUrl,
@@ -25,6 +29,7 @@ const bitcoinWalletList = [
         installUrl: UnisatBitcoinWallet.installUrl,
         detect: UnisatBitcoinWallet.isInstalled,
         use: UnisatBitcoinWallet.init,
+        supportsCurrentBtcNetwork: UnisatBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork),
     },
     {
         iconUrl: KeplrBitcoinWallet.iconUrl,
@@ -32,6 +37,7 @@ const bitcoinWalletList = [
         installUrl: KeplrBitcoinWallet.installUrl,
         detect: KeplrBitcoinWallet.isInstalled,
         use: KeplrBitcoinWallet.init,
+        supportsCurrentBtcNetwork: KeplrBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork),
     },
     {
         iconUrl: MagicEdenBitcoinWallet.iconUrl,
@@ -39,8 +45,17 @@ const bitcoinWalletList = [
         installUrl: MagicEdenBitcoinWallet.installUrl,
         detect: MagicEdenBitcoinWallet.isInstalled,
         use: MagicEdenBitcoinWallet.init,
+        supportsCurrentBtcNetwork: MagicEdenBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork),
     },
-];
+    {
+        iconUrl: OKXBitcoinWallet.iconUrl,
+        name: OKXBitcoinWallet.walletName,
+        installUrl: OKXBitcoinWallet.installUrl,
+        detect: OKXBitcoinWallet.isInstalled,
+        use: OKXBitcoinWallet.init,
+        supportsCurrentBtcNetwork: OKXBitcoinWallet.supportedNetwork.includes(FEConstants.bitcoinNetwork)
+    }
+].filter(val => val.supportsCurrentBtcNetwork);
 let installedBitcoinWallets;
 let installableBitcoinWallets;
 export async function getInstalledBitcoinWallets() {
@@ -62,7 +77,7 @@ export async function getInstalledBitcoinWallets() {
     let active = null;
     const activeWallet = ExtensionBitcoinWallet.loadState();
     if (activeWallet != null) {
-        const walletType = bitcoinWalletList.find((e) => e.name === activeWallet.name);
+        const walletType = installedBitcoinWallets.find((e) => e.name === activeWallet.name);
         if (walletType != null) {
             active = () => walletType.use(activeWallet.data);
         }

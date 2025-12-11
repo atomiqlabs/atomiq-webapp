@@ -54,3 +54,4 @@ export class ExtensionBitcoinWallet extends BitcoinWallet {
         return psbt;
     }
 }
+ExtensionBitcoinWallet.supportedNetwork = [BitcoinNetwork.MAINNET];

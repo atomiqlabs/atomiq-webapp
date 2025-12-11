@@ -8,6 +8,9 @@ const bitcoinNetwork =
 const feeMultiplier = 1.25;
 
 export abstract class ExtensionBitcoinWallet extends BitcoinWallet {
+
+  static readonly supportedNetwork: BitcoinNetwork[] = [BitcoinNetwork.MAINNET];
+
   readonly wasAutomaticallyInitiated: boolean;
 
   constructor(wasAutomaticallyInitiated?: boolean) {

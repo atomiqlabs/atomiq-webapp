@@ -1,7 +1,11 @@
 import { SatsConnectBitcoinWallet } from './base/SatsConnectBitcoinWallet';
 import { MagicEdenBitcoinWallet } from './MagicEdenBitcoinWallet';
+import {BitcoinNetwork} from "@atomiqlabs/sdk";
 
 export class XverseBitcoinWallet extends SatsConnectBitcoinWallet {
+
+  static readonly supportedNetwork: BitcoinNetwork[] = [BitcoinNetwork.MAINNET, BitcoinNetwork.TESTNET4];
+
   static installUrl: string = 'https://www.xverse.app/download';
   static iconUrl: string = 'wallets/btc/xverse.png';
   static walletName: string = 'Xverse';

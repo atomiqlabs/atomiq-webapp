@@ -1,7 +1,19 @@
+import { BitcoinNetwork } from '@atomiqlabs/sdk';
 import { Transaction, Address as AddressParser } from '@scure/btc-signer';
 import * as EventEmitter from 'events';
 import { BitcoinWalletNonSeparated } from './BitcoinWalletNonSeparated';
 import { ExtensionBitcoinWallet } from './ExtensionBitcoinWallet';
+import { FEConstants } from "../../../FEConstants";
+const UnisatNetworks = {
+    [BitcoinNetwork.MAINNET]: "livenet",
+    [BitcoinNetwork.TESTNET]: "testnet",
+    [BitcoinNetwork.TESTNET4]: "testnet"
+};
+const UnisatChains = {
+    [BitcoinNetwork.MAINNET]: "BITCOIN_MAINNET",
+    [BitcoinNetwork.TESTNET]: "BITCOIN_TESTNET",
+    [BitcoinNetwork.TESTNET4]: "BITCOIN_TESTNET4"
+};
 export class UnisatLikeWalletChangeListener {
     constructor(ctor, provider, name) {
         this.events = new EventEmitter();
@@ -90,6 +102,24 @@ export class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated {
             UnisatLikeBitcoinWallet.changeListeners[name].ignoreAccountChange = false;
             throw e;
         }
+        if (provider.getChain != null) {
+            const currentChain = await provider.getChain();
+            console.log("UnisatLikeBitcoinWallet: init(): Detected current chain: ", currentChain);
+            const requiredChain = UnisatChains[FEConstants.bitcoinNetwork];
+            if (currentChain.enum !== requiredChain) {
+                await provider.switchChain(requiredChain);
+                addresses = await provider.getAccounts();
+            }
+        }
+        else {
+            const currentNetwork = await provider.getNetwork();
+            console.log("UnisatLikeBitcoinWallet: init(): Detected current network: ", currentNetwork);
+            const requiredNetwork = UnisatNetworks[FEConstants.bitcoinNetwork];
+            if (currentNetwork !== requiredNetwork) {
+                await provider.switchNetwork(requiredNetwork);
+                addresses = await provider.getAccounts();
+            }
+        }
         UnisatLikeBitcoinWallet.changeListeners[name].ignoreAccountChange = false;
         console.log(name + 'BitcoinWallet: init(): Loaded wallet accounts: ', addresses);
         if (addresses.length === 0)
@@ -119,9 +149,11 @@ export class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated {
     toBitcoinWalletAccounts() {
         return [
             {
-                pubkey: toSchnorrPubkey(this.account.publicKey),
+                pubkey: this.addressType === "p2tr"
+                    ? toSchnorrPubkey(this.account.publicKey)
+                    : this.account.publicKey,
                 address: this.account.address,
-                addressType: this.addressType,
+                addressType: this.addressType
             },
         ];
     }
