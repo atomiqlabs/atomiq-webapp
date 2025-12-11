@@ -54,6 +54,7 @@ function WrappedApp() {
                 pricingFeeDifferencePPM: 50000n,
                 defaultAdditionalParameters: {
                     affiliate: affiliateLink,
+                    feeOverrideCode: 'frontend',
                 },
                 mempoolApi: FEConstants.mempoolApi,
                 defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
