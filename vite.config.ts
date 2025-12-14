@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 // @ts-ignore
 import react from '@vitejs/plugin-react';
 import { polyfillNode } from 'esbuild-plugin-polyfill-node';
+import rollupNodePolyFill  from 'rollup-plugin-polyfill-node';
 // import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig({
@@ -43,6 +44,11 @@ export default defineConfig({
             'readable-stream',
             'crypto-browserify'
         ],
+        // exclude: [
+        //     '@walletconnect/ethereum-provider',
+        //     '@walletconnect/core',
+        //     '@walletconnect/sign-client',
+        // ],
     },
 
     server: {
@@ -57,6 +63,7 @@ export default defineConfig({
     build: {
         rollupOptions: {
             input: '/index.html',
+            // plugins: [rollupNodePolyFill()],
         },
     },
 });

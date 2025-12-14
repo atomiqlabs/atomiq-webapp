@@ -10,6 +10,8 @@ import {SolanaSigner} from "@atomiqlabs/chain-solana";
 import {StarknetSigner} from "@atomiqlabs/chain-starknet";
 import {ExtensionBitcoinWallet} from "../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {ConnectWalletModal} from "../components/wallets/ConnectWalletModal";
+import { EVMSigner } from '@atomiqlabs/chain-evm';
+import {EVMWalletWrapper, useCitreaChain} from "./chains/useEVMChains";
 
 export type WalletListData = {
   name: string;
@@ -42,6 +44,7 @@ export type WalletTypes = {
   LIGHTNING: WebLNProvider;
   SOLANA: SolanaSigner;
   STARKNET: StarknetSigner;
+  CITREA: EVMSigner;
 };
 
 export type ChainIdentifiers = keyof WalletTypes;
@@ -49,10 +52,12 @@ export type ChainIdentifiers = keyof WalletTypes;
 function WrappedChainsProvider(props: { children: React.ReactNode }) {
   const solanaResult = useSolanaChain(FEConstants.chainsConfiguration.enableSolana);
   const starknetResult = useStarknetChain(FEConstants.chainsConfiguration.enableStarknet);
+  const citreaResult = useCitreaChain(FEConstants.chainsConfiguration.enableCitrea);
   const lightningResult = useLightningNetwork(FEConstants.chainsConfiguration.enableLightning);
   const bitcoinResult = useBitcoinChain(FEConstants.chainsConfiguration.enableBitcoin, {
     STARKNET: starknetResult?.wallet?.name,
     SOLANA: solanaResult?.wallet?.name,
+    CITREA: citreaResult?.wallet?.name,
   });
 
   const chains = useMemo(() => {
@@ -61,11 +66,12 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
     // Add wallets and chain data based on configuration
     if (FEConstants.chainsConfiguration.enableSolana && solanaResult) chainsData.SOLANA = solanaResult;
     if (FEConstants.chainsConfiguration.enableStarknet && starknetResult) chainsData.STARKNET = starknetResult;
+    if (FEConstants.chainsConfiguration.enableCitrea && citreaResult) chainsData.CITREA = citreaResult;
     if (FEConstants.chainsConfiguration.enableLightning && lightningResult) chainsData.LIGHTNING = lightningResult;
     if (FEConstants.chainsConfiguration.enableBitcoin && bitcoinResult) chainsData.BITCOIN = bitcoinResult;
 
     return chainsData;
-  }, [solanaResult, starknetResult, lightningResult, bitcoinResult]);
+  }, [solanaResult, starknetResult, citreaResult, lightningResult, bitcoinResult]);
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalChainId, setModalChainId] = useState<string>();
@@ -135,6 +141,7 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
                 connectWalletPromiseCbk.current = null;
               }
             } catch (e) {
+              console.error(e);
               alert(
                 `Failed to connect to ${wallet.name}. This wallet may not be available or compatible with the ${modalSelectedChainData.chain.name} network.`
               );
@@ -150,7 +157,9 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
 export function ChainsProvider(props: { children: React.ReactNode }) {
   return (
     <SolanaWalletWrapper>
-      <WrappedChainsProvider>{props.children}</WrappedChainsProvider>
+      <EVMWalletWrapper>
+        <WrappedChainsProvider>{props.children}</WrappedChainsProvider>
+      </EVMWalletWrapper>
     </SolanaWalletWrapper>
   );
 }

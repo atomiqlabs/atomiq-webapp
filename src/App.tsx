@@ -50,6 +50,7 @@ function WrappedApp() {
         chains: {
           SOLANA: chainsData.chains.SOLANA?.swapperOptions,
           STARKNET: chainsData.chains.STARKNET?.swapperOptions,
+          CITREA: chainsData.chains.CITREA?.swapperOptions
         },
         intermediaryUrl: useLp,
         getRequestTimeout: 15000,

@@ -4,9 +4,10 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@atomiqlabs/chain-solana": "github:atomiqlabs/atomiq-chain-solana#ab/ts-strict",
-    "@atomiqlabs/chain-starknet": "github:atomiqlabs/atomiq-chain-starknet#ab/ts-strict",
-    "@atomiqlabs/sdk": "github:atomiqlabs/atomiq-sdk#ab/ts-strict",
+    "@atomiqlabs/chain-evm": "github:atomiqlabs/atomiq-chain-evm#ab/signed-txs",
+    "@atomiqlabs/chain-solana": "github:atomiqlabs/atomiq-chain-solana#ab/signed-txs",
+    "@atomiqlabs/chain-starknet": "github:atomiqlabs/atomiq-chain-starknet#ab/signed-txs",
+    "@atomiqlabs/sdk": "github:atomiqlabs/atomiq-sdk#ab/signed-txs",
     "@coral-xyz/anchor": "0.29.0",
     "@scure/btc-signer": "1.6.0",
     "@solana/spl-token": "0.3.9",
@@ -16,10 +17,13 @@
     "@solana/wallet-adapter-wallets": "0.19.33",
     "@solana/web3.js": "1.98.0",
     "@starknet-io/get-starknet": "4.0.6",
+    "@wagmi/core": "^3.0.0",
+    "@walletconnect/ethereum-provider": "^2.23.1",
     "bignumber.js": "^9.1.1",
     "bootstrap": "^5.2.3",
     "buffer": "^6.0.3",
     "crypto-browserify": "3.12.0",
+    "ethers": "^6.16.0",
     "https-browserify": "^1.0.0",
     "process": "^0.11.10",
     "qr-scanner": "^1.4.2",
@@ -34,6 +38,8 @@
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "url": "^0.11.1",
+    "viem": "^2.42.0",
+    "wagmi": "^3.1.0",
     "web-vitals": "^2.1.4",
     "webln": "0.3.2",
     "zlib-browserify": "^0.0.3"
@@ -53,10 +59,16 @@
     "esbuild-plugin-polyfill-node": "^0.3.0",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
+    "rollup-plugin-polyfill-node": "^0.13.0",
     "sass": "^1.96.0",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.9.3",
     "vite": "^7.2.7"
+  },
+  "overrides": {
+    "@walletconnect/logger": {
+      "pino": "10.0.0"
+    }
   },
   "scripts": {
     "start": "vite",
