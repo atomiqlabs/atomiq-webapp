@@ -1,4 +1,3 @@
-import './App.css';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { QuickScan } from './pages/quickscan/QuickScan';
 import { QuickScanExecute } from './pages/quickscan/QuickScanExecute';
@@ -20,8 +19,6 @@ import { ChainsContext } from './context/ChainsContext';
 import { ChainsProvider } from './providers/ChainsProvider';
 import { SocialFooter } from './components/layout/SocialFooter';
 import { NotFound } from './pages/NotFound';
-
-require('@solana/wallet-adapter-react-ui/styles.css');
 
 const noWalletPaths = new Set(['/about', '/faq', '/explorer']);
 

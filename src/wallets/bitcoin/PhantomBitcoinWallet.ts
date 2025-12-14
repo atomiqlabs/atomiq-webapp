@@ -1,5 +1,5 @@
 import { ExtensionBitcoinWallet } from './base/ExtensionBitcoinWallet';
-import * as EventEmitter from 'events';
+import EventEmitter from 'events';
 import { Address, OutScript, Transaction } from '@scure/btc-signer';
 import { CoinselectAddressTypes } from '@atomiqlabs/sdk';
 import { BitcoinWalletNonSeparated } from './base/BitcoinWalletNonSeparated';

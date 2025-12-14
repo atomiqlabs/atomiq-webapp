@@ -18,9 +18,9 @@ export abstract class ExtensionBitcoinWallet extends BitcoinWallet {
       FEConstants.bitcoinRpc,
       bitcoinNetwork,
       feeMultiplier,
-      process.env.REACT_APP_OVERRIDE_BITCOIN_FEE == null
+      import.meta.env.VITE_OVERRIDE_BITCOIN_FEE == null
         ? null
-        : parseInt(process.env.REACT_APP_OVERRIDE_BITCOIN_FEE)
+        : parseInt(import.meta.env.VITE_OVERRIDE_BITCOIN_FEE)
     );
     this.wasAutomaticallyInitiated = wasAutomaticallyInitiated;
   }

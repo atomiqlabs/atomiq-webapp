@@ -18,7 +18,7 @@ import { useWithAwait } from '../utils/useWithAwait';
 import { useChain } from '../chains/useChain';
 import { Address, NETWORK, TEST_NETWORK } from '@scure/btc-signer';
 import { FEConstants } from '../../FEConstants';
-import * as randomBytes from 'randombytes';
+import randomBytes from 'randombytes';
 import { toTokenIdentifier } from '../../utils/Tokens';
 
 const btcFeeMaxOffset = 3;

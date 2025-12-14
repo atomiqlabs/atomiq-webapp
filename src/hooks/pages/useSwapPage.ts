@@ -524,7 +524,7 @@ export function useSwapPage(): SwapPageState {
         status: 'error',
         text: addressError.message,
       };
-    if (addressData.swapType===SwapType.TO_BTCLN && addressData.amount!=null && outputLimits?.max!=null) {
+    if (addressData && addressData.swapType===SwapType.TO_BTCLN && addressData.amount!=null && outputLimits?.max!=null) {
       if (new BigNumber(addressData.amount.amount).gt(outputLimits.max))
         return {
           status: 'error',

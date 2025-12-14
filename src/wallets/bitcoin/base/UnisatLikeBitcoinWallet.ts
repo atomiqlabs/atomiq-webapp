@@ -1,7 +1,7 @@
 import {BitcoinNetwork, CoinselectAddressTypes} from '@atomiqlabs/sdk';
 import { BTC_NETWORK } from '@scure/btc-signer/utils';
 import { Transaction, Address as AddressParser } from '@scure/btc-signer';
-import * as EventEmitter from 'events';
+import EventEmitter from 'events';
 import { BitcoinWalletNonSeparated } from './BitcoinWalletNonSeparated';
 import { ExtensionBitcoinWallet } from './ExtensionBitcoinWallet';
 import {FEConstants} from "../../../FEConstants";

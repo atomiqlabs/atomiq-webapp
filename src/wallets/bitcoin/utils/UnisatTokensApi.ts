@@ -1,7 +1,7 @@
 import {tryWithRetries} from "@atomiqlabs/chain-solana";
 
-const baseUrl = process.env.REACT_APP_UNISAT_API_URL ?? "https://open-api.unisat.io";
-const apiKey = process.env.REACT_APP_UNISAT_API_KEY;
+const baseUrl = import.meta.env.VITE_UNISAT_API_URL ?? "https://open-api.unisat.io";
+const apiKey = import.meta.env.VITE_UNISAT_API_KEY;
 
 type UnisatUtxo = {
   confirmations: number,

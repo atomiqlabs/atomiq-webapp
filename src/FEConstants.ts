@@ -5,23 +5,23 @@ import { BitcoinNetwork, MempoolApi, MempoolBitcoinRpc, SwapperFactory } from '@
 import { SolanaInitializer, SolanaInitializerType } from '@atomiqlabs/chain-solana';
 import { StarknetInitializer, StarknetInitializerType } from '@atomiqlabs/chain-starknet';
 
-const solanaRpcUrl: string = process.env.REACT_APP_SOLANA_RPC_URL;
-const solanaChain: 'DEVNET' | 'MAINNET' = process.env.REACT_APP_SOLANA_NETWORK as
+const solanaRpcUrl: string = import.meta.env.VITE_SOLANA_RPC_URL;
+const solanaChain: 'DEVNET' | 'MAINNET' = import.meta.env.VITE_SOLANA_NETWORK as
   | 'DEVNET'
   | 'MAINNET'; //DEVNET or MAINNET
-const btcBlockExplorer: string = process.env.REACT_APP_BTC_BLOCK_EXPLORER;
-const solBlockExplorer: string = process.env.REACT_APP_SOL_BLOCK_EXPLORER;
-const statsUrl: string = process.env.REACT_APP_STATS_URL;
-const dappUrl: string = process.env.REACT_APP_DAPP_URL;
-const affiliateUrl: string = process.env.REACT_APP_AFFILIATE_URL;
+const btcBlockExplorer: string = import.meta.env.VITE_BTC_BLOCK_EXPLORER;
+const solBlockExplorer: string = import.meta.env.VITE_SOL_BLOCK_EXPLORER;
+const statsUrl: string = import.meta.env.VITE_STATS_URL;
+const dappUrl: string = import.meta.env.VITE_DAPP_URL;
+const affiliateUrl: string = import.meta.env.VITE_AFFILIATE_URL;
 
-const starknetRpcUrl: string = process.env.REACT_APP_STARKNET_RPC_URL;
-const starknetChain: 'SEPOLIA' | 'MAIN' = process.env.REACT_APP_STARKNET_NETWORK as
+const starknetRpcUrl: string = import.meta.env.VITE_STARKNET_RPC_URL;
+const starknetChain: 'SEPOLIA' | 'MAIN' = import.meta.env.VITE_STARKNET_NETWORK as
   | 'SEPOLIA'
   | 'MAIN'; //SEPOLIA or MAIN
-const starknetBlockExplorer: string = process.env.REACT_APP_STARKNET_BLOCK_EXPLORER;
+const starknetBlockExplorer: string = import.meta.env.VITE_STARKNET_BLOCK_EXPLORER;
 
-const bitcoinNetwork: 'TESTNET' | 'MAINNET' | 'TESTNET4' = process.env.REACT_APP_BITCOIN_NETWORK as
+const bitcoinNetwork: 'TESTNET' | 'MAINNET' | 'TESTNET4' = import.meta.env.VITE_BITCOIN_NETWORK as
   | 'TESTNET'
   | 'MAINNET'
   | 'TESTNET4';
@@ -116,6 +116,6 @@ export const FEConstants = {
   }),
   dappUrl,
   affiliateUrl,
-  trustedGasSwapLp: process.env.REACT_APP_TRUSTED_GAS_SWAP,
-  defaultLp: process.env.REACT_APP_DEFAULT_LP?.split(','),
+  trustedGasSwapLp: import.meta.env.VITE_TRUSTED_GAS_SWAP,
+  defaultLp: import.meta.env.VITE_DEFAULT_LP?.split(','),
 };

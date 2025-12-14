@@ -1,6 +1,7 @@
 {
   "name": "btc-bridge",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "dependencies": {
     "@atomiqlabs/chain-solana": "github:atomiqlabs/atomiq-chain-solana#ab/ts-strict",
@@ -24,18 +25,14 @@
     "qr-scanner": "^1.4.2",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
-    "react-app-rewired": "^2.2.1",
     "react-bootstrap": "^2.7.0",
     "react-dom": "^18.2.0",
     "react-icons-kit": "^2.0.0",
     "react-router-dom": "^6.3.0",
-    "react-scripts": "5.0.1",
-    "sass": "^1.57.1",
-    "sats-connect": "1.4.1",
+    "sats-connect": "^4.2.1",
     "starknet": "^8.9.1",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "typescript": "^4.9.4",
     "url": "^0.11.1",
     "web-vitals": "^2.1.4",
     "webln": "0.3.2",
@@ -47,27 +44,25 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/bn.js": "^5.1.5",
     "@types/jest": "^29.4.0",
-    "@types/node": "^18.11.18",
+    "@types/node": "^20.19.26",
+    "@types/randombytes": "^2.0.3",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
-    "prettier": "^3.6.2"
+    "@vitejs/plugin-react": "^5.1.2",
+    "autoprefixer": "^10.4.22",
+    "esbuild-plugin-polyfill-node": "^0.3.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
+    "sass": "^1.96.0",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.7"
   },
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build --stats",
-    "test": "react-app-rewired test",
-    "eject": "react-app-rewired eject",
-    "analyze": "webpack-bundle-analyzer build/bundle-stats.json",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "format": "prettier --write ."
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "globals": {
-      "BigInt": true
-    }
   },
   "browserslist": {
     "production": [
