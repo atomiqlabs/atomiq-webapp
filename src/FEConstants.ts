@@ -5,7 +5,12 @@ import { BitcoinNetwork, MempoolApi, MempoolBitcoinRpc, SwapperFactory } from '@
 import { SolanaInitializer, SolanaInitializerType } from '@atomiqlabs/chain-solana';
 import { StarknetInitializer, StarknetInitializerType } from '@atomiqlabs/chain-starknet';
 import {JsonRpcProvider} from "ethers";
-import {CitreaInitializer, CitreaInitializerType} from "@atomiqlabs/chain-evm";
+import {
+  CitreaInitializer,
+  CitreaInitializerType,
+  JsonRpcProviderWithRetries,
+  WebSocketProviderWithRetries
+} from "@atomiqlabs/chain-evm";
 
 const statsUrl: string = import.meta.env.VITE_STATS_URL;
 const dappUrl: string = import.meta.env.VITE_DAPP_URL;
@@ -92,6 +97,10 @@ export const FEConstants = {
       optimal: 1000000000000000000n,
       minimum: 500000000000000000n,
     },
+    "CITREA:0x0000000000000000000000000000000000000000": {
+      optimal: 1000_0000000000n,
+      minimum: 500_0000000000n
+    }
   },
   mempoolApi,
   bitcoinRpc,
@@ -117,7 +126,11 @@ export const FEConstants = {
   starknetRpc: starknetRpcUrl == null ? null : new RpcProvider({ nodeUrl: starknetRpcUrl }),
 
   citreaChainType: citreaChain,
-  citreaRpc: citreaRpcUrl==null ? null : new JsonRpcProvider(citreaRpcUrl),
+  citreaRpc: citreaRpcUrl == null ? null : (
+    citreaRpcUrl.startsWith("ws")
+      ? new WebSocketProviderWithRetries(citreaRpcUrl)
+      : new JsonRpcProviderWithRetries(citreaRpcUrl)
+  ),
 
   bitcoinNetwork:
     bitcoinNetwork === 'TESTNET'

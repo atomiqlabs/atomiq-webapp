@@ -41,8 +41,8 @@ export function SpvVaultFromBTCSwapPanel(props: {
         swap={props.quote}
         isExpired={page.step5?.state === 'expired'}
         onRefreshQuote={props.refreshQuote}
-        totalTime={page.step1init?.expiry.total}
-        remainingTime={page.step1init?.expiry.remaining}
+        totalTime={page.step1init?.expiry?.total}
+        remainingTime={page.step1init?.expiry?.remaining}
         btcFeeRate={props.feeRate}
       />
     </div>

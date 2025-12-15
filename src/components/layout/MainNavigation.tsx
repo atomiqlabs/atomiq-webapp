@@ -104,7 +104,7 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
                   className="main-navigation__network ms-2 my-0 align-items-center font-smallest"
                   bg="danger"
                 >
-                  DEVNETO
+                  {BitcoinNetwork[FEConstants.bitcoinNetwork]}
                 </Badge>
               ) : (
                 ''

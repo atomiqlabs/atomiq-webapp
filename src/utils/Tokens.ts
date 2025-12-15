@@ -42,6 +42,11 @@ if (FEConstants.chainsConfiguration.enableSolana) {
   smartChainTokenArray.push(Tokens.SOLANA.BONK);
 }
 
+if (FEConstants.chainsConfiguration.enableCitrea) {
+  smartChainTokenArray.push(Tokens.CITREA.CBTC);
+  smartChainTokenArray.push(Tokens.CITREA.USDC);
+}
+
 if (FEConstants.chainsConfiguration.enableStarknet) {
   smartChainTokenArray.push(Tokens.STARKNET.WBTC);
   smartChainTokenArray.push(Tokens.STARKNET.STRK);

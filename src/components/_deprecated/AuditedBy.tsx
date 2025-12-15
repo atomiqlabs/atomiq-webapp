@@ -15,7 +15,7 @@ export function AuditedBy(props: { chainId?: string }) {
       >
         <div className="icon icon-verified"></div>
         <span className="vetified-by__text">Audited by</span>
-        {props.chainId === 'STARKNET' ? (
+        {props.chainId !== 'SOLANA' ? (
           <img src="/csc-white-logo.png" style={{ marginTop: '-0.075rem' }} />
         ) : (
           <img src="/ackee_logo.svg" style={{ marginTop: '-0.125rem' }} />
