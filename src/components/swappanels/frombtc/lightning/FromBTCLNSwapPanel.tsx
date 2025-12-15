@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Spinner } from 'react-bootstrap';
-import { FromBTCLNSwap, ISwap } from '@atomiqlabs/sdk';
+import {FromBTCLNAutoSwap, FromBTCLNSwap, ISwap} from '@atomiqlabs/sdk';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { SwapPageUIState } from '../../../../hooks/pages/useSwapPage';
@@ -25,7 +25,7 @@ Steps:
  */
 
 export function FromBTCLNSwapPanel(props: {
-  quote: FromBTCLNSwap;
+  quote: FromBTCLNSwap | FromBTCLNAutoSwap;
   refreshQuote: () => void;
   UICallback: (quote: ISwap, state: SwapPageUIState) => void;
   type?: 'payment' | 'swap';
@@ -55,6 +55,8 @@ export function FromBTCLNSwapPanel(props: {
       />
     </div>
   );
+
+  console.log("FromBTCLNSwapPanel, state: ", page);
 
   if (page.step1init) {
     return (
@@ -202,27 +204,47 @@ export function FromBTCLNSwapPanel(props: {
           />
 
           <SwapStepAlert
-            show={true}
+            show={!!page.step3claim.commit || !!page.step3claim.claim}
             type="success"
             icon={ic_check_circle}
             title="Lightning network payment received"
             description="Claim your payment to finish the swap."
             actionElement={
-              <ButtonWithWallet
-                requiredWalletAddress={props.quote._getInitiator()}
-                className="swap-step-alert__button"
-                chainId={props.quote?.chainIdentifier}
-                onClick={page.step3claim.commit.onClick}
-                disabled={page.step3claim.commit.disabled}
-                variant="secondary"
-              >
-                {page.step3claim.commit.loading ? (
-                  <Spinner animation="border" size="sm" className="mr-2" />
-                ) : (
-                  <i className="icon icon-claim"></i>
-                )}
-                Claim your payment
-              </ButtonWithWallet>
+              <>
+                {page.step3claim.commit && <ButtonWithWallet
+                  requiredWalletAddress={props.quote._getInitiator()}
+                  className="swap-step-alert__button"
+                  chainId={props.quote?.chainIdentifier}
+                  onClick={page.step3claim.commit.onClick}
+                  disabled={page.step3claim.commit.disabled}
+                  variant="secondary"
+                  size={page.step3claim.commit.size}
+                >
+                  {page.step3claim.commit.loading ? (
+                    <Spinner animation="border" size="sm" className="mr-2" />
+                  ) : (
+                    <i className="icon icon-claim"></i>
+                  )}
+                  {page.step3claim.commit.text}
+                </ButtonWithWallet>}
+
+                {page.step3claim.claim && <ButtonWithWallet
+                  requiredWalletAddress={props.quote._getInitiator()}
+                  className="swap-step-alert__button"
+                  chainId={props.quote?.chainIdentifier}
+                  onClick={page.step3claim.claim.onClick}
+                  disabled={page.step3claim.claim.disabled}
+                  variant="secondary"
+                  size={page.step3claim.claim.size}
+                >
+                  {page.step3claim.claim.loading ? (
+                    <Spinner animation="border" size="sm" className="mr-2" />
+                  ) : (
+                    <i className="icon icon-claim"></i>
+                  )}
+                  {page.step3claim.claim.text}
+                </ButtonWithWallet>}
+              </>
             }
           />
         </div>

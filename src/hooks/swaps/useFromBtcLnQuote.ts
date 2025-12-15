@@ -1,4 +1,4 @@
-import {FromBTCLNSwap, FromBTCLNSwapState, ISwap, TokenAmount} from '@atomiqlabs/sdk';
+import {FromBTCLNAutoSwap, FromBTCLNSwap, FromBTCLNSwapState, ISwap, SwapType, TokenAmount} from '@atomiqlabs/sdk';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { useStateRef } from '../utils/useStateRef';
 import { useAbortSignalRef } from '../utils/useAbortSignal';
@@ -108,6 +108,8 @@ export type FromBtcLnQuotePage = {
     };
   };
   step3claim?: {
+    waitingForLPInit?: boolean,
+    waitingForWatchtowerClaim?: boolean,
     error?: {
       title: string;
       error: Error;
@@ -117,7 +119,7 @@ export type FromBtcLnQuotePage = {
       total: number;
     };
     //First button to show for claim, on Solana there is just this button
-    commit: {
+    commit?: {
       text: string;
       loading: boolean;
       disabled: boolean;
@@ -140,14 +142,15 @@ export type FromBtcLnQuotePage = {
 };
 
 export function useFromBtcLnQuote(
-  quote: FromBTCLNSwap<any>,
+  quote: FromBTCLNSwap<any> | FromBTCLNAutoSwap<any>,
   UICallback: (quote: ISwap, state: SwapPageUIState) => void,
 ): FromBtcLnQuotePage {
   const { swapper } = useContext(SwapperContext);
   const { connectWallet, disconnectWallet } = useContext(ChainsContext);
   const lightningWallet = useChain('LIGHTNING')?.wallet;
   const smartChainWallet = useSmartChainWallet(quote, true);
-  const canClaimInOneShot = quote?.canCommitAndClaimInOneShot();
+  const canClaimInOneShot = quote?.getType() === SwapType.FROM_BTCLN &&
+    (quote as FromBTCLNSwap)?.canCommitAndClaimInOneShot();
 
   const additionalGasRequired = useCheckAdditionalGas(quote);
 
@@ -159,9 +162,11 @@ export function useFromBtcLnQuote(
     quoteTimeRemaining,
     isInitiated
   } = useSwapState(quote, (state: FromBTCLNSwapState, initiated: boolean) => {
+    console.log("useFromBtcLnQuote(): useSwapState(): ", state, initiated);
     if(!initiated) return;
     if(UICallbackRef.current) UICallbackRef.current(quote, "hide");
   });
+  console.log("useFromBtcLnQuote(): After useSwapState(): ", state, isInitiated);
 
   const [autoClaim, setAutoClaim] = useLocalStorage('crossLightning-autoClaim', false);
   const [showHyperlinkWarning, setShowHyperlinkWarning] = useLocalStorage(
@@ -221,13 +226,15 @@ export function useFromBtcLnQuote(
 
   const [onCommit, committing, commitSuccess, commitError] = useAsync(
     async (skipChecks?: boolean) => {
+      if (quote.getType() === SwapType.FROM_BTCLN_AUTO) return;
+      const _quote = quote as FromBTCLNSwap;
       if (canClaimInOneShot) {
-        await quote
+        await _quote
           .commitAndClaim(smartChainWallet.instance, null, skipChecks)
           .then((txs) => txs[0]);
       } else {
-        await quote.commit(smartChainWallet.instance, null, skipChecks);
-        if (quote.chainIdentifier === 'STARKNET') await timeoutPromise(5000);
+        await _quote.commit(smartChainWallet.instance, null, skipChecks);
+        if (_quote.chainIdentifier === 'STARKNET') await timeoutPromise(5000);
       }
     },
     [quote, smartChainWallet]
@@ -239,6 +246,7 @@ export function useFromBtcLnQuote(
   );
 
   useEffect(() => {
+    if (quote?.getType() === SwapType.FROM_BTCLN_AUTO) return;
     if (state === FromBTCLNSwapState.PR_PAID) {
       if (autoClaim || lightningWallet != null)
         onCommit(true).then(() => {
@@ -250,7 +258,7 @@ export function useFromBtcLnQuote(
   const isQuoteExpired =
     state === FromBTCLNSwapState.QUOTE_EXPIRED ||
     (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !committing && !paymentWaiting);
-  const isQuoteExpiredClaim = isQuoteExpired && quote.signatureData != null;
+  const isQuoteExpiredClaim = isQuoteExpired && quote.commitTxId != null;
 
   const isFailed = state === FromBTCLNSwapState.FAILED || state === FromBTCLNSwapState.EXPIRED;
 
@@ -260,12 +268,38 @@ export function useFromBtcLnQuote(
 
   const isClaimCommittable =
     state === FromBTCLNSwapState.PR_PAID ||
-    (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && committing) ||
     committing;
+
+  const isAwaitingLpInit = state === FromBTCLNSwapState.PR_PAID &&
+    quote?.getType() === SwapType.FROM_BTCLN_AUTO;
 
   const isClaimClaimable = state === FromBTCLNSwapState.CLAIM_COMMITED && !committing;
 
   const isClaimable = isClaimCommittable || isClaimClaimable;
+
+  const _isAlreadyClaimable = useMemo(
+    () => quote?.getType() === SwapType.FROM_BTCLN || quote?.isClaimable(),
+    [quote]
+  );
+  const [
+    _isWaitingForWatchtowerClaim,
+    setWaitingForWatchtowerClaim
+  ] = useState<boolean>(quote?.getType()===SwapType.FROM_BTCLN_AUTO);
+  useEffect(() => {
+    if(isClaimClaimable && quote?.getType()===SwapType.FROM_BTCLN_AUTO) {
+      setWaitingForWatchtowerClaim(true);
+      const timeout = setTimeout(() => {
+        setWaitingForWatchtowerClaim(false);
+      }, 60*1000);
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    } else {
+      setWaitingForWatchtowerClaim(false);
+    }
+  }, [isClaimClaimable, quote]);
+  const isWaitingForWatchtowerClaim = !_isAlreadyClaimable && _isWaitingForWatchtowerClaim;
 
   const isSuccess = state === FromBTCLNSwapState.CLAIM_CLAIMED;
 
@@ -311,7 +345,7 @@ export function useFromBtcLnQuote(
       type: 'failed',
     };
 
-  if (canClaimInOneShot) {
+  if (canClaimInOneShot || quote?.getType() === SwapType.FROM_BTCLN_AUTO) {
     if (isQuoteExpiredClaim) {
       executionSteps[0] = {
         icon: ic_refresh,
@@ -324,12 +358,27 @@ export function useFromBtcLnQuote(
         type: 'failed',
       };
     }
-    if (isClaimable)
-      executionSteps[1] = {
-        icon: ic_receipt,
-        text: committing || claiming ? 'Claiming transaction' : 'Send claim transaction',
-        type: 'loading',
-      };
+    if (isClaimable) {
+      if(isAwaitingLpInit) {
+        executionSteps[1] = {
+          icon: ic_hourglass_top_outline,
+          text: 'Waiting for LP',
+          type: 'loading',
+        };
+      } else if(isWaitingForWatchtowerClaim) {
+        executionSteps[1] = {
+          icon: ic_receipt,
+          text: 'Automatic claim',
+          type: 'loading',
+        };
+      } else {
+        executionSteps[1] = {
+          icon: ic_receipt,
+          text: committing || claiming ? 'Claiming transaction' : 'Send claim transaction',
+          type: 'loading',
+        };
+      }
+    }
     if (isSuccess)
       executionSteps[1] = {
         icon: ic_check_outline,
@@ -440,6 +489,7 @@ export function useFromBtcLnQuote(
     };
   }, [
     isCreated,
+    isInitiated,
     paymentWaiting,
     smartChainWallet,
     waitForPayment,
@@ -542,6 +592,7 @@ export function useFromBtcLnQuote(
     };
   }, [
     isCreated,
+    isInitiated,
     paymentWaiting,
     autoClaim,
     quote,
@@ -561,6 +612,37 @@ export function useFromBtcLnQuote(
 
   const step3claim = useMemo(() => {
     if (!isClaimable) return;
+
+    if(quote?.getType() === SwapType.FROM_BTCLN_AUTO) {
+      return {
+        waitingForLPInit: isAwaitingLpInit,
+        waitingForWatchtowerClaim: isWaitingForWatchtowerClaim,
+        error:
+          claimError
+            ? {
+              title: 'Swap claim error',
+              error: claimError,
+            }
+            : undefined,
+        expiry:
+          state === FromBTCLNSwapState.CLAIM_COMMITED && !claiming && !isWaitingForWatchtowerClaim
+            ? {
+              remaining: quoteTimeRemaining,
+              total: totalQuoteTime,
+            }
+            : undefined,
+        claim: isClaimClaimable && !isWaitingForWatchtowerClaim
+          ? {
+            text: claiming ? 'Claiming funds...' : 'Finish swap (claim funds)',
+            loading: claiming,
+            disabled: claiming,
+            size: 'lg' as const,
+            onClick: onClaim,
+          }
+          : undefined
+      }
+    }
+
     return {
       error:
         commitError || claimError
@@ -609,6 +691,7 @@ export function useFromBtcLnQuote(
         : undefined,
     };
   }, [
+    quote,
     isClaimable,
     commitError,
     claimError,
@@ -622,6 +705,8 @@ export function useFromBtcLnQuote(
     isClaimCommittable,
     isClaimClaimable,
     onClaim,
+    isAwaitingLpInit,
+    isWaitingForWatchtowerClaim
   ]);
 
   const step4 = useMemo(() => {

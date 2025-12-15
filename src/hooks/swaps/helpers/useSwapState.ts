@@ -1,4 +1,6 @@
 import {
+  FromBTCLNAutoSwap,
+  FromBTCLNAutoSwapState,
   FromBTCLNSwap,
   FromBTCLNSwapState,
   FromBTCSwap,
@@ -20,6 +22,8 @@ function getStateToString(swapType: SwapType, state: number) {
       return ToBTCSwapState[state];
     case SwapType.FROM_BTCLN:
       return FromBTCLNSwapState[state];
+    case SwapType.FROM_BTCLN_AUTO:
+      return FromBTCLNAutoSwapState[state];
     case SwapType.FROM_BTC:
       return FromBTCSwapState[state];
     case SwapType.SPV_VAULT_FROM_BTC:
@@ -67,6 +71,7 @@ export function useSwapState<S extends number>(quote: ISwap<any, any, S>, onSwap
     }, 500);
 
     const checkExpiry = (state: S) => {
+      let initialExpiryTime = expiryTime.current;
       expiryTime.current = quote.getQuoteExpiry();
       if (quote.getType() === SwapType.FROM_BTCLN) {
         if (state === FromBTCLNSwapState.PR_CREATED) {
@@ -76,11 +81,18 @@ export function useSwapState<S extends number>(quote: ISwap<any, any, S>, onSwap
           expiryTime.current = (quote as ISwap as FromBTCLNSwap<any>).getHtlcTimeoutTime();
         }
       }
+      if(quote.getType() === SwapType.FROM_BTCLN_AUTO) {
+        if(state === FromBTCLNAutoSwapState.CLAIM_COMMITED) {
+          expiryTime.current = (quote as ISwap as FromBTCLNAutoSwap<any>).getHtlcTimeoutTime();
+        }
+      }
       if (quote.getType() === SwapType.FROM_BTC) {
         if (state >= FromBTCSwapState.CLAIM_COMMITED) {
           expiryTime.current = (quote as ISwap as FromBTCSwap<any>).getTimeoutTime();
         }
       }
+
+      if(initialExpiryTime===expiryTime.current) return;
 
       const dt = Math.floor((expiryTime.current - Date.now()) / 1000);
       setInitialQuoteTimeout(Math.max(dt, 1));

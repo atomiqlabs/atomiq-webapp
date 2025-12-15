@@ -1,4 +1,5 @@
 import {
+  FromBTCLNAutoSwap,
   FromBTCLNSwap,
   FromBTCSwap,
   ISwap,
@@ -60,7 +61,8 @@ export function SwapPanel(props: {
       );
       break;
     case SwapType.FROM_BTCLN:
-      const _quote = props.quote as FromBTCLNSwap;
+    case SwapType.FROM_BTCLN_AUTO:
+      const _quote = props.quote as FromBTCLNSwap | FromBTCLNAutoSwap;
       if (_quote.lnurl != null && props.type !== 'swap') {
         swapElement = <></>;
       } else {
