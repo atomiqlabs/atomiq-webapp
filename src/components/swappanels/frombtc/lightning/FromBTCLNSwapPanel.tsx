@@ -56,8 +56,6 @@ export function FromBTCLNSwapPanel(props: {
     </div>
   );
 
-  console.log("FromBTCLNSwapPanel, state: ", page);
-
   if (page.step1init) {
     return (
       <>

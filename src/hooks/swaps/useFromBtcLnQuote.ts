@@ -162,11 +162,9 @@ export function useFromBtcLnQuote(
     quoteTimeRemaining,
     isInitiated
   } = useSwapState(quote, (state: FromBTCLNSwapState, initiated: boolean) => {
-    console.log("useFromBtcLnQuote(): useSwapState(): ", state, initiated);
     if(!initiated) return;
     if(UICallbackRef.current) UICallbackRef.current(quote, "hide");
   });
-  console.log("useFromBtcLnQuote(): After useSwapState(): ", state, isInitiated);
 
   const [autoClaim, setAutoClaim] = useLocalStorage('crossLightning-autoClaim', false);
   const [showHyperlinkWarning, setShowHyperlinkWarning] = useLocalStorage(
