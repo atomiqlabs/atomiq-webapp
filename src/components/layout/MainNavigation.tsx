@@ -13,11 +13,7 @@ import { SwapperContext } from '../../context/SwapperContext';
 import { useAnchorNavigate } from '../../hooks/navigation/useAnchorNavigate';
 import {ChainsConfig} from "../../data/ChainsConfig";
 
-interface MainNavigationProps {
-  affiliateLink?: string;
-}
-
-export function MainNavigation({ affiliateLink }: MainNavigationProps) {
+export function MainNavigation(props: {}) {
   const location = useLocation();
   const [isOpen, setIsOpen] = React.useState(false);
   const [actionRequiredCount, setActionRequiredCount] = React.useState<number>(0);
@@ -177,7 +173,7 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
                   </NavDropdown.Item>
                 ))}
               </NavDropdown>
-              <SocialFooter affiliateLink={affiliateLink} />
+              <SocialFooter />
             </Nav>
           </Navbar.Collapse>
         </Navbar>

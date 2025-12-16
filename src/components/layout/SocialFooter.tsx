@@ -25,11 +25,7 @@ const socialLink = [
   },
 ];
 
-interface SocialFooterProps {
-  affiliateLink?: string;
-}
-
-export function SocialFooter({ affiliateLink }: SocialFooterProps) {
+export function SocialFooter(props: {}) {
   return (
     <div className="social-footer">
       {socialLink.map(({ link, image, title }) => (
@@ -43,24 +39,6 @@ export function SocialFooter({ affiliateLink }: SocialFooterProps) {
           </a>
         </OverlayTrigger>
       ))}
-
-      {affiliateLink != null && affiliateLink !== '' ? (
-        <OverlayTrigger
-          placement="left"
-          overlay={
-            <Tooltip id="referral-tooltip">
-              <span>Swap fee reduced to 0.2%, thanks to being referred to atomiq.exchange!</span>
-            </Tooltip>
-          }
-        >
-          <div className="social-footer__link gap-2 d-flex is-info">
-            <span className="text-decoration-dotted">Using referral link</span>
-            <Icon icon={heart} className="social-footer__icon" />
-          </div>
-        </OverlayTrigger>
-      ) : (
-        ''
-      )}
 
       {/* TODO what about this?*/}
       {/*<Col className="d-flex justify-content-end">*/}

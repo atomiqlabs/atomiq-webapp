@@ -2,13 +2,12 @@ import {useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {SwapperContext} from '../../context/SwapperContext';
 import {useSupportedTokens} from '../quoting/useSupportedTokens';
 import {useStateWithOverride} from '../utils/useStateWithOverride';
-import {FEConstants, Tokens} from '../../FEConstants';
+import {FEConstants} from '../../FEConstants';
 import {
   fromTokenIdentifier,
   getChainIdentifierForCurrency,
   includesToken,
   smartChainTokenArray,
-  toTokenIdentifier,
 } from '../../utils/Tokens';
 import {
   fromHumanReadableString,
@@ -38,6 +37,7 @@ import {usePricing} from '../pricing/usePricing';
 import {WebLNProvider} from 'webln';
 import {useExistingSwap} from '../quoting/useExistingSwap';
 import {ChainsConfig} from "../../data/ChainsConfig";
+import {Tokens} from "../../providers/SwapperProvider";
 
 export type SwapPageUIState = 'show' | 'lock' | 'hide';
 

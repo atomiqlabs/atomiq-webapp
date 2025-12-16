@@ -3,13 +3,12 @@ import {
   isIRefundableSwap,
   isSCToken,
   ISwap,
-  IToBTCSwap,
   SwapDirection,
   toHumanReadableString,
   Token
 } from '@atomiqlabs/sdk';
-import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
 import {ChainsConfig} from "../data/ChainsConfig";
+import {TokenResolver, Tokens} from "../providers/SwapperProvider";
 
 export interface TransactionEntryProps {
   id?: string;

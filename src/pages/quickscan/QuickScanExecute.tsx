@@ -18,9 +18,9 @@ import { useWalletBalance } from '../../hooks/wallets/useWalletBalance';
 import { ScrollAnchor } from '../../components/ScrollAnchor';
 import { useLocalStorage } from '../../hooks/utils/useLocalStorage';
 import { ErrorAlert } from '../../components/_deprecated/ErrorAlert';
-import { Tokens } from '../../FEConstants';
 import { useStateWithOverride } from '../../hooks/utils/useStateWithOverride';
 import {SwapPanel} from "../../components/swappanels/SwapPanel";
+import {Tokens} from "../../providers/SwapperProvider";
 
 export function QuickScanExecute() {
   const { swapper } = useContext(SwapperContext);

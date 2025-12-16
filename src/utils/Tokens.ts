@@ -3,12 +3,11 @@ import {
   isBtcToken,
   isSCToken,
   SCToken,
-  SwapType,
   toHumanReadableString,
   Token,
 } from '@atomiqlabs/sdk';
-import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
 import {ChainsConfig} from "../data/ChainsConfig";
+import {TokenResolver, Tokens} from "../providers/SwapperProvider";
 
 type TokensType = typeof Tokens;
 type TokenTickers = {
