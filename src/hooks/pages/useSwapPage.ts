@@ -111,6 +111,7 @@ export type SwapPageState = {
       onChange: (val: string) => void;
       disabled: boolean;
       loading: boolean;
+      placeholder: string;
       validation?: {
         status: 'success' | 'warning' | 'error';
         text: string;
@@ -692,6 +693,9 @@ export function useSwapPage(): SwapPageState {
               loading: addressLoading,
               validation: addressValidationStatus,
               isFromWallet: isOutputWalletAddress,
+              placeholder: swapType===SwapType.TO_BTCLN
+                ? "Enter Lightning invoice, LNURL-pay link"
+                : "Enter destination address"
             },
       webln: useMemo(() => {
         if (!webLnForOutput) return undefined;

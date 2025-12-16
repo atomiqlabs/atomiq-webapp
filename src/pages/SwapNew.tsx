@@ -258,7 +258,7 @@ export function SwapNew() {
                             className={'wallet-address__form with-inline-icon'}
                             onChange={swapPage.output.address?.onChange}
                             value={swapPage.output.address?.value}
-                            placeholder={'Enter destination address'}
+                            placeholder={swapPage.output.address?.placeholder}
                             validated={
                               swapPage.output.address?.validation?.status === 'error'
                                 ? swapPage.output.address?.validation.text

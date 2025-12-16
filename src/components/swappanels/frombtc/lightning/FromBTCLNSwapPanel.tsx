@@ -16,6 +16,7 @@ import { DisconnectedWalletQrAndAddress } from '../../../swaps/DisconnectedWalle
 import { SwapExpiryProgressBar } from '../../../swaps/SwapExpiryProgressBar';
 import { ScrollAnchor } from '../../../ScrollAnchor';
 import { SwapFeePanel } from '../../../fees/SwapFeePanel';
+import {useChain} from "../../../../hooks/chains/useChain";
 
 /*
 Steps:
@@ -32,6 +33,7 @@ export function FromBTCLNSwapPanel(props: {
   abortSwap?: () => void;
   notEnoughForGas: bigint;
 }) {
+  const chain = useChain(props.quote?.chainIdentifier);
   const page = useFromBtcLnQuote(props.quote, props.UICallback);
 
   const gasAlert = (
@@ -91,8 +93,12 @@ export function FromBTCLNSwapPanel(props: {
           }
           text={
             <>
-              The payment will not succeed unless you{' '}
-              <strong>return to the web app and claim the swap.</strong>
+              Make sure that you <strong>return back to this web app</strong>{' '}
+              once you inititated a Lightning Network payment from your wallet app.{' '}
+              <strong>
+                The Lightning Network payment will only succeed/confirm once{' '}
+                you come back to the dApp and claim the funds on the {chain?.chain.name} side!
+              </strong>
             </>
           }
           buttonText="Understood, pay with LN wallet"
@@ -227,7 +233,7 @@ export function FromBTCLNSwapPanel(props: {
                 </ButtonWithWallet>}
 
                 {page.step3claim.claim && <ButtonWithWallet
-                  requiredWalletAddress={props.quote._getInitiator()}
+                  requiredWalletAddress={page.step3claim.claim.requiredConnectedWalletAddress}
                   className="swap-step-alert__button"
                   chainId={props.quote?.chainIdentifier}
                   onClick={page.step3claim.claim.onClick}

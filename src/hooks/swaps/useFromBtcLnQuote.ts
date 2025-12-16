@@ -71,7 +71,7 @@ export type FromBtcLnQuotePage = {
       address: {
         value: string;
         hyperlink: string;
-        copy: () => true;
+        copy: () => boolean;
       };
       //Display the modal warning to user to come back after payment is initiated
       addressComeBackWarningModal?: {
@@ -133,6 +133,7 @@ export type FromBtcLnQuotePage = {
       disabled: boolean;
       size: 'sm' | 'lg';
       onClick: () => void;
+      requiredConnectedWalletAddress?: string;
     };
   };
   step4?: {
@@ -171,7 +172,7 @@ export function useFromBtcLnQuote(
     'crossLightning-showHyperlinkWarning',
     true
   );
-  const [addressWarningModalOpened, setAddressWarningModalOpened] = useState<boolean>(false);
+  const [addressWarningModalOpened, setAddressWarningModalOpened] = useState<"link" | "copy">(null);
 
   const [payingWithNFC, setPayingWithNFC] = useState<boolean>(false);
   const NFCScanning = useNFCScanner(
@@ -544,15 +545,25 @@ export function useFromBtcLnQuote(
                 value: quote.getAddress(),
                 hyperlink: quote.getHyperlink(),
                 copy: () => {
-                  navigator.clipboard.writeText(quote.getAddress());
-                  return true;
+                  if (!showHyperlinkWarning) {
+                    navigator.clipboard.writeText(quote.getAddress());
+                    return true;
+                  }
+                  setAddressWarningModalOpened("copy");
+                  return false;
                 }
               },
               addressComeBackWarningModal: addressWarningModalOpened
                 ? {
                     close: (accepted: boolean) => {
-                      if (accepted) window.location.href = quote.getHyperlink();
-                      setAddressWarningModalOpened(false);
+                      if (accepted) {
+                        if (addressWarningModalOpened === "copy") {
+                          navigator.clipboard.writeText(quote.getAddress());
+                        } else {
+                          window.location.href = quote.getHyperlink();
+                        }
+                      }
+                      setAddressWarningModalOpened(null);
                     },
                     showAgain: {
                       checked: showHyperlinkWarning,
@@ -567,7 +578,7 @@ export function useFromBtcLnQuote(
                     return;
                   }
                   //Show dialog and then pay
-                  setAddressWarningModalOpened(true);
+                  setAddressWarningModalOpened("link");
                 },
               },
               payWithWebLn: {
@@ -685,6 +696,9 @@ export function useFromBtcLnQuote(
             disabled: claiming || !isClaimClaimable,
             size: isClaimClaimable ? ('lg' as const) : ('sm' as const),
             onClick: onClaim,
+            requiredConnectedWalletAddress: quote?.getType() === SwapType.FROM_BTCLN
+              ? quote._getInitiator()
+              : undefined
           }
         : undefined,
     };
