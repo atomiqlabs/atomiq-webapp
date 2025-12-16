@@ -37,6 +37,7 @@ import {useQuote} from '../quoting/useQuote';
 import {usePricing} from '../pricing/usePricing';
 import {WebLNProvider} from 'webln';
 import {useExistingSwap} from '../quoting/useExistingSwap';
+import {ChainsConfig} from "../../data/ChainsConfig";
 
 export type SwapPageUIState = 'show' | 'lock' | 'hide';
 
@@ -347,7 +348,7 @@ export function useSwapPage(): SwapPageState {
       const nativeToken = swapper.Utils.getNativeToken(scCurrency.chainId);
       if (nativeToken.address === scCurrency.address) return;
       return toTokenAmount(
-        FEConstants.scBalances[toTokenIdentifier(nativeToken)]?.optimal,
+        ChainsConfig[nativeToken.chainId]?.assetBalances?.[nativeToken.address]?.optimal,
         nativeToken,
         swapper.prices
       );
@@ -362,8 +363,9 @@ export function useSwapPage(): SwapPageState {
     swapper.Utils.getSpendableBalance(addressData?.address, gasDropTokenAmount.token).then(
       (value) => {
         if (cancelled) return;
+        const token = gasDropTokenAmount.token;
         const requiredBalance =
-          FEConstants.scBalances[toTokenIdentifier(gasDropTokenAmount.token)]?.minimum;
+          ChainsConfig[token.chainId]?.assetBalances?.[token.address]?.optimal;
         if (value < requiredBalance) {
           setGasDropChecked(true);
         }

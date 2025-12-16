@@ -9,6 +9,7 @@ import {
   Token
 } from '@atomiqlabs/sdk';
 import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
+import {ChainsConfig} from "../data/ChainsConfig";
 
 export interface TransactionEntryProps {
   id?: string;
@@ -49,15 +50,15 @@ export function swapToProps(swap: ISwap): TransactionEntryProps {
   const output = swap.getOutput();
 
   const inputExplorer = isSCToken(input.token)
-    ? FEConstants.blockExplorers[input.token.chainId]
+    ? ChainsConfig[input.token.chainId]?.blockExplorer
     : !input.token.lightning
-      ? FEConstants.btcBlockExplorer
+      ? ChainsConfig.BITCOIN.blockExplorer
       : null;
 
   const outputExplorer = isSCToken(output.token)
-    ? FEConstants.blockExplorers[output.token.chainId]
+    ? ChainsConfig[output.token.chainId]?.blockExplorer
     : !output.token.lightning
-      ? FEConstants.btcBlockExplorer
+      ? ChainsConfig.BITCOIN.blockExplorer
       : null;
 
   const txIdInput = swap.getInputTxId();
@@ -171,15 +172,15 @@ export function explorerSwapToProps(data: ExplorerSwapData): TransactionEntryPro
   }
 
   const inputExplorer = isSCToken(inputToken)
-    ? FEConstants.blockExplorers[inputToken.chainId]
+    ? ChainsConfig[inputToken.chainId]?.blockExplorer
     : !inputToken.lightning
-      ? FEConstants.btcBlockExplorer
+      ? ChainsConfig.BITCOIN.blockExplorer
       : null;
 
   const outputExplorer = isSCToken(outputToken)
-    ? FEConstants.blockExplorers[outputToken.chainId]
+    ? ChainsConfig[outputToken.chainId].blockExplorer
     : !outputToken.lightning
-      ? FEConstants.btcBlockExplorer
+      ? ChainsConfig.BITCOIN.blockExplorer
       : null;
 
   return {

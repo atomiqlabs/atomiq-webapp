@@ -14,6 +14,7 @@ import { ButtonWithWallet } from '../../wallets/ButtonWithWallet';
 import { BaseButton } from '../../common/BaseButton';
 import { FEConstants } from '../../../FEConstants';
 import { SwapFeePanel } from '../../fees/SwapFeePanel';
+import {ChainsConfig} from "../../../data/ChainsConfig";
 
 /*
 Steps lightning:
@@ -195,7 +196,7 @@ export function ToBTCSwapPanel(props: {
                 ? {
                     type: 'link',
                     text: 'View transaction',
-                    href: FEConstants.btcBlockExplorer + props.quote.getOutputTxId(),
+                    href: ChainsConfig.BITCOIN.blockExplorer + props.quote.getOutputTxId(),
                   }
                 : undefined
             }

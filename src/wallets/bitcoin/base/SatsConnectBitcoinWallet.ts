@@ -12,11 +12,12 @@ import { BitcoinNetwork, CoinselectAddressTypes } from '@atomiqlabs/sdk';
 import { BTC_NETWORK } from '@scure/btc-signer/utils';
 import { Transaction, Address as AddressParser } from '@scure/btc-signer';
 import {FEConstants} from "../../../FEConstants";
+import {ChainsConfig} from "../../../data/ChainsConfig";
 
 const network =
-  FEConstants.bitcoinNetwork === BitcoinNetwork.MAINNET
+  ChainsConfig.BITCOIN.network === BitcoinNetwork.MAINNET
     ? BitcoinNetworkType.Mainnet
-    : FEConstants.bitcoinNetwork === BitcoinNetwork.TESTNET4
+    : ChainsConfig.BITCOIN.network === BitcoinNetwork.TESTNET4
       ? 'Testnet4'
       : BitcoinNetworkType.Testnet;
 

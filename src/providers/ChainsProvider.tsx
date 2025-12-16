@@ -12,6 +12,7 @@ import {ExtensionBitcoinWallet} from "../wallets/bitcoin/base/ExtensionBitcoinWa
 import {ConnectWalletModal} from "../components/wallets/ConnectWalletModal";
 import { EVMSigner } from '@atomiqlabs/chain-evm';
 import {EVMWalletWrapper, useCitreaChain} from "./chains/useEVMChains";
+import {ChainsConfig} from "../data/ChainsConfig";
 
 export type WalletListData = {
   name: string;
@@ -35,7 +36,6 @@ export type Chain<T> = {
   chainId: string;
   _disconnect: () => Promise<void> | void;
   _connectWallet: (walletName: string) => Promise<void> | void;
-  swapperOptions?: any;
   hasWallets: boolean;
 };
 
@@ -50,11 +50,11 @@ export type WalletTypes = {
 export type ChainIdentifiers = keyof WalletTypes;
 
 function WrappedChainsProvider(props: { children: React.ReactNode }) {
-  const solanaResult = useSolanaChain(FEConstants.chainsConfiguration.enableSolana);
-  const starknetResult = useStarknetChain(FEConstants.chainsConfiguration.enableStarknet);
-  const citreaResult = useCitreaChain(FEConstants.chainsConfiguration.enableCitrea);
-  const lightningResult = useLightningNetwork(FEConstants.chainsConfiguration.enableLightning);
-  const bitcoinResult = useBitcoinChain(FEConstants.chainsConfiguration.enableBitcoin, {
+  const solanaResult = useSolanaChain(!!ChainsConfig.SOLANA);
+  const starknetResult = useStarknetChain(!!ChainsConfig.STARKNET);
+  const citreaResult = useCitreaChain(!!ChainsConfig.CITREA);
+  const lightningResult = useLightningNetwork(!!ChainsConfig.LIGHTNING);
+  const bitcoinResult = useBitcoinChain(!!ChainsConfig.BITCOIN, {
     STARKNET: starknetResult?.wallet?.name,
     SOLANA: solanaResult?.wallet?.name,
     CITREA: citreaResult?.wallet?.name,
@@ -64,11 +64,11 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
     const chainsData: Record<string, Chain<any>> = {};
 
     // Add wallets and chain data based on configuration
-    if (FEConstants.chainsConfiguration.enableSolana && solanaResult) chainsData.SOLANA = solanaResult;
-    if (FEConstants.chainsConfiguration.enableStarknet && starknetResult) chainsData.STARKNET = starknetResult;
-    if (FEConstants.chainsConfiguration.enableCitrea && citreaResult) chainsData.CITREA = citreaResult;
-    if (FEConstants.chainsConfiguration.enableLightning && lightningResult) chainsData.LIGHTNING = lightningResult;
-    if (FEConstants.chainsConfiguration.enableBitcoin && bitcoinResult) chainsData.BITCOIN = bitcoinResult;
+    if (solanaResult) chainsData.SOLANA = solanaResult;
+    if (starknetResult) chainsData.STARKNET = starknetResult;
+    if (citreaResult) chainsData.CITREA = citreaResult;
+    if (lightningResult) chainsData.LIGHTNING = lightningResult;
+    if (bitcoinResult) chainsData.BITCOIN = bitcoinResult;
 
     return chainsData;
   }, [solanaResult, starknetResult, citreaResult, lightningResult, bitcoinResult]);

@@ -12,13 +12,13 @@ import { FAQPage } from './pages/FAQPage';
 import { AboutPage } from './pages/AboutPage';
 import { SwapForGas } from './pages/SwapForGas';
 import { SwapExplorer } from './pages/SwapExplorer';
-import { Affiliate } from './pages/Affiliate';
 import { SwapNew } from './pages/SwapNew';
 import { ErrorAlert } from './components/_deprecated/ErrorAlert';
 import { ChainsContext } from './context/ChainsContext';
 import { ChainsProvider } from './providers/ChainsProvider';
 import { SocialFooter } from './components/layout/SocialFooter';
 import { NotFound } from './pages/NotFound';
+import {ChainsConfig} from "./data/ChainsConfig";
 
 const noWalletPaths = new Set(['/about', '/faq', '/explorer']);
 
@@ -39,7 +39,6 @@ function WrappedApp() {
 
   const abortController = useRef<AbortController>();
 
-  const chainsData = useContext(ChainsContext);
   const loadSwapper: () => Promise<Swapper<any>> = async () => {
     setSwapperLoadingError(null);
     setSwapperLoading(true);
@@ -47,21 +46,17 @@ function WrappedApp() {
     abortController.current = new AbortController();
     try {
       const swapper = Factory.newSwapper({
-        chains: {
-          SOLANA: chainsData.chains.SOLANA?.swapperOptions,
-          STARKNET: chainsData.chains.STARKNET?.swapperOptions,
-          CITREA: chainsData.chains.CITREA?.swapperOptions
-        },
+        chains: ChainsConfig,
         intermediaryUrl: useLp,
         getRequestTimeout: 15000,
         postRequestTimeout: 30000,
-        bitcoinNetwork: FEConstants.bitcoinNetwork,
+        bitcoinNetwork: ChainsConfig.BITCOIN.network,
         pricingFeeDifferencePPM: 50000n,
         defaultAdditionalParameters: {
           affiliate: affiliateLink,
           feeOverrideCode: 'frontend',
         },
-        mempoolApi: FEConstants.mempoolApi,
+        mempoolApi: ChainsConfig.BITCOIN.mempoolApi,
         defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
       });
 
@@ -133,7 +128,6 @@ function WrappedApp() {
               <Route path="faq" element={<FAQPage />} />
               <Route path="about" element={<AboutPage />} />
               <Route path="explorer" element={<SwapExplorer />} />
-              <Route path="referral" element={<Affiliate />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Spinner } from 'react-bootstrap';
 import { FEConstants } from '../../FEConstants';
 import {TxDataType} from "../../types/swaps/TxDataType";
+import {ChainsConfig} from "../../data/ChainsConfig";
 
 export function SwapConfirmations(props: {
   txData: TxDataType;
@@ -27,7 +28,7 @@ export function SwapConfirmations(props: {
       </div>
 
       <a
-        href={FEConstants.btcBlockExplorer + props.txData.txId}
+        href={ChainsConfig.BITCOIN.blockExplorer + props.txData.txId}
         target="_blank"
         className="swap-confirmations__link"
       >

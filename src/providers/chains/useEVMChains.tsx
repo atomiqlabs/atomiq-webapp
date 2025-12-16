@@ -9,6 +9,7 @@ import {Chain} from "../ChainsProvider";
 
 import {createConfig, useAccount, useConnectors, useDisconnect, useWalletClient, WagmiProvider} from "wagmi";
 import { metaMask, coinbaseWallet, walletConnect } from 'wagmi/connectors';
+import {ChainsConfig} from "../../data/ChainsConfig";
 
 const citreaTestnetBlockscout = {
   name: "Blockscout - Citrea Testnet",
@@ -140,10 +141,6 @@ export function useCitreaChain(enabled: boolean): Chain<EVMSigner> {
       chainId: "CITREA",
       _disconnect: () => disconnect(),
       _connectWallet: connectWallet,
-      swapperOptions: {
-        rpcUrl: FEConstants.citreaRpc,
-        chainType: FEConstants.citreaChainType
-      },
       hasWallets: connectors.length>0
     };
   }, [evmSigner, connectors, connectWallet, connector, disconnect, icon]);

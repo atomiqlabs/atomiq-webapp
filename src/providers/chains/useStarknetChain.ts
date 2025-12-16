@@ -6,6 +6,7 @@ import { Chain, WalletListData } from '../ChainsProvider';
 import { useLocalStorage } from '../../hooks/utils/useLocalStorage';
 import { FEConstants } from '../../FEConstants';
 import { timeoutPromise } from '../../utils/Utils';
+import {ChainsConfig} from "../../data/ChainsConfig";
 
 const starknet = getStarknet();
 
@@ -49,10 +50,10 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner>
       setStarknetWalletData(null);
       return;
     }
-    const walletAccount = await WalletAccount.connect(FEConstants.starknetRpc, swo);
+    const walletAccount = await WalletAccount.connect(ChainsConfig.STARKNET?.rpcUrl, swo);
     const chainId = await wallet.requestChainId(walletAccount.walletProvider);
     console.log('useStarknetWalletContext(): connected wallet chainId: ', chainId);
-    if (chainId != null && FEConstants.starknetChainId !== chainId) {
+    if (chainId != null && ChainsConfig.STARKNET?.chainId !== chainId) {
       setStarknetSigner(null);
       setStarknetWalletData(null);
       console.log('useStarknetWalletContext(): Invalid chainId got from wallet...');
@@ -68,7 +69,7 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner>
         const starknetSigner = new StarknetBrowserSigner(walletAccount);
         wallet.requestChainId(walletAccount.walletProvider).then((chainId) => {
           console.log('useStarknetWalletContext(): connected wallet chainId: ', chainId);
-          if (FEConstants.starknetChainId !== chainId) {
+          if (ChainsConfig.STARKNET?.chainId !== chainId) {
             setStarknetSigner(null);
           } else {
             setStarknetSigner(starknetSigner);
@@ -170,11 +171,6 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner>
             chainId: 'STARKNET',
             _connectWallet: _connect,
             _disconnect,
-            swapperOptions: {
-              rpcUrl: FEConstants.starknetRpc,
-              chainId: FEConstants.starknetChainId,
-              fees: new StarknetFees(FEConstants.starknetRpc),
-            },
             hasWallets: availableWallets.length > 0 || nonInstalledWallet.length > 0,
           },
     [

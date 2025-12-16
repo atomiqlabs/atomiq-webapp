@@ -11,6 +11,7 @@ import { useLocation } from 'react-router-dom';
 import { SocialFooter } from './SocialFooter';
 import { SwapperContext } from '../../context/SwapperContext';
 import { useAnchorNavigate } from '../../hooks/navigation/useAnchorNavigate';
+import {ChainsConfig} from "../../data/ChainsConfig";
 
 interface MainNavigationProps {
   affiliateLink?: string;
@@ -99,12 +100,12 @@ export function MainNavigation({ affiliateLink }: MainNavigationProps) {
               <img src="/main_logo.png" className="main-navigation__logo is-desktop" />
               <img src="/logo192.png" className="main-navigation__logo is-mobile" />
 
-              {FEConstants.bitcoinNetwork !== BitcoinNetwork.MAINNET ? (
+              {ChainsConfig.BITCOIN.network !== BitcoinNetwork.MAINNET ? (
                 <Badge
                   className="main-navigation__network ms-2 my-0 align-items-center font-smallest"
                   bg="danger"
                 >
-                  {BitcoinNetwork[FEConstants.bitcoinNetwork]}
+                  {BitcoinNetwork[ChainsConfig.BITCOIN.network]}
                 </Badge>
               ) : (
                 ''

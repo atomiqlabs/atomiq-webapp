@@ -14,10 +14,11 @@ export function useWithAwait<Result>(
   callback?: (result: Result, error: any) => void,
   pause?: boolean
 ): [Result, boolean, any, () => void] {
-  const [latestProcessed, setLatestProcessed] = useState<AwaitLatestProcessedState<Result>>({
+  const [latestProcessed, setLatestProcessed] = useState<AwaitLatestProcessedState<Result> & { lastDeps: any[] }>({
     sequence: 0,
     value: null,
     error: null,
+    lastDeps: dependencies
   });
   const latestProcessedRef = useRef<AwaitLatestProcessedState<Result> & { lastDeps: any[] }>({
     sequence: 0,

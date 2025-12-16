@@ -20,12 +20,13 @@ import { Address, NETWORK, TEST_NETWORK } from '@scure/btc-signer';
 import { FEConstants } from '../../FEConstants';
 import randomBytes from 'randombytes';
 import { toTokenIdentifier } from '../../utils/Tokens';
+import {ChainsConfig} from "../../data/ChainsConfig";
 
 const btcFeeMaxOffset = 3;
 const btcFeeMaxMultiple = 1.5;
 
 const RANDOM_BTC_ADDRESS = Address(
-  FEConstants.bitcoinNetwork === BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK
+  ChainsConfig.BITCOIN.network === BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK
 ).encode({
   type: 'wsh',
   hash: randomBytes(32),

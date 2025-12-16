@@ -8,6 +8,7 @@ import {
   Token,
 } from '@atomiqlabs/sdk';
 import { FEConstants, TokenResolver, Tokens } from '../FEConstants';
+import {ChainsConfig} from "../data/ChainsConfig";
 
 type TokensType = typeof Tokens;
 type TokenTickers = {
@@ -31,23 +32,21 @@ export const TokenIcons: {
   CBTC: '/icons/crypto/BTC.svg',
 };
 
-export const bitcoinTokenArray = [Tokens.BITCOIN.BTC, Tokens.BITCOIN.BTCLN];
-
 export const smartChainTokenArray: SCToken[] = [];
 
-if (FEConstants.chainsConfiguration.enableSolana) {
+if (ChainsConfig.SOLANA) {
   smartChainTokenArray.push(Tokens.SOLANA.SOL);
   smartChainTokenArray.push(Tokens.SOLANA.USDC);
   smartChainTokenArray.push(Tokens.SOLANA.WBTC);
   smartChainTokenArray.push(Tokens.SOLANA.BONK);
 }
 
-if (FEConstants.chainsConfiguration.enableCitrea) {
+if (ChainsConfig.CITREA) {
   smartChainTokenArray.push(Tokens.CITREA.CBTC);
   smartChainTokenArray.push(Tokens.CITREA.USDC);
 }
 
-if (FEConstants.chainsConfiguration.enableStarknet) {
+if (ChainsConfig.STARKNET) {
   smartChainTokenArray.push(Tokens.STARKNET.WBTC);
   smartChainTokenArray.push(Tokens.STARKNET.STRK);
   smartChainTokenArray.push(Tokens.STARKNET.ETH);

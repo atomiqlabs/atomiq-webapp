@@ -5,18 +5,19 @@ import EventEmitter from 'events';
 import { BitcoinWalletNonSeparated } from './BitcoinWalletNonSeparated';
 import { ExtensionBitcoinWallet } from './ExtensionBitcoinWallet';
 import {FEConstants} from "../../../FEConstants";
+import {ChainsConfig} from "../../../data/ChainsConfig";
 
 const UnisatNetworks = {
   [BitcoinNetwork.MAINNET]: "livenet",
   [BitcoinNetwork.TESTNET]: "testnet",
   [BitcoinNetwork.TESTNET4]: "testnet"
-};
+} as const;
 
 const UnisatChains = {
   [BitcoinNetwork.MAINNET]: "BITCOIN_MAINNET",
   [BitcoinNetwork.TESTNET]: "BITCOIN_TESTNET",
   [BitcoinNetwork.TESTNET4]: "BITCOIN_TESTNET4"
-};
+} as const;
 
 type UnisatLikeWalletProvider = {
   requestAccounts: () => Promise<string[]>;
@@ -182,7 +183,7 @@ export abstract class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated 
     if(provider.getChain!=null) {
       const currentChain = await provider.getChain();
       console.log("UnisatLikeBitcoinWallet: init(): Detected current chain: ", currentChain);
-      const requiredChain = UnisatChains[FEConstants.bitcoinNetwork];
+      const requiredChain = UnisatChains[ChainsConfig.BITCOIN.network];
       if(currentChain.enum!==requiredChain) {
         await provider.switchChain(requiredChain);
         addresses = await provider.getAccounts();
@@ -190,7 +191,7 @@ export abstract class UnisatLikeBitcoinWallet extends BitcoinWalletNonSeparated 
     } else {
       const currentNetwork = await provider.getNetwork();
       console.log("UnisatLikeBitcoinWallet: init(): Detected current network: ", currentNetwork);
-      const requiredNetwork = UnisatNetworks[FEConstants.bitcoinNetwork];
+      const requiredNetwork = UnisatNetworks[ChainsConfig.BITCOIN.network];
       if(currentNetwork!==requiredNetwork) {
         await provider.switchNetwork(requiredNetwork);
         addresses = await provider.getAccounts();
