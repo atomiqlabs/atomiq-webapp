@@ -12,12 +12,14 @@ import {citreaChain, citreaChainId} from "./evm/CitreaChainSpec";
 import {botanixChain, botanixChainId} from "./evm/BotanixChainSpec";
 import {ChainsConfig} from "../../data/ChainsConfig";
 import {alpenChain, alpenChainId} from "./evm/AlpenChainSpec";
+import {goatChain, goatChainId} from "./evm/GoatChainSpec";
 
 //TODO: Important to add new chain here!!!
 const chains = [
   ChainsConfig.CITREA ? citreaChain : undefined,
   ChainsConfig.BOTANIX ? botanixChain : undefined,
   ChainsConfig.ALPEN ? alpenChain : undefined,
+  ChainsConfig.GOAT ? goatChain : undefined,
 ].filter(val => val !== undefined);
 
 const config = (createConfig as any)({
@@ -164,6 +166,22 @@ export function useAlpenChain(enabled: boolean): Chain<EVMSigner> {
         icon: "/icons/chains/ALPEN.svg",
       },
       chainId: "ALPEN"
+    };
+  }, [common]);
+}
+
+export function useGoatChain(enabled: boolean): Chain<EVMSigner> {
+  const common = useEVMChain(enabled, goatChainId);
+
+  return useMemo(() => {
+    if(!enabled) return null;
+    return {
+      ...common,
+      chain: {
+        name: "GOAT Network",
+        icon: "/icons/chains/GOAT.svg",
+      },
+      chainId: "GOAT"
     };
   }, [common]);
 }

@@ -39,6 +39,7 @@ export const TokenIcons: {
   _TESTNET_WBTC_VESU: '/icons/crypto/WBTC.png',
   TBTC: null,
   CBTC: '/icons/crypto/BTC.svg',
+  PBTC: '/icons/crypto/BTC.svg'
 };
 
 export const smartChainTokenArray: SCToken[] = [];
@@ -61,6 +62,11 @@ if (ChainsConfig.BOTANIX) {
 
 if(ChainsConfig.ALPEN) {
   smartChainTokenArray.push(Tokens.ALPEN.BTC);
+}
+
+if(ChainsConfig.GOAT) {
+  smartChainTokenArray.push(Tokens.GOAT.BTC);
+  smartChainTokenArray.push(Tokens.GOAT.PBTC);
 }
 
 if (ChainsConfig.STARKNET) {

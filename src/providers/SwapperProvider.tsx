@@ -7,7 +7,7 @@ import {
   BotanixInitializer,
   BotanixInitializerType,
   CitreaInitializer,
-  CitreaInitializerType
+  CitreaInitializerType, GoatInitializer, GoatInitializerType
 } from "@atomiqlabs/chain-evm";
 import {useEffect, useRef, useState} from "react";
 import {useLocation} from "react-router-dom";
@@ -15,9 +15,21 @@ import {FEConstants} from "../FEConstants";
 import {ChainsConfig} from "../data/ChainsConfig";
 import {SwapperContext} from "../context/SwapperContext";
 
-export const Factory = new SwapperFactory<
-  readonly [SolanaInitializerType, StarknetInitializerType, CitreaInitializerType, BotanixInitializerType, AlpenInitializerType]
->([SolanaInitializer, StarknetInitializer, CitreaInitializer, BotanixInitializer, AlpenInitializer] as const);
+export const Factory = new SwapperFactory<readonly [
+  SolanaInitializerType,
+  StarknetInitializerType,
+  CitreaInitializerType,
+  BotanixInitializerType,
+  AlpenInitializerType,
+  GoatInitializerType,
+]>([
+  SolanaInitializer,
+  StarknetInitializer,
+  CitreaInitializer,
+  BotanixInitializer,
+  AlpenInitializer,
+  GoatInitializer,
+] as const);
 
 export const Tokens = Factory.Tokens;
 export const TokenResolver = Factory.TokenResolver;

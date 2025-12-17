@@ -46,6 +46,7 @@ export type WalletTypes = {
   CITREA: EVMSigner;
   BOTANIX: EVMSigner;
   ALPEN: EVMSigner;
+  GOAT: EVMSigner;
 };
 
 export type ChainIdentifiers = keyof WalletTypes;
