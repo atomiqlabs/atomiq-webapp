@@ -178,7 +178,7 @@ export function useGoatChain(enabled: boolean): Chain<EVMSigner> {
     return {
       ...common,
       chain: {
-        name: "GOAT Network",
+        name: "GOAT",
         icon: "/icons/chains/GOAT.svg",
       },
       chainId: "GOAT"

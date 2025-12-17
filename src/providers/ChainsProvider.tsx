@@ -10,7 +10,7 @@ import {StarknetSigner} from "@atomiqlabs/chain-starknet";
 import {ExtensionBitcoinWallet} from "../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {ConnectWalletModal} from "../components/wallets/ConnectWalletModal";
 import { EVMSigner } from '@atomiqlabs/chain-evm';
-import {EVMWalletWrapper, useAlpenChain, useBotanixChain, useCitreaChain} from "./chains/useEVMChains";
+import {EVMWalletWrapper, useAlpenChain, useBotanixChain, useCitreaChain, useGoatChain} from "./chains/useEVMChains";
 import {ChainsConfig} from "../data/ChainsConfig";
 
 export type WalletListData = {
@@ -57,13 +57,15 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
   const citreaResult = useCitreaChain(!!ChainsConfig.CITREA);
   const botanixResult = useBotanixChain(!!ChainsConfig.BOTANIX);
   const alpenResult = useAlpenChain(!!ChainsConfig.ALPEN);
+  const goatResult = useGoatChain(!!ChainsConfig.GOAT);
   const lightningResult = useLightningNetwork(!!ChainsConfig.LIGHTNING);
   const bitcoinResult = useBitcoinChain(!!ChainsConfig.BITCOIN, {
     STARKNET: starknetResult?.wallet?.name,
     SOLANA: solanaResult?.wallet?.name,
     CITREA: citreaResult?.wallet?.name,
     BOTANIX: botanixResult?.wallet?.name,
-    ALPEN: alpenResult?.wallet?.name
+    ALPEN: alpenResult?.wallet?.name,
+    GOAT: goatResult?.wallet?.name
   });
 
   const chains = useMemo(() => {
@@ -77,6 +79,7 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
     if (alpenResult) chainsData.ALPEN = alpenResult;
     if (lightningResult) chainsData.LIGHTNING = lightningResult;
     if (bitcoinResult) chainsData.BITCOIN = bitcoinResult;
+    if (goatResult) chainsData.GOAT = goatResult;
 
     return chainsData;
   }, [
