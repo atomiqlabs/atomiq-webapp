@@ -14,6 +14,16 @@ type TokenTickers = {
   [Chain in keyof TokensType]: keyof TokensType[Chain];
 }[keyof TokensType];
 
+export const TokenIconsChainSpecific: {
+  [chainId: string]: {
+    [C in TokenTickers]?: string
+  }
+} = {
+  BOTANIX: {
+    BTC: "/icons/crypto/BBTC.svg"
+  }
+};
+
 export const TokenIcons: {
   [C in TokenTickers]: string;
 } = {
