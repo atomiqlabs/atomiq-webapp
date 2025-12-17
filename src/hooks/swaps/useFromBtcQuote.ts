@@ -246,7 +246,7 @@ export function useFromBtcQuote(
     if (state === FromBTCSwapState.BTC_TX_CONFIRMED) {
       timer = setTimeout(() => {
         setClaimable(true);
-      }, 20 * 1000);
+      }, 60 * 1000);
     }
 
     return () => {

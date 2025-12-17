@@ -204,7 +204,7 @@ export function useSpvVaultFromBtcQuote(
     { icon: bitcoin, text: 'Bitcoin payment', type: 'loading' },
     {
       icon: ic_receipt,
-      text: 'Claim transaction',
+      text: 'Automatic settlement',
       type: 'disabled',
     },
   ];
@@ -218,7 +218,7 @@ export function useSpvVaultFromBtcQuote(
   if (isBroadcasting)
     executionSteps[0] = {
       icon: ic_hourglass_empty_outline,
-      text: 'Broadcasting bitcoin transaction',
+      text: 'Awaiting bitcoin transaction',
       type: 'loading',
     };
   if (isReceived)
@@ -246,12 +246,21 @@ export function useSpvVaultFromBtcQuote(
       type: 'failed',
     };
 
-  if (isClaimable)
-    executionSteps[1] = {
-      icon: ic_receipt,
-      text: 'Claim transaction',
-      type: 'loading',
-    };
+  if (isClaimable) {
+    if (claimable || isAlreadyClaimable) {
+      executionSteps[1] = {
+        icon: ic_receipt,
+        text: 'Claim manually',
+        type: 'loading',
+      };
+    } else {
+      executionSteps[1] = {
+        icon: ic_hourglass_top_outline,
+        text: 'Waiting automatic settlement',
+        type: 'loading',
+      };
+    }
+  }
   if (isClaiming)
     executionSteps[1] = {
       icon: ic_hourglass_empty_outline,
@@ -261,7 +270,7 @@ export function useSpvVaultFromBtcQuote(
   if (isSuccess)
     executionSteps[1] = {
       icon: ic_receipt,
-      text: 'Claiming transaction',
+      text: 'Payout success',
       type: 'success',
     };
 

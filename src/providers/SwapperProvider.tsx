@@ -60,6 +60,7 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
         },
         mempoolApi: ChainsConfig.BITCOIN.mempoolApi,
         defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
+        automaticClockDriftCorrection: true
       });
 
       console.log('Swapper: ', swapper);
