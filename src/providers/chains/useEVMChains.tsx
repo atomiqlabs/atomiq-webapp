@@ -1,42 +1,22 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
 
 import * as React from "react";
-import { FEConstants } from "../../FEConstants";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {EVMBrowserSigner, EVMSigner} from "@atomiqlabs/chain-evm";
 import {BrowserProvider} from "ethers";
 import {Chain} from "../ChainsProvider";
 
-import {createConfig, useAccount, useConnectors, useDisconnect, useWalletClient, WagmiProvider} from "wagmi";
-import { metaMask, coinbaseWallet, walletConnect } from 'wagmi/connectors';
+import { createConfig, useAccount, useConnectors, useDisconnect, WagmiProvider} from "wagmi";
+import { walletConnect } from 'wagmi/connectors';
+import {citreaChainId, citreaTestnetChain} from "./evm/CitreaChainSpec";
+import {botanixChainId, botanixTestnetChain} from "./evm/BotanixChainSpec";
 import {ChainsConfig} from "../../data/ChainsConfig";
 
-const citreaTestnetBlockscout = {
-  name: "Blockscout - Citrea Testnet",
-  url: "https://explorer.testnet.citrea.xyz/"
-};
-
-const citreaTestnetChain = {
-  blockExplorers: {
-    "Blockscout": citreaTestnetBlockscout,
-    default: citreaTestnetBlockscout
-  },
-  blockTime: 2*1000,
-  id: 5115,
-  name: "Citrea Testnet",
-  nativeCurrency: {
-    name: "Citrea BTC",
-    symbol: "cBTC",
-    decimals: 18
-  },
-  rpcUrls: {
-    "Citrea public": {http: ["https://rpc.testnet.citrea.xyz"]},
-    default: {http: ["https://rpc.testnet.citrea.xyz"]}
-  },
-  testnet: true
-};
-
-const chains = [citreaTestnetChain];
+//TODO: Important to add new chain here!!!
+const chains = [
+  ChainsConfig.CITREA ? [citreaTestnetChain] : undefined,
+  ChainsConfig.BOTANIX ? [botanixTestnetChain] : undefined
+].flat().filter(val => val !== undefined);
 
 const config = (createConfig as any)({
   chains,
@@ -63,7 +43,7 @@ export function EVMWalletWrapper(props: {
   )
 }
 
-export function useCitreaChain(enabled: boolean): Chain<EVMSigner> {
+function useEVMChain(enabled: boolean, chainId: number) {
   const { disconnect } = useDisconnect();
   const {connector, isConnected} = useAccount();
 
@@ -74,7 +54,7 @@ export function useCitreaChain(enabled: boolean): Chain<EVMSigner> {
     setEvmSigner(null);
     if(connector==null || connector.getProvider==null || !isConnected) return;
     let cancelled = false;
-    connector.getProvider({chainId: citreaTestnetChain.id}).then(provider => {
+    connector.getProvider({chainId}).then(provider => {
       if(cancelled) return;
       return new BrowserProvider(provider as any).getSigner();
     }).then(signer => {
@@ -84,7 +64,7 @@ export function useCitreaChain(enabled: boolean): Chain<EVMSigner> {
     return () => {
       cancelled = true;
     }
-  }, [connector, isConnected]);
+  }, [connector, isConnected, chainId]);
 
   const [icon, setIcon] = useState<string>();
   useEffect(() => {
@@ -112,20 +92,13 @@ export function useCitreaChain(enabled: boolean): Chain<EVMSigner> {
 
   const connectWallet = useCallback(async (walletName: string) => {
     const foundConnector = connectors.find(val => val.name===walletName);
-    const result = await foundConnector.connect({
-      chainId: citreaTestnetChain.id
-    });
-    console.log("useEVMChain(): Citrea wallet result: ", result);
-  }, [connectors]);
+    const result = await foundConnector.connect({chainId});
+  }, [connectors, chainId]);
 
   return useMemo(() => {
     if(!enabled) return null;
 
     return {
-      chain: {
-        name: "Citrea",
-        icon: "/icons/chains/CITREA.svg",
-      },
       wallet: evmSigner==null ? null : {
         name: connector?.name,
         icon,
@@ -138,10 +111,41 @@ export function useCitreaChain(enabled: boolean): Chain<EVMSigner> {
         isConnected: c.name === connector?.name,
       })),
       nonInstalledWallets: [],
-      chainId: "CITREA",
       _disconnect: () => disconnect(),
       _connectWallet: connectWallet,
       hasWallets: connectors.length>0
     };
   }, [evmSigner, connectors, connectWallet, connector, disconnect, icon]);
+}
+
+export function useCitreaChain(enabled: boolean): Chain<EVMSigner> {
+  const common = useEVMChain(enabled, citreaChainId);
+
+  return useMemo(() => {
+    if(!enabled) return null;
+    return {
+      ...common,
+      chain: {
+        name: "Citrea",
+        icon: "/icons/chains/CITREA.svg",
+      },
+      chainId: "CITREA"
+    };
+  }, [common]);
+}
+
+export function useBotanixChain(enabled: boolean): Chain<EVMSigner> {
+  const common = useEVMChain(enabled, botanixChainId);
+
+  return useMemo(() => {
+    if(!enabled) return null;
+    return {
+      ...common,
+      chain: {
+        name: "Botanix",
+        icon: "/icons/chains/BOTANIX.svg",
+      },
+      chainId: "BOTANIX"
+    };
+  }, [common]);
 }

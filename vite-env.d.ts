@@ -19,15 +19,15 @@ interface ImportMetaEnv {
     readonly VITE_STARKNET_BLOCK_EXPLORER?: string;
 
     readonly VITE_BOTANIX_RPC_URL?: string;
-    readonly VITE_BOTANIX_NETWORK?: string;
+    readonly VITE_BOTANIX_NETWORK?: 'TESTNET' | 'MAINNET';
     readonly VITE_BOTANIX_BLOCK_EXPLORER?: string;
 
     readonly VITE_GOAT_RPC_URL?: string;
-    readonly VITE_GOAT_NETWORK?: string;
+    readonly VITE_GOAT_NETWORK?: 'TESTNET' | 'MAINNET';
     readonly VITE_GOAT_BLOCK_EXPLORER?: string;
 
     readonly VITE_ALPEN_RPC_URL?: string;
-    readonly VITE_ALPEN_NETWORK?: string;
+    readonly VITE_ALPEN_NETWORK?: 'TESTNET' | 'MAINNET';
     readonly VITE_ALPEN_BLOCK_EXPLORER?: string;
 
     readonly VITE_CITREA_RPC_URL?: string;

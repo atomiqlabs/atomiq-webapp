@@ -45,6 +45,10 @@ if (ChainsConfig.CITREA) {
   smartChainTokenArray.push(Tokens.CITREA.USDC);
 }
 
+if (ChainsConfig.BOTANIX) {
+  smartChainTokenArray.push(Tokens.BOTANIX.BTC);
+}
+
 if (ChainsConfig.STARKNET) {
   smartChainTokenArray.push(Tokens.STARKNET.WBTC);
   smartChainTokenArray.push(Tokens.STARKNET.STRK);

@@ -1,6 +1,5 @@
 import {SolanaWalletWrapper, useSolanaChain} from './chains/useSolanaChain';
 import { ChainsContext } from '../context/ChainsContext';
-import { FEConstants } from '../FEConstants';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {useStarknetChain} from "./chains/useStarknetChain";
 import {useLightningNetwork} from "./chains/useLightningNetwork";
@@ -11,7 +10,7 @@ import {StarknetSigner} from "@atomiqlabs/chain-starknet";
 import {ExtensionBitcoinWallet} from "../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {ConnectWalletModal} from "../components/wallets/ConnectWalletModal";
 import { EVMSigner } from '@atomiqlabs/chain-evm';
-import {EVMWalletWrapper, useCitreaChain} from "./chains/useEVMChains";
+import {EVMWalletWrapper, useBotanixChain, useCitreaChain} from "./chains/useEVMChains";
 import {ChainsConfig} from "../data/ChainsConfig";
 
 export type WalletListData = {
@@ -45,6 +44,7 @@ export type WalletTypes = {
   SOLANA: SolanaSigner;
   STARKNET: StarknetSigner;
   CITREA: EVMSigner;
+  BOTANIX: EVMSigner;
 };
 
 export type ChainIdentifiers = keyof WalletTypes;
@@ -53,11 +53,13 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
   const solanaResult = useSolanaChain(!!ChainsConfig.SOLANA);
   const starknetResult = useStarknetChain(!!ChainsConfig.STARKNET);
   const citreaResult = useCitreaChain(!!ChainsConfig.CITREA);
+  const botanixResult = useBotanixChain(!!ChainsConfig.BOTANIX);
   const lightningResult = useLightningNetwork(!!ChainsConfig.LIGHTNING);
   const bitcoinResult = useBitcoinChain(!!ChainsConfig.BITCOIN, {
     STARKNET: starknetResult?.wallet?.name,
     SOLANA: solanaResult?.wallet?.name,
     CITREA: citreaResult?.wallet?.name,
+    BOTANIX: botanixResult?.wallet?.name,
   });
 
   const chains = useMemo(() => {
@@ -67,11 +69,19 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
     if (solanaResult) chainsData.SOLANA = solanaResult;
     if (starknetResult) chainsData.STARKNET = starknetResult;
     if (citreaResult) chainsData.CITREA = citreaResult;
+    if (botanixResult) chainsData.BOTANIX = botanixResult;
     if (lightningResult) chainsData.LIGHTNING = lightningResult;
     if (bitcoinResult) chainsData.BITCOIN = bitcoinResult;
 
     return chainsData;
-  }, [solanaResult, starknetResult, citreaResult, lightningResult, bitcoinResult]);
+  }, [
+    solanaResult,
+    starknetResult,
+    citreaResult,
+    botanixResult,
+    lightningResult,
+    bitcoinResult
+  ]);
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalChainId, setModalChainId] = useState<string>();

@@ -148,5 +148,19 @@ export const ChainsConfig = {
         ? new WebSocketProviderWithRetries(import.meta.env.VITE_CITREA_RPC_URL)
         : new JsonRpcProviderWithRetries(import.meta.env.VITE_CITREA_RPC_URL),
       chainType: import.meta.env.VITE_CITREA_NETWORK,
+    } : undefined,
+  BOTANIX: import.meta.env.VITE_BOTANIX_RPC_URL
+    ? {
+      blockExplorer: import.meta.env.VITE_BOTANIX_BLOCK_EXPLORER,
+      assetBalances: {
+        '0x0000000000000000000000000000000000000000': {
+          optimal: 500_0000000000n,
+          minimum: 200_0000000000n
+        }
+      },
+      rpcUrl: import.meta.env.VITE_BOTANIX_RPC_URL.startsWith("ws")
+        ? new WebSocketProviderWithRetries(import.meta.env.VITE_BOTANIX_RPC_URL)
+        : new JsonRpcProviderWithRetries(import.meta.env.VITE_BOTANIX_RPC_URL),
+      chainType: import.meta.env.VITE_BOTANIX_NETWORK,
     } : undefined
 } as const;
