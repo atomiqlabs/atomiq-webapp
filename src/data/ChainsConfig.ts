@@ -1,7 +1,7 @@
 import {BitcoinNetwork, MempoolApi, MempoolBitcoinRpc} from "@atomiqlabs/sdk";
 import {WalletAdapterNetwork} from "@solana/wallet-adapter-base";
 import {constants} from "starknet";
-import {RpcProviderWithRetries} from "@atomiqlabs/chain-starknet";
+import {RpcProviderWithRetries, WebSocketChannelWithRetries} from "@atomiqlabs/chain-starknet";
 import {JsonRpcProviderWithRetries, WebSocketProviderWithRetries} from "@atomiqlabs/chain-evm";
 import {Connection} from "@solana/web3.js";
 import {SolanaFees} from "@atomiqlabs/chain-solana";
@@ -131,6 +131,12 @@ export const ChainsConfig = {
         },
       },
       rpcUrl: new RpcProviderWithRetries({nodeUrl: import.meta.env.VITE_STARKNET_RPC_URL}),
+      wsUrl: import.meta.env.VITE_STARKNET_WS_URL==null
+        ? null
+        : new WebSocketChannelWithRetries({
+          nodeUrl: import.meta.env.VITE_STARKNET_WS_URL,
+          reconnectOptions: {retries: Infinity, delay: 5000}
+        }),
       chainId: import.meta.env.VITE_STARKNET_NETWORK === 'MAIN'
         ? constants.StarknetChainId.SN_MAIN
         : constants.StarknetChainId.SN_SEPOLIA,
@@ -162,5 +168,19 @@ export const ChainsConfig = {
         ? new WebSocketProviderWithRetries(import.meta.env.VITE_BOTANIX_RPC_URL)
         : new JsonRpcProviderWithRetries(import.meta.env.VITE_BOTANIX_RPC_URL),
       chainType: import.meta.env.VITE_BOTANIX_NETWORK,
+    } : undefined,
+  ALPEN: import.meta.env.VITE_ALPEN_RPC_URL
+    ? {
+      blockExplorer: import.meta.env.VITE_ALPEN_BLOCK_EXPLORER,
+      assetBalances: {
+        '0x0000000000000000000000000000000000000000': {
+          optimal: 500_0000000000n,
+          minimum: 200_0000000000n
+        }
+      },
+      rpcUrl: import.meta.env.VITE_ALPEN_RPC_URL.startsWith("ws")
+        ? new WebSocketProviderWithRetries(import.meta.env.VITE_ALPEN_RPC_URL)
+        : new JsonRpcProviderWithRetries(import.meta.env.VITE_ALPEN_RPC_URL),
+      chainType: import.meta.env.VITE_ALPEN_NETWORK,
     } : undefined
 } as const;

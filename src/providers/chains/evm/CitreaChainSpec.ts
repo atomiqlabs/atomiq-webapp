@@ -1,16 +1,12 @@
 import {ChainsConfig} from "../../../data/ChainsConfig";
 
-export const citreaChainId = ChainsConfig.CITREA?.chainType==="TESTNET4"
-  ? 5115
-  : 4114;
-
 //Testnet
 const citreaTestnetBlockscout = {
   name: "Blockscout - Citrea Testnet",
   url: "https://explorer.testnet.citrea.xyz/"
 };
 
-export const citreaTestnetChain = {
+const citreaTestnetChain = {
   blockExplorers: {
     "Blockscout": citreaTestnetBlockscout,
     default: citreaTestnetBlockscout
@@ -30,3 +26,9 @@ export const citreaTestnetChain = {
   testnet: true
 };
 
+export const citreaChainId = ChainsConfig.CITREA?.chainType==="TESTNET4"
+  ? 5115
+  : 4114;
+export const citreaChain = ChainsConfig.CITREA?.chainType==="TESTNET4"
+  ? citreaTestnetChain
+  : undefined;

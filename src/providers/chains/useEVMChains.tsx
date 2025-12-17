@@ -8,15 +8,17 @@ import {Chain} from "../ChainsProvider";
 
 import { createConfig, useAccount, useConnectors, useDisconnect, WagmiProvider} from "wagmi";
 import { walletConnect } from 'wagmi/connectors';
-import {citreaChainId, citreaTestnetChain} from "./evm/CitreaChainSpec";
-import {botanixChainId, botanixTestnetChain} from "./evm/BotanixChainSpec";
+import {citreaChain, citreaChainId} from "./evm/CitreaChainSpec";
+import {botanixChain, botanixChainId} from "./evm/BotanixChainSpec";
 import {ChainsConfig} from "../../data/ChainsConfig";
+import {alpenChain, alpenChainId} from "./evm/AlpenChainSpec";
 
 //TODO: Important to add new chain here!!!
 const chains = [
-  ChainsConfig.CITREA ? [citreaTestnetChain] : undefined,
-  ChainsConfig.BOTANIX ? [botanixTestnetChain] : undefined
-].flat().filter(val => val !== undefined);
+  ChainsConfig.CITREA ? citreaChain : undefined,
+  ChainsConfig.BOTANIX ? botanixChain : undefined,
+  ChainsConfig.ALPEN ? alpenChain : undefined,
+].filter(val => val !== undefined);
 
 const config = (createConfig as any)({
   chains,
@@ -146,6 +148,22 @@ export function useBotanixChain(enabled: boolean): Chain<EVMSigner> {
         icon: "/icons/chains/BOTANIX.svg",
       },
       chainId: "BOTANIX"
+    };
+  }, [common]);
+}
+
+export function useAlpenChain(enabled: boolean): Chain<EVMSigner> {
+  const common = useEVMChain(enabled, alpenChainId);
+
+  return useMemo(() => {
+    if(!enabled) return null;
+    return {
+      ...common,
+      chain: {
+        name: "Alpen",
+        icon: "/icons/chains/ALPEN.svg",
+      },
+      chainId: "ALPEN"
     };
   }, [common]);
 }

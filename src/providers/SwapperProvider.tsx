@@ -2,6 +2,8 @@ import {Swapper, SwapperFactory} from "@atomiqlabs/sdk";
 import {SolanaInitializer, SolanaInitializerType} from "@atomiqlabs/chain-solana";
 import {StarknetInitializer, StarknetInitializerType} from "@atomiqlabs/chain-starknet";
 import {
+  AlpenInitializer,
+  AlpenInitializerType,
   BotanixInitializer,
   BotanixInitializerType,
   CitreaInitializer,
@@ -14,8 +16,8 @@ import {ChainsConfig} from "../data/ChainsConfig";
 import {SwapperContext} from "../context/SwapperContext";
 
 export const Factory = new SwapperFactory<
-  readonly [SolanaInitializerType, StarknetInitializerType, CitreaInitializerType, BotanixInitializerType]
->([SolanaInitializer, StarknetInitializer, CitreaInitializer, BotanixInitializer] as const);
+  readonly [SolanaInitializerType, StarknetInitializerType, CitreaInitializerType, BotanixInitializerType, AlpenInitializerType]
+>([SolanaInitializer, StarknetInitializer, CitreaInitializer, BotanixInitializer, AlpenInitializer] as const);
 
 export const Tokens = Factory.Tokens;
 export const TokenResolver = Factory.TokenResolver;

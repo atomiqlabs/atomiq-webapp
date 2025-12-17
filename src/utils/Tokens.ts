@@ -49,6 +49,10 @@ if (ChainsConfig.BOTANIX) {
   smartChainTokenArray.push(Tokens.BOTANIX.BTC);
 }
 
+if(ChainsConfig.ALPEN) {
+  smartChainTokenArray.push(Tokens.ALPEN.BTC);
+}
+
 if (ChainsConfig.STARKNET) {
   smartChainTokenArray.push(Tokens.STARKNET.WBTC);
   smartChainTokenArray.push(Tokens.STARKNET.STRK);

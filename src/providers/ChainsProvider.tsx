@@ -10,7 +10,7 @@ import {StarknetSigner} from "@atomiqlabs/chain-starknet";
 import {ExtensionBitcoinWallet} from "../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {ConnectWalletModal} from "../components/wallets/ConnectWalletModal";
 import { EVMSigner } from '@atomiqlabs/chain-evm';
-import {EVMWalletWrapper, useBotanixChain, useCitreaChain} from "./chains/useEVMChains";
+import {EVMWalletWrapper, useAlpenChain, useBotanixChain, useCitreaChain} from "./chains/useEVMChains";
 import {ChainsConfig} from "../data/ChainsConfig";
 
 export type WalletListData = {
@@ -45,6 +45,7 @@ export type WalletTypes = {
   STARKNET: StarknetSigner;
   CITREA: EVMSigner;
   BOTANIX: EVMSigner;
+  ALPEN: EVMSigner;
 };
 
 export type ChainIdentifiers = keyof WalletTypes;
@@ -54,12 +55,14 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
   const starknetResult = useStarknetChain(!!ChainsConfig.STARKNET);
   const citreaResult = useCitreaChain(!!ChainsConfig.CITREA);
   const botanixResult = useBotanixChain(!!ChainsConfig.BOTANIX);
+  const alpenResult = useAlpenChain(!!ChainsConfig.ALPEN);
   const lightningResult = useLightningNetwork(!!ChainsConfig.LIGHTNING);
   const bitcoinResult = useBitcoinChain(!!ChainsConfig.BITCOIN, {
     STARKNET: starknetResult?.wallet?.name,
     SOLANA: solanaResult?.wallet?.name,
     CITREA: citreaResult?.wallet?.name,
     BOTANIX: botanixResult?.wallet?.name,
+    ALPEN: alpenResult?.wallet?.name
   });
 
   const chains = useMemo(() => {
@@ -70,6 +73,7 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
     if (starknetResult) chainsData.STARKNET = starknetResult;
     if (citreaResult) chainsData.CITREA = citreaResult;
     if (botanixResult) chainsData.BOTANIX = botanixResult;
+    if (alpenResult) chainsData.ALPEN = alpenResult;
     if (lightningResult) chainsData.LIGHTNING = lightningResult;
     if (bitcoinResult) chainsData.BITCOIN = bitcoinResult;
 
@@ -79,6 +83,7 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
     starknetResult,
     citreaResult,
     botanixResult,
+    alpenResult,
     lightningResult,
     bitcoinResult
   ]);
