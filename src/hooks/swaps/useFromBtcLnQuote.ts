@@ -150,8 +150,12 @@ export function useFromBtcLnQuote(
   const { connectWallet, disconnectWallet } = useContext(ChainsContext);
   const lightningWallet = useChain('LIGHTNING')?.wallet;
   const smartChainWallet = useSmartChainWallet(quote, true);
-  const canClaimInOneShot = quote?.getType() === SwapType.FROM_BTCLN &&
-    (quote as FromBTCLNSwap)?.canCommitAndClaimInOneShot();
+  const canClaimInOneShot = useMemo(() => {
+    if(quote==null) return;
+    if(quote.getType() !== SwapType.FROM_BTCLN) return;
+    if(quote.chainIdentifier === 'SOLANA' && smartChainWallet?.name === 'MetaMask') return false;
+    return (quote as FromBTCLNSwap).canCommitAndClaimInOneShot();
+  }, [quote, smartChainWallet]);
 
   const additionalGasRequired = useCheckAdditionalGas(quote);
 
@@ -236,7 +240,7 @@ export function useFromBtcLnQuote(
         if (_quote.chainIdentifier === 'STARKNET') await timeoutPromise(5000);
       }
     },
-    [quote, smartChainWallet]
+    [quote, smartChainWallet, canClaimInOneShot]
   );
 
   const [onClaim, claiming, claimSuccess, claimError] = useAsync(
