@@ -233,14 +233,15 @@ export function SpvVaultFromBTCSwapPanel(props: {
           )}
         </div>
 
-        <BaseButton
-          onClick={props.refreshQuote}
-          className="swap-panel__action"
-          variant="primary"
-          size="large"
-        >
-          New Swap
-        </BaseButton>
+        {page.step5.showConnectWalletButton
+          ? <ButtonWithWallet
+            className="swap-panel__action"
+            chainId="BITCOIN"
+          />
+          : <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
+            New Swap
+          </BaseButton>
+        }
       </>
     );
   }

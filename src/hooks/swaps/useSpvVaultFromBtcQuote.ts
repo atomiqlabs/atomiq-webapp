@@ -69,6 +69,7 @@ export type SpvVaultFromBtcPage = {
   };
   step5?: {
     state: 'success' | 'failed' | 'expired';
+    showConnectWalletButton: boolean;
   };
 };
 
@@ -393,8 +394,9 @@ export function useSpvVaultFromBtcQuote(
               : isFailed
                 ? ('failed' as const)
                 : ('expired' as const),
+            showConnectWalletButton: isQuoteExpired && bitcoinWallet==null
           },
-    [isSuccess, isFailed, isQuoteExpired]
+    [isSuccess, isFailed, isQuoteExpired, bitcoinWallet]
   );
 
   return {

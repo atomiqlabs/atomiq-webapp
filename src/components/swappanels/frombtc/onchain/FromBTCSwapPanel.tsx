@@ -350,9 +350,15 @@ export function FromBTCSwapPanel(props: {
 
         {gasAlert}
 
-        <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
-          New Swap
-        </BaseButton>
+        {page.step5.showConnectWalletButton
+          ? <ButtonWithWallet
+            className="swap-panel__action"
+            chainId={props.quote.chainIdentifier}
+          />
+          : <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
+            New Swap
+          </BaseButton>
+        }
       </>
     );
   }

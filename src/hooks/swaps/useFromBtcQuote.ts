@@ -127,6 +127,7 @@ export type FromBtcQuotePage = {
   },
   step5?: {
     state: "success" | "failed" | "expired";
+    showConnectWalletButton: boolean;
   }
 };
 
@@ -548,11 +549,13 @@ export function useFromBtcQuote(
       ? "success" as const
       : (isFailed || isExpired)
         ? "failed" as const
-        : "expired" as const
+        : "expired" as const,
+    showConnectWalletButton: isQuoteExpired && smartChainWallet===undefined
   }), [
     isSuccess,
     isFailed,
-    isQuoteExpired
+    isQuoteExpired,
+    smartChainWallet
   ]);
 
   return {

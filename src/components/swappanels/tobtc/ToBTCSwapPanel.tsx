@@ -203,9 +203,15 @@ export function ToBTCSwapPanel(props: {
           />
         </div>
 
-        <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
-          New Swap
-        </BaseButton>
+        {page.step4.showConnectWalletButton
+          ? <ButtonWithWallet
+            className="swap-panel__action"
+            chainId={props.quote.chainIdentifier}
+          />
+          : <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
+            New Swap
+          </BaseButton>
+        }
       </>
     );
   }

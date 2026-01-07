@@ -68,7 +68,8 @@ export type ToBtcPage = {
     }
   },
   step4?: {
-    state: "success" | "refunded" | "expired"
+    state: "success" | "refunded" | "expired",
+    showConnectWalletButton: boolean
   }
 }
 
@@ -329,10 +330,12 @@ export function useToBtcQuote(
       : isRefunded
         ? "refunded" as const
         : "expired" as const,
+    showConnectWalletButton: isExpired && wallet===undefined
   }), [
     isSuccess,
     isRefunded,
-    isExpired
+    isExpired,
+    wallet
   ]);
 
   return {

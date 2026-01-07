@@ -139,6 +139,7 @@ export type FromBtcLnQuotePage = {
   step4?: {
     state: 'success' | 'failed' | 'expired' | 'expired_uninitialized';
     expiryMessage?: string;
+    showConnectWalletButton: boolean;
   };
 };
 
@@ -736,8 +737,10 @@ export function useFromBtcLnQuote(
             ? ('expired' as const)
             : ('expired_uninitialized' as const),
       expiryMessage: 'Swap expired! Your lightning payment should refund shortly.',
+      showConnectWalletButton: isQuoteExpired && !isInitiated
+        && smartChainWallet===undefined && quote?.getType()===SwapType.FROM_BTCLN
     };
-  }, [isSuccess, isFailed, isQuoteExpired, isInitiated]);
+  }, [isSuccess, isFailed, isQuoteExpired, isInitiated, smartChainWallet, quote]);
 
   return {
     additionalGasRequired: !isInitiated || isQuoteExpired ? additionalGasRequired : undefined,
