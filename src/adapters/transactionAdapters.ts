@@ -18,14 +18,14 @@ export interface TransactionEntryProps {
   // Input token info
   inputToken: Token;
   inputAmount: string;
-  inputAddress: string;
+  inputAddress: string | null;
   inputExplorer: string | null;
   inputTxId: string | undefined;
 
   // Output token info
   outputToken: Token;
   outputAmount: string;
-  outputAddress: string;
+  outputAddress: string | null;
   outputExplorer: string | null;
   outputTxId: string | undefined;
 
@@ -63,7 +63,7 @@ export function swapToProps(swap: ISwap): TransactionEntryProps {
   const txIdInput = swap.getInputTxId();
   const txIdOutput = swap.getOutputTxId();
 
-  const inputAddress = swap._getInitiator ? swap._getInitiator() : '';
+  const inputAddress = swap.getInputAddress();
   const outputAddress = swap.getOutputAddress();
 
   const refundable = isIRefundableSwap(swap) && swap.isRefundable();
