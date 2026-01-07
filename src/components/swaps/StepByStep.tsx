@@ -95,8 +95,7 @@ export function StepByStep(props: {
         <div className="swap-steps__address">
           <div>
             Dest<span className="is-desktop">ination</span> {output.chain.chain.name ?? ''}{' '}
-            <span className="is-desktop">Wallet</span>
-            Address:
+            <span className="is-desktop">Wallet</span> Address:
           </div>
           <div>{address.short}</div>
         </div>

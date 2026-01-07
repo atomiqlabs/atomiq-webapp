@@ -22,7 +22,7 @@ const chains = [
   ChainsConfig.GOAT ? goatChain : undefined,
 ].filter(val => val !== undefined);
 
-const config = (createConfig as any)({
+const config = chains.length===0 ? undefined : (createConfig as any)({
   chains,
   multiInjectedProviderDiscovery: true,
   connectors: [
@@ -38,6 +38,7 @@ const queryClient = new QueryClient();
 export function EVMWalletWrapper(props: {
   children: any
 }) {
+  if(config==null) return props.children;
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
@@ -48,6 +49,8 @@ export function EVMWalletWrapper(props: {
 }
 
 function useEVMChain(enabled: boolean, chainId: number) {
+  if(config==null) return null;
+
   const { disconnect } = useDisconnect();
   const {connector, isConnected} = useAccount();
 

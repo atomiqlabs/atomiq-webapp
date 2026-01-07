@@ -17,6 +17,8 @@ import { SocialFooter } from './components/layout/SocialFooter';
 import { NotFound } from './pages/NotFound';
 import {SwapperProvider} from "./providers/SwapperProvider";
 
+global.atomiqLogLevel = 5;
+
 function WrappedApp() {
   const { loading, loadingError } = useContext(SwapperContext);
 

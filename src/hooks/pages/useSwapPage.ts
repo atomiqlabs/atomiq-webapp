@@ -489,9 +489,9 @@ export function useSwapPage(): SwapPageState {
     if (swapper == null) return;
     const allowedCounterTokens = swapper.getSwapCounterTokens(inputToken, false);
     if (allowedCounterTokens.length === 0) {
-      _setInputToken(outputToken);
       const allowedCounterTokens = swapper.getSwapCounterTokens(outputToken, true);
       if (allowedCounterTokens.length === 0) return;
+      _setInputToken(outputToken);
       _setOutputToken(allowedCounterTokens[0]);
     } else {
       _setOutputToken(inputToken);

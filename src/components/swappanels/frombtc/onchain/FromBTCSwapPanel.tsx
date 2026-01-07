@@ -17,6 +17,7 @@ import { SwapExpiryProgressBar } from '../../../swaps/SwapExpiryProgressBar';
 import { ScrollAnchor } from '../../../ScrollAnchor';
 import { SwapConfirmations } from '../../../swaps/SwapConfirmations';
 import { SwapFeePanel } from '../../../fees/SwapFeePanel';
+import {ChainsConfig} from "../../../../data/ChainsConfig";
 
 /*
 Steps:
@@ -327,6 +328,15 @@ export function FromBTCSwapPanel(props: {
             icon={ic_check_circle}
             title="Swap success"
             description="Your swap was executed successfully!"
+            action={
+              ChainsConfig[props.quote.chainIdentifier]?.blockExplorer!=null
+                ? {
+                  type: 'link',
+                  text: 'View transaction',
+                  href: ChainsConfig[props.quote.chainIdentifier].blockExplorer + props.quote.getOutputTxId(),
+                }
+                : undefined
+            }
           />
 
           <SwapStepAlert

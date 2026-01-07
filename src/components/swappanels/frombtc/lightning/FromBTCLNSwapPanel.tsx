@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Spinner } from 'react-bootstrap';
-import {FromBTCLNAutoSwap, FromBTCLNSwap, ISwap} from '@atomiqlabs/sdk';
+import {FromBTCLNAutoSwap, FromBTCLNSwap, ISwap, SwapType} from '@atomiqlabs/sdk';
 import { ic_check_circle } from 'react-icons-kit/md/ic_check_circle';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { SwapPageUIState } from '../../../../hooks/pages/useSwapPage';
@@ -17,6 +17,7 @@ import { SwapExpiryProgressBar } from '../../../swaps/SwapExpiryProgressBar';
 import { ScrollAnchor } from '../../../ScrollAnchor';
 import { SwapFeePanel } from '../../../fees/SwapFeePanel';
 import {useChain} from "../../../../hooks/chains/useChain";
+import {ChainsConfig} from "../../../../data/ChainsConfig";
 
 /*
 Steps:
@@ -35,6 +36,8 @@ export function FromBTCLNSwapPanel(props: {
 }) {
   const chain = useChain(props.quote?.chainIdentifier);
   const page = useFromBtcLnQuote(props.quote, props.UICallback);
+
+  console.log("FromBTCLNPage(): ", page);
 
   const gasAlert = (
     <SwapForGasAlert notEnoughForGas={page.additionalGasRequired} quote={props.quote} />
@@ -270,6 +273,15 @@ export function FromBTCLNSwapPanel(props: {
             icon={ic_check_circle}
             title="Swap success"
             description="Your swap was executed successfully!"
+            action={
+              ChainsConfig[props.quote.chainIdentifier]?.blockExplorer!=null
+                ? {
+                  type: 'link',
+                  text: 'View transaction',
+                  href: ChainsConfig[props.quote.chainIdentifier].blockExplorer + props.quote.getOutputTxId(),
+                }
+                : undefined
+            }
           />
 
           <SwapStepAlert

@@ -11,6 +11,7 @@ import { ButtonWithWallet } from '../../../wallets/ButtonWithWallet';
 import { BaseButton } from '../../../common/BaseButton';
 import { SwapConfirmations } from '../../../swaps/SwapConfirmations';
 import { SwapFeePanel } from '../../../fees/SwapFeePanel';
+import {ChainsConfig} from "../../../../data/ChainsConfig";
 
 /*
 Steps:
@@ -206,6 +207,15 @@ export function SpvVaultFromBTCSwapPanel(props: {
               icon={ic_check_circle}
               title="Swap success"
               description="Your swap was executed successfully!"
+              action={
+                ChainsConfig[props.quote.chainIdentifier]?.blockExplorer!=null
+                  ? {
+                    type: 'link',
+                    text: 'View transaction',
+                    href: ChainsConfig[props.quote.chainIdentifier].blockExplorer + props.quote.getOutputTxId(),
+                  }
+                  : undefined
+              }
             />
           ) : (
             ''

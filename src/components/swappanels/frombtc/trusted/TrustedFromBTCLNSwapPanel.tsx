@@ -10,6 +10,7 @@ import { ScrollAnchor } from '../../../ScrollAnchor';
 import { useTrustedFromBtcLnQuote } from '../../../../hooks/swaps/useTrustedFromBtcLnQuote';
 import { ConnectedWalletPayButtons } from '../../../swaps/ConnectedWalletPayButtons';
 import { DisconnectedWalletQrAndAddress } from '../../../swaps/DisconnectedWalletQrAndAddress';
+import {ChainsConfig} from "../../../../data/ChainsConfig";
 
 /*
 Steps:
@@ -164,6 +165,15 @@ export function TrustedFromBTCLNSwapPanel(props: {
             icon={ic_check_circle}
             title="Swap success"
             description="Your swap was executed successfully!"
+            action={
+              ChainsConfig[props.quote.chainIdentifier]?.blockExplorer!=null
+                ? {
+                  type: 'link',
+                  text: 'View transaction',
+                  href: ChainsConfig[props.quote.chainIdentifier].blockExplorer + props.quote.getOutputTxId(),
+                }
+                : undefined
+            }
           />
 
           <SwapStepAlert

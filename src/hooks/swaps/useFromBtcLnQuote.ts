@@ -287,10 +287,10 @@ export function useFromBtcLnQuote(
   const [
     _isWaitingForWatchtowerClaim,
     setWaitingForWatchtowerClaim
-  ] = useState<boolean>(quote?.getType()===SwapType.FROM_BTCLN_AUTO);
+  ] = useState<boolean>(true);
   useEffect(() => {
+    setWaitingForWatchtowerClaim(true);
     if(isClaimClaimable && quote?.getType()===SwapType.FROM_BTCLN_AUTO) {
-      setWaitingForWatchtowerClaim(true);
       const timeout = setTimeout(() => {
         setWaitingForWatchtowerClaim(false);
       }, 60*1000);
@@ -298,11 +298,11 @@ export function useFromBtcLnQuote(
       return () => {
         clearTimeout(timeout);
       };
-    } else {
-      setWaitingForWatchtowerClaim(false);
     }
   }, [isClaimClaimable, quote]);
-  const isWaitingForWatchtowerClaim = !_isAlreadyClaimable && _isWaitingForWatchtowerClaim;
+
+  const isWaitingForWatchtowerClaim =
+    !_isAlreadyClaimable && quote?.getType() === SwapType.FROM_BTCLN_AUTO && _isWaitingForWatchtowerClaim;
 
   const isSuccess = state === FromBTCLNSwapState.CLAIM_CLAIMED;
 
