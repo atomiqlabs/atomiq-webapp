@@ -125,5 +125,7 @@ export function useQuote(
     pause
   );
 
-  return [refresh, result?.quote, result?.random, loading, error];
+  const random = address == null;
+
+  return [refresh, result?.quote, result?.random ?? random, loading, error];
 }

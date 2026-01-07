@@ -141,6 +141,7 @@ export type SwapPageState = {
     UICallback: (quote: ISwap, status: SwapPageUIState) => void;
   };
   hideUI: boolean;
+  swapButtonHint: string;
 };
 
 export function useSwapPage(): SwapPageState {
@@ -595,6 +596,18 @@ export function useSwapPage(): SwapPageState {
   }, []);
   const UIState = !!_UIState && _UIState.quote.getId()===quote?.getId() ? _UIState.state : "show";
 
+  const swapButtonHint = existingSwapLoading
+    ? 'Loading swap...'
+    : amount==null || amount===''
+      ? 'Amounts empty'
+      : (!swapTypeData?.requiresOutputWallet && (outputAddress==null || outputAddress===''))
+        ? 'Destination address empty'
+        : _quoteLoading
+          ? 'Fetching quote...'
+          : quoteError!=null
+            ? 'Quote error'
+            : 'Swap';
+
   return {
     input: {
       wallet:
@@ -732,5 +745,6 @@ export function useSwapPage(): SwapPageState {
       UICallback: setUIState
     },
     hideUI: UIState === 'hide',
+    swapButtonHint
   };
 }

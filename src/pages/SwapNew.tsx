@@ -380,7 +380,7 @@ export function SwapNew() {
               )}
             </div>
             <BaseButton variant="primary" className="swap-panel__action" disabled={true} size="lg">
-              Swap
+              {swapPage.swapButtonHint}
             </BaseButton>
           </>
         )}
