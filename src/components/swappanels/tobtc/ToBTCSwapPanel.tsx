@@ -29,7 +29,7 @@ Steps on-chain:
 
 export function ToBTCSwapPanel(props: {
   quote: IToBTCSwap;
-  refreshQuote: () => void;
+  refreshQuote: (clearAddress?: boolean) => void;
   UICallback: (quote: ISwap, state: SwapPageUIState) => void;
   type?: 'payment' | 'swap';
   autoContinue?: boolean;
@@ -208,7 +208,7 @@ export function ToBTCSwapPanel(props: {
             className="swap-panel__action"
             chainId={props.quote.chainIdentifier}
           />
-          : <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
+          : <BaseButton onClick={() => props.refreshQuote(page.step4.clearAddressOnRefresh)} variant="primary" className="swap-panel__action">
             New Swap
           </BaseButton>
         }

@@ -136,7 +136,7 @@ export type SwapPageState = {
     quote?: ISwap;
     isRandom?: boolean;
     error?: Error;
-    refresh: () => void;
+    refresh: (clearAddress?: boolean) => void;
     abort: () => void;
     UICallback: (quote: ISwap, status: SwapPageUIState) => void;
   };
@@ -568,11 +568,12 @@ export function useSwapPage(): SwapPageState {
 
   //Leaves existing swap
   const leaveExistingSwapOrRefresh = useCallback(
-    () => {
+    (clearAddress?: boolean) => {
+      if(clearAddress) setAddress('');
       if (existingSwap != null) {
         setInputToken(existingSwap.getInput().token);
         setOutputToken(existingSwap.getOutput().token);
-        setAddress(existingSwap.getOutputAddress());
+        if(!clearAddress) setAddress(existingSwap.getOutputAddress());
         if (existingSwap.exactIn) {
           setAmount(existingSwap.getInput().amount);
         } else {

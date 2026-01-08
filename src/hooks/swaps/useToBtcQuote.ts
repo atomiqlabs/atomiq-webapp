@@ -1,4 +1,5 @@
 import {
+  isSwapType,
   ISwap,
   IToBTCSwap,
   SwapType,
@@ -69,7 +70,8 @@ export type ToBtcPage = {
   },
   step4?: {
     state: "success" | "refunded" | "expired",
-    showConnectWalletButton: boolean
+    showConnectWalletButton: boolean,
+    clearAddressOnRefresh: boolean
   }
 }
 
@@ -330,7 +332,8 @@ export function useToBtcQuote(
       : isRefunded
         ? "refunded" as const
         : "expired" as const,
-    showConnectWalletButton: isExpired && wallet===undefined
+    showConnectWalletButton: isExpired && wallet===undefined,
+    clearAddressOnRefresh: isSuccess && isSwapType(quote, SwapType.TO_BTCLN) && !quote.isLNURL()
   }), [
     isSuccess,
     isRefunded,

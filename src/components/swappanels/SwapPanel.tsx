@@ -16,7 +16,7 @@ import {SwapPageUIState} from "../../hooks/pages/useSwapPage";
 
 export function SwapPanel(props: {
   quote: ISwap;
-  refreshQuote: () => void;
+  refreshQuote: (clearAddress?: boolean) => void;
   UICallback: (quote: ISwap, state: SwapPageUIState) => void;
   type?: 'payment' | 'swap';
   abortSwap?: () => void;
