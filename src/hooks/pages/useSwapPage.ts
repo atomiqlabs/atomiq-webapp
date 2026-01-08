@@ -235,11 +235,10 @@ export function useSwapPage(): SwapPageState {
     console.log('SwapNew(): Using token based on the address: ' + token.ticker);
     setOutputToken(token, false);
   });
-  const isFixedAmount = addressData?.amount != null;
 
   //WebLN
   const webLnForOutput =
-    outputChainData?.chain?.name === 'Lightning' && outputChainData?.wallet != null;
+    outputChainData?.chainId === 'LIGHTNING' && outputChainData?.wallet != null;
   useEffect(() => {
     if (!webLnForOutput) {
       setAddressFromWebLn(null);
@@ -253,6 +252,7 @@ export function useSwapPage(): SwapPageState {
   }, [webLnForOutput]);
 
   //Don't lock output amounts when WebLN wallet is connected
+  const isFixedAmount = webLnForOutput || addressData?.amount != null;
   const amountsLocked = webLnForOutput ? false : isFixedAmount;
 
   //Amounts
