@@ -93,7 +93,7 @@ export type FromBtcLnQuotePage = {
         onClick: () => void;
       };
       //Data for auto claim switch
-      autoClaim: {
+      autoClaim?: {
         value: boolean;
         onChange: (val: boolean) => void;
       };
@@ -291,6 +291,7 @@ export function useFromBtcLnQuote(
   ] = useState<boolean>(true);
   useEffect(() => {
     setWaitingForWatchtowerClaim(true);
+    //TODO: call swap.waitTillClaimed() with a timeout!
     if(isClaimClaimable && quote?.getType()===SwapType.FROM_BTCLN_AUTO) {
       const timeout = setTimeout(() => {
         setWaitingForWatchtowerClaim(false);
@@ -542,10 +543,12 @@ export function useFromBtcLnQuote(
       walletDisconnected:
         lightningWallet == null && !payingWithNFC && paymentWaiting
           ? {
-              autoClaim: {
-                value: autoClaim,
-                onChange: setAutoClaim,
-              },
+              autoClaim: quote?.getType()===SwapType.FROM_BTCLN_AUTO
+                ? undefined
+                : {
+                  value: autoClaim,
+                  onChange: setAutoClaim,
+                },
               address: {
                 value: quote.getAddress(),
                 hyperlink: quote.getHyperlink(),
