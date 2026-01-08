@@ -104,7 +104,7 @@ export function ToBTCSwapPanel(props: {
 
           <SwapStepAlert
             show={!!page.step2paying.error}
-            type="error"
+            type="warning"
             title={page.step2paying.error?.title}
             error={page.step2paying.error?.error}
             actionElement={

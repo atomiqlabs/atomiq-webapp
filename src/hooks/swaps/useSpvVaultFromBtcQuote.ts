@@ -293,7 +293,7 @@ export function useSpvVaultFromBtcQuote(
             error:
               sendError != null
                 ? {
-                    title: 'Sending BTC failed',
+                    title: 'Failed to send Bitcoin transaction',
                     error: sendError,
                   }
                 : undefined,
@@ -326,7 +326,7 @@ export function useSpvVaultFromBtcQuote(
           error:
             waitPaymentError != null
               ? {
-                title: 'Connection error',
+                title: 'Connection problem',
                 error: waitPaymentError,
                 retry: onWaitForPayment,
               }
@@ -343,7 +343,7 @@ export function useSpvVaultFromBtcQuote(
             error:
               waitPaymentError != null
                 ? {
-                    title: 'Connection error',
+                    title: 'Connection problem',
                     error: waitPaymentError,
                     retry: onWaitForPayment,
                   }
@@ -367,7 +367,7 @@ export function useSpvVaultFromBtcQuote(
             error:
               claimError != null
                 ? {
-                    title: 'Claim error',
+                    title: 'Failed to manually claim',
                     error: claimError,
                   }
                 : undefined,

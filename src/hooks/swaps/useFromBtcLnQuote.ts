@@ -509,7 +509,7 @@ export function useFromBtcLnQuote(
 
     let error;
     if(lightningWallet != null && payError != null) error = {
-      title: 'Lightning transaction error',
+      title: 'Failed to send Lightning transaction',
       type: 'error' as const,
       error: payError,
     };
@@ -634,7 +634,7 @@ export function useFromBtcLnQuote(
         error:
           claimError
             ? {
-              title: 'Swap claim error',
+              title: 'Failed to manually claim',
               error: claimError,
             }
             : undefined,
@@ -663,8 +663,8 @@ export function useFromBtcLnQuote(
           ? {
               title:
                 canClaimInOneShot || claimError != null
-                  ? 'Swap claim error'
-                  : 'Swap claim initialization error',
+                  ? 'Failed to claim'
+                  : 'Failed to initiate the claim',
               error: commitError ?? claimError,
             }
           : undefined,

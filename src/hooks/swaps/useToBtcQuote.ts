@@ -272,7 +272,7 @@ export function useToBtcQuote(
       disabled: !hasEnoughBalance || !!additionalGasRequired
     } : undefined,
     error: continueError!=null ? {
-      title: 'Swap initialization error',
+      title: 'Cannot initiate swap',
       error: continueError
     } : undefined,
     expiry: {
@@ -295,7 +295,7 @@ export function useToBtcQuote(
 
   const step2paying = useMemo(() => (!isPaying && !isPayError ? undefined : {
     error: paymentError ? {
-      title: 'Swap error',
+      title: 'Connection problem',
       error: paymentError,
       retry: retryWaitForPayment
     } : undefined
@@ -314,7 +314,7 @@ export function useToBtcQuote(
       disabled: refundLoading
     } : undefined,
     error: refundError ? {
-      title: 'Refund error',
+      title: 'Error while refunding',
       error: refundError
     } : undefined
   }), [

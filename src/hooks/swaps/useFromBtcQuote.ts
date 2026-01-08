@@ -394,7 +394,7 @@ export function useFromBtcQuote(
       loading: commitLoading
     } : undefined,
     error: commitError ? {
-      title: "Swap initialization error",
+      title: "Cannot initiate swap",
       error: commitError
     } : undefined,
     expiry: {
@@ -415,7 +415,7 @@ export function useFromBtcQuote(
 
   const step2paymentWait = useMemo(() => (!isCommited ? undefined : {
     error: waitPaymentError || (payError && bitcoinWallet) ? {
-      title: waitPaymentError ? "Connection problem" : "Bitcoin transaction error",
+      title: waitPaymentError ? "Connection problem" : "Failed to send Bitcoin transaction",
       error: waitPaymentError ? waitPaymentError : payError,
       type: waitPaymentError ? ("warning" as const) : ("error" as const),
       retry: waitPaymentError ? onWaitForPayment : undefined
@@ -507,7 +507,7 @@ export function useFromBtcQuote(
     broadcasting: !waitPaymentError ? isBroadcasting : undefined,
     txData: !waitPaymentError ? txData : undefined,
     error: waitPaymentError ? {
-      title: "Connection error",
+      title: "Connection problem",
       error: waitPaymentError,
       retry: onWaitForPayment
     } : undefined
@@ -530,7 +530,7 @@ export function useFromBtcQuote(
       disabled: claimLoading
     },
     error: claimError!=null ? {
-      title: "Claim error",
+      title: "Failed to manually claim",
       error: claimError
     } : undefined
   }), [
