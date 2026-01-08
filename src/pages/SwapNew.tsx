@@ -268,7 +268,9 @@ export function SwapNew() {
                             textEnd={
                               swapPage.output.address?.loading ? (
                                 <Spinner className="text-white" />
-                              ) : swapPage.output.address?.validation?.status === 'success' ? (
+                              ) : swapPage.output.address?.value==='' ?
+                                  null
+                              : swapPage.output.address?.validation?.status === 'success' ? (
                                 <span className="icon icon-check"></span>
                               ) : swapPage.output.address?.validation?.status === 'error' ? (
                                 <span className="icon icon-invalid-error"></span>
@@ -333,17 +335,6 @@ export function SwapNew() {
                         </div>
                       </>
                     )}
-
-                    <Alert
-                      variant={'success'}
-                      className="wallet-address__alert mb-0 text-center"
-                      show={swapPage.output.showLightningAlert}
-                    >
-                      <label>
-                        Only lightning invoices with pre-set amount are supported! Use lightning
-                        address/LNURL for variable amount.
-                      </label>
-                    </Alert>
                   </div>
                 </div>
               </div>

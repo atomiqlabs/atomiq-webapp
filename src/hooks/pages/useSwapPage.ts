@@ -122,7 +122,6 @@ export type SwapPageState = {
     webln?: {
       fetchInvoice?: () => void;
     };
-    showLightningAlert: boolean;
   };
   smartChainId: string;
   swapType: SwapType;
@@ -555,6 +554,11 @@ export function useSwapPage(): SwapPageState {
           ? 'Wallet address fetched from ' + outputChainData.wallet?.name
           : 'Swap amount imported from lightning network invoice',
       };
+    if(swapType===SwapType.TO_BTCLN && (address==='' || address==null))
+      return {
+        status: 'success',
+        text: 'Lightning invoices require pre-set amount!'
+      };
   }, [
     swapTypeData,
     addressData,
@@ -730,8 +734,7 @@ export function useSwapPage(): SwapPageState {
               .catch((e) => console.error(e));
           },
         };
-      }, [webLnForOutput, outputAddress, validatedAmount, outputChainData]),
-      showLightningAlert: swapType === SwapType.TO_BTCLN && addressData == null && !webLnForOutput,
+      }, [webLnForOutput, outputAddress, validatedAmount, outputChainData])
     },
     smartChainId: scCurrency.chainId,
     swapType,
