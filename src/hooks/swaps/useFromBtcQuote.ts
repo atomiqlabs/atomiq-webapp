@@ -554,6 +554,7 @@ export function useFromBtcQuote(
   }), [
     isSuccess,
     isFailed,
+    isExpired,
     isQuoteExpired,
     smartChainWallet
   ]);
