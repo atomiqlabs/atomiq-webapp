@@ -88,8 +88,7 @@ export function useSpvVaultFromBtcQuote(
         state === SpvFromBTCSwapState.CREATED ||
         state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED ||
         state === SpvFromBTCSwapState.QUOTE_EXPIRED
-      )
-        return;
+      ) return;
       if (UICallbackRef.current) UICallbackRef.current(quote, 'hide');
     }
   );
@@ -112,7 +111,14 @@ export function useSpvVaultFromBtcQuote(
         return val;
       })
       .catch((e) => {
-        if (UICallbackRef.current) UICallbackRef.current(quote, 'show');
+        if (UICallbackRef.current) {
+          const state = quote.getState();
+          if (
+            state === SpvFromBTCSwapState.CREATED ||
+            state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED ||
+            state === SpvFromBTCSwapState.QUOTE_EXPIRED
+          ) UICallbackRef.current(quote, 'show');
+        }
         throw e;
       });
   }, [quote, bitcoinWallet, feeRate]);

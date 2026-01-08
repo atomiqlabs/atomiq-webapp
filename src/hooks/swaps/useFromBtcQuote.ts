@@ -196,7 +196,14 @@ export function useFromBtcQuote(
       if (bitcoinChainData.wallet != null) payBitcoin();
       return commitTxId;
     } catch (e) {
-      if(UICallbackRef.current) UICallbackRef.current(quote, "show");
+      if(UICallbackRef.current) {
+        const state = quote.getState();
+        if(
+          state === FromBTCSwapState.PR_CREATED ||
+          state === FromBTCSwapState.QUOTE_SOFT_EXPIRED ||
+          state === FromBTCSwapState.QUOTE_EXPIRED
+        ) UICallbackRef.current(quote, "show");
+      }
       throw e;
     }
   }, [quote, smartChainWallet, payBitcoin]);

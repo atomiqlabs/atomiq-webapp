@@ -107,7 +107,14 @@ export function useToBtcQuote(
         if(UICallbackRef.current) UICallbackRef.current(quote, "hide");
         return res;
       }).catch((err) => {
-        if(UICallbackRef.current) UICallbackRef.current(quote, "show");
+        if(UICallbackRef.current) {
+          const state = quote.getState();
+          if(
+            state === ToBTCSwapState.CREATED ||
+            state === ToBTCSwapState.QUOTE_SOFT_EXPIRED ||
+            state === ToBTCSwapState.QUOTE_EXPIRED
+          ) UICallbackRef.current(quote, "show");
+        }
         throw err;
       });
     },
