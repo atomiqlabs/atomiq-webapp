@@ -1,78 +1,111 @@
-# Getting Started with Create React App
+## Project Overview
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Atomiq Webapp** is a React-based web interface for the Atomiq cross-chain DEX. It enables trustless swaps between Bitcoin/Lightning Network and smart chains using the `@atomiqlabs/sdk`.
 
-## Installation
+---
 
-Install node modules with `npm install`
+## Project Structure
 
-**NOTE:** If it fails try it with --force param `npm install --force`
+```
+atomiq-webapp/
+├── src/
+│   ├── main.tsx              # App entry point
+│   ├── App.tsx               # Root component with provider hierarchy & routing
+│   ├── FEConstants.ts        # Frontend constants (stats URL, default LP, etc.)
+│   ├── providers/            # Context providers
+│   │   ├── ChainsProvider.tsx    # Multi-chain wallet management
+│   │   ├── SwapperProvider.tsx   # SDK Swapper initialization
+│   │   └── chains/               # Per-chain wallet hooks
+│   │       ├── useSolanaChain.tsx
+│   │       ├── useStarknetChain.ts
+│   │       ├── useBitcoinChain.ts
+│   │       ├── useLightningNetwork.ts
+│   │       └── useEVMChains.tsx   # Citrea, Botanix, Alpen, GOAT
+│   ├── pages/                # Route components
+│   │   ├── SwapNew.tsx       # Main swap page (17KB - primary UI)
+│   │   ├── HistoryPage.tsx   # Swap history
+│   │   ├── SwapExplorer.tsx  # Explorer for swaps
+│   │   ├── SwapForGas.tsx    # Gas swap functionality
+│   │   ├── FAQPage.tsx       # FAQ
+│   │   ├── AboutPage.tsx     # About page
+│   │   └── quickscan/        # QR scan functionality
+│   ├── data/
+│   │   └── ChainsConfig.ts   # Chain configuration from env vars
+│   ├── wallets/bitcoin/      # Bitcoin wallet adapters
+│   │   ├── base/             # Base classes (ExtensionBitcoinWallet, etc.)
+│   │   ├── PhantomBitcoinWallet.ts
+│   │   ├── XverseBitcoinWallet.ts
+│   │   ├── UnisatBitcoinWallet.ts
+│   │   ├── OKXBitcoinWallet.ts
+│   │   ├── MagicEdenBitcoinWallet.ts
+│   │   └── KeplrBitcoinWallet.ts
+│   ├── components/           # UI components
+│   ├── hooks/                # React hooks
+│   ├── context/              # React contexts
+│   └── adapters/             # Adapter layer
+├── public/                   # Static assets (icons, wallets, manifest)
+├── docs/                     # Documentation
+│   └── AddNewWallet.md       # Guide for adding wallet types
+├── vite.config.ts            # Vite configuration with Node polyfills
+├── tailwind.config.js        # Tailwind CSS config
+└── package.json              # Dependencies and scripts
+```
 
-Make sure to copy the `.env.example` file to `.env` before starting the project. You'll need to fill in the appropriate values based on the environment (e.g. RPC URLs, network names, explorer URLs).
+---
 
-## Available Scripts
+## Key Purpose and Goals
 
-In the project directory, you can run:
+1. **Trustless Cross-Chain Swaps** - Enable swaps between Bitcoin/Lightning and smart chains without centralized custody
+2. **Multi-Chain Support** - Support for Solana, Starknet, and EVM L2s (Citrea, Botanix, Alpen, GOAT)
+3. **Multi-Wallet Support** - Connect various wallet types per chain
+4. **Request for Quote (RFQ) Model** - Interact with Liquidity Provider nodes for swap quotes
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Provider Hierarchy
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```
+ChainsProvider (wallet connections for all chains)
+  └── SwapperProvider (SDK initialization)
+       └── App routes
+```
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Key Dependencies
 
-### `npm run build`
+| Package | Purpose |
+|---------|---------|
+| `@atomiqlabs/sdk` | Core swap SDK |
+| `@atomiqlabs/chain-solana` | Solana integration |
+| `@atomiqlabs/chain-starknet` | Starknet integration |
+| `@atomiqlabs/chain-evm` | EVM chain integration (Citrea, Botanix, Alpen, GOAT) |
+| `@solana/wallet-adapter-*` | Solana wallet adapters |
+| `starknet` | Starknet client library |
+| `wagmi` / `viem` | EVM wallet connection and interaction |
+| `sats-connect` | Bitcoin wallet integration |
+| `webln` | Lightning Network WebLN provider |
+| `react-router-dom` | Client-side routing |
+| `react-bootstrap` | UI components |
+| `tailwindcss` | Utility CSS framework |
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Important Configuration
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **Build Tool**: Vite (migrated from Create React App)
+- **Styling**: Tailwind CSS + SCSS + Bootstrap
+- **Node Polyfills**: Required for browser compatibility (crypto, stream, buffer, etc.)
+- **Environment**: Uses `VITE_` prefixed env vars for chain RPC URLs and configuration
+- **Chains are conditionally enabled** based on whether their RPC URL is configured
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Available Commands
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```bash
+npm start      # Dev server on port 5173
+npm run build  # Production build
+npm run format # Prettier formatting
+npm run typecheck # TypeScript type check
+```

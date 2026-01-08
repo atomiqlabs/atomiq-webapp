@@ -1,0 +1,51 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(curl:*)",
+      "Bash(source:*)",
+      "Bash(find:*)",
+      "Bash(mv:*)",
+      "Bash(mkdir:*)",
+      "Bash(tree:*)",
+      "Bash(ruff:*)",
+      "Bash(touch:*)",
+      "Bash(chmod:*)",
+      "Bash(cat:*)",
+      "Bash(ruff check:*)",
+      "Bash(gh issue view:*)",
+      "Bash(docker:*)",
+      "Bash(ollama:*)",
+      "Bash(brew:*)",
+      "Bash(du:*)",
+      "Bash(jq:*)",
+      "Bash(yarn:*)",
+      "Bash(npm:*)",
+      "Bash(pnpm:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(uv cache:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv add:*)",
+      "Bash(uv run:*)",
+      "Bash(pytest:*)",
+      "Bash(python:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python3 -m pytest:*)",
+      "Bash(test:*)",
+      "Bash(test -f tools.py)",
+      "Bash(test -f dependencies.py)",
+      "Bash(npx tsc:*)",
+      "Bash(pdflatex:*)",
+      "Bash(pandoc:*)",
+      "Bash(bibtex:*)",
+      "Bash(xxd:*)",
+      "mcp__playwright"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "playwright"
+  ]
+}
