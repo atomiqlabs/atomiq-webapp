@@ -65,6 +65,8 @@ export type SpvVaultFromBtcPage = {
     error?: {
       title: string;
       error: Error;
+      type: 'warning' | 'error';
+      retry?: () => void;
     };
   };
   step5?: {
@@ -96,7 +98,6 @@ export function useSpvVaultFromBtcQuote(
   const bitcoinWallet = useChain('BITCOIN')?.wallet;
   const smartChainWallet = useSmartChainWallet(quote);
 
-  const isAlreadyClaimable = useMemo(() => quote?.isClaimable(), [quote]);
   const [txData, setTxData] = useState<TxDataType>(null);
 
   const [onSend, sendLoading, sendSuccess, sendError] = useAsync(() => {
@@ -202,6 +203,21 @@ export function useSpvVaultFromBtcQuote(
     state === SpvFromBTCSwapState.CLOSED;
   const isSuccess = state === SpvFromBTCSwapState.CLAIMED || state === SpvFromBTCSwapState.FRONTED;
 
+  const isAlreadyClaimable = useMemo(
+    () => quote?.isClaimable(),
+    [quote]
+  );
+  const [waitForSettlement, settlementWaiting, settlementSuccess, settlementError] = useAsync(() => {
+    return quote.waitTillClaimedOrFronted(60, abortSignalRef.current);
+  }, [quote]);
+  useEffect(() => {
+    if(!isAlreadyClaimable && isClaimable) {
+      waitForSettlement();
+    }
+  }, [isAlreadyClaimable, isClaimable]);
+  const isWaitingForWatchtowerClaim =
+    !isAlreadyClaimable && isClaimable && settlementSuccess==null;
+
   /*
     Steps:
     1. Bitcoin payment -> Signing bitcoin transaction -> Broadcasting bitcoin transaction -> Waiting bitcoin confirmations -> Bitcoin confirmed
@@ -254,16 +270,16 @@ export function useSpvVaultFromBtcQuote(
     };
 
   if (isClaimable) {
-    if (claimable || isAlreadyClaimable) {
+    if (isWaitingForWatchtowerClaim) {
       executionSteps[1] = {
-        icon: ic_receipt,
-        text: 'Claim manually',
+        icon: ic_hourglass_top_outline,
+        text: 'Waiting automatic settlement',
         type: 'loading',
       };
     } else {
       executionSteps[1] = {
-        icon: ic_hourglass_top_outline,
-        text: 'Waiting automatic settlement',
+        icon: ic_receipt,
+        text: 'Manual settlement',
         type: 'loading',
       };
     }
@@ -271,7 +287,7 @@ export function useSpvVaultFromBtcQuote(
   if (isClaiming)
     executionSteps[1] = {
       icon: ic_hourglass_empty_outline,
-      text: 'Sending claim transaction',
+      text: 'Sending settlement transaction',
       type: 'loading',
     };
   if (isSuccess)
@@ -363,30 +379,37 @@ export function useSpvVaultFromBtcQuote(
       !isClaimable && !isClaiming
         ? undefined
         : {
-            waitingForWatchtowerClaim: !(claimable || isAlreadyClaimable),
+            waitingForWatchtowerClaim: isWaitingForWatchtowerClaim,
             smartChainWallet,
             claim: {
               onClick: onClaim,
               loading: claimLoading,
               disabled: claimLoading,
             },
-            error:
-              claimError != null
+            error: claimError != null
+              ? {
+                title: 'Failed to manually settle',
+                error: claimError,
+                type: 'error' as const,
+              }
+              : settlementError
                 ? {
-                    title: 'Failed to manually claim',
-                    error: claimError,
-                  }
+                  title: 'Connection problem',
+                  error: settlementError,
+                  type: 'warning' as const,
+                  retry: waitForSettlement,
+                }
                 : undefined,
           },
     [
       isClaimable,
       isClaiming,
-      claimable,
-      isAlreadyClaimable,
       smartChainWallet,
       onClaim,
       claimLoading,
       claimError,
+      settlementError,
+      isWaitingForWatchtowerClaim
     ]
   );
 

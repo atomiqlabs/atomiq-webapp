@@ -120,6 +120,7 @@ export function SwapStepAlert(props: SwapStepAlertProps) {
               icon={props.action.icon}
               onClick={props.action.onClick}
             >
+              {props.action.icon}
               {props.action.text}
             </BaseButton>
           )}

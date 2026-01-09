@@ -32,6 +32,7 @@ export function SwapNew() {
       />
 
       <div className="swap-panel">
+        {/*TODO: We need a better way to show the error when quoting*/}
         <SwapStepAlert
           type="error"
           icon={ic_warning}

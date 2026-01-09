@@ -100,7 +100,7 @@ export function FromBTCLNSwapPanel(props: {
               once you inititated a Lightning Network payment from your wallet app.{' '}
               <strong>
                 The Lightning Network payment will only succeed/confirm once{' '}
-                you come back to the dApp and claim the funds on the {chain?.chain.name} side!
+                you come back to the dApp and settle the swap on the {chain?.chain.name} side!
               </strong>
             </>
           }
@@ -204,22 +204,29 @@ export function FromBTCLNSwapPanel(props: {
 
           <SwapStepAlert
             show={!!page.step3claim.error}
-            type="error"
+            type={page.step3claim.error?.type}
             icon={ic_warning}
             title={page.step3claim.error?.title}
             error={page.step3claim.error?.error}
+            action={page.step3claim.error?.retry && {
+              type: 'button',
+              text: 'Retry',
+              variant: 'secondary',
+              onClick: page.step3claim.error?.retry,
+              icon: <i className="icon icon-retry"/>
+            }}
           />
 
           <SwapStepAlert
             show={!!page.step3claim.commit || !!page.step3claim.claim}
             type="success"
             icon={ic_check_circle}
-            title="Lightning network payment received"
-            description="Claim your payment to finish the swap."
+            title="Manual swap settlement"
+            description="Settle the swap manually to finish the swap."
             actionElement={
               <>
                 {page.step3claim.commit && <ButtonWithWallet
-                  requiredWalletAddress={props.quote._getInitiator()}
+                  requiredWalletAddress={page.step3claim.commit.requiredConnectedWalletAddress}
                   className="swap-step-alert__button"
                   chainId={props.quote?.chainIdentifier}
                   onClick={page.step3claim.commit.onClick}

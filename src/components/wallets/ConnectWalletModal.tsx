@@ -83,7 +83,7 @@ export const ConnectWalletModal: FC<ConnectWalletModalProps> = ({
               icon={wallet.icon}
               isInstalled={false}
               onClick={() => {
-                window.location.href = wallet.downloadLink;
+                window.open(wallet.downloadLink, '_blank', 'noopener,noreferrer');
               }}
             />
           ))}

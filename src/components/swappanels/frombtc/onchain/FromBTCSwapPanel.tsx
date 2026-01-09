@@ -256,31 +256,38 @@ export function FromBTCSwapPanel(props: {
         <div className="swap-panel__card">
           {stepByStep}
 
+          <SwapStepAlert
+            show={!!page.step4claim.error}
+            type={page.step4claim.error?.type}
+            icon={ic_warning}
+            title={page.step4claim.error?.title}
+            error={page.step4claim.error?.error}
+            action={page.step4claim.error?.retry && {
+              type: 'button',
+              text: 'Retry',
+              variant: 'secondary',
+              onClick: page.step4claim.error?.retry,
+              icon: <i className="icon icon-retry"/>
+            }}
+          />
+
           {page.step4claim.waitingForWatchtowerClaim ? (
             <div className="swap-confirmations">
               <div className="swap-confirmations__estimate">
                 <Spinner />
               </div>
               <div className="swap-confirmations__name">
-                Transaction received & confirmed, waiting for claim by watchtowers...
+                Transaction received & confirmed, waiting for automatic settlement by watchtowers...
               </div>
             </div>
           ) : (
             <>
               <SwapStepAlert
-                show={!!page.step4claim.error}
-                type="error"
-                icon={ic_warning}
-                title={page.step4claim.error?.title}
-                error={page.step4claim.error?.error}
-              />
-
-              <SwapStepAlert
                 show={true}
                 type="success"
                 icon={ic_check_circle}
-                title="Bitcoin transaction confirmed"
-                description="Claim your payment to finish the swap."
+                title="Manual swap settlement"
+                description="Automatic settlement has failed. You can now settle your swap manually to finish the swap."
                 actionElement={
                   <ButtonWithWallet
                     requiredWalletAddress={props.quote._getInitiator()}
@@ -295,7 +302,7 @@ export function FromBTCSwapPanel(props: {
                     ) : (
                       <i className="icon icon-claim" />
                     )}
-                    Claim your payment
+                    Settle swap
                   </ButtonWithWallet>
                 }
               />

@@ -1,4 +1,4 @@
-import {FromBTCSwap, FromBTCSwapState, ISwap, TokenAmount} from "@atomiqlabs/sdk";
+import {FromBTCSwap, FromBTCSwapState, ISwap, SwapType, TokenAmount} from "@atomiqlabs/sdk";
 import {useContext, useEffect, useMemo, useState} from "react";
 import {ChainsContext} from "../../context/ChainsContext";
 import {useChain} from "../chains/useChain";
@@ -122,7 +122,9 @@ export type FromBtcQuotePage = {
     },
     error?: {
       title: string,
-      error: Error
+      error: Error,
+      type: 'error' | 'warning',
+      retry?: () => void
     }
   },
   step5?: {
@@ -183,11 +185,6 @@ export function useFromBtcQuote(
     payBitcoin();
   }, [callPayFlag, bitcoinChainData.wallet, payBitcoin]);
 
-  const isAlreadyClaimable = useMemo(
-    () => (quote != null ? quote.isClaimable() : false),
-    [quote]
-  );
-
   const [onCommit, commitLoading, commitSuccess, commitError] = useAsync(async () => {
     if(UICallbackRef.current) UICallbackRef.current(quote, "lock");
     try {
@@ -243,24 +240,10 @@ export function useFromBtcQuote(
   }, [quote, smartChainWallet]);
 
   const [txData, setTxData] = useState<TxDataType | null>(null);
-
-  const [claimable, setClaimable] = useState(false);
   useEffect(() => {
     if (state === FromBTCSwapState.CLAIM_COMMITED || state === FromBTCSwapState.EXPIRED) {
       onWaitForPayment();
     }
-
-    let timer: NodeJS.Timeout = null;
-    if (state === FromBTCSwapState.BTC_TX_CONFIRMED) {
-      timer = setTimeout(() => {
-        setClaimable(true);
-      }, 60 * 1000);
-    }
-
-    return () => {
-      if (timer != null) clearTimeout(timer);
-      setClaimable(false);
-    };
   }, [state]);
 
   const hasEnoughBalance = useMemo(
@@ -287,6 +270,21 @@ export function useFromBtcQuote(
   const isExpired = state === FromBTCSwapState.EXPIRED && txData == null;
   const isFailed = state === FromBTCSwapState.FAILED;
   const isSuccess = state === FromBTCSwapState.CLAIM_CLAIMED;
+
+  const isAlreadyClaimable = useMemo(
+    () => quote?.isClaimable(),
+    [quote]
+  );
+  const [waitForSettlement, settlementWaiting, settlementSuccess, settlementError] = useAsync(() => {
+    return quote.waitTillClaimed(60, abortSignalRef.current);
+  }, [quote]);
+  useEffect(() => {
+    if(!isAlreadyClaimable && isClaimable) {
+      waitForSettlement();
+    }
+  }, [isAlreadyClaimable, isClaimable]);
+  const isWaitingForWatchtowerClaim =
+    !isAlreadyClaimable && isClaimable && settlementSuccess==null;
 
   /*
     Steps:
@@ -366,16 +364,16 @@ export function useFromBtcQuote(
     };
 
   if (isClaimable) {
-    if(claimable || isAlreadyClaimable) {
+    if(isWaitingForWatchtowerClaim) {
       executionSteps[2] = {
         icon: ic_receipt,
-        text: 'Claim transaction',
+        text: 'Waiting automatic settlement',
         type: 'loading',
       };
     } else {
       executionSteps[2] = {
         icon: ic_receipt,
-        text: 'Waiting automatic settlement',
+        text: 'Manual settlement',
         type: 'loading',
       };
     }
@@ -383,7 +381,7 @@ export function useFromBtcQuote(
   if (isClaiming)
     executionSteps[2] = {
       icon: ic_hourglass_empty_outline,
-      text: 'Sending claim transaction',
+      text: 'Sending settlement transaction',
       type: 'loading',
     };
   if (isSuccess)
@@ -529,26 +527,36 @@ export function useFromBtcQuote(
   ]);
 
   const step4claim = useMemo(() => (!isClaimable && !isClaiming ? undefined : {
-    waitingForWatchtowerClaim: !(claimable || isAlreadyClaimable),
+    waitingForWatchtowerClaim: isWaitingForWatchtowerClaim,
     smartChainWallet,
     claim: {
       onClick: onClaim,
       loading: claimLoading,
       disabled: claimLoading
     },
-    error: claimError!=null ? {
-      title: "Failed to manually claim",
-      error: claimError
-    } : undefined
+    error: claimError!=null
+      ? {
+        title: "Failed to manually settle",
+        error: claimError,
+        type: 'error' as const
+      }
+      : settlementError
+        ? {
+          title: 'Connection problem',
+          error: settlementError,
+          type: 'warning' as const,
+          retry: waitForSettlement,
+        }
+        : undefined,
   }), [
     isClaimable,
     isClaiming,
-    claimable,
-    isAlreadyClaimable,
     smartChainWallet,
     onClaim,
     claimLoading,
-    claimError
+    claimError,
+    isWaitingForWatchtowerClaim,
+    settlementError
   ]);
 
   const step5 = useMemo(() => (!isSuccess && !isFailed && !isQuoteExpired && !isExpired ? undefined : {

@@ -113,6 +113,8 @@ export type FromBtcLnQuotePage = {
     error?: {
       title: string;
       error: Error;
+      type: "warning" | "error";
+      retry?: () => void;
     };
     expiry?: {
       remaining: number;
@@ -125,6 +127,7 @@ export type FromBtcLnQuotePage = {
       disabled: boolean;
       size: 'sm' | 'lg';
       onClick: () => void;
+      requiredConnectedWalletAddress?: string;
     };
     //Optionally a second button for claim, used for Starknet - only returned if needed
     claim?: {
@@ -240,6 +243,7 @@ export function useFromBtcLnQuote(
         await _quote.commit(smartChainWallet.instance, null, skipChecks);
         if (_quote.chainIdentifier === 'STARKNET') await timeoutPromise(5000);
       }
+      return true;
     },
     [quote, smartChainWallet, canClaimInOneShot]
   );
@@ -253,8 +257,8 @@ export function useFromBtcLnQuote(
     if (quote?.getType() === SwapType.FROM_BTCLN_AUTO) return;
     if (state === FromBTCLNSwapState.PR_PAID) {
       if (autoClaim || lightningWallet != null)
-        onCommit(true).then(() => {
-          if (!canClaimInOneShot) onClaim();
+        onCommit(true).then((success) => {
+          if (success && !canClaimInOneShot) onClaim();
         });
     }
   }, [state]);
@@ -262,7 +266,7 @@ export function useFromBtcLnQuote(
   const isQuoteExpired =
     state === FromBTCLNSwapState.QUOTE_EXPIRED ||
     (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !committing && !paymentWaiting);
-  const isQuoteExpiredClaim = isQuoteExpired && quote.commitTxId != null;
+  const isQuoteExpiredAfterPayment = isQuoteExpired && quote.data != null;
 
   const isFailed = state === FromBTCLNSwapState.FAILED || state === FromBTCLNSwapState.EXPIRED;
 
@@ -285,26 +289,16 @@ export function useFromBtcLnQuote(
     () => quote?.getType() === SwapType.FROM_BTCLN || quote?.isClaimable(),
     [quote]
   );
-  const [
-    _isWaitingForWatchtowerClaim,
-    setWaitingForWatchtowerClaim
-  ] = useState<boolean>(true);
+  const [waitForSettlement, settlementWaiting, settlementSuccess, settlementError] = useAsync(() => {
+    return quote.waitTillClaimed(60, abortSignalRef.current);
+  }, [quote]);
   useEffect(() => {
-    setWaitingForWatchtowerClaim(true);
-    //TODO: call swap.waitTillClaimed() with a timeout!
-    if(isClaimClaimable && quote?.getType()===SwapType.FROM_BTCLN_AUTO) {
-      const timeout = setTimeout(() => {
-        setWaitingForWatchtowerClaim(false);
-      }, 60*1000);
-
-      return () => {
-        clearTimeout(timeout);
-      };
+    if(!_isAlreadyClaimable && isClaimClaimable && quote?.getType()===SwapType.FROM_BTCLN_AUTO) {
+      waitForSettlement();
     }
-  }, [isClaimClaimable, quote]);
-
+  }, [_isAlreadyClaimable, isClaimClaimable, quote]);
   const isWaitingForWatchtowerClaim =
-    !_isAlreadyClaimable && quote?.getType() === SwapType.FROM_BTCLN_AUTO && _isWaitingForWatchtowerClaim;
+    !_isAlreadyClaimable && isClaimClaimable && quote?.getType() === SwapType.FROM_BTCLN_AUTO && settlementSuccess==null;
 
   const isSuccess = state === FromBTCLNSwapState.CLAIM_CLAIMED;
 
@@ -316,7 +310,9 @@ export function useFromBtcLnQuote(
     },
     {
       icon: ic_swap_horiz,
-      text: 'Send claim transaction',
+      text: quote?.getType() === SwapType.FROM_BTCLN_AUTO
+        ? 'Automatic settlement'
+        : 'Manual swap settlement',
       type: 'disabled',
     },
   ];
@@ -343,135 +339,66 @@ export function useFromBtcLnQuote(
       };
     }
   }
-  if (isQuoteExpired && !isQuoteExpiredClaim)
+
+  if (isQuoteExpired) {
+    if(isQuoteExpiredAfterPayment) {
+      executionSteps[0] = {
+        icon: ic_refresh,
+        text: 'Lightning payment reverted',
+        type: 'failed',
+      };
+      executionSteps[1] = {
+        icon: ic_watch_later_outline,
+        text: 'Settlement transaction expired',
+        type: 'failed',
+      };
+    } else {
+      executionSteps[0] = {
+        icon: ic_hourglass_disabled_outline,
+        text: 'Swap expired',
+        type: 'failed',
+      };
+    }
+  }
+
+  if (isClaimable) {
+    if(isAwaitingLpInit) {
+      executionSteps[1] = {
+        icon: ic_hourglass_top_outline,
+        text: 'Waiting for LP',
+        type: 'loading',
+      };
+    } else if(isWaitingForWatchtowerClaim) {
+      executionSteps[1] = {
+        icon: ic_receipt,
+        text: 'Waiting automatic settlement',
+        type: 'loading',
+      };
+    } else {
+      executionSteps[1] = {
+        icon: ic_receipt,
+        text: committing || claiming ? 'Sending settlement transaction' : 'Manual settlement',
+        type: 'loading',
+      };
+    }
+  }
+  if (isSuccess)
+    executionSteps[1] = {
+      icon: ic_check_outline,
+      text: 'Swap settled',
+      type: 'success',
+    };
+  if (isFailed) {
     executionSteps[0] = {
-      icon: ic_hourglass_disabled_outline,
-      text: 'Quote expired',
+      icon: ic_refresh,
+      text: 'Lightning payment reverted',
       type: 'failed',
     };
-
-  if (canClaimInOneShot || quote?.getType() === SwapType.FROM_BTCLN_AUTO) {
-    if (isQuoteExpiredClaim) {
-      executionSteps[0] = {
-        icon: ic_refresh,
-        text: 'Lightning payment reverted',
-        type: 'failed',
-      };
-      executionSteps[1] = {
-        icon: ic_watch_later_outline,
-        text: 'Claim transaction expired',
-        type: 'failed',
-      };
-    }
-    if (isClaimable) {
-      if(isAwaitingLpInit) {
-        executionSteps[1] = {
-          icon: ic_hourglass_top_outline,
-          text: 'Waiting for LP',
-          type: 'loading',
-        };
-      } else if(isWaitingForWatchtowerClaim) {
-        executionSteps[1] = {
-          icon: ic_receipt,
-          text: 'Automatic claim',
-          type: 'loading',
-        };
-      } else {
-        executionSteps[1] = {
-          icon: ic_receipt,
-          text: committing || claiming ? 'Claiming transaction' : 'Send claim transaction',
-          type: 'loading',
-        };
-      }
-    }
-    if (isSuccess)
-      executionSteps[1] = {
-        icon: ic_check_outline,
-        text: 'Claim success',
-        type: 'success',
-      };
-    if (isFailed) {
-      executionSteps[0] = {
-        icon: ic_refresh,
-        text: 'Lightning payment reverted',
-        type: 'failed',
-      };
-      executionSteps[1] = {
-        icon: ic_watch_later_outline,
-        text: 'Swap expired',
-        type: 'failed',
-      };
-    }
-  } else {
     executionSteps[1] = {
-      icon: ic_swap_horiz,
-      text: 'Sending transaction',
-      type: 'disabled',
+      icon: ic_watch_later_outline,
+      text: 'Swap expired',
+      type: 'failed',
     };
-    executionSteps[2] = {
-      icon: ic_download_outline,
-      text: 'Send claim transaction',
-      type: 'disabled',
-    };
-    if (isQuoteExpiredClaim) {
-      executionSteps[0] = {
-        icon: ic_refresh,
-        text: 'Lightning payment reverted',
-        type: 'failed',
-      };
-      executionSteps[1] = {
-        icon: ic_watch_later_outline,
-        text: 'Initialization transaction expired',
-        type: 'failed',
-      };
-    }
-    if (isClaimCommittable)
-      executionSteps[1] = {
-        icon: ic_swap_horiz,
-        text: committing ? 'Sending initialization transaction' : 'Sending transaction',
-        type: 'loading',
-      };
-    if (isClaimClaimable) {
-      executionSteps[1] = {
-        icon: ic_check_outline,
-        text: 'Initialization success',
-        type: 'success',
-      };
-      executionSteps[2] = {
-        icon: ic_receipt,
-        text: claiming ? 'Claiming transaction' : 'Send claim transaction',
-        type: 'loading',
-      };
-    }
-    if (isSuccess) {
-      executionSteps[1] = {
-        icon: ic_check_outline,
-        text: 'Initialization success',
-        type: 'success',
-      };
-      executionSteps[2] = {
-        icon: ic_check_outline,
-        text: 'Claim success',
-        type: 'success',
-      };
-    }
-    if (isFailed) {
-      executionSteps[0] = {
-        icon: ic_refresh,
-        text: 'Lightning payment reverted',
-        type: 'failed',
-      };
-      executionSteps[1] = {
-        icon: ic_check_outline,
-        text: 'Initialization success',
-        type: 'success',
-      };
-      executionSteps[2] = {
-        icon: ic_watch_later_outline,
-        text: 'Swap expired',
-        type: 'failed',
-      };
-    }
   }
 
   const step1init = useMemo(() => {
@@ -637,10 +564,18 @@ export function useFromBtcLnQuote(
         error:
           claimError
             ? {
-              title: 'Failed to manually claim',
+              title: 'Failed to manually settle',
               error: claimError,
+              type: 'error' as const
             }
-            : undefined,
+            : settlementError
+              ? {
+                title: 'Connection problem',
+                error: settlementError,
+                type: 'warning' as const,
+                retry: waitForSettlement,
+              }
+              : undefined,
         expiry:
           state === FromBTCLNSwapState.CLAIM_COMMITED && !claiming && !isWaitingForWatchtowerClaim
             ? {
@@ -650,7 +585,7 @@ export function useFromBtcLnQuote(
             : undefined,
         claim: isClaimClaimable && !isWaitingForWatchtowerClaim
           ? {
-            text: claiming ? 'Claiming funds...' : 'Finish swap (claim funds)',
+            text: 'Settle swap',
             loading: claiming,
             disabled: claiming,
             size: 'lg' as const,
@@ -666,9 +601,10 @@ export function useFromBtcLnQuote(
           ? {
               title:
                 canClaimInOneShot || claimError != null
-                  ? 'Failed to claim'
-                  : 'Failed to initiate the claim',
+                  ? 'Failed to settle'
+                  : 'Failed to initiate settlement',
               error: commitError ?? claimError,
+              type: 'error' as const
             }
           : undefined,
       expiry:
@@ -680,26 +616,30 @@ export function useFromBtcLnQuote(
           : undefined,
       commit: canClaimInOneShot
         ? {
-            text: 'Finish swap (claim funds)',
+            text: 'Settle swap',
             loading: committing,
             disabled: committing,
             size: 'lg' as const,
-            onClick: () => onCommit(),
+            onClick: onCommit,
+            requiredConnectedWalletAddress: quote?.getType() === SwapType.FROM_BTCLN
+              ? quote._getInitiator()
+              : undefined
           }
         : {
             text: !isClaimCommittable
               ? '1. Initialized'
-              : committing
-                ? '1. Initializing...'
-                : '1. Finish swap (initialize)',
+              : '1. Initialize settlement',
             loading: committing,
             disabled: committing || !isClaimCommittable,
             size: isClaimCommittable ? ('lg' as const) : ('sm' as const),
-            onClick: () => onCommit(),
+            onClick: onCommit,
+            requiredConnectedWalletAddress: quote?.getType() === SwapType.FROM_BTCLN
+              ? quote._getInitiator()
+              : undefined
           },
       claim: !canClaimInOneShot
         ? {
-            text: claiming ? '2. Claiming funds...' : '2. Finish swap (claim funds)',
+            text: '2. Settle swap',
             loading: claiming,
             disabled: claiming || !isClaimClaimable,
             size: isClaimClaimable ? ('lg' as const) : ('sm' as const),
@@ -726,7 +666,8 @@ export function useFromBtcLnQuote(
     isClaimClaimable,
     onClaim,
     isAwaitingLpInit,
-    isWaitingForWatchtowerClaim
+    isWaitingForWatchtowerClaim,
+    settlementError
   ]);
 
   const step4 = useMemo(() => {
@@ -739,11 +680,13 @@ export function useFromBtcLnQuote(
           : isInitiated
             ? ('expired' as const)
             : ('expired_uninitialized' as const),
-      expiryMessage: 'Swap expired! Your lightning payment should refund shortly.',
+      expiryMessage: isQuoteExpiredAfterPayment
+        ? 'Failed to settle the swap before expiration. Your lightning payment will now be refunded!'
+        : 'Swap has expired. If you\'ve already sent the lightning payment, it will be refunded!',
       showConnectWalletButton: isQuoteExpired && !isInitiated
         && smartChainWallet===undefined && quote?.getType()===SwapType.FROM_BTCLN
     };
-  }, [isSuccess, isFailed, isQuoteExpired, isInitiated, smartChainWallet, quote]);
+  }, [isSuccess, isFailed, isQuoteExpired, isInitiated, isQuoteExpiredAfterPayment, smartChainWallet, quote]);
 
   return {
     additionalGasRequired: !isInitiated || isQuoteExpired ? additionalGasRequired : undefined,
