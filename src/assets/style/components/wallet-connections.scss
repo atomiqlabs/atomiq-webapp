@@ -39,6 +39,42 @@
     }
   }
 
+  &__dropdown__title {
+    @apply text-white font-semibold text-[14px] mb-2 px-0;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  &__list {
+    @apply flex flex-col gap-[6px];
+  }
+
+  &__row.base-button {
+    @apply w-full items-center px-3 py-[10px];
+
+    .base-button__content {
+      @apply w-full gap-3;
+    }
+
+    img {
+      @apply rounded-[6px] flex-shrink-0;
+    }
+
+    &:hover {
+      .wallet-connections__row__arrow {
+        @apply opacity-100;
+      }
+    }
+  }
+
+  &__row__name {
+    @apply text-[14px] text-white font-medium flex-1 text-left;
+  }
+
+  &__row__arrow {
+    @apply text-[12px] opacity-50 flex-shrink-0;
+  }
+
+  // Keep old styles for backwards compatibility
   &__item {
     &:not(&:last-of-type) {
       @apply mb-3;
