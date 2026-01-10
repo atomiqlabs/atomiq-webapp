@@ -55,8 +55,10 @@ export function StepByStep(props: {
                 <div className="swap-steps-wallet__ammounts__original">
                   {input.amount.toString()}
                 </div>
-                {input.usdValue && (
+                {input.usdValue ? (
                   <div className="swap-steps-wallet__ammounts__dolars">{input.usdValue}</div>
+                ) : (
+                  <div className="swap-steps-wallet__ammounts__dolars is-loading"/>
                 )}
               </div>
             </div>
@@ -83,8 +85,10 @@ export function StepByStep(props: {
                 <div className="swap-steps-wallet__ammounts__original">
                   {output.amount.toString()}
                 </div>
-                {output.amount.usdValue && (
+                {output.usdValue ? (
                   <div className="swap-steps-wallet__ammounts__dolars">{output.usdValue}</div>
+                ) : (
+                  <div className="swap-steps-wallet__ammounts__dolars is-loading"/>
                 )}
               </div>
             </div>

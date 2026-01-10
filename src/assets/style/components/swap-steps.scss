@@ -199,6 +199,10 @@
 
     &__dolars {
       @apply text-[14px] opacity-50;
+
+      &.is-loading {
+        @apply w-12 h-[21px] animate-pulse rounded bg-white/20;
+      }
     }
   }
 
