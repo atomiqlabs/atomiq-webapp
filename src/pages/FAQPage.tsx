@@ -13,8 +13,17 @@ export function FAQPage(props: {}) {
 
   useEffect(() => {
     if (tabOpen != null) {
-      const element = document.getElementById(tabOpen);
-      if (element != null) element.scrollIntoView();
+      setTimeout(() => {
+        const element = document.getElementById(tabOpen);
+        if (element != null) {
+          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+          const offsetPosition = elementPosition - 100;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
     }
   }, [tabOpen]);
 
@@ -25,9 +34,9 @@ export function FAQPage(props: {}) {
         <div className="mb-3 border-0">
           <Accordion defaultActiveKey={tabOpen}>
             {FAQContent.map((faq, index) => {
-              const id = String(index);
-              const eventKey = String(index);
               const number = index + 1;
+              const id = String(number);
+              const eventKey = String(number);
 
               return (
                 <Accordion.Item eventKey={eventKey} id={id} key={id}>
