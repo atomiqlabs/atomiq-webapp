@@ -45,6 +45,8 @@ export function useSwapState<S extends number>(quote: ISwap<any, any, S>, onSwap
   const [initialQuoteTimeout, setInitialQuoteTimeout] = useState<number>();
   const expiryTime = useRef<number>();
 
+  //TODO: It turns out this isn't the best idea, this throws an error when we try to update the
+  // state in the onSwapStateChange callback
   //Use useMemo here, such that the state updates don't wait till after render (as with useEffect())
   useMemo(() => {
     if (quote == null) {

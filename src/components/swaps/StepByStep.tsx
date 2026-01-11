@@ -66,31 +66,51 @@ export function StepByStep(props: {
         </div>
         <div className="swap-steps__data__out">
           {output && (
-            <div className="swap-steps-wallet">
-              <div className="swap-steps-wallet__icon">
-                <img
-                  src={TokenIcons[output.amount.token.ticker]}
-                  alt="Destination"
-                  className="swap-steps-wallet__icon__img"
-                />
-                {output.chain.chain.icon && (
+            <div>
+              <div className="swap-steps-wallet">
+                <div className="swap-steps-wallet__icon">
                   <img
-                    src={output.chain.chain.icon}
-                    alt="Chain"
-                    className="swap-steps-wallet__icon__currency"
+                    src={TokenIcons[output.amount.token.ticker]}
+                    alt="Destination"
+                    className="swap-steps-wallet__icon__img"
                   />
-                )}
-              </div>
-              <div className="swap-steps-wallet__ammounts">
-                <div className="swap-steps-wallet__ammounts__original">
-                  {output.amount.toString()}
+                  {output.chain.chain.icon && (
+                    <img
+                      src={output.chain.chain.icon}
+                      alt="Chain"
+                      className="swap-steps-wallet__icon__currency"
+                    />
+                  )}
                 </div>
-                {output.usdValue ? (
-                  <div className="swap-steps-wallet__ammounts__dolars">{output.usdValue}</div>
-                ) : (
-                  <div className="swap-steps-wallet__ammounts__dolars is-loading"/>
-                )}
+                <div className="swap-steps-wallet__ammounts">
+                  <div className="swap-steps-wallet__ammounts__original">
+                    {output.amount.toString()}
+                  </div>
+                  {output.usdValue ? (
+                    <div className="swap-steps-wallet__ammounts__dolars">{output.usdValue}</div>
+                  ) : (
+                    <div className="swap-steps-wallet__ammounts__dolars is-loading"/>
+                  )}
+                </div>
               </div>
+
+              {output.gasAmount && (
+                <div className="swap-steps-gas">
+                  <div className="swap-steps-gas__icon">
+                  <span>
+                    +
+                  </span>
+                    <img
+                      src={TokenIcons[output.gasAmount.token.ticker]}
+                      alt="Source"
+                      className="swap-steps-gas__icon__currency"
+                    />
+                  </div>
+                  <div className="swap-steps-gas__amount">
+                    {output.gasAmount.toString()}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -121,7 +141,7 @@ export function StepByStep(props: {
                     'is-loading': step.type === 'loading',
                   })}
                 >
-                  <Icon size={20} icon={step.icon} />
+                  <Icon size={20} icon={step.icon}/>
                 </div>
                 <div
                   className={classNames('swap-steps__indicator__text', {
@@ -147,11 +167,11 @@ export function StepByStep(props: {
                     props.steps.length > 2
                       ? index === 0
                         ? {
-                            left: `23%`,
-                          }
+                          left: `23%`,
+                        }
                         : {
-                            right: `24%`,
-                          }
+                          right: `24%`,
+                        }
                       : {}
                   }
                 >

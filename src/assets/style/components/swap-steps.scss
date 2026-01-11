@@ -30,7 +30,7 @@
     }
 
     &__arrow {
-      @apply absolute opacity-50 w-[15px] left-0 right-0 top-0 bottom-0 m-auto flex items-center;
+      @apply absolute opacity-50 w-[15px] left-0 right-0 top-0 bottom-0 m-auto flex pt-2.5;
     }
   }
 
@@ -163,6 +163,34 @@
   }
 }
 
+.swap-steps-gas {
+  @apply flex align-items-center;
+
+  &__amount {
+    @apply flex-col items-start;
+
+    @media (max-width: 992px) {
+      @apply items-center;
+    }
+    @apply text-[14px] opacity-75;
+
+    &.is-loading {
+      @apply w-12 h-[21px] animate-pulse rounded bg-white/20;
+    }
+  }
+  &__icon {
+    @apply flex w-8 me-3 align-items-center;
+
+    @media (max-width: 992px) {
+      @apply me-1;
+    }
+
+    &__currency {
+      @apply w-4 h-4 object-contain ms-auto;
+    }
+  }
+}
+
 .swap-steps-wallet {
   @apply flex items-center gap-3;
 
@@ -199,6 +227,14 @@
 
     &__dolars {
       @apply text-[14px] opacity-50;
+
+      &.is-loading {
+        @apply w-12 h-[21px] animate-pulse rounded bg-white/20;
+      }
+    }
+
+    &__gas {
+      @apply text-[14px] opacity-75;
 
       &.is-loading {
         @apply w-12 h-[21px] animate-pulse rounded bg-white/20;

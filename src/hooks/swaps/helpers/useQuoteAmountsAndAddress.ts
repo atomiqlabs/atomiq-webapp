@@ -1,4 +1,4 @@
-import {ISwap, TokenAmount} from "@atomiqlabs/sdk";
+import {isSwapType, ISwap, SwapType, TokenAmount} from "@atomiqlabs/sdk";
 import {useMemo} from "react";
 import {usePricing} from "../../pricing/usePricing";
 import {useChain} from "../../chains/useChain";
@@ -13,6 +13,7 @@ export type QuoteAmountsAndAddress = {
   },
   output?: {
     amount: TokenAmount,
+    gasAmount: TokenAmount,
     chain: Chain<any>,
     usdValue?: string
   },
@@ -37,6 +38,7 @@ export function useQuoteAmountsAndAddress(quote: ISwap): QuoteAmountsAndAddress 
     }), [quote, inputUsdValue, inputChain]),
     output: useMemo(() => (quote==null ? undefined : {
       amount: quote.getOutput(),
+      gasAmount: isSwapType(quote, SwapType.FROM_BTCLN_AUTO) || isSwapType(quote, SwapType.SPV_VAULT_FROM_BTC) ? quote.getGasDropOutput() : undefined,
       usdValue: outputUsdValue ? FEConstants.USDollar.format(outputUsdValue) : undefined,
       chain: outputChain
     }), [quote, outputUsdValue, outputChain]),
