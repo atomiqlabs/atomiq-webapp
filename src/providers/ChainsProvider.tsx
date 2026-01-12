@@ -1,22 +1,23 @@
 import {SolanaWalletWrapper, useSolanaChain} from './chains/useSolanaChain';
 import { ChainsContext } from '../context/ChainsContext';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import {useStarknetChain} from "./chains/useStarknetChain";
-import {useLightningNetwork} from "./chains/useLightningNetwork";
-import {useBitcoinChain} from "./chains/useBitcoinChain";
-import {WebLNProvider} from "webln";
-import {SolanaSigner} from "@atomiqlabs/chain-solana";
-import {StarknetSigner} from "@atomiqlabs/chain-starknet";
-import {ExtensionBitcoinWallet} from "../wallets/bitcoin/base/ExtensionBitcoinWallet";
-import {ConnectWalletModal} from "../components/wallets/ConnectWalletModal";
+import {useStarknetChain} from './chains/useStarknetChain';
+import {useLightningNetwork} from './chains/useLightningNetwork';
+import {useBitcoinChain} from './chains/useBitcoinChain';
+import {WebLNProvider} from 'webln';
+import {SolanaSigner} from '@atomiqlabs/chain-solana';
+import {StarknetSigner} from '@atomiqlabs/chain-starknet';
+import {ExtensionBitcoinWallet} from '../wallets/bitcoin/base/ExtensionBitcoinWallet';
+import {ConnectWalletModal} from '../components/wallets/ConnectWalletModal';
 import { EVMSigner } from '@atomiqlabs/chain-evm';
-import {EVMWalletWrapper, useAlpenChain, useBotanixChain, useCitreaChain, useGoatChain} from "./chains/useEVMChains";
-import {ChainsConfig} from "../data/ChainsConfig";
+import {EVMWalletWrapper, useAlpenChain, useBotanixChain, useCitreaChain, useGoatChain} from './chains/useEVMChains';
+import {ChainsConfig} from '../data/ChainsConfig';
 
 export type WalletListData = {
   name: string;
   icon: string;
   downloadLink?: string;
+  overrideInstalledStatusText?: string;
 };
 
 export type Chain<T> = {
@@ -161,9 +162,9 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
               }
             } catch (e) {
               console.error(e);
-              alert(
-                `Failed to connect to ${wallet.name}. This wallet may not be available or compatible with the ${modalSelectedChainData.chain.name} network.`
-              );
+              // alert(
+              //   `Failed to connect to ${wallet.name}. This wallet may not be available or compatible with the ${modalSelectedChainData.chain.name} network.`
+              // );
             }
           })();
         }}

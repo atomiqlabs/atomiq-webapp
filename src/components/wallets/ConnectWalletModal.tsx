@@ -5,7 +5,7 @@ import { WalletListData } from '../../providers/ChainsProvider';
 export const WalletListItem: FC<{
   name: string;
   icon: string | ReactNode;
-  isInstalled: boolean;
+  isInstalled: boolean | string;
   onClick: (event: MouseEvent) => void;
   tabIndex?: number;
 }> = ({ name, icon, isInstalled, onClick, tabIndex = 0 }) => {
@@ -25,7 +25,7 @@ export const WalletListItem: FC<{
         )}
         {!isInstalled && 'Install '}
         {name}
-        {isInstalled && <div className="wallet-modal__item__status">Installed</div>}
+        {isInstalled && <div className="wallet-modal__item__status">{typeof(isInstalled)==='string' ? isInstalled : 'Installed'}</div>}
       </button>
     </li>
   );
@@ -68,7 +68,7 @@ export const ConnectWalletModal: FC<ConnectWalletModalProps> = ({
               key={wallet.name}
               name={wallet.name}
               icon={wallet.icon}
-              isInstalled={true}
+              isInstalled={wallet.overrideInstalledStatusText ?? true}
               onClick={(event) => onWalletClick(wallet, event)}
             />
           ))}
