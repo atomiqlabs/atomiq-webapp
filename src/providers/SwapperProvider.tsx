@@ -1,4 +1,4 @@
-import {Swapper, SwapperFactory} from "@atomiqlabs/sdk";
+import {Swapper, SwapperFactory, TypedSwapper} from "@atomiqlabs/sdk";
 import {SolanaInitializer, SolanaInitializerType} from "@atomiqlabs/chain-solana";
 import {StarknetInitializer, StarknetInitializerType} from "@atomiqlabs/chain-starknet";
 import {
@@ -43,6 +43,9 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
   const [swapperLoadingError, setSwapperLoadingError] = useState<any>();
   const [swapperLoading, setSwapperLoading] = useState<boolean>(false);
 
+  const [swapperSyncingError, setSwapperSyncingError] = useState<any>();
+  const [swapperSyncing, setSwapperSyncing] = useState<boolean>(false);
+
   const { pathname } = useLocation();
 
   const searchParams = new URLSearchParams(window.location.search);
@@ -55,13 +58,14 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
 
   const abortController = useRef<AbortController>();
 
-  const loadSwapper: () => Promise<Swapper<any>> = async () => {
+  const loadSwapper: () => Promise<void> = async () => {
     setSwapperLoadingError(null);
     setSwapperLoading(true);
     if (abortController.current != null) abortController.current.abort();
     abortController.current = new AbortController();
+    let _swapper: Swapper<any>;
     try {
-      const swapper = Factory.newSwapper({
+      _swapper = Factory.newSwapper({
         chains: ChainsConfig,
         intermediaryUrl: useLp,
         getRequestTimeout: 15000,
@@ -74,24 +78,35 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
         },
         mempoolApi: ChainsConfig.BITCOIN.mempoolApi,
         defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
-        automaticClockDriftCorrection: true
+        automaticClockDriftCorrection: true,
+        dontCheckPastSwaps: true //Check manually after loading the swapper
       });
 
-      console.log('Swapper: ', swapper);
+      console.log('Swapper: ', _swapper);
 
-      await swapper.init();
+      await _swapper.init();
       if (abortController.current.signal.aborted) return;
 
       console.log('Swapper initialized!');
 
-      setSwapper(swapper);
+      setSwapper(_swapper);
       setSwapperLoading(false);
-
-      return swapper;
     } catch (e) {
       setSwapperLoadingError(e);
       console.error(e);
+      return;
     }
+
+    setSwapperSyncing(true);
+    setSwapperSyncingError(null);
+    try {
+      await _swapper._syncSwaps();
+    } catch (e) {
+      setSwapperSyncingError(e);
+      console.error(e);
+    }
+    if (abortController.current.signal.aborted) return;
+    setSwapperSyncing(false);
   };
 
   useEffect(() => {
@@ -103,6 +118,8 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
       swapper,
       loading: swapperLoading,
       loadingError: swapperLoadingError,
+      syncing: swapperSyncing,
+      syncingError: swapperSyncingError,
       retry: loadSwapper
     }}>
       {props.children}

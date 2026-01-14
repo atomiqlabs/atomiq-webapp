@@ -1,6 +1,10 @@
 .history-page {
   @apply text-white pb-[66px];
 
+  &__subtitle {
+    @apply flex align-items-center opacity-75 -mt-6 mb-6;
+  }
+
   &__filter {
     @apply flex gap-[12px] items-center mb-[24px];
 

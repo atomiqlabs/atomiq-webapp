@@ -45,7 +45,7 @@
     }
 
     &__text {
-      @apply text-base;
+      @apply text-base flex align-items-center;
 
       @media (max-width: 992px) {
         @apply text-lg font-medium;

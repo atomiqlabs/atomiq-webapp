@@ -1,6 +1,6 @@
 import * as React from 'react';
 import classNames from 'classnames';
-import { Navbar, Container, Nav, Badge, NavDropdown } from 'react-bootstrap';
+import {Navbar, Container, Nav, Badge, NavDropdown, Spinner} from 'react-bootstrap';
 import Icon from 'react-icons-kit';
 import { FEConstants } from '../../FEConstants';
 import { BitcoinNetwork, SwapType } from '@atomiqlabs/sdk';
@@ -12,13 +12,14 @@ import { SocialFooter } from './SocialFooter';
 import { SwapperContext } from '../../context/SwapperContext';
 import { useAnchorNavigate } from '../../hooks/navigation/useAnchorNavigate';
 import {ChainsConfig} from "../../data/ChainsConfig";
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 
 export function MainNavigation(props: {}) {
   const location = useLocation();
   const [isOpen, setIsOpen] = React.useState(false);
   const [actionRequiredCount, setActionRequiredCount] = React.useState<number>(0);
   const collapseRef = React.useRef<HTMLDivElement>(null);
-  const { swapper } = React.useContext(SwapperContext);
+  const { swapper, syncing, syncingError } = React.useContext(SwapperContext);
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -76,7 +77,11 @@ export function MainNavigation(props: {}) {
     {
       link: '/history',
       icon: 'Swap-History',
-      title: 'Swap History',
+      title: [
+        <span>Swap History</span>,
+        syncing && <Spinner className="text-white ms-2" size="sm" />,
+        syncingError && <Icon size={20} className="ms-2 flex" icon={ic_warning} />
+      ],
       count: actionRequiredCount > 0 ? actionRequiredCount : undefined,
     },
     { link: '/explorer', icon: 'Explorer', title: 'Explorer' },

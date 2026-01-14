@@ -3,11 +3,14 @@ import * as React from 'react';
 import { useContext, useEffect, useState } from 'react';
 import { SwapperContext } from '../context/SwapperContext';
 import { TransactionsTable } from '../components/table/TransactionsTable';
+import {Spinner} from "react-bootstrap";
+import Icon from "react-icons-kit";
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 
 const SHOW_FILTER = false; // TODO implement filter and uncomment this to display it
 
 export function HistoryPage() {
-  const { swapper } = useContext(SwapperContext);
+  const { swapper, syncingError, syncing } = useContext(SwapperContext);
 
   const [swaps, setSwaps] = useState<ISwap[]>([]);
 
@@ -57,6 +60,14 @@ export function HistoryPage() {
       <div className="container">
         {/* TITLE */}
         <h1 className="page-title">Your Swap History</h1>
+        {syncing && <div className="history-page__subtitle">
+          <Spinner className="text-white me-2" size="sm" />
+          <span className="text-start">Syncing previous swaps...</span>
+        </div>}
+        {syncingError && <div className="history-page__subtitle">
+          <Icon size={20} className="me-2 flex" icon={ic_warning} />
+          <span className="text-start">Failed to synchronize previous swaps, reload the webpage to re-attempt.</span>
+        </div>}
 
         {/* FILTER */}
         {SHOW_FILTER && (

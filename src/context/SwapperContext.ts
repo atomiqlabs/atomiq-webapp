@@ -4,9 +4,12 @@ import { ISwap, Swapper } from '@atomiqlabs/sdk';
 export const SwapperContext: React.Context<{
   swapper: Swapper<any>;
   loading: boolean;
-  loadingError?: boolean;
+  loadingError?: any;
+  syncing: boolean;
+  syncingError?: any;
   retry?: () => void;
 }> = createContext({
   swapper: null,
-  loading: false
+  loading: false,
+  syncing: false
 });

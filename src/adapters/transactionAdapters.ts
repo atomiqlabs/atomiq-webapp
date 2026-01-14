@@ -45,18 +45,18 @@ export interface TransactionEntryProps {
  * Converts an ISwap object to TransactionEntryProps
  */
 export function swapToProps(swap: ISwap): TransactionEntryProps {
-  const input = swap.getInput();
-  const output = swap.getOutput();
+  const inputToken = swap.getInputToken();
+  const outputToken = swap.getOutputToken();
 
-  const inputExplorer = isSCToken(input.token)
-    ? ChainsConfig[input.token.chainId]?.blockExplorer
-    : !input.token.lightning
+  const inputExplorer = isSCToken(inputToken)
+    ? ChainsConfig[inputToken.chainId]?.blockExplorer
+    : !inputToken.lightning
       ? ChainsConfig.BITCOIN.blockExplorer
       : null;
 
-  const outputExplorer = isSCToken(output.token)
-    ? ChainsConfig[output.token.chainId]?.blockExplorer
-    : !output.token.lightning
+  const outputExplorer = isSCToken(outputToken)
+    ? ChainsConfig[outputToken.chainId]?.blockExplorer
+    : !outputToken.lightning
       ? ChainsConfig.BITCOIN.blockExplorer
       : null;
 
@@ -74,14 +74,14 @@ export function swapToProps(swap: ISwap): TransactionEntryProps {
     createdAt: swap.createdAt,
     requiresAction: swap.requiresAction(),
 
-    inputToken: input.token,
-    inputAmount: input.amount,
+    inputToken: inputToken,
+    inputAmount: swap.getInput()?.amount,
     inputAddress,
     inputExplorer,
     inputTxId: txIdInput,
 
-    outputToken: output.token,
-    outputAmount: output.amount,
+    outputToken: outputToken,
+    outputAmount: swap.getOutput()?.amount,
     outputAddress,
     outputExplorer,
     outputTxId: txIdOutput,
