@@ -12,6 +12,13 @@ const config = {
                 blue: '#00A7E1',
             },
         },
+        screens: {
+            'sm': '576px',
+            'md': '768px',
+            'lg': '992px',
+            'xl': '1200px',
+            'xxl': '1400px'
+        }
     },
     plugins: [],
     important: true,

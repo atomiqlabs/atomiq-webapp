@@ -81,7 +81,7 @@ export function TransactionEntry(props: TransactionEntryProps) {
       onClick={navigateToSwap}
     >
       {props.requiresAction && <span className="transaction-entry__alert"></span>}
-      <Col md={4} xs={7} className="is-token">
+      <Col lg={3} xs={5} className="is-token">
         <TransactionToken
           token={props.inputToken}
           amount={props.inputAmount}
@@ -90,12 +90,12 @@ export function TransactionEntry(props: TransactionEntryProps) {
           explorer={props.inputExplorer}
           txId={props.inputTxId}
         />
-        <div className="is-arrow">
-          <i className="icon icon-arrow-right"></i>
-        </div>
       </Col>
-      <Col md={3} xs={5} className="is-token">
-        <TransactionToken
+      <Col lg={1} xs={2} className="is-arrow">
+        <i className="icon icon-arrow-right"></i>
+      </Col>
+      <Col lg={3} xs={5} className="is-token">
+      <TransactionToken
           token={props.outputToken}
           amount={props.outputAmount}
           address={props.outputAddress}
@@ -104,11 +104,11 @@ export function TransactionEntry(props: TransactionEntryProps) {
           txId={props.outputTxId}
         />
       </Col>
-      <Col md={1} sm={2} className="is-value is-right">
+      <Col lg={1} sm={2} className="is-value is-right">
         <span className="sc-mobile-label">Value</span>
         <div>{usdValue != null ? usdValue : '-'}</div>
       </Col>
-      <Col md={2} sm={12} className="d-flex text-end is-date is-right">
+      <Col lg={2} sm={12} className="d-flex text-end is-date is-right">
         <span className="sc-mobile-label">Date</span>
         <div className="sc-date">
           {formatDate(props.createdAt)}
@@ -116,7 +116,7 @@ export function TransactionEntry(props: TransactionEntryProps) {
         </div>
         <div className="sc-time">{formatTime(props.createdAt)}</div>
       </Col>
-      <Col md={2} sm={12} className="d-flex text-end is-status">
+      <Col lg={2} sm={12} className="d-flex text-end is-status">
         {props.requiresAction ? (
           <BaseButton
             variant="secondary"
