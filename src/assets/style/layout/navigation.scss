@@ -4,7 +4,7 @@
   grid-template-columns: 1fr auto 1fr;
   grid-template-areas: 'logo nav wallet';
 
-  @media (max-width: 991px) {
+  @media (max-width: 991.98px) {
     @apply flex;
   }
 
@@ -13,7 +13,7 @@
     grid-area: logo;
 
     &.is-desktop {
-      @media (max-width: 991px) {
+      @media (max-width: 991.98px) {
         @apply hidden;
       }
     }
@@ -30,7 +30,7 @@
       @apply px-3 py-3 flex gap-2 relative border-solid border-b-2 border-transparent hover:border-pinkSlate items-center opacity-75 hover:opacity-100;
     }
 
-    @media (max-width: 991px) {
+    @media (max-width: 991.98px) {
       @apply px-3 py-[12px] border-0 opacity-75 hover:opacity-100 transition-all text-left;
     }
 
@@ -47,7 +47,7 @@
     &__text {
       @apply text-base flex align-items-center;
 
-      @media (max-width: 991px) {
+      @media (max-width: 991.98px) {
         @apply text-lg font-medium;
       }
     }
@@ -55,7 +55,7 @@
     &__icon {
       font-size: 18px;
 
-      @media (max-width: 991px) {
+      @media (max-width: 991.98px) {
         @apply justify-center items-center w-12 h-12 rounded-full;
         background-color: rgba(255, 255, 255, 0.1);
         display: flex !important; // because somehow for some reason there is inline style
@@ -65,7 +65,7 @@
     &__count {
       @apply w-4 h-4 text-[12px] font-semibold text-white bg-blue rounded-full flex items-center justify-center absolute left-2 top-[12px];
 
-      @media (max-width: 991px) {
+      @media (max-width: 991.98px) {
         @apply inline-flex static w-6 h-6 text-[16px];
       }
     }
@@ -81,7 +81,7 @@
     @apply gap-4;
     grid-area: navigation;
 
-    @media (max-width: 991px) {
+    @media (max-width: 991.98px) {
       @apply gap-0 h-full;
     }
 
@@ -115,7 +115,7 @@
   &__network {
     @apply flex;
 
-    @media (max-width: 991px) {
+    @media (max-width: 991.98px) {
       @apply hidden;
     }
   }
@@ -151,7 +151,7 @@
       }
     }
 
-    @media (max-width: 991px) {
+    @media (max-width: 991.98px) {
       .dropdown-toggle {
         @apply hidden;
       }
@@ -161,7 +161,7 @@
   &__alert {
     @apply hidden w-[20px] h-[20px] text-[14px] font-semibold text-white bg-blue rounded-full items-center justify-center absolute left-[62px] top-[13px] pointer-events-none;
 
-    @media (max-width: 991px) {
+    @media (max-width: 991.98px) {
       @apply flex;
     }
   }
@@ -198,7 +198,7 @@
       transform: translateX(0);
     }
 
-    @media (max-width: 991px) {
+    @media (max-width: 991.98px) {
       height: 100vh !important;
     }
 
