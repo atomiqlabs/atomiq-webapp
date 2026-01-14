@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import Icon from 'react-icons-kit';
-import { heart } from 'react-icons-kit/fa/heart';
+import { useLocation } from 'react-router-dom';
 const socialLink = [
   {
     link: 'https://twitter.com/atomiqlabs',
@@ -26,8 +25,11 @@ const socialLink = [
 ];
 
 export function SocialFooter(props: {}) {
+  const location = useLocation();
+  const isTablePage = location.pathname === '/history' || location.pathname === '/explorer';
+
   return (
-    <div className="social-footer">
+    <div className={`social-footer ${isTablePage ? 'is-horizontal' : ''}`}>
       {socialLink.map(({ link, image, title }) => (
         <OverlayTrigger
           key={link}

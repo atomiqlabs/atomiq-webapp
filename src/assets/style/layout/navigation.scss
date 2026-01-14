@@ -4,7 +4,7 @@
   grid-template-columns: 1fr auto 1fr;
   grid-template-areas: 'logo nav wallet';
 
-  @media (max-width: 992px) {
+  @media (max-width: 991px) {
     @apply flex;
   }
 
@@ -13,13 +13,13 @@
     grid-area: logo;
 
     &.is-desktop {
-      @media (max-width: 992px) {
+      @media (max-width: 991px) {
         @apply hidden;
       }
     }
 
     &.is-mobile {
-      @media (min-width: 993px) {
+      @media (min-width: 992px) {
         @apply hidden;
       }
     }
@@ -30,7 +30,7 @@
       @apply px-3 py-3 flex gap-2 relative border-solid border-b-2 border-transparent hover:border-pinkSlate items-center opacity-75 hover:opacity-100;
     }
 
-    @media (max-width: 992px) {
+    @media (max-width: 991px) {
       @apply px-3 py-[12px] border-0 opacity-75 hover:opacity-100 transition-all text-left;
     }
 
@@ -39,7 +39,7 @@
     }
 
     &.is-mobile {
-      @media (min-width: 993px) {
+      @media (min-width: 992px) {
         @apply hidden;
       }
     }
@@ -47,7 +47,7 @@
     &__text {
       @apply text-base flex align-items-center;
 
-      @media (max-width: 992px) {
+      @media (max-width: 991px) {
         @apply text-lg font-medium;
       }
     }
@@ -55,7 +55,7 @@
     &__icon {
       font-size: 18px;
 
-      @media (max-width: 992px) {
+      @media (max-width: 991px) {
         @apply justify-center items-center w-12 h-12 rounded-full;
         background-color: rgba(255, 255, 255, 0.1);
         display: flex !important; // because somehow for some reason there is inline style
@@ -65,7 +65,7 @@
     &__count {
       @apply w-4 h-4 text-[12px] font-semibold text-white bg-blue rounded-full flex items-center justify-center absolute left-2 top-[12px];
 
-      @media (max-width: 992px) {
+      @media (max-width: 991px) {
         @apply inline-flex static w-6 h-6 text-[16px];
       }
     }
@@ -81,7 +81,7 @@
     @apply gap-4;
     grid-area: navigation;
 
-    @media (max-width: 992px) {
+    @media (max-width: 991px) {
       @apply gap-0 h-full;
     }
 
@@ -89,7 +89,7 @@
       & {
         @apply flex items-center justify-between px-3 py-[12px] mb-[12px];
       }
-      @media (min-width: 993px) {
+      @media (min-width: 992px) {
         @apply hidden;
       }
     }
@@ -115,7 +115,7 @@
   &__network {
     @apply flex;
 
-    @media (max-width: 992px) {
+    @media (max-width: 991px) {
       @apply hidden;
     }
   }
@@ -151,7 +151,7 @@
       }
     }
 
-    @media (max-width: 992px) {
+    @media (max-width: 991px) {
       .dropdown-toggle {
         @apply hidden;
       }
@@ -161,7 +161,7 @@
   &__alert {
     @apply hidden w-[20px] h-[20px] text-[14px] font-semibold text-white bg-blue rounded-full items-center justify-center absolute left-[62px] top-[13px] pointer-events-none;
 
-    @media (max-width: 992px) {
+    @media (max-width: 991px) {
       @apply flex;
     }
   }
@@ -175,7 +175,7 @@
   }
 
   .navbar-collapse {
-    @media (min-width: 993px) {
+    @media (min-width: 992px) {
       @apply flex justify-center gap-5;
     }
   }
@@ -198,11 +198,11 @@
       transform: translateX(0);
     }
 
-    @media (max-width: 992px) {
+    @media (max-width: 991px) {
       height: 100vh !important;
     }
 
-    @media (min-width: 993px) {
+    @media (min-width: 992px) {
       @apply static h-auto transform-none transition-none;
       width: auto;
       background-color: transparent;
@@ -216,7 +216,7 @@
   .social-footer {
     @apply flex-row gap-[9px] justify-center items-center static mt-auto mb-[12px] mx-3;
 
-    @media (min-width: 993px) {
+    @media (min-width: 992px) {
       @apply hidden;
     }
   }
@@ -236,7 +236,7 @@
 .mobile-bottom-nav {
   @apply fixed bottom-0 left-0 right-0 bg-[#201f1f] text-[#777777] z-30 flex justify-around items-center;
 
-  @media (min-width: 993px) {
+  @media (min-width: 992px) {
     @apply hidden;
   }
 

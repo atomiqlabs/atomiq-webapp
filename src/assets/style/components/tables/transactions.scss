@@ -61,7 +61,7 @@
     &.is-value {
       @apply justify-end;
 
-      @media (max-width: 768px) {
+      @media (max-width: 767px) {
         @apply justify-start pb-1 w-full;
       }
     }
@@ -69,7 +69,7 @@
     &.is-date {
       @apply items-end flex-col gap-x-1;
 
-      @media (max-width: 768px) {
+      @media (max-width: 767px) {
         @apply items-center pt-1 pb-1 flex-row;
       }
 
@@ -81,11 +81,18 @@
     &.is-token {
       @apply justify-center sm:justify-start;
 
-      @media (max-width: 768px) {
+      @media (max-width: 767px) {
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-
+        &:nth-of-type(1) .transaction-token {
+          @apply ml-5;
+        }
         &:nth-of-type(2) {
-          @apply pl-0 -left-1 relative;
+          @apply pl-0 -left-1 relative justify-center;
+        }
+      }
+      @media (max-width: 440px) {
+        &:nth-of-type(1) .transaction-token {
+          @apply ml-2;
         }
       }
     }
@@ -101,7 +108,7 @@
         @apply w-[13.5%];
       }
 
-      @media (max-width: 768px) {
+      @media (max-width: 767px) {
         &:not(:has(.base-button)) {
           @apply pt-1;
         }
@@ -118,7 +125,7 @@
   .sc-mobile-label {
     @apply mr-auto hidden;
 
-    @media (max-width: 768px) {
+    @media (max-width: 767px) {
       @apply inline-block;
     }
   }
@@ -127,7 +134,7 @@
 .transaction-token {
   @apply flex gap-0 items-center;
 
-  @media (max-width: 768px) {
+  @media (max-width: 767px) {
     @apply flex items-center gap-[12px] flex-col;
   }
 
@@ -145,7 +152,7 @@
     .sc-sub {
       @apply opacity-50 inline-block;
 
-      @media (max-width: 768px) {
+      @media (max-width: 767px) {
         @apply hidden;
       }
     }
@@ -169,17 +176,17 @@
   }
 
   .chain-icon {
-    @apply h-fit;
+    @apply h-fit w-max;
   }
 
   .chain-icon__img {
-    @media (max-width: 768px) {
+    @media (max-width: 767px) {
       @apply w-8 h-8;
     }
   }
 
   .chain-icon__currency {
-    @media (max-width: 768px) {
+    @media (max-width: 767px) {
       @apply w-4 h-4;
     }
   }
