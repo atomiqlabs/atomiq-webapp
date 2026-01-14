@@ -49,7 +49,7 @@ export function DisconnectedWalletQrAndAddress(props: DisconnectedWalletQrAndAdd
           value={props.address.hyperlink}
           size={240}
           includeMargin={true}
-          className="cursor-pointer"
+          className="cursor-pointer m-auto"
           onClick={(event) => {
             if (props.address.copy()) show(event.target);
           }}

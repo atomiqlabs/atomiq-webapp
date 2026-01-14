@@ -61,6 +61,12 @@
         i {
           display: none !important;
         }
+        svg {
+          width: 15px;
+          height: 15px;
+          position: relative;
+          top: -1px;
+        }
       }
 
       &.is-failed {
@@ -206,7 +212,7 @@
     }
 
     &__currency {
-      @apply absolute w-4 h-4 object-contain -right-1 -bottom-1;
+      @apply absolute w-4 h-4 object-contain -right-1 -bottom-1 rounded-[4px];
     }
   }
 

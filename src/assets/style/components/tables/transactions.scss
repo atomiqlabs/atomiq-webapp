@@ -70,7 +70,7 @@
       @apply items-end flex-col gap-x-1;
 
       @media (max-width: 768px) {
-        @apply items-start pt-1 pb-1 flex-row;
+        @apply items-center pt-1 pb-1 flex-row;
       }
 
       .sc-time {
@@ -125,7 +125,7 @@
 }
 
 .transaction-token {
-  @apply flex gap-0;
+  @apply flex gap-0 items-center;
 
   @media (max-width: 768px) {
     @apply flex items-center gap-[12px] flex-col;
