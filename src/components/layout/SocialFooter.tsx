@@ -29,11 +29,11 @@ export function SocialFooter(props: {}) {
   const isTablePage = location.pathname === '/history' || location.pathname === '/explorer';
 
   return (
-    <div className={`social-footer ${isTablePage ? 'is-horizontal' : ''}`}>
+    <div className={`social-footer ${isTablePage ? 'is-horizontal pt-3' : ''}`}>
       {socialLink.map(({ link, image, title }) => (
         <OverlayTrigger
           key={link}
-          placement="left"
+          placement={isTablePage ? "top" : "left"}
           overlay={<Tooltip id="referral-tooltip">{title}</Tooltip>}
         >
           <a href={link} target="_blank" className="social-footer__link">

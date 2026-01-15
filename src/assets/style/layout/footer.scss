@@ -2,7 +2,7 @@
   @apply absolute right-8 bottom-10 flex flex-col gap-2 items-end text-white;
 
   &.is-horizontal {
-    @apply flex-row;
+    @apply flex-row bottom-8;
   }
 
   &__link {

@@ -1,6 +1,6 @@
 .transactions-table {
   & {
-    @apply mb-20;
+    @apply mb-28;
   }
   .list-group {
     @apply gap-[10px];
@@ -113,7 +113,13 @@
           @apply pt-1;
         }
 
-        @apply items-end flex-row;
+        @apply flex-row;
+      }
+
+      & > .text-pill {
+        @media (max-width: 991.98px) {
+          @apply py-1.5
+        }
       }
     }
   }
