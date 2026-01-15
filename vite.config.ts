@@ -51,6 +51,15 @@ export default defineConfig({
         // ],
     },
 
+    // TODO: remember this suppression in case of css problemns
+    css: {
+        preprocessorOptions: {
+            scss: {
+                silenceDeprecations: ['import', 'global-builtin', 'color-functions', 'if-function'],
+            },
+        },
+    },
+
     server: {
         port: 5173, // or whatever you prefer
         strictPort: true,

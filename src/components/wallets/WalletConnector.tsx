@@ -138,23 +138,23 @@ export function WalletConnector() {
             ></Dropdown.Toggle>
           )}
           <Dropdown.Menu className="wallet-connections__dropdown">
-            {nonConnectedChains.map((value) => (
-              <div key={value.chainId} className="wallet-connections__item">
-                <div className="wallet-connections__item__header">
-                  <img src={value.chain.icon} alt={value.chain.name} width={24} height={24} />
-                  <span className="wallet-connections__item__header__name">{value.chain.name}</span>
-                </div>
+            <Dropdown.Header className="wallet-connections__dropdown__title">
+              Connect Wallet
+            </Dropdown.Header>
+            <div className="wallet-connections__list">
+              {nonConnectedChains.map((value) => (
                 <BaseButton
-                  customIcon="connect"
+                  key={value.chainId}
                   onClick={() => connectWallet(value.chainId)}
                   variant="transparent"
-                  size="smaller"
-                  className="wallet-connections__item__button"
+                  className="wallet-connections__row"
                 >
-                  Connect Wallet
+                  <img src={value.chain.icon} alt={value.chain.name} width={24} height={24} />
+                  <span className="wallet-connections__row__name">{value.chain.name}</span>
+                  <span className="wallet-connections__row__arrow icon icon-arrow-right" />
                 </BaseButton>
-              </div>
-            ))}
+              ))}
+            </div>
           </Dropdown.Menu>
         </Dropdown>
       ) : null}
