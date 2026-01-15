@@ -6,7 +6,7 @@
   "dependencies": {
     "@atomiqlabs/chain-evm": "github:atomiqlabs/atomiq-chain-evm#develop",
     "@atomiqlabs/chain-solana": "github:atomiqlabs/atomiq-chain-solana#develop",
-    "@atomiqlabs/chain-starknet": "github:adrienlacombe/atomiq-chain-starknet#starknetjsv9",
+    "@atomiqlabs/chain-starknet": "github:atomiqlabs/atomiq-chain-starknet#develop",
     "@atomiqlabs/sdk": "github:atomiqlabs/atomiq-sdk#develop",
     "@coral-xyz/anchor": "0.29.0",
     "@scure/btc-signer": "1.6.0",
@@ -34,7 +34,7 @@
     "react-icons-kit": "^2.0.0",
     "react-router-dom": "^6.3.0",
     "sats-connect": "^4.2.1",
-    "starknet": "^9.2.1",
+    "starknet": "^8.9.2",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "url": "^0.11.1",

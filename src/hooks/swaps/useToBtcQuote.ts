@@ -340,7 +340,7 @@ export function useToBtcQuote(
         ? "refunded" as const
         : "expired" as const,
     showConnectWalletButton: isExpired && wallet===undefined,
-    clearAddressOnRefresh: isSuccess && isSwapType(quote, SwapType.TO_BTCLN) && !quote.isLNURL()
+    clearAddressOnRefresh: (isSuccess || isRefunded) && isSwapType(quote, SwapType.TO_BTCLN) && !quote.isLNURL()
   }), [
     isSuccess,
     isRefunded,

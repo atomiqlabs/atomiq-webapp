@@ -194,7 +194,7 @@ export function TrustedFromBTCLNSwapPanel(props: {
         </div>
 
         <BaseButton
-          onClick={page.step3.state === 'success' ? props.continue : props.refreshQuote}
+          onClick={() => page.step3.state === 'success' ? props.continue() : props.refreshQuote()}
           variant="primary"
           className="swap-panel__action"
         >

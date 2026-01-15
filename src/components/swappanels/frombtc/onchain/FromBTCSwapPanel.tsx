@@ -362,7 +362,7 @@ export function FromBTCSwapPanel(props: {
             className="swap-panel__action"
             chainId={props.quote.chainIdentifier}
           />
-          : <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
+          : <BaseButton onClick={() => props.refreshQuote()} variant="primary" className="swap-panel__action">
             New Swap
           </BaseButton>
         }

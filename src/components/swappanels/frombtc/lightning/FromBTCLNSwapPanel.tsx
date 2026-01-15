@@ -104,7 +104,7 @@ export function FromBTCLNSwapPanel(props: {
               </strong>
             </>
           }
-          buttonText="Understood, pay with LN wallet"
+          buttonText={page.step2paymentWait.walletDisconnected?.addressComeBackWarningModal?.buttonText}
         />
 
         <div className="swap-panel__card">
@@ -315,7 +315,7 @@ export function FromBTCLNSwapPanel(props: {
             className="swap-panel__action"
             chainId={props.quote.chainIdentifier}
           />
-          : <BaseButton onClick={props.refreshQuote} variant="primary" className="swap-panel__action">
+          : <BaseButton onClick={() => props.refreshQuote()} variant="primary" className="swap-panel__action">
             New Swap
           </BaseButton>
         }

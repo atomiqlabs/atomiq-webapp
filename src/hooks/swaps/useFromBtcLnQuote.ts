@@ -82,6 +82,7 @@ export type FromBtcLnQuotePage = {
           checked: boolean;
           onChange: (checked: boolean) => void;
         };
+        buttonText: string;
       };
       //Pay with external lightning wallet by invoking a lightning: deeplink
       payWithLnWallet: {
@@ -504,6 +505,9 @@ export function useFromBtcLnQuote(
                       checked: showHyperlinkWarning,
                       onChange: setShowHyperlinkWarning,
                     },
+                    buttonText: addressWarningModalOpened === "copy"
+                      ? 'Understood, copy to clipboard'
+                      : 'Understood, pay with LN wallet'
                   }
                 : undefined,
               payWithLnWallet: {

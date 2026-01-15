@@ -94,7 +94,7 @@ export function StepByStep(props: {
                 </div>
               </div>
 
-              {output.gasAmount && (
+              {output.gasAmount && output.gasAmount.rawAmount>0 && (
                 <div className="swap-steps-gas">
                   <div className="swap-steps-gas__icon">
                   <span>

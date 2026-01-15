@@ -578,9 +578,18 @@ export function useSwapPage(): SwapPageState {
     (clearAddress?: boolean) => {
       if(clearAddress) setAddress('');
       if (existingSwap != null) {
-        setInputToken(existingSwap.getInput().token);
-        setOutputToken(existingSwap.getOutput().token);
+        const inputToken = existingSwap.getInputToken();
+        const outputToken = existingSwap.getOutputToken();
+        const supportedCounterTokens = swapper.getSwapCounterTokens(inputToken, true);
+        if (includesToken(supportedCounterTokens, outputToken)) {
+          _setInputToken(inputToken);
+          _setOutputToken(outputToken);
+        } else {
+          setInputToken(inputToken);
+        }
+
         if(!clearAddress) setAddress(existingSwap.getOutputAddress());
+        setExactIn(existingSwap.exactIn);
         if (existingSwap.exactIn) {
           setAmount(existingSwap.getInput().amount);
         } else {
