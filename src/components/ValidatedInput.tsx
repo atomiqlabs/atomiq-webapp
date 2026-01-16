@@ -372,7 +372,7 @@ function ValidatedInput(props: {
           )}
           <Form.Control.Feedback type={props.successFeedback ? 'valid' : 'invalid'}>
             <div className="d-flex align-items-center">
-              <span>
+              <span className="text-end ">
                 {props.successFeedback ||
                   (props.validated === undefined ? state.validated : props.validated)}
               </span>

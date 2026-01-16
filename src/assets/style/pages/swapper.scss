@@ -52,7 +52,7 @@
     }
 
     &__body {
-      @apply flex justify-between gap-5 w-full;
+      @apply flex justify-between gap-2 w-full;
     }
 
     &:has(.wallet-address):has(.form-control.is-invalid) {
