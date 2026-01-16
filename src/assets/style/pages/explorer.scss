@@ -101,6 +101,12 @@
 
   &__buttons {
     @apply flex gap-3 justify-between lg:justify-start flex-wrap;
+
+    .multi-select-dropdown {
+      @media (max-width: 991.98px) {
+        @apply flex-fill;
+      }
+    }
   }
 
   &__search {

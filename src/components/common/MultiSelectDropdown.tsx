@@ -65,12 +65,12 @@ export function MultiSelectDropdown({
               type="checkbox"
               id={`${id}-${option.id}`}
               label={
-                <>
+                <span className="flex align-items-center">
                   {option.icon && (
                     <img src={option.icon} alt={option.label} className="chain-icon" />
                   )}
                   {option.label}
-                </>
+                </span>
               }
               checked={selectedValues.includes(option.id)}
               onChange={() => onToggle(option.id)}
