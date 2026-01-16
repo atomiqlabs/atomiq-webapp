@@ -53,7 +53,7 @@ export function useSolanaChain(enabled: boolean): Chain<SolanaSigner> {
         icon: '/icons/chains/SOLANA.svg',
       },
       wallet:
-        wallet == null
+        solanaSigner == null
           ? null
           : {
               name: wallet.adapter?.name,

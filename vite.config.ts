@@ -2,18 +2,23 @@ import path from 'path';
 import { defineConfig } from 'vite';
 // @ts-ignore
 import react from '@vitejs/plugin-react';
-import { polyfillNode } from 'esbuild-plugin-polyfill-node';
-import rollupNodePolyFill  from 'rollup-plugin-polyfill-node';
-// import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig({
     plugins: [
-        react()
+        react(),
+        nodePolyfills({
+            globals: {
+                Buffer: true,
+                process: true,
+            },
+        }),
     ],
 
     define: {
         global: 'globalThis',
         'process.env': {},
+        'process.version': '"v18.17.1"',
     },
 
     resolve: {
@@ -21,7 +26,7 @@ export default defineConfig({
             { find: 'process', replacement: path.resolve(__dirname, 'node_modules/process/browser.js') },
             { find: 'stream', replacement: path.resolve(__dirname, 'node_modules/stream-browserify') },
             { find: 'crypto', replacement: path.resolve(__dirname, 'node_modules/crypto-browserify') },
-            // { find: 'buffer', replacement: path.resolve(__dirname, 'node_modules/buffer') },
+            { find: 'buffer', replacement: path.resolve(__dirname, 'node_modules/buffer') },
             { find: 'zlib', replacement: path.resolve(__dirname, 'node_modules/zlib-browserify') },
             { find: 'http', replacement: path.resolve(__dirname, 'node_modules/stream-http') },
             { find: 'https', replacement: path.resolve(__dirname, 'node_modules/https-browserify') },
@@ -29,26 +34,13 @@ export default defineConfig({
     },
 
     optimizeDeps: {
-        esbuildOptions: {
-            define: {
-                global: 'globalThis',
-            },
-            plugins: [
-                polyfillNode()
-            ],
-        },
         include: [
             'buffer',
             'process',
             'stream-browserify',
             'readable-stream',
-            'crypto-browserify'
+            'crypto-browserify',
         ],
-        // exclude: [
-        //     '@walletconnect/ethereum-provider',
-        //     '@walletconnect/core',
-        //     '@walletconnect/sign-client',
-        // ],
     },
 
     // TODO: remember this suppression in case of css problemns
@@ -61,7 +53,7 @@ export default defineConfig({
     },
 
     server: {
-        port: 5173, // or whatever you prefer
+        port: 5173,
         strictPort: true,
         fs: {
             strict: true,
@@ -70,9 +62,9 @@ export default defineConfig({
 
     // **Add SPA fallback for React Router**
     build: {
+        outDir: 'build',
         rollupOptions: {
             input: '/index.html',
-            // plugins: [rollupNodePolyFill()],
         },
     },
 });
