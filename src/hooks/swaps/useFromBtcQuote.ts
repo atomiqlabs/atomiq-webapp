@@ -114,7 +114,6 @@ export type FromBtcQuotePage = {
   };
   step4claim?: {
     waitingForWatchtowerClaim: boolean,
-    smartChainWallet?: Chain<any>["wallet"],
     claim: {
       onClick: () => void,
       loading: boolean,
@@ -143,6 +142,7 @@ export function useFromBtcQuote(
   const bitcoinChainData = useChain('BITCOIN');
   const bitcoinWallet = bitcoinChainData.wallet;
   const smartChainWallet = useSmartChainWallet(quote, true);
+  const smartChainWalletClaimer = useSmartChainWallet(quote, false);
 
   const UICallbackRef = useStateRef(UICallback);
 
@@ -236,8 +236,8 @@ export function useFromBtcQuote(
   );
 
   const [onClaim, claimLoading, claimSuccess, claimError] = useAsync(() => {
-    return quote.claim(smartChainWallet.instance);
-  }, [quote, smartChainWallet]);
+    return quote.claim(smartChainWalletClaimer.instance);
+  }, [quote, smartChainWalletClaimer]);
 
   const [txData, setTxData] = useState<TxDataType | null>(null);
   useEffect(() => {
@@ -265,8 +265,9 @@ export function useFromBtcQuote(
   const isReceived =
     state === (FromBTCSwapState.CLAIM_COMMITED || state === FromBTCSwapState.EXPIRED) &&
     txData != null;
-  const isClaimable = state === FromBTCSwapState.BTC_TX_CONFIRMED && !claimLoading;
-  const isClaiming = state === FromBTCSwapState.BTC_TX_CONFIRMED && claimLoading;
+  const isBtcTxConfirmed = state === FromBTCSwapState.BTC_TX_CONFIRMED;
+  const isClaimable = isBtcTxConfirmed && !claimLoading;
+  const isClaiming = isBtcTxConfirmed && claimLoading;
   const isExpired = state === FromBTCSwapState.EXPIRED && txData == null;
   const isFailed = state === FromBTCSwapState.FAILED;
   const isSuccess = state === FromBTCSwapState.CLAIM_CLAIMED;
@@ -279,10 +280,10 @@ export function useFromBtcQuote(
     return quote.waitTillClaimed(60, abortSignalRef.current);
   }, [quote]);
   useEffect(() => {
-    if(!isAlreadyClaimable && isClaimable) {
+    if(!isAlreadyClaimable && isBtcTxConfirmed) {
       waitForSettlement();
     }
-  }, [isAlreadyClaimable, isClaimable]);
+  }, [isAlreadyClaimable, isBtcTxConfirmed]);
   const isWaitingForWatchtowerClaim =
     !isAlreadyClaimable && isClaimable && settlementSuccess==null;
 
@@ -528,7 +529,6 @@ export function useFromBtcQuote(
 
   const step4claim = useMemo(() => (!isClaimable && !isClaiming ? undefined : {
     waitingForWatchtowerClaim: isWaitingForWatchtowerClaim,
-    smartChainWallet,
     claim: {
       onClick: onClaim,
       loading: claimLoading,
@@ -551,7 +551,6 @@ export function useFromBtcQuote(
   }), [
     isClaimable,
     isClaiming,
-    smartChainWallet,
     onClaim,
     claimLoading,
     claimError,

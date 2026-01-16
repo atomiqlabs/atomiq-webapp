@@ -203,121 +203,100 @@ export function FromBTCSwapPanel(props: {
 
   if (page.step3awaitingConfirmations) {
     return (
-      <>
-        <div className="swap-panel__card">
-          {stepByStep}
+      <div className="swap-panel__card">
+        {stepByStep}
 
-          <SwapStepAlert
-            show={!!page.step3awaitingConfirmations.error}
-            type={'warning'}
-            icon={ic_warning}
-            title={page.step3awaitingConfirmations.error?.title}
-            error={page.step3awaitingConfirmations.error?.error}
-            actionElement={
-              page.step3awaitingConfirmations.error?.retry && (
-                <BaseButton
-                  className="swap-step-alert__button"
-                  onClick={page.step3awaitingConfirmations.error?.retry}
-                  variant="secondary"
-                >
-                  <i className="icon icon-retry" />
-                  Retry
-                </BaseButton>
-              )
-            }
-          />
+        <SwapStepAlert
+          show={!!page.step3awaitingConfirmations.error}
+          type={'warning'}
+          icon={ic_warning}
+          title={page.step3awaitingConfirmations.error?.title}
+          error={page.step3awaitingConfirmations.error?.error}
+          actionElement={
+            page.step3awaitingConfirmations.error?.retry && (
+              <BaseButton
+                className="swap-step-alert__button"
+                onClick={page.step3awaitingConfirmations.error?.retry}
+                variant="secondary"
+              >
+                <i className="icon icon-retry" />
+                Retry
+              </BaseButton>
+            )
+          }
+        />
 
-          {page.step3awaitingConfirmations.broadcasting ? (
-            <div className="swap-panel__card__group">
-              <div className="d-flex flex-column align-items-center p-2 gap-3">
-                <Spinner />
-                <label>Sending Bitcoin transaction...</label>
-              </div>
+        {page.step3awaitingConfirmations.broadcasting ? (
+          <div className="swap-panel__card__group">
+            <div className="d-flex flex-column align-items-center p-2 gap-3">
+              <Spinner />
+              <label>Sending Bitcoin transaction...</label>
             </div>
-          ) : (
-            <SwapConfirmations txData={page.step3awaitingConfirmations.txData} />
-          )}
-        </div>
-
-        <BaseButton
-          onClick={props.abortSwap}
-          variant="danger"
-          className="swap-panel__action is-large"
-        >
-          Abort swap
-        </BaseButton>
-      </>
+          </div>
+        ) : (
+          <SwapConfirmations txData={page.step3awaitingConfirmations.txData} />
+        )}
+      </div>
     );
   }
 
   if (page.step4claim) {
     return (
-      <>
-        <div className="swap-panel__card">
-          {stepByStep}
+      <div className="swap-panel__card">
+        {stepByStep}
 
-          <SwapStepAlert
-            show={!!page.step4claim.error}
-            type={page.step4claim.error?.type}
-            icon={ic_warning}
-            title={page.step4claim.error?.title}
-            error={page.step4claim.error?.error}
-            action={page.step4claim.error?.retry && {
-              type: 'button',
-              text: 'Retry',
-              variant: 'secondary',
-              onClick: page.step4claim.error?.retry,
-              icon: <i className="icon icon-retry"/>
-            }}
-          />
+        <SwapStepAlert
+          show={!!page.step4claim.error}
+          type={page.step4claim.error?.type}
+          icon={ic_warning}
+          title={page.step4claim.error?.title}
+          error={page.step4claim.error?.error}
+          action={page.step4claim.error?.retry && {
+            type: 'button',
+            text: 'Retry',
+            variant: 'secondary',
+            onClick: page.step4claim.error?.retry,
+            icon: <i className="icon icon-retry"/>
+          }}
+        />
 
-          {page.step4claim.waitingForWatchtowerClaim ? (
-            <div className="swap-confirmations">
-              <div className="swap-confirmations__estimate">
-                <Spinner />
-              </div>
-              <div className="swap-confirmations__name">
-                Transaction received & confirmed, waiting for automatic settlement by watchtowers...
-              </div>
+        {page.step4claim.waitingForWatchtowerClaim ? (
+          <div className="swap-confirmations">
+            <div className="swap-confirmations__estimate">
+              <Spinner />
             </div>
-          ) : (
-            <>
-              <SwapStepAlert
-                show={true}
-                type="success"
-                icon={ic_check_circle}
-                title="Manual swap settlement"
-                description="Automatic settlement has failed. You can now settle your swap manually to finish the swap."
-                actionElement={
-                  <ButtonWithWallet
-                    requiredWalletAddress={props.quote._getInitiator()}
-                    className="swap-step-alert__button"
-                    chainId={props.quote?.chainIdentifier}
-                    onClick={page.step4claim.claim.onClick}
-                    disabled={page.step4claim.claim.disabled}
-                    variant="secondary"
-                  >
-                    {page.step4claim.claim.loading ? (
-                      <Spinner animation="border" size="sm" className="mr-2" />
-                    ) : (
-                      <i className="icon icon-claim" />
-                    )}
-                    Settle swap
-                  </ButtonWithWallet>
-                }
-              />
-            </>
-          )}
-        </div>
-
-        <BaseButton
-          onClick={props.abortSwap}
-          variant="danger"
-          className="swap-panel__action is-large"
-        >
-          Abort swap
-        </BaseButton>
-      </>
+            <div className="swap-confirmations__name">
+              Transaction received & confirmed, waiting for automatic settlement by watchtowers...
+            </div>
+          </div>
+        ) : (
+          <>
+            <SwapStepAlert
+              show={true}
+              type="success"
+              icon={ic_check_circle}
+              title="Manual swap settlement"
+              description="Automatic settlement has failed. You can now settle your swap manually to finish the swap."
+              actionElement={
+                <ButtonWithWallet
+                  className="swap-step-alert__button"
+                  chainId={props.quote?.chainIdentifier}
+                  onClick={page.step4claim.claim.onClick}
+                  disabled={page.step4claim.claim.disabled}
+                  variant="secondary"
+                >
+                  {page.step4claim.claim.loading ? (
+                    <Spinner animation="border" size="sm" className="mr-2" />
+                  ) : (
+                    <i className="icon icon-claim" />
+                  )}
+                  Settle swap
+                </ButtonWithWallet>
+              }
+            />
+          </>
+        )}
+      </div>
     );
   }
 

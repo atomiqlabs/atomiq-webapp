@@ -282,7 +282,8 @@ export function useFromBtcLnQuote(
   const isAwaitingLpInit = state === FromBTCLNSwapState.PR_PAID &&
     quote?.getType() === SwapType.FROM_BTCLN_AUTO;
 
-  const isClaimClaimable = state === FromBTCLNSwapState.CLAIM_COMMITED && !committing;
+  const isCommited = state === FromBTCLNSwapState.CLAIM_COMMITED;
+  const isClaimClaimable = isCommited && !committing;
 
   const isClaimable = isClaimCommittable || isClaimClaimable;
 
@@ -294,10 +295,10 @@ export function useFromBtcLnQuote(
     return quote.waitTillClaimed(60, abortSignalRef.current);
   }, [quote]);
   useEffect(() => {
-    if(!_isAlreadyClaimable && isClaimClaimable && quote?.getType()===SwapType.FROM_BTCLN_AUTO) {
+    if(!_isAlreadyClaimable && isCommited && quote?.getType()===SwapType.FROM_BTCLN_AUTO) {
       waitForSettlement();
     }
-  }, [_isAlreadyClaimable, isClaimClaimable, quote]);
+  }, [_isAlreadyClaimable, isCommited, quote]);
   const isWaitingForWatchtowerClaim =
     !_isAlreadyClaimable && isClaimClaimable && quote?.getType() === SwapType.FROM_BTCLN_AUTO && settlementSuccess==null;
 

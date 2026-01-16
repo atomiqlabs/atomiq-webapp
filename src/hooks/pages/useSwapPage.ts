@@ -38,6 +38,7 @@ import {WebLNProvider} from 'webln';
 import {useExistingSwap} from '../quoting/useExistingSwap';
 import {ChainsConfig} from "../../data/ChainsConfig";
 import {Tokens} from "../../providers/SwapperProvider";
+import {useStateRef} from "../utils/useStateRef";
 
 export type SwapPageUIState = 'show' | 'lock' | 'hide';
 
@@ -246,7 +247,7 @@ export function useSwapPage(): SwapPageState {
       setAddressFromWebLn(null);
       return;
     }
-    if (exactIn) {
+    if (exactInRef.current) {
       setAmount('');
       setExactIn(false);
     }
@@ -268,6 +269,7 @@ export function useSwapPage(): SwapPageState {
   }, [webLnForOutput]);
   const amount = amountsLocked ? addressData.amount.amount : _amount;
   const [exactIn, setExactIn] = useStateWithOverride(true, isFixedAmount ? false : null);
+  const exactInRef = useStateRef(exactIn);
   const { input: swapInputLimits, output: swapOutputLimits } = useAmountConstraints(
     inputToken,
     outputToken

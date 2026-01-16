@@ -56,7 +56,6 @@ export type SpvVaultFromBtcPage = {
   };
   step4claim?: {
     waitingForWatchtowerClaim: boolean;
-    smartChainWallet?: Chain<any>['wallet'];
     claim: {
       onClick: () => void;
       loading: boolean;
@@ -156,23 +155,10 @@ export function useSpvVaultFromBtcQuote(
     return quote.claim(smartChainWallet.instance);
   }, [quote, smartChainWallet]);
 
-  const [claimable, setClaimable] = useState(false);
   useEffect(() => {
     if (state === SpvFromBTCSwapState.POSTED || state === SpvFromBTCSwapState.BROADCASTED) {
       onWaitForPayment();
     }
-
-    let timer: NodeJS.Timeout = null;
-    if (state === SpvFromBTCSwapState.BTC_TX_CONFIRMED) {
-      timer = setTimeout(() => {
-        setClaimable(true);
-      }, 60 * 1000);
-    }
-
-    return () => {
-      if (timer != null) clearTimeout(timer);
-      setClaimable(false);
-    };
   }, [state]);
 
   const hasEnoughBalance = useMemo(
@@ -195,8 +181,9 @@ export function useSpvVaultFromBtcQuote(
     state === SpvFromBTCSwapState.POSTED ||
     (state === SpvFromBTCSwapState.BROADCASTED && txData == null);
   const isReceived = state === SpvFromBTCSwapState.BROADCASTED && txData != null;
-  const isClaimable = state === SpvFromBTCSwapState.BTC_TX_CONFIRMED && !claimLoading;
-  const isClaiming = state === SpvFromBTCSwapState.BTC_TX_CONFIRMED && claimLoading;
+  const isBtcTxConfirmed = state === SpvFromBTCSwapState.BTC_TX_CONFIRMED;
+  const isClaimable = isBtcTxConfirmed && !claimLoading;
+  const isClaiming = isBtcTxConfirmed && claimLoading;
   const isFailed =
     state === SpvFromBTCSwapState.FAILED ||
     state === SpvFromBTCSwapState.DECLINED ||
@@ -211,10 +198,10 @@ export function useSpvVaultFromBtcQuote(
     return quote.waitTillClaimedOrFronted(60, abortSignalRef.current);
   }, [quote]);
   useEffect(() => {
-    if(!isAlreadyClaimable && isClaimable) {
+    if(!isAlreadyClaimable && isBtcTxConfirmed) {
       waitForSettlement();
     }
-  }, [isAlreadyClaimable, isClaimable]);
+  }, [isAlreadyClaimable, isBtcTxConfirmed]);
   const isWaitingForWatchtowerClaim =
     !isAlreadyClaimable && isClaimable && settlementSuccess==null;
 
@@ -339,6 +326,23 @@ export function useSpvVaultFromBtcQuote(
     ]
   );
 
+  const step2broadcasting = useMemo(
+    () =>
+      !isBroadcasting
+        ? undefined
+        : {
+            error:
+              waitPaymentError != null
+                ? {
+                    title: 'Connection problem',
+                    error: waitPaymentError,
+                    retry: onWaitForPayment,
+                  }
+                : undefined,
+          },
+    [isBroadcasting, waitPaymentError, onWaitForPayment]
+  );
+
   const step3awaitingConfirmations = useMemo(
     () =>
       !isReceived
@@ -357,30 +361,12 @@ export function useSpvVaultFromBtcQuote(
     [isReceived, txData, waitPaymentError, onWaitForPayment]
   );
 
-  const step2broadcasting = useMemo(
-    () =>
-      !isBroadcasting
-        ? undefined
-        : {
-            error:
-              waitPaymentError != null
-                ? {
-                    title: 'Connection problem',
-                    error: waitPaymentError,
-                    retry: onWaitForPayment,
-                  }
-                : undefined,
-          },
-    [isBroadcasting, waitPaymentError, onWaitForPayment]
-  );
-
   const step4claim = useMemo(
     () =>
       !isClaimable && !isClaiming
         ? undefined
         : {
             waitingForWatchtowerClaim: isWaitingForWatchtowerClaim,
-            smartChainWallet,
             claim: {
               onClick: onClaim,
               loading: claimLoading,
@@ -404,7 +390,6 @@ export function useSpvVaultFromBtcQuote(
     [
       isClaimable,
       isClaiming,
-      smartChainWallet,
       onClaim,
       claimLoading,
       claimError,

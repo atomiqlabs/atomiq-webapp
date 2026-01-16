@@ -276,7 +276,7 @@ export function useToBtcQuote(
       text: type === 'payment' ? 'Pay' : 'Swap',
       onClick: onContinue,
       loading: continueLoading,
-      disabled: !hasEnoughBalance || !!additionalGasRequired
+      disabled: continueLoading ||  !hasEnoughBalance || !!additionalGasRequired
     } : undefined,
     error: continueError!=null ? {
       title: 'Cannot initiate swap',

@@ -74,8 +74,7 @@ export function SpvVaultFromBTCSwapPanel(props: {
           ) : (
             ''
           )}
-          Pay with <img width={20} height={20} src={page.step1init.bitcoinWallet?.icon} />{' '}
-          {page.step1init.bitcoinWallet?.name}
+          Swap
         </ButtonWithWallet>
       </>
     );
@@ -178,7 +177,6 @@ export function SpvVaultFromBTCSwapPanel(props: {
               description="Automatic settlement has failed. You can now settle your swap manually to finish the swap."
               actionElement={
                 <ButtonWithWallet
-                  requiredWalletAddress={props.quote._getInitiator()}
                   className="swap-step-alert__button"
                   chainId={props.quote?.chainIdentifier}
                   onClick={page.step4claim.claim.onClick}
