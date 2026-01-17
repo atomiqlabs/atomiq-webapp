@@ -213,9 +213,9 @@ td {
   overflow: hidden;
   position: relative;
 
-  @media (max-width: 992px) {
-    padding-bottom: 70px; // to create bottom offset because mobile floating navigation
-  }
+  //@media (max-width: 992px) {
+  //  padding-bottom: 70px; // to create bottom offset because mobile floating navigation
+  //}
 
   &:after {
     content: '';
