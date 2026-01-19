@@ -5,10 +5,10 @@ import {
     isSCToken,
     ISwap,
     IToBTCSwap,
-    SwapDirection, SwapType
+    SwapDirection, SwapType, ToBTCLNSwap
 } from "@atomiqlabs/sdk";
 import * as React from "react";
-import {useContext, useEffect, useState} from "react";
+import {useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {SwapsContext} from "../swaps/context/SwapsContext";
 import {useNavigate} from "react-router-dom";
 import {TokenIcon} from "../tokens/TokenIcon";
@@ -18,6 +18,11 @@ import {getTimeDeltaText} from "../utils/Utils";
 import Icon from "react-icons-kit";
 import {ic_arrow_forward} from 'react-icons-kit/md/ic_arrow_forward';
 import {ic_arrow_downward} from 'react-icons-kit/md/ic_arrow_downward';
+import {useAsync} from "../utils/hooks/useAsync";
+import {ChainDataContext} from "../wallets/context/ChainDataContext";
+import {ChainWalletData} from "../wallets/ChainDataProvider";
+import {ClearSwapHistoryModal} from "./components/ClearSwapHistoryModal";
+import {RecoverSwapDataModal} from "./components/RecoverSwapDataModal";
 
 function HistoryEntry(props: {
     swap: ISwap,
@@ -82,7 +87,7 @@ function HistoryEntry(props: {
                                 >{txIdInput || "None"}</a>
                                 <span className="d-flex align-items-center font-weight-500 my-1">
                                     <TokenIcon tokenOrTicker={input.token} className="currency-icon-medium"/>
-                                    {input.amount} {input.token.ticker || "???"}
+                                    {input.toString()}
                                 </span>
                                 <small className="single-line-ellipsis">{inputAddress}</small>
                             </div>
@@ -102,7 +107,7 @@ function HistoryEntry(props: {
                                href={outputExplorer == null || txIdOutput == null ? null : outputExplorer + txIdOutput}>{txIdOutput || "..."}</a>
                             <span className="d-flex align-items-center font-weight-500 my-1">
                                 <TokenIcon tokenOrTicker={output.token} className="currency-icon-medium"/>
-                                {output.amount} {output.token.ticker || "???"}
+                                {output.toString()}
                             </span>
                             <small className="single-line-ellipsis">{outputAddress}</small>
                         </Col>
@@ -125,26 +130,30 @@ function HistoryEntry(props: {
 }
 
 export function History() {
-
     const {swapper} = useContext(SwapsContext);
+    const chains = useContext(ChainDataContext);
 
     const [swaps, setSwaps] = useState<ISwap[]>([]);
+    const openClearSwapHistoryModalRef = useRef<() => void>();
+    const openRecoverSwapDataModalRef = useRef<() => void>();
+
+    const loadSortedSwaps = useCallback(() => swapper.getAllSwaps().then(swaps => {
+        setSwaps(swaps.filter(swap =>
+            swap.isInitiated() &&
+            swap.getType()!==SwapType.TRUSTED_FROM_BTC &&
+            swap.getType()!==SwapType.TRUSTED_FROM_BTCLN
+        ).sort((a, b) => {
+            const _a = a.requiresAction();
+            const _b = b.requiresAction();
+            if(_a===_b) return b.createdAt - a.createdAt;
+            if(_a) return -1;
+            if(_b) return 1;
+        }));
+    }), [swapper]);
 
     useEffect(() => {
         if (swapper == null) return;
-        swapper.getAllSwaps().then(swaps => {
-            setSwaps(swaps.filter(swap =>
-                swap.isInitiated() &&
-                swap.getType()!==SwapType.TRUSTED_FROM_BTC &&
-                swap.getType()!==SwapType.TRUSTED_FROM_BTCLN
-            ).sort((a, b) => {
-                const _a = a.requiresAction();
-                const _b = b.requiresAction();
-                if(_a===_b) return b.createdAt - a.createdAt;
-                if(_a) return -1;
-                if(_b) return 1;
-            }));
-        });
+        loadSortedSwaps();
 
         const listener = (swap: ISwap) => {
             if(!swap.isInitiated()) return;
@@ -167,6 +176,9 @@ export function History() {
         <>
             <SwapTopbar selected={2} enabled={true}/>
 
+            <ClearSwapHistoryModal openRef={openClearSwapHistoryModalRef} onFinished={() => setSwaps([])}/>
+            <RecoverSwapDataModal openRef={openRecoverSwapDataModalRef} onFinished={() => loadSortedSwaps()}/>
+
             <div className="flex-fill text-white container text-start">
                 <SingleColumnStaticTable<ISwap>
                     column={{
@@ -177,6 +189,16 @@ export function History() {
                     data={swaps}
                     itemsPerPage={10}
                 />
+                <div className="d-flex align-items-center justify-content-center">
+                    <a href="#" className="me-2" onClick={(e) => {
+                        e.preventDefault()
+                        openClearSwapHistoryModalRef.current()
+                    }}>Clear swap history</a>
+                    <a href="#" onClick={(e) => {
+                        e.preventDefault()
+                        openRecoverSwapDataModalRef.current()
+                    }}>Recover swap data</a>
+                </div>
             </div>
         </>
     )

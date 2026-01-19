@@ -29,6 +29,8 @@ import {WalletConnectionsSummary} from "./wallets/WalletConnectionsSummary";
 import {NFCSwitch} from "./nfc/NFCSwitch";
 import {ChainDataContext} from "./wallets/context/ChainDataContext";
 import {ChainDataProvider} from "./wallets/ChainDataProvider";
+import {DownloadLogsModal} from "./pages/components/DownloadLogsModal";
+import {download} from 'react-icons-kit/fa/download';
 
 require('@solana/wallet-adapter-react-ui/styles.css');
 
@@ -108,6 +110,8 @@ function WrappedApp() {
         if(!noWalletPaths.has(pathName) && swapper==null) loadSwapper();
     }, [pathName]);
 
+    const downloadLogsModalOpenRef = useRef<() => void>();
+
     const navTabs = (<>
         <Nav.Link href="/" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={exchange} className="d-flex me-1"/><span>Swap</span></Nav.Link>
         <Nav.Link href="/about" onClick={navigateHref} className="d-flex flex-row align-items-center"><Icon icon={info} className="d-flex me-1"/><span>About</span></Nav.Link>
@@ -117,6 +121,8 @@ function WrappedApp() {
 
     return (
         <>
+            <DownloadLogsModal openRef={downloadLogsModalOpenRef}/>
+
             <Navbar collapseOnSelect expand="lg " bg="dark" variant="dark" className="bg-dark bg-opacity-50" style={{zIndex: 1000, minHeight: "64px"}}>
                 <Container className="max-width-100">
                     <Navbar.Brand href="/" className="d-flex flex-column">
@@ -228,7 +234,14 @@ function WrappedApp() {
                 ) : ""}
 
                 <Col className="d-flex justify-content-end">
-                    <a href="https://t.me/atomiq_support" target="_blank" className="ms-auto d-flex flex-row align-items-center text-white text-decoration-none hover-opacity-75 font-small">
+                    <a href="#" onClick={(e) => {
+                        e.preventDefault();
+                        downloadLogsModalOpenRef.current();
+                    }} className="ms-auto d-flex flex-row align-items-center text-white text-decoration-none hover-opacity-75 font-small me-2">
+                        <Icon icon={download} size={16} style={{marginTop: "-7px"}} className="social-icon me-1"/>Logs
+                    </a>
+                    <a href="https://t.me/atomiq_support" target="_blank"
+                       className="d-flex flex-row align-items-center text-white text-decoration-none hover-opacity-75 font-small">
                         <img className="social-icon me-1" src="/icons/socials/telegram.png"/>Talk to support
                     </a>
                 </Col>
