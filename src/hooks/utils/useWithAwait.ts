@@ -30,7 +30,7 @@ export function useWithAwait<Result>(
   const currentPromise = useRef<Promise<void>>(null);
   const currentCallback = useStateRef(callback);
 
-  const depsRef = useRef<any[]>();
+  const depsRef = useRef<any[]>(dependencies);
   useMemo(
     () => {
       if (pause) return;

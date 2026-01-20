@@ -1,7 +1,6 @@
 import './assets/style/tailwind.css';
 import './assets/style/import.scss';
 import './App.css'
-import '@solana/wallet-adapter-react-ui/styles.css';
 
 import { Buffer } from 'buffer';
 globalThis.Buffer = Buffer;

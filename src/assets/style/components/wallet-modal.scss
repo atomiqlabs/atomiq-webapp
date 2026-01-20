@@ -1,6 +1,6 @@
 // Wallet modal list styling
 .wallet-adapter-modal-list {
-  @apply rounded-xl overflow-hidden mb-0;
+  @apply rounded-xl overflow-hidden mb-0 ps-0;
 
   &:not(:last-child) {
     @apply mb-3;

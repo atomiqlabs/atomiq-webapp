@@ -9,7 +9,7 @@ import { WalletBalanceResult } from '../../hooks/wallets/useWalletBalance';
 import { useContext } from 'react';
 import { ChainsContext } from '../../context/ChainsContext';
 
-const ConnectedWallet = React.forwardRef<any, any>(({ name, onClick, noText }) => (
+const ConnectedWallet = React.forwardRef<any, any>(({ name, onClick, noText }, _ref) => (
   <BaseButton
     icon={<Icon size={12} icon={ic_brightness_1} className="wallet-connections__indicator" />}
     variant="transparent"

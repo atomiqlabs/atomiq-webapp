@@ -77,11 +77,11 @@ export function MainNavigation(props: {}) {
     {
       link: '/history',
       icon: 'Swap-History',
-      title: [
-        <span>Swap History</span>,
-        syncing && <Spinner className="text-white ms-2" size="sm" />,
-        syncingError && <Icon size={20} className="ms-2 flex" icon={ic_warning} />
-      ],
+      title: <>
+        <span>Swap History</span>
+        {syncing && <Spinner className="text-white ms-2" size="sm" />}
+        {syncingError && <Icon size={20} className="ms-2 flex" icon={ic_warning} />}
+      </>,
       count: actionRequiredCount > 0 ? actionRequiredCount : undefined,
     },
     { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
