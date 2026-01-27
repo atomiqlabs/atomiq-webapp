@@ -110,6 +110,31 @@ const citreaTestnetChain = {
     testnet: true
 };
 
+const citreaMainnetBlockscout = {
+    name: "Blockscout - Citrea Mainnet",
+    url: "https://explorer.mainnet.citrea.xyz/"
+};
+
+const citreaMainnetChain = {
+    blockExplorers: {
+        "Blockscout": citreaMainnetBlockscout,
+        default: citreaMainnetBlockscout
+    },
+    blockTime: 2*1000,
+    id: 4114,
+    name: "Citrea Mainnet",
+    nativeCurrency: {
+        name: "Citrea BTC",
+        symbol: "cBTC",
+        decimals: 18
+    },
+    rpcUrls: {
+        "Citrea public": {http: ["https://rpc.mainnet.citrea.xyz"]},
+        default: {http: ["https://rpc.mainnet.citrea.xyz"]}
+    },
+    testnet: false
+};
+
 const goatTestnetBlockscout = {
     name: "Routescan - Goat Testnet3",
     url: "https://explorer.testnet3.goat.network/"
@@ -138,7 +163,7 @@ const goatTestnetChain = {
 const chains: any = [];
 if(FEConstants.goatRpc!=null) chains.push(goatTestnetChain);
 if(FEConstants.alpenRpc!=null) chains.push(alpenTestnetChain);
-if(FEConstants.citreaRpc!=null) chains.push(citreaTestnetChain);
+if(FEConstants.citreaRpc!=null) chains.push(FEConstants.citreaChainType==="MAINNET" ? citreaMainnetChain : citreaTestnetChain);
 if(FEConstants.botanixRpc!=null) chains.push(FEConstants.botanixChainType==="MAINNET" ? botanixMainnetChain : botanixTestnetChain);
 
 const config = getDefaultConfig({

@@ -73,3 +73,20 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+# Citrea swap page
+
+## Option 3: atomiq.exchange (Any amount and lightning network)
+
+For deposits less than 10 BTC or deposits via the Bitcoin Lightning network use [atomiq.exchange](https://app.atomiq.exchange/?tokenOut=CITREA:0x0000000000000000000000000000000000000000)
+
+**Steps:**
+
+1. Go to [Bridge Hub]() and select **Bitcoin**
+2. Select **atomiq.exchange** as the provider, which will redirect you to [app.atomiq.exchange](https://app.atomiq.exchange/?tokenOut=CITREA:0x0000000000000000000000000000000000000000)
+3. **Bitcoin on-chain** is pre-selected as the source, if you wish to swap from **Bitcoin Lightning Network**, select the **Bitcoin (lightning L2)** asset in the **You pay** section
+4. Enter the amount you want to bridge (you can specify either input or output amounts)
+5. Connect your **Citrea** wallet or type in the destination **Citrea** address
+6. Connect your **Bitcoin** wallet (e.g. **UniSat**, **Xverse** or **Magic Eden**), not required for swap from **Bitcoin Lightning Network**
+7. Click **Initiate swap** and confirm the transaction in your **Bitcoin** wallet, or send over the funds to the presented lightning network invoice (in case of **Bitcoin Lightning Network**)
+8. The swap settles automatically after the bitcoin transaction gets confirmed (2 confirmations take on average 20 minutes), this is instant for **Bitcoin Lightning Network**
