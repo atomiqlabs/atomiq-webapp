@@ -39,7 +39,7 @@ const citreaMainnetChain = {
   },
   blockTime: 2*1000,
   id: 4114,
-  name: "Citrea Testnet",
+  name: "Citrea Mainnet",
   nativeCurrency: {
     name: "Citrea BTC",
     symbol: "cBTC",
