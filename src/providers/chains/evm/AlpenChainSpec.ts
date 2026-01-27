@@ -26,9 +26,9 @@ const alpenTestnetChain = {
   testnet: true
 };
 
-export const alpenChainId = ChainsConfig.ALPEN?.chainType==='TESTNET'
-  ? 2892
-  : undefined;
-export const alpenChain = ChainsConfig.ALPEN?.chainType==='TESTNET'
-  ? alpenTestnetChain
-  : undefined;
+export const alpenChainId = ChainsConfig.ALPEN?.chainType==='MAINNET'
+  ? undefined
+  : 2892;
+export const alpenChain = ChainsConfig.ALPEN?.chainType==='MAINNET'
+  ? undefined
+  : alpenTestnetChain;

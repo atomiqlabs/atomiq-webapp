@@ -26,9 +26,9 @@ const goatTestnetChain = {
   testnet: true
 };
 
-export const goatChain = ChainsConfig.GOAT?.chainType==='TESTNET'
-  ? goatTestnetChain
-  : undefined;
-export const goatChainId = ChainsConfig.GOAT?.chainType==='TESTNET'
-  ? 48816
-  : undefined;
+export const goatChain = ChainsConfig.GOAT?.chainType==='MAINNET'
+  ? undefined
+  : goatTestnetChain;
+export const goatChainId = ChainsConfig.GOAT?.chainType==='MAINNET'
+  ? undefined
+  : 48816;
