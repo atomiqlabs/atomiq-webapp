@@ -99,6 +99,29 @@ const citreaTestnetChain = {
     },
     testnet: true
 };
+const citreaMainnetBlockscout = {
+    name: "Blockscout - Citrea Mainnet",
+    url: "https://explorer.mainnet.citrea.xyz/"
+};
+const citreaMainnetChain = {
+    blockExplorers: {
+        "Blockscout": citreaMainnetBlockscout,
+        default: citreaMainnetBlockscout
+    },
+    blockTime: 2 * 1000,
+    id: 4114,
+    name: "Citrea Mainnet",
+    nativeCurrency: {
+        name: "Citrea BTC",
+        symbol: "cBTC",
+        decimals: 18
+    },
+    rpcUrls: {
+        "Citrea public": { http: ["https://rpc.mainnet.citrea.xyz"] },
+        default: { http: ["https://rpc.mainnet.citrea.xyz"] }
+    },
+    testnet: false
+};
 const goatTestnetBlockscout = {
     name: "Routescan - Goat Testnet3",
     url: "https://explorer.testnet3.goat.network/"
@@ -128,9 +151,10 @@ if (FEConstants.goatRpc != null)
 if (FEConstants.alpenRpc != null)
     chains.push(alpenTestnetChain);
 if (FEConstants.citreaRpc != null)
-    chains.push(citreaTestnetChain);
+    chains.push(FEConstants.citreaChainType === "MAINNET" ? citreaMainnetChain : citreaTestnetChain);
 if (FEConstants.botanixRpc != null)
     chains.push(FEConstants.botanixChainType === "MAINNET" ? botanixMainnetChain : botanixTestnetChain);
+console.log("EVM chains: ", chains);
 const config = getDefaultConfig({
     appName: "atomiq.exchange",
     projectId: "2a38c0968b372694c0b2827a6e05b1f5",

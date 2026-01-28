@@ -166,6 +166,8 @@ if(FEConstants.alpenRpc!=null) chains.push(alpenTestnetChain);
 if(FEConstants.citreaRpc!=null) chains.push(FEConstants.citreaChainType==="MAINNET" ? citreaMainnetChain : citreaTestnetChain);
 if(FEConstants.botanixRpc!=null) chains.push(FEConstants.botanixChainType==="MAINNET" ? botanixMainnetChain : botanixTestnetChain);
 
+console.log("EVM chains: ", chains);
+
 const config = getDefaultConfig({
     appName: "atomiq.exchange",
     projectId: "2a38c0968b372694c0b2827a6e05b1f5",
