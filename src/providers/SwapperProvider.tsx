@@ -14,6 +14,7 @@ import {useLocation} from "react-router-dom";
 import {FEConstants} from "../FEConstants";
 import {ChainsConfig} from "../data/ChainsConfig";
 import {SwapperContext} from "../context/SwapperContext";
+import EventEmitter from "events";
 
 export const Factory = new SwapperFactory<readonly [
   SolanaInitializerType,
@@ -37,6 +38,8 @@ export const TokenResolver = Factory.TokenResolver;
 console.log('Factory: ', Factory);
 
 const noSwapperPaths = new Set(['/about', '/faq', '/explorer']);
+
+const events = new EventEmitter();
 
 export function SwapperProvider(props: { children: React.ReactNode }) {
   const [swapper, setSwapper] = useState<Swapper<any>>();
@@ -120,7 +123,8 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
       loadingError: swapperLoadingError,
       syncing: swapperSyncing,
       syncingError: swapperSyncingError,
-      retry: loadSwapper
+      retry: loadSwapper,
+      events
     }}>
       {props.children}
     </SwapperContext.Provider>

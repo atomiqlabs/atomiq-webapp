@@ -208,8 +208,11 @@ export function useSwapPage(): SwapPageState {
         break;
       default:
         if (
-          (isSCToken(outputToken) && outputToken.chainId === addressData.type) ||
-          swapper.Utils.isValidSmartChainAddress(addressData.address, outputToken.chainId)
+          isSCToken(outputToken) &&
+          (
+            outputToken.chainId === addressData.type ||
+            swapper.Utils.isValidSmartChainAddress(addressData.address, outputToken.chainId)
+          )
         ) {
           token = outputToken;
         } else {
@@ -461,8 +464,8 @@ export function useSwapPage(): SwapPageState {
     if (quote != null)
       return [
         randomQuote ? address : quote.getOutputAddress(),
-        exactIn ? amount : quote.getInput().amount,
-        !exactIn ? amount : quote.getOutput().amount,
+        exactIn ? amount : quote.getInput()?.amount,
+        !exactIn ? amount : quote.getOutput()?.amount,
         (outputChainData?.wallet?.address ?? addressFromWebLn) === quote.getOutputAddress(),
       ];
     // if(isFixedAmount) return [_address, "", addressData.amount.amount, outputChainData?.wallet?.address!=null];
@@ -485,6 +488,7 @@ export function useSwapPage(): SwapPageState {
   const notEnoughBalance =
     quote != null &&
     maxSpendable?.balance != null &&
+    quote.getInput() != null &&
     quote.getInput().rawAmount > maxSpendable.balance.rawAmount;
   const inputValue = usePricing(inputAmount, inputToken);
   const outputValue = usePricing(outputAmount, outputToken);
@@ -593,9 +597,9 @@ export function useSwapPage(): SwapPageState {
         if(!clearAddress) setAddress(existingSwap.getOutputAddress());
         setExactIn(existingSwap.exactIn);
         if (existingSwap.exactIn) {
-          setAmount(existingSwap.getInput().amount);
+          if(existingSwap.getInput()!=null) setAmount(existingSwap.getInput().amount);
         } else {
-          setAmount(existingSwap.getOutput().amount);
+          if(existingSwap.getOutput()!=null) setAmount(existingSwap.getOutput().amount);
         }
         navigate('/');
       }

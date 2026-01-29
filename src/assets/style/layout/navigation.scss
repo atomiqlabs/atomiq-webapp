@@ -190,7 +190,7 @@
   }
 
   &__collapse {
-    @apply fixed top-0 left-0 h-screen bg-[#180931] z-50 w-[321px] max-w-full overflow-y-auto;
+    @apply fixed top-0 left-0 h-screen bg-[#180931] z-50 w-[321px] max-w-full;
     transform: translateX(-100%);
     transition: transform 0.3s ease-in-out;
 
@@ -199,6 +199,7 @@
     }
 
     @media (max-width: 991.98px) {
+      @apply overflow-y-auto;
       height: 100vh !important;
     }
 

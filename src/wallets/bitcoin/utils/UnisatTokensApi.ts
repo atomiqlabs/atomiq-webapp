@@ -1,4 +1,4 @@
-import {tryWithRetries} from "@atomiqlabs/chain-solana";
+import { tryWithRetries } from "../../../utils/Utils";
 
 const baseUrl = import.meta.env.VITE_UNISAT_API_URL ?? "https://open-api.unisat.io";
 const apiKey = import.meta.env.VITE_UNISAT_API_KEY;

@@ -20,6 +20,7 @@ export function PlaceholderFeePanel(props: {
         fee: {
           amountInSrcToken: toTokenAmount(0n, props.inputToken, null),
           amountInDstToken: toTokenAmount(0n, props.outputToken, null),
+          currentUsdValue: async () => 0,
           usdValue: async () => 0,
         },
         usdValue: 0,

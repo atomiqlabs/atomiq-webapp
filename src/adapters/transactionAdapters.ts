@@ -75,13 +75,13 @@ export function swapToProps(swap: ISwap): TransactionEntryProps {
     requiresAction: swap.requiresAction(),
 
     inputToken: inputToken,
-    inputAmount: swap.getInput()?.amount,
+    inputAmount: swap.getInput()?.amount ?? "???",
     inputAddress,
     inputExplorer,
     inputTxId: txIdInput,
 
     outputToken: outputToken,
-    outputAmount: swap.getOutput()?.amount,
+    outputAmount: swap.getOutput()?.amount ?? "???",
     outputAddress,
     outputExplorer,
     outputTxId: txIdOutput,

@@ -10,9 +10,20 @@ import { ic_warning } from 'react-icons-kit/md/ic_warning';
 const SHOW_FILTER = false; // TODO implement filter and uncomment this to display it
 
 export function HistoryPage() {
-  const { swapper, syncingError, syncing } = useContext(SwapperContext);
+  const { swapper, syncingError, syncing, events } = useContext(SwapperContext);
 
   const [swaps, setSwaps] = useState<ISwap[]>([]);
+  const [reloadCount, setReloadCount] = useState<number>(0);
+
+  useEffect(() => {
+    const listener = () => {
+      setReloadCount(val => val+1);
+    };
+    events.on("reloadHistory", listener);
+    return () => {
+      events.removeListener("reloadHistory", listener);
+    };
+  }, [events]);
 
   useEffect(() => {
     if (swapper == null) return;
@@ -53,7 +64,7 @@ export function HistoryPage() {
       swapper.off('swapState', listener);
       setSwaps([]);
     };
-  }, [swapper]);
+  }, [swapper, reloadCount]);
 
   return (
     <div className="history-page">

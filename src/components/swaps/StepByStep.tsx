@@ -39,7 +39,7 @@ export function StepByStep(props: {
             <div className="swap-steps-wallet">
               <div className="swap-steps-wallet__icon">
                 <img
-                  src={TokenIcons[input.amount.token.ticker]}
+                  src={TokenIcons[input.token.ticker]}
                   alt="Source"
                   className="swap-steps-wallet__icon__img"
                 />
@@ -53,7 +53,7 @@ export function StepByStep(props: {
               </div>
               <div className="swap-steps-wallet__ammounts">
                 <div className="swap-steps-wallet__ammounts__original">
-                  {input.amount.toString()}
+                  {input.amount?.toString() ?? "??? "+input.token.ticker}
                 </div>
                 {input.usdValue ? (
                   <div className="swap-steps-wallet__ammounts__dolars">{input.usdValue}</div>
@@ -70,7 +70,7 @@ export function StepByStep(props: {
               <div className="swap-steps-wallet">
                 <div className="swap-steps-wallet__icon">
                   <img
-                    src={TokenIcons[output.amount.token.ticker]}
+                    src={TokenIcons[output.token.ticker]}
                     alt="Destination"
                     className="swap-steps-wallet__icon__img"
                   />
@@ -84,7 +84,7 @@ export function StepByStep(props: {
                 </div>
                 <div className="swap-steps-wallet__ammounts">
                   <div className="swap-steps-wallet__ammounts__original">
-                    {output.amount.toString()}
+                    {output.amount?.toString() ?? "??? "+output.token.ticker}
                   </div>
                   {output.usdValue ? (
                     <div className="swap-steps-wallet__ammounts__dolars">{output.usdValue}</div>

@@ -70,6 +70,7 @@ export function useSwapFees(
         fee: {
           amountInSrcToken: amount,
           amountInDstToken: null,
+          currentUsdValue: amount.usdValue,
           usdValue: amount.usdValue,
         },
       });
@@ -98,15 +99,17 @@ export function useSwapFees(
       promises.push(
         networkFeeSrc.then(async (val) => {
           if (val == null) return null;
+          const usdValue = await val.usdValue();
           return {
             text: capitalizeFirstLetter(getChainIdentifierForCurrency(val.token)) + ' network fee',
             description: 'Transaction fees on the input network',
             fee: {
               amountInSrcToken: val,
               amountInDstToken: null,
-              usdValue: val.usdValue,
+              currentUsdValue: val.usdValue,
+              usdValue: () => Promise.resolve(usdValue),
             },
-            usdValue: await val.usdValue(),
+            usdValue
           };
         })
       );
@@ -121,15 +124,17 @@ export function useSwapFees(
     if (networkFeeDst != null)
       promises.push(
         networkFeeDst.then(async (val) => {
+          const usdValue = await val.usdValue();
           return {
             text: 'Claim network fee',
             description: 'Transaction fees of the claim transaction on the output network',
             fee: {
               amountInSrcToken: val,
               amountInDstToken: null,
-              usdValue: val.usdValue,
+              currentUsdValue: val.usdValue,
+              usdValue: () => Promise.resolve(usdValue),
             },
-            usdValue: await val.usdValue(),
+            usdValue
           };
         })
       );

@@ -22,7 +22,7 @@
     }
 
     &__out {
-      @apply flex justify-end;
+      @apply flex ms-5;
 
       @media (max-width: 992px) {
         @apply justify-center;

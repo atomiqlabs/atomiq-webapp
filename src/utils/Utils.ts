@@ -115,8 +115,14 @@ export function capitalizeFirstLetter(txt: string) {
   return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
 }
 
-export function timeoutPromise(timeout: number): Promise<void> {
-  return new Promise<void>((resolve) => setTimeout(resolve, timeout));
+export function timeoutPromise(timeoutMillis: number, abortSignal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(resolve, timeoutMillis)
+    if(abortSignal!=null) abortSignal.addEventListener("abort", () => {
+      clearTimeout(timeout);
+      reject(new Error("Aborted"));
+    })
+  });
 }
 
 export function truncateAddress(address: string, startChars: number = 5, endChars: number = 5): string {
@@ -138,4 +144,35 @@ export function shortenNumber(value: number): string {
     return (value / 1_000).toFixed(2).replace(/\.0$/, '') + 'K';
   }
   return value.toString();
+}
+
+export async function tryWithRetries<T>(func: () => Promise<T>, retryPolicy?: {
+  maxRetries?: number, delay?: number, exponential?: boolean
+}, errorAllowed?: (e: any) => boolean, abortSignal?: AbortSignal): Promise<T> {
+  retryPolicy = retryPolicy || {};
+  retryPolicy.maxRetries = retryPolicy.maxRetries || 5;
+  retryPolicy.delay = retryPolicy.delay || 500;
+  retryPolicy.exponential =  retryPolicy.exponential==null ? true : retryPolicy.exponential;
+
+  let err = null;
+
+  for(let i=0;i<retryPolicy.maxRetries;i++) {
+    try {
+      const resp: T = await func();
+      return resp;
+    } catch (e) {
+      if(errorAllowed!=null && errorAllowed(e)) throw e;
+      err = e;
+      console.error("tryWithRetries(): error on try number: "+i, e);
+    }
+    if(abortSignal!=null && abortSignal.aborted) throw new Error("Aborted");
+    if(i!==retryPolicy.maxRetries-1) {
+      await timeoutPromise(
+        retryPolicy.exponential ? retryPolicy.delay*Math.pow(2, i) : retryPolicy.delay,
+        abortSignal
+      );
+    }
+  }
+
+  throw err;
 }

@@ -99,17 +99,19 @@ export function SwapExplorer() {
     if (!stats?.chainData) return [];
     return Object.entries(stats.chainData)
       .filter(([chainId]) => chains[chainId] != null)
+      .sort((a,b) => b[1].volumeUsd - a[1].volumeUsd)
       .map(([chainId, data]: [string, any]) => ({
         name: chains[chainId].chain.name,
         icon: chains[chainId].chain.icon,
         value: data.count,
-      }));
+      }))
   }, [stats, chains]);
 
   const chainBreakdownVolumeData = useMemo(() => {
     if (!stats?.chainData) return [];
     return Object.entries(stats.chainData)
       .filter(([chainId]) => chains[chainId] != null)
+      .sort((a,b) => b[1].volumeUsd - a[1].volumeUsd)
       .map(([chainId, data]: [string, any]) => ({
         name: chains[chainId].chain.name,
         icon: chains[chainId].chain.icon,
@@ -269,7 +271,7 @@ export function SwapExplorer() {
         <BackendDataPaginatedList<ExplorerSwapData>
           renderer={(row) => <TransactionEntry {...explorerSwapToProps(row)} />}
           endpoint={FEConstants.statsUrl + '/GetSwapList'}
-          itemsPerPage={1}
+          itemsPerPage={10}
           refreshFunc={refreshTable}
           additionalData={additionalData}
         />

@@ -13,6 +13,8 @@ import { SwapperContext } from '../../context/SwapperContext';
 import { useAnchorNavigate } from '../../hooks/navigation/useAnchorNavigate';
 import {ChainsConfig} from "../../data/ChainsConfig";
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
+import {useState} from "react";
+import {SettingsModal} from "../modals/SettingsModal";
 
 export function MainNavigation(props: {}) {
   const location = useLocation();
@@ -72,6 +74,8 @@ export function MainNavigation(props: {}) {
     };
   }, [swapper]);
 
+  const [settingsOpened, setSettingsOpened] = useState<boolean>(false);
+
   const navItems = [
     { link: '/', icon: 'swap-nav', title: 'Swap' },
     {
@@ -87,12 +91,22 @@ export function MainNavigation(props: {}) {
     { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
     { link: '/about', icon: 'info', title: 'About' },
     { link: '/faq', icon: 'quesitons', title: 'FAQs' },
+    {
+      link: '/settings',
+      action: (e) => {
+        e.preventDefault();
+        setSettingsOpened(true);
+      },
+      icon: 'menu', title: 'Settings'
+    },
   ];
 
   const anchorNavigate = useAnchorNavigate();
 
   return (
     <Container className="max-width-100">
+      <SettingsModal opened={settingsOpened} close={() => setSettingsOpened(false)}/>
+
       <div>
         <Navbar expand="lg" collapseOnSelect className="main-navigation">
           {isOpen && <div className="main-navigation__overlay" />}
@@ -141,7 +155,7 @@ export function MainNavigation(props: {}) {
                 <Nav.Link
                   key={item.link}
                   href={item.link}
-                  onClick={anchorNavigate}
+                  onClick={item.action ?? anchorNavigate}
                   className={classNames('main-navigation__nav__item', {
                     'is-active': location.pathname === item.link,
                     'is-mobile': index >= 3,
@@ -170,7 +184,7 @@ export function MainNavigation(props: {}) {
                 menuVariant="dark"
               >
                 {navItems.slice(3).map((item) => (
-                  <NavDropdown.Item key={item.link} href={item.link} onClick={anchorNavigate}>
+                  <NavDropdown.Item key={item.link} href={item.link} onClick={item.action ?? anchorNavigate}>
                     <span
                       className={`me-2 main-navigation__item__icon icon icon-${item.icon}`}
                     ></span>

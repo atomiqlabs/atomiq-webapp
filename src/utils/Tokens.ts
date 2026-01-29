@@ -39,7 +39,8 @@ export const TokenIcons: {
   _TESTNET_WBTC_VESU: '/icons/crypto/WBTC.png',
   TBTC: null,
   CBTC: '/icons/crypto/BTC.svg',
-  PBTC: '/icons/crypto/BTC.svg'
+  PBTC: '/icons/crypto/BTC.svg',
+  _PBTC_DEV: '/icons/crypto/BTC.svg'
 };
 
 export const smartChainTokenArray: SCToken[] = [];
