@@ -34,7 +34,7 @@ export const TokenIcons: {
   BONK: '/icons/crypto/BONK.png',
   BTC: '/icons/crypto/BTC.svg',
   BTCLN: '/icons/crypto/BTC.svg',
-  ETH: '/icons/crypto/ETH.png',
+  ETH: '/icons/crypto/ETH.svg',
   STRK: '/icons/crypto/STRK.png',
   _TESTNET_WBTC_VESU: '/icons/crypto/WBTC.png',
   TBTC: null,

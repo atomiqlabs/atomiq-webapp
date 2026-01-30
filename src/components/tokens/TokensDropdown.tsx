@@ -110,7 +110,7 @@ export function TokensDropdown(props: {
                 props.onSelect(token);
               }}
             >
-              <TokenIcon tokenOrTicker={token} className="currency-icon" />
+              <ChainIcon token={token} />
               <div className="sc-ticker">{token.ticker}</div>
               <div className="sc-name">{token.name}</div>
             </Dropdown.Item>
