@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import * as React from 'react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
@@ -6,13 +6,14 @@ import {EVMBrowserSigner, EVMSigner} from '@atomiqlabs/chain-evm';
 import {BrowserProvider} from 'ethers';
 import {Chain} from '../ChainsProvider';
 
-import { createConfig, useAccount, useConnectors, useDisconnect, WagmiProvider} from 'wagmi';
+import {Connector, createConfig, useAccount, useConnectors, useDisconnect, useSwitchChain, WagmiProvider} from 'wagmi';
 import { walletConnect } from 'wagmi/connectors';
 import {citreaChain, citreaChainId} from './evm/CitreaChainSpec';
 import {botanixChain, botanixChainId} from './evm/BotanixChainSpec';
 import {ChainsConfig} from '../../data/ChainsConfig';
 import {alpenChain, alpenChainId} from './evm/AlpenChainSpec';
 import {goatChain, goatChainId} from './evm/GoatChainSpec';
+import {ChainSwitchingSigner} from "./evm/ChainSwitchingSigner";
 
 const overrideIcons: {[walletName: string]: string} = {
   WalletConnect: 'wallets/evm/WalletConnect.svg'
@@ -83,7 +84,12 @@ function useEVMChain(enabled: boolean, chainId: number) {
   if(config==null) return null;
 
   const { disconnect } = useDisconnect();
-  const {connector, isConnected} = useAccount();
+  const {connector, isConnected, chainId: connectedChainId} = useAccount();
+
+  const connectedChainIdRef = useRef<number>();
+  useMemo(() => connectedChainIdRef.current = connectedChainId, [connectedChainId]);
+  const currentConnectorRef = useRef<Connector>();
+  useMemo(() => currentConnectorRef.current = connector, [connector]);
 
   const connectors = useConnectors();
 
@@ -97,7 +103,12 @@ function useEVMChain(enabled: boolean, chainId: number) {
       return new BrowserProvider(provider as any).getSigner();
     }).then(signer => {
       if(cancelled) return;
-      setEvmSigner(new EVMBrowserSigner(signer, signer.address));
+      const _signer = new ChainSwitchingSigner(
+        signer,
+        (chainId: number) => currentConnectorRef.current.switchChain({chainId}).then(() => {}),
+        () => connectedChainIdRef.current
+      );
+      setEvmSigner(new EVMBrowserSigner(_signer, signer.address));
     });
     return () => {
       cancelled = true;

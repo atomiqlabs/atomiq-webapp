@@ -34,12 +34,12 @@ function MultichainWalletMenuItem(props: { wallet: MultichainWallet; className?:
         <div className="wallet-connections__badge">
           <Badge
             id={'dropdown' + props.wallet.name}
-            className="p-0 bg-opacity-50 cursor-pointer align-items-center d-flex flex-row"
+            className="p-0 bg-opacity-50 cursor-pointer align-items-center d-flex flex-row pe-1"
           >
-            <img width={24} height={24} src={props.wallet.icon} />
-            {chains.map((value) => {
+            <img className="mr-0.5" width={24} height={24} src={props.wallet.icon} />
+            {chains.map((value, i) => {
               return (
-                <img className="mx-1" width={18} height={18} key={value.name} src={value.icon} />
+                <img className={i===0 ? "" : "-ml-1"} style={{zIndex: 100-i}} width={18} height={18} key={value.name} src={value.icon} />
               );
             })}
           </Badge>
