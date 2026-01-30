@@ -2,7 +2,7 @@
   @apply rounded-lg py-[16px] px-[20px] flex gap-[12px] items-center;
   border: 1px solid rgba(255, 255, 255, 0.1);
 
-  @media (max-width: 992px) {
+  @media (max-width: 600px) {
     @apply px-[12px];
   }
 
@@ -13,7 +13,7 @@
   &__body {
     @apply text-left;
 
-    @media (max-width: 992px) {
+    @media (max-width: 600px) {
       @apply text-[14px];
     }
   }

@@ -9,7 +9,7 @@
     @apply py-3 px-[20px] rounded-xl;
     background: rgba(255, 255, 255, 0.1);
 
-    @media (max-width: 992px) {
+    @media (max-width: 600px) {
       @apply py-[14px] px-3;
     }
 
@@ -24,7 +24,7 @@
     &__title {
       @apply text-[14px] font-bold uppercase;
 
-      @media (max-width: 992px) {
+      @media (max-width: 600px) {
         @apply text-[12px];
       }
     }
@@ -91,7 +91,7 @@
 
       border: 1px solid rgba(255, 255, 255, 0.2);
 
-      @media (max-width: 992px) {
+      @media (max-width: 600px) {
         @apply h-[40px] w-[40px] text-[15px];
       }
     }
@@ -136,7 +136,7 @@
   &__input {
     @apply border-none !p-0 bg-transparent text-right h-8 min-h-0 appearance-none font-medium !bg-none text-[32px];
 
-    @media (max-width: 992px) {
+    @media (max-width: 600px) {
       @apply text-[24px];
     }
 
@@ -160,7 +160,7 @@
   &__label {
     @apply w-full text-right opacity-50;
 
-    @media (max-width: 992px) {
+    @media (max-width: 600px) {
       @apply text-[12px];
     }
   }
@@ -197,7 +197,7 @@
     &.btn-primary {
       @apply h-[64px] font-semibold;
 
-      @media (max-width: 992px) {
+      @media (max-width: 600px) {
         @apply h-[56px] rounded-[12px];
       }
     }
