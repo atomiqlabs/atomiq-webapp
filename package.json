@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@atomiqlabs/chain-evm": "^2.0.7",
+    "@atomiqlabs/chain-evm": "^2.0.8",
     "@atomiqlabs/chain-solana": "^13.0.9",
     "@atomiqlabs/chain-starknet": "^8.0.11",
     "@atomiqlabs/sdk": "^8.0.8",

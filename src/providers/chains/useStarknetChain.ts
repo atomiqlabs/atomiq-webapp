@@ -90,8 +90,8 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner>
     let cancelled = false;
     (async () => {
       await timeoutPromise(3000);
-      const discoveryWallets = await starknet.getDiscoveryWallets();
       const availableWallets = await starknet.getAvailableWallets();
+      const discoveryWallets = await starknet.getDiscoveryWallets({exclude: availableWallets.map(val => val.id)});
       if (cancelled) return;
       setAvailableWallets(availableWallets);
       setNonInstalledWallet(
