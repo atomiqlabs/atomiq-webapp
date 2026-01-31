@@ -13,15 +13,15 @@ const socialLink = [
     title: 'GitHub',
   },
   {
-    link: 'https://docs.atomiq.exchange/',
-    image: 'gitbook.png',
-    title: 'GitBook',
-  },
-  {
     link: 'https://t.me/+_MQNtlBXQ2Q1MGEy',
     image: 'telegram.png',
     title: 'Telegram',
   },
+  {
+    link: 'https://t.me/atomiq_support',
+    image: 'telegram-support.png',
+    title: 'Talk to support',
+  }
 ];
 
 export function SocialFooter(props: {}) {

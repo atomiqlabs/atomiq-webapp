@@ -1,10 +1,21 @@
 import { Token } from '@atomiqlabs/sdk';
 import * as React from 'react';
-import { useState } from 'react';
 import { ChainIcon } from '../tokens/ChainIcon';
 import { truncateAddress } from '../../utils/Utils';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { ic_check_circle } from 'react-icons-kit/md/*';
+
+const MAX_AMOUNT_CHARS = 10;
+
+function truncateAmount(amountStr: string): string {
+  if(amountStr.length<=MAX_AMOUNT_CHARS) return amountStr;
+  const decimalSeparatorPoint = amountStr.indexOf(".");
+  if(decimalSeparatorPoint>=MAX_AMOUNT_CHARS-1) {
+    const fullIntegerValue = amountStr.split(".")[0];
+    return fullIntegerValue;
+  } else {
+    return amountStr.substring(0, MAX_AMOUNT_CHARS);
+  }
+}
 
 export function TransactionToken(props: {
   token: Token;
@@ -34,7 +45,7 @@ export function TransactionToken(props: {
       <ChainIcon token={props.token} />
       <div className="transaction-token__data">
         <div className="transaction-token__amount">
-          {props.amount} {props.token.ticker || '???'}
+          {truncateAmount(props.amount)} {props.token.ticker || '???'}
         </div>
         <div className="transaction-token__address">
           <>

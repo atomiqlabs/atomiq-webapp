@@ -5,8 +5,10 @@ export function useAnchorNavigate() {
   const navigate = useNavigate();
 
   const onClick = useCallback((e) => {
-    e.preventDefault();
-    navigate(e.currentTarget.attributes.href.value);
+    if(!e.currentTarget.attributes.href.value.startsWith('http')) {
+      e.preventDefault();
+      navigate(e.currentTarget.attributes.href.value)
+    };
   }, []);
 
   return onClick;

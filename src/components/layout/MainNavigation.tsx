@@ -89,15 +89,15 @@ export function MainNavigation(props: {}) {
       count: actionRequiredCount > 0 ? actionRequiredCount : undefined,
     },
     { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
-    { link: '/about', icon: 'info', title: 'About' },
-    { link: '/faq', icon: 'quesitons', title: 'FAQs' },
+    { link: 'https://docs.atomiq.exchange/', icon: 'book', title: 'Docs' },
+    { link: 'https://npmjs.com/@atomiqlabs/sdk', icon: 'embed2', title: 'SDK' },
     {
       link: '/settings',
       action: (e) => {
         e.preventDefault();
         setSettingsOpened(true);
       },
-      icon: 'menu', title: 'Settings'
+      icon: 'cog', title: 'Settings'
     },
   ];
 
