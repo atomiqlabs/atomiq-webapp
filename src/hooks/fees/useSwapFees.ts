@@ -39,7 +39,7 @@ export function useSwapFees(
   fees: FeeDetails[];
   totalUsdFee: number;
 } {
-  const bitcoinWallet: Chain<ExtensionBitcoinWallet>["wallet"] = useWallet('BITCOIN');
+  const bitcoinWallet: Chain<ExtensionBitcoinWallet>["wallet"] = useWallet('BITCOIN', true);
 
   const fees = useMemo(() => {
     if (swap == null) return null;

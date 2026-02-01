@@ -29,7 +29,7 @@ export function useLightningNetwork(enabled: boolean): Chain<WebLNProvider> {
         //Connect LNURL-withdrawal pseudo-wallet
         setWallet({
           name: truncateAddress(lnurl.params.url),
-          icon: '/wallets/WebLN.png', //TODO: Use different icon for LNURLs
+          icon: '/wallets/lnurl.svg',
           getSwapLimits: (input: boolean, token: Token) => {
             if(!input || !isBtcToken(token) || !token.lightning) return null;
             return {
@@ -62,7 +62,6 @@ export function useLightningNetwork(enabled: boolean): Chain<WebLNProvider> {
     }
     const params = new URLSearchParams(search);
     const swapId = params.get('swapId');
-    console.log("useLightningNetwork(): "+pathname);
     if(swapId!=null) {
       setWasInSwap(true);
     } else {

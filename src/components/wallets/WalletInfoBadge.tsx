@@ -54,7 +54,7 @@ export function WalletInfoBadge({
     return (
       <div className="wallet-connections wallet-connections__simple">
         <img width={16} height={16} src={wallet.icon} alt={wallet.name} />
-        {!isLightning ? (
+        {wallet.address!=null ? (
           <>
             {maxSpendable?.amount ? (
               <>
@@ -77,7 +77,7 @@ export function WalletInfoBadge({
           </>
         ) : (
           <div className="wallet-connections__amount">
-            {wallet?.name}
+            {wallet.name}
           </div>
         )}
         <div className="wallet-connections__simple__disconnect">
