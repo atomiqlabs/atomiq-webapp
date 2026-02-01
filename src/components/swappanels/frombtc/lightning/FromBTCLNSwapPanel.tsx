@@ -69,16 +69,29 @@ export function FromBTCLNSwapPanel(props: {
         {gasAlert}
 
         {!!page.step1init.init && (
-          <ButtonWithWallet
-            requiredWalletAddress={props.quote._getInitiator()}
-            chainId={props.quote?.chainIdentifier}
-            className="swap-panel__action"
-            onClick={page.step1init.init?.onClick}
-            disabled={page.step1init.init?.disabled}
-            size="lg"
-          >
-            Swap
-          </ButtonWithWallet>
+          <>
+            {page.step1init.requiresSmartChainWallet ? (
+              <ButtonWithWallet
+                requiredWalletAddress={props.quote._getInitiator()}
+                chainId={props.quote?.chainIdentifier}
+                className="swap-panel__action"
+                onClick={page.step1init.init?.onClick}
+                disabled={page.step1init.init?.disabled}
+                size="lg"
+              >
+                Swap
+              </ButtonWithWallet>
+            ) : (
+              <BaseButton
+                className="swap-panel__action"
+                onClick={page.step1init.init?.onClick}
+                disabled={page.step1init.init?.disabled}
+                size="lg"
+              >
+                Swap
+              </BaseButton>
+            )}
+          </>
         )}
       </>
     );

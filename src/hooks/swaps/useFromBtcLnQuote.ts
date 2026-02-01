@@ -1,26 +1,25 @@
 import {FromBTCLNAutoSwap, FromBTCLNSwap, FromBTCLNSwapState, ISwap, SwapType, TokenAmount} from '@atomiqlabs/sdk';
-import { useContext, useEffect, useMemo, useState } from 'react';
-import { useStateRef } from '../utils/useStateRef';
-import { useAbortSignalRef } from '../utils/useAbortSignal';
-import { useAsync } from '../utils/useAsync';
-import { SingleStep } from '../../components/swaps/StepByStep';
-import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
-import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
-import { ic_flash_on_outline } from 'react-icons-kit/md/ic_flash_on_outline';
-import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
-import { ic_watch_later_outline } from 'react-icons-kit/md/ic_watch_later_outline';
-import { ic_swap_horiz } from 'react-icons-kit/md/ic_swap_horiz';
-import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
-import { ic_download_outline } from 'react-icons-kit/md/ic_download_outline';
-import { timeoutPromise } from '../../utils/Utils';
-import { useSmartChainWallet } from '../wallets/useSmartChainWallet';
-import { useChain } from '../chains/useChain';
-import { useLocalStorage } from '../utils/useLocalStorage';
-import { ChainsContext } from '../../context/ChainsContext';
-import { useNFCScanner } from '../nfc/useNFCScanner';
-import { SwapperContext } from '../../context/SwapperContext';
-import { NFCStartResult } from '../../utils/NFCReader';
-import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
+import {useContext, useEffect, useMemo, useState} from 'react';
+import {useStateRef} from '../utils/useStateRef';
+import {useAbortSignalRef} from '../utils/useAbortSignal';
+import {useAsync} from '../utils/useAsync';
+import {SingleStep} from '../../components/swaps/StepByStep';
+import {ic_hourglass_top_outline} from 'react-icons-kit/md/ic_hourglass_top_outline';
+import {ic_refresh} from 'react-icons-kit/md/ic_refresh';
+import {ic_flash_on_outline} from 'react-icons-kit/md/ic_flash_on_outline';
+import {ic_hourglass_disabled_outline} from 'react-icons-kit/md/ic_hourglass_disabled_outline';
+import {ic_watch_later_outline} from 'react-icons-kit/md/ic_watch_later_outline';
+import {ic_swap_horiz} from 'react-icons-kit/md/ic_swap_horiz';
+import {ic_check_outline} from 'react-icons-kit/md/ic_check_outline';
+import {timeoutPromise} from '../../utils/Utils';
+import {useSmartChainWallet} from '../wallets/useSmartChainWallet';
+import {useChain} from '../chains/useChain';
+import {useLocalStorage} from '../utils/useLocalStorage';
+import {ChainsContext} from '../../context/ChainsContext';
+import {useNFCScanner} from '../nfc/useNFCScanner';
+import {SwapperContext} from '../../context/SwapperContext';
+import {NFCStartResult} from '../../utils/NFCReader';
+import {ic_receipt} from 'react-icons-kit/md/ic_receipt';
 import {SwapPageUIState} from "../pages/useSwapPage";
 import {Chain} from "../../providers/ChainsProvider";
 import {WebLNProvider} from "webln";
@@ -32,6 +31,8 @@ export type FromBtcLnQuotePage = {
   //Additional gas required to go through with the swap, used for the not enough for gas notice
   additionalGasRequired?: TokenAmount;
   step1init?: {
+    //Need to connect any smart chain wallet at all
+    requiresSmartChainWallet: boolean;
     //Need to connect a smart chain wallet with the same address as in quote
     invalidSmartChainWallet: boolean;
     //Initiate the swap
@@ -406,6 +407,7 @@ export function useFromBtcLnQuote(
   const step1init = useMemo(() => {
     if (!isCreated || isInitiated) return;
     return {
+      requiresSmartChainWallet: quote?.getType()===SwapType.FROM_BTCLN,
       invalidSmartChainWallet: smartChainWallet === undefined,
       init: !additionalGasRequired ? {
         onClick: () => {
@@ -432,6 +434,7 @@ export function useFromBtcLnQuote(
     totalQuoteTime,
     additionalGasRequired,
     lightningWallet,
+    quote
   ]);
 
   const step2paymentWait = useMemo(() => {
