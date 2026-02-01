@@ -14,6 +14,7 @@ import { TrustedFromBTCLNSwapPanel } from '../components/swappanels/frombtc/trus
 import { SwapStepAlert } from '../components/swaps/SwapStepAlert';
 import { BaseButton } from '../components/common/BaseButton';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
+import {useWallet} from "../hooks/wallets/useWallet";
 
 const defaultSwapAmount = '12500000';
 
@@ -30,16 +31,16 @@ export function SwapForGas() {
   const nativeCurrency = swapper == null ? null : swapper.Utils.getNativeToken(chainId);
   const amount = BigInt(state?.amount ?? defaultSwapAmount);
 
-  const outputChainData: Chain<AbstractSigner> = useChain(nativeCurrency);
+  const outputWallet: Chain<AbstractSigner>["wallet"] = useWallet(nativeCurrency, false);
 
   const [createSwap, loading, swapData, error] = useAsync(() => {
-    if (swapper == null || outputChainData?.wallet == null) return null;
+    if (swapper == null || outputWallet == null) return null;
     return swapper.createTrustedLNForGasSwap(
       chainId,
-      outputChainData.wallet.instance.getAddress(),
+      outputWallet.instance.getAddress(),
       amount
     );
-  }, [swapper, outputChainData?.wallet, chainId]);
+  }, [swapper, outputWallet, chainId]);
 
   useEffect(() => {
     createSwap();

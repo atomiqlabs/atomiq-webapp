@@ -8,6 +8,7 @@ import { BaseButton, BaseButtonVariantProps } from '../common/BaseButton';
 import { WalletBalanceResult } from '../../hooks/wallets/useWalletBalance';
 import { useContext } from 'react';
 import { ChainsContext } from '../../context/ChainsContext';
+import {useWallet} from "../../hooks/wallets/useWallet";
 
 const ConnectedWallet = React.forwardRef<any, any>(({ name, onClick, noText }, _ref) => (
   <BaseButton
@@ -29,6 +30,7 @@ export function WalletInfoBadge({
   simple = false,
   maxSpendable,
   setMax,
+  input,
 }: {
   className?: string;
   noText?: boolean;
@@ -37,8 +39,10 @@ export function WalletInfoBadge({
   variantButton?: BaseButtonVariantProps;
   maxSpendable?: TokenAmount;
   setMax?: () => void;
+  input?: boolean;
 }) {
-  const { wallet, hasWallets, chainId } = useChain(currency);
+  const { hasWallets, chainId } = useChain(currency);
+  const wallet = useWallet(currency, input);
   const { connectWallet, disconnectWallet, changeWallet } = useContext(ChainsContext);
 
   if (wallet == null && hasWallets == null) {
@@ -50,7 +54,7 @@ export function WalletInfoBadge({
     return (
       <div className="wallet-connections wallet-connections__simple">
         <img width={16} height={16} src={wallet.icon} alt={wallet.name} />
-        {!isLightning && (
+        {wallet.address!=null ? (
           <>
             {maxSpendable?.amount ? (
               <>
@@ -71,6 +75,10 @@ export function WalletInfoBadge({
               <div className="wallet-connections__amount is-loading"></div>
             )}
           </>
+        ) : (
+          <div className="wallet-connections__amount">
+            {wallet.name}
+          </div>
         )}
         <div className="wallet-connections__simple__disconnect">
           <OverlayTrigger overlay={<Tooltip>Disconnect wallet</Tooltip>}>

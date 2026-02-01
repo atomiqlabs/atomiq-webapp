@@ -17,6 +17,7 @@ import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
 import { ic_swap_horizontal_circle_outline } from 'react-icons-kit/md/ic_swap_horizontal_circle_outline';
 import { ic_verified_outline } from 'react-icons-kit/md/ic_verified_outline';
 import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
+import {useWallet} from "../wallets/useWallet";
 
 export type TrustedFromBtcLnQuotePage = {
   executionSteps?: SingleStep[];
@@ -80,7 +81,7 @@ export function useTrustedFromBtcLnQuote(
   quote: LnForGasSwap<any>
 ): TrustedFromBtcLnQuotePage {
   const { connectWallet, disconnectWallet } = useContext(ChainsContext);
-  const lightningWallet = useChain('LIGHTNING')?.wallet;
+  const lightningWallet = useWallet('LIGHTNING', true);
   const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote);
 
   const [pay, payLoading, payResult, payError] = useAsync(

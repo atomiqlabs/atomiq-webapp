@@ -68,6 +68,7 @@ export function SwapNew() {
                         currency={swapPage.input.token.value}
                         variantButton="clear"
                         maxSpendable={swapPage.input.wallet?.spendable}
+                        input={true}
                       />
                     </div>
                   </div>
@@ -78,6 +79,7 @@ export function SwapNew() {
                       simple={true}
                       currency={swapPage.input.token.value}
                       variantButton="clear"
+                      input={true}
                     />
                   </div>
                 )}
@@ -160,6 +162,7 @@ export function SwapNew() {
                       currency={swapPage.output.token.value}
                       variantButton="clear"
                       maxSpendable={swapPage.output.wallet?.balance}
+                      input={false}
                     />
                   </div>
                 </div>

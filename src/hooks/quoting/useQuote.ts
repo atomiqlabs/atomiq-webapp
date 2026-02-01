@@ -21,6 +21,7 @@ import { FEConstants } from '../../FEConstants';
 import randomBytes from 'randombytes';
 import { toTokenIdentifier } from '../../utils/Tokens';
 import {ChainsConfig} from "../../data/ChainsConfig";
+import {useWallet} from "../wallets/useWallet";
 
 const btcFeeMaxOffset = 3;
 const btcFeeMaxMultiple = 1.5;
@@ -53,15 +54,15 @@ export function useQuote(
 ): [() => void, ISwap, boolean, boolean, any] {
   const { swapper } = useContext(SwapperContext);
 
-  const inputChain = useChain(inToken);
-  let inputAddress: string | LNURLWithdraw = inputChain?.wallet?.address;
+  const inputWallet = useWallet(inToken, true);
+  let inputAddress: string | LNURLWithdraw = inputWallet?.instance?._lnurl ?? inputWallet?.address;
   if (inToken != null && isBtcToken(inToken) && inToken.lightning && isLNURLWithdraw(address)) {
     inputAddress = address;
     address = null;
   }
 
-  const outputChain = useChain(outToken);
-  address ??= outputChain?.wallet?.address;
+  const outputWallet = useWallet(outToken, false);
+  address ??= outputWallet?.address;
 
   const swapType = useMemo(() => {
     if (swapper != null && inToken != null && outToken != null)

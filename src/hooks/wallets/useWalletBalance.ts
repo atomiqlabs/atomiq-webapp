@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import { SwapperContext } from '../../context/SwapperContext';
 import { useStateRef } from '../utils/useStateRef';
 import { useChain } from '../chains/useChain';
+import {useWallet} from "./useWallet";
 
 export type WalletBalanceResult = {
   balance: TokenAmount;
@@ -15,10 +16,11 @@ export function useWalletBalance(
   swapChainId?: string,
   requestGasDrop?: boolean,
   pause?: boolean,
-  minBtcFeeRate?: number
+  minBtcFeeRate?: number,
+  input?: boolean
 ): WalletBalanceResult {
   const { swapper } = useContext(SwapperContext);
-  const chain = useChain(currency);
+  const wallet = useWallet(currency, input);
 
   const pauseRef = useStateRef(pause);
 
@@ -32,21 +34,21 @@ export function useWalletBalance(
 
     if (currency == null || (isBtcToken(currency) && currency.lightning)) return;
     if (swapper == null) return;
-    if (chain == null || chain.wallet?.instance == null) return;
+    if (wallet?.instance == null) return;
 
     let canceled = false;
 
     let getBalance: () => Promise<{ balance: TokenAmount; feeRate?: number }>;
     if (isBtcToken(currency)) {
       getBalance = () =>
-        swapper.Utils.getBitcoinSpendableBalance(chain.wallet.instance, swapChainId, {
+        swapper.Utils.getBitcoinSpendableBalance(wallet.instance, swapChainId, {
           gasDrop: requestGasDrop,
           minFeeRate: minBtcFeeRate,
         });
     } else if (isSCToken(currency)) {
       getBalance = async () => {
         return {
-          balance: await swapper.Utils.getSpendableBalance(chain.wallet.instance, currency, {
+          balance: await swapper.Utils.getSpendableBalance(wallet.instance, currency, {
             feeMultiplier: 1.5,
           }),
         };
@@ -70,7 +72,7 @@ export function useWalletBalance(
     };
   }, [
     swapper,
-    chain?.wallet,
+    wallet,
     currency?.chain,
     currency?.ticker,
     (currency as any)?.chainId,

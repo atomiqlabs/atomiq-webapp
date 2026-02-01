@@ -82,7 +82,7 @@ export function useToBtcQuote(
   inputWalletBalance?: bigint
 ): ToBtcPage {
   const additionalGasRequired = useCheckAdditionalGas(quote);
-  const wallet = useSmartChainWallet(quote, true);
+  const wallet = useSmartChainWallet(quote, true, true);
 
   const UICallbackRef = useStateRef(UICallback);
 
