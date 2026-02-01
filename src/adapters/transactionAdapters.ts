@@ -146,7 +146,7 @@ export function explorerSwapToProps(data: ExplorerSwapData): TransactionEntryPro
     inputToken = TokenResolver[data.chainId].getToken(data.token);
     inputAmount = toHumanReadableString(BigInt(data.rawAmount), inputToken);
     inputAddress = data.clientWallet;
-    inputTxId = data.txInit;
+    inputTxId = data.txFinish ?? data.txInit;
 
     // Output is BTC
     outputToken = data.type === 'CHAIN' ? Tokens.BITCOIN.BTC : Tokens.BITCOIN.BTCLN;
@@ -167,7 +167,7 @@ export function explorerSwapToProps(data: ExplorerSwapData): TransactionEntryPro
     outputToken = TokenResolver[data.chainId].getToken(data.token);
     outputAmount = toHumanReadableString(BigInt(data.rawAmount), outputToken);
     outputAddress = data.clientWallet;
-    outputTxId = data.txInit;
+    outputTxId = data.txFinish ?? data.txInit;
   }
 
   const inputExplorer = isSCToken(inputToken)
