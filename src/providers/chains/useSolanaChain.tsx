@@ -62,14 +62,14 @@ export function useSolanaChain(enabled: boolean): Chain<SolanaSigner> {
               address: wallet.adapter?.publicKey?.toBase58(),
             },
       installedWallets: availableWallets
-        .filter((w) => w.readyState === 'Installed')
+        .filter((w) => w.readyState === 'Loadable' || w.readyState === 'Installed')
         .map((w) => ({
           name: w.adapter.name,
           icon: w.adapter.icon,
           isConnected: w.adapter.name === wallet?.adapter?.name,
         })),
       nonInstalledWallets: availableWallets
-        .filter((w) => w.readyState === 'Loadable' || w.readyState === 'NotDetected')
+        .filter((w) => w.readyState === 'NotDetected')
         .map((w) => ({
           name: w.adapter.name,
           icon: w.adapter.icon,
