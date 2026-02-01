@@ -15,7 +15,7 @@ export function TransactionEntry(props: TransactionEntryProps) {
 
   const usdValueHook = usePricing(props.outputAmount, !props.usdValue ? props.outputToken : undefined);
   const usdValue = !!props.usdValue
-    ? `$${props.usdValue}`
+    ? FEConstants.USDollar.format(props.usdValue)
     : usdValueHook != null
       ? FEConstants.USDollar.format(usdValueHook)
       : null;

@@ -174,7 +174,7 @@ export function useSwapPage(): SwapPageState {
   const inputChainData = useChain(inputToken);
   const inputWallet = useWallet(inputToken, true);
   const outputChainData = useChain(outputToken);
-  const outputWallet = useWallet(inputToken, false);
+  const outputWallet = useWallet(outputToken, false);
 
   const inputTokenStep = useMemo(() => {
     if (inputToken == null) return new BigNumber('0.00000001');
@@ -249,7 +249,7 @@ export function useSwapPage(): SwapPageState {
       console.log('SwapNew(): Disconnecting wallet: ' + outputChainData.wallet.name);
       disconnectWallet(outputChainData.chainId);
     }
-    console.log('SwapNew(): Using token based on the address: ' + token.ticker);
+    console.log(`SwapNew(): Using token based on the ${addressData.address} address: ` + token.ticker);
     setOutputToken(token, false);
   });
 

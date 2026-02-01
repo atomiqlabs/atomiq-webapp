@@ -38,7 +38,7 @@ export interface TransactionEntryProps {
   direction: SwapDirection;
 
   // Pricing info
-  usdValue?: string;
+  usdValue?: number;
 }
 
 /**
@@ -92,6 +92,8 @@ export function swapToProps(swap: ISwap): TransactionEntryProps {
     refundable,
     claimable,
     direction: swap.getDirection(),
+
+    usdValue: swap.getInput()?.pastUsdValue ?? swap.getOutput()?.pastUsdValue
   };
 }
 
@@ -205,6 +207,6 @@ export function explorerSwapToProps(data: ExplorerSwapData): TransactionEntryPro
     claimable: false,
     direction,
 
-    usdValue: data.usdValue
+    usdValue: parseFloat(data.usdValue)
   };
 }
