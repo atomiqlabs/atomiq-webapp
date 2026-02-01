@@ -32,24 +32,6 @@ export function SwapNew() {
       />
 
       <div className="swap-panel">
-        {/*TODO: We need a better way to show the error when quoting*/}
-        <SwapStepAlert
-          type="error"
-          icon={ic_warning}
-          title="Quote error"
-          description={
-            swapPage.quote.error?.message ?? 'An error occurred while fetching the quote'
-          }
-          error={swapPage.quote.error}
-          show={swapPage.quote.error != null}
-          className="swap-panel__error mb-4"
-          action={{
-            type: 'button',
-            text: 'Retry',
-            onClick: swapPage.quote.refresh,
-            variant: 'secondary',
-          }}
-        />
         {swapPage.hideUI ? null : (
           <>
             <div className="swap-panel__card">
@@ -367,6 +349,18 @@ export function SwapNew() {
                   swap={swapPage.quote.quote}
                   btcFeeRate={swapPage.input.wallet?.btcFeeRate}
                 />
+              ) : swapPage.quote.error ? (
+                <SwapStepAlert
+                  type="error"
+                  icon={ic_warning}
+                  title="Quote error"
+                  description={
+                    swapPage.quote.error?.message ?? 'An error occurred while fetching the quote'
+                  }
+                  error={swapPage.quote.error}
+                  show={swapPage.quote.error != null}
+                  className="swap-panel__error mb-4"
+                />
               ) : (
                 <PlaceholderFeePanel
                   inputToken={swapPage.input.token.value}
@@ -374,9 +368,15 @@ export function SwapNew() {
                 />
               )}
             </div>
-            <BaseButton variant="primary" className="swap-panel__action" disabled={true} size="lg">
-              {swapPage.swapButtonHint}
-            </BaseButton>
+            {swapPage.quote.error ? (
+              <BaseButton variant="secondary" className="swap-panel__action" onClick={() => swapPage.quote.refresh()} size="lg">
+                Retry
+              </BaseButton>
+            ) : (
+              <BaseButton variant="primary" className="swap-panel__action" disabled={true} size="lg">
+                {swapPage.swapButtonHint}
+              </BaseButton>
+            )}
           </>
         )}
       </div>
