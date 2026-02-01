@@ -5,12 +5,14 @@ import { useContext } from 'react';
 
 export function useSmartChainWallet(
   swap: ISwap,
-  requireSameAsInitiator?: boolean
+  requireSameAsInitiator?: boolean,
+  input?: boolean
 ): Chain<AbstractSigner>['wallet'] {
   const chainsData = useContext(ChainsContext);
   const wallet: Chain<AbstractSigner>['wallet'] =
     chainsData.chains[swap.chainIdentifier].wallet;
   if (wallet == null) return undefined;
+  if (input===false && wallet.onlyInput) return undefined;
   if (requireSameAsInitiator) {
     if (wallet?.instance?.getAddress() !== swap._getInitiator()) return null;
   }

@@ -74,13 +74,13 @@ function WrappedApp() {
 function App() {
   return (
     <div className="App d-flex flex-column">
-      <ChainsProvider>
-        <BrowserRouter>
+      <BrowserRouter>
+        <ChainsProvider>
           <SwapperProvider>
             <WrappedApp />
           </SwapperProvider>
-        </BrowserRouter>
-      </ChainsProvider>
+        </ChainsProvider>
+      </BrowserRouter>
     </div>
   );
 }

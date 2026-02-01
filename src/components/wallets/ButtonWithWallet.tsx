@@ -2,6 +2,7 @@ import { useContext } from 'react';
 import { ChainsContext } from '../../context/ChainsContext';
 import { Chain } from '../../providers/ChainsProvider';
 import { BaseButton, BaseButtonVariantProps } from '../common/BaseButton';
+import {useWallet} from "../../hooks/wallets/useWallet";
 
 export function ButtonWithWallet(props: {
   chainId: string;
@@ -14,16 +15,16 @@ export function ButtonWithWallet(props: {
   className?: string;
 }) {
   const chainData = useContext(ChainsContext);
-  const requestedChain: Chain<any> = chainData.chains[props.chainId];
-  const isWalletConnected = requestedChain?.wallet != null;
+  const requestedChainWallet = useWallet(props.chainId);
+  const isWalletConnected = requestedChainWallet != null;
   const isCorrectWalletConnected =
     props.requiredWalletAddress == null ||
-    requestedChain?.wallet?.address === props.requiredWalletAddress;
+    requestedChainWallet?.address === props.requiredWalletAddress;
 
   return (
     <BaseButton
       onClick={() => {
-        if (requestedChain != null && !isWalletConnected) {
+        if (!isWalletConnected) {
           chainData.connectWallet(props.chainId);
         } else {
           props.onClick();

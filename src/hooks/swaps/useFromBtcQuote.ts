@@ -26,6 +26,7 @@ import {TxDataType} from "../../types/swaps/TxDataType";
 import {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {useSwapState} from "./helpers/useSwapState";
 import {useCheckAdditionalGas} from "./helpers/useCheckAdditionalGas";
+import {useWallet} from "../wallets/useWallet";
 
 export type FromBtcQuotePage = {
   executionSteps?: SingleStep[];
@@ -139,10 +140,9 @@ export function useFromBtcQuote(
   inputWalletBalance?: bigint
 ): FromBtcQuotePage {
   const { disconnectWallet, connectWallet } = useContext(ChainsContext);
-  const bitcoinChainData = useChain('BITCOIN');
-  const bitcoinWallet = bitcoinChainData.wallet;
-  const smartChainWallet = useSmartChainWallet(quote, true);
-  const smartChainWalletClaimer = useSmartChainWallet(quote, false);
+  const bitcoinWallet = useWallet('BITCOIN', true);
+  const smartChainWallet = useSmartChainWallet(quote, true, false);
+  const smartChainWalletClaimer = useSmartChainWallet(quote, false, false);
 
   const UICallbackRef = useStateRef(UICallback);
 
@@ -171,26 +171,26 @@ export function useFromBtcQuote(
   const [payBitcoin, payLoading, payTxId, payError] = useAsync(
     () =>
       quote.sendBitcoinTransaction(
-        bitcoinChainData.wallet.instance,
+        bitcoinWallet.instance,
         feeRate === 0 ? null : feeRate
       ),
-    [bitcoinChainData.wallet, feeRate, quote]
+    [bitcoinWallet, feeRate, quote]
   );
 
   const [callPayFlag, setCallPayFlag] = useState<boolean>(false);
   useEffect(() => {
     if (!callPayFlag) return;
     setCallPayFlag(false);
-    if (!bitcoinChainData.wallet) return;
+    if (!bitcoinWallet) return;
     payBitcoin();
-  }, [callPayFlag, bitcoinChainData.wallet, payBitcoin]);
+  }, [callPayFlag, bitcoinWallet, payBitcoin]);
 
   const [onCommit, commitLoading, commitSuccess, commitError] = useAsync(async () => {
     if(UICallbackRef.current) UICallbackRef.current(quote, "lock");
     try {
       const commitTxId = await quote.commit(smartChainWallet.instance);
       if(UICallbackRef.current) UICallbackRef.current(quote, "hide");
-      if (bitcoinChainData.wallet != null) payBitcoin();
+      if (bitcoinWallet != null) payBitcoin();
       return commitTxId;
     } catch (e) {
       if(UICallbackRef.current) {

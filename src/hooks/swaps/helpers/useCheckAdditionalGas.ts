@@ -4,12 +4,12 @@ import {useWithAwait} from "../../utils/useWithAwait";
 import {IEscrowSelfInitSwap, isSCToken, ISwap, TokenAmount, toTokenAmount} from "@atomiqlabs/sdk";
 import {SwapperContext} from "../../../context/SwapperContext";
 import {ChainsConfig} from "../../../data/ChainsConfig";
+import {useWallet} from "../../wallets/useWallet";
 
 
 export function useCheckAdditionalGas(quote: ISwap) {
   const {swapper} = useContext(SwapperContext);
-  const chainsData = useContext(ChainsContext);
-  const smartChain = chainsData.chains[quote.chainIdentifier];
+  const smartChainWallet = useWallet(quote.chainIdentifier);
 
   const [additionalGasTokensNeeded] = useWithAwait(async () => {
     if (swapper == null) return;
@@ -27,7 +27,7 @@ export function useCheckAdditionalGas(quote: ISwap) {
       return;
     }
     if (!result.enoughBalance) {
-      if (smartChain.wallet?.address == address && isSCToken(result.required.token)) {
+      if (smartChainWallet?.address == address && isSCToken(result.required.token)) {
         const token = result.required.token;
         const optimalAmount: bigint = ChainsConfig[token.chainId]?.assetBalances?.[token.address]?.optimal;
         console.log("useCheckAdditionalGas(): optimalAmount: ", optimalAmount, token);
@@ -38,7 +38,7 @@ export function useCheckAdditionalGas(quote: ISwap) {
         return toTokenAmount(amountDelta, result.required.token, swapper.prices);
       }
     }
-  }, [quote, smartChain, swapper]);
+  }, [quote, smartChainWallet, swapper]);
 
   return additionalGasTokensNeeded;
 }

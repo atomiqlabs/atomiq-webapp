@@ -12,6 +12,7 @@ import {ConnectWalletModal} from '../components/wallets/ConnectWalletModal';
 import { EVMSigner } from '@atomiqlabs/chain-evm';
 import {EVMWalletWrapper, useAlpenChain, useBotanixChain, useCitreaChain, useGoatChain} from './chains/useEVMChains';
 import {ChainsConfig} from '../data/ChainsConfig';
+import {Token} from "@atomiqlabs/sdk";
 
 export type WalletListData = {
   name: string;
@@ -29,13 +30,15 @@ export type Chain<T> = {
     name: string;
     icon: string;
     address?: string;
+    getSwapLimits?: (input: boolean, token: Token) => {min?: bigint, max?: bigint};
+    onlyInput?: boolean;
     instance: T;
   };
   installedWallets: Array<WalletListData & { isConnected?: boolean }>;
   nonInstalledWallets: Array<WalletListData>;
   chainId: string;
   _disconnect: () => Promise<void> | void;
-  _connectWallet: (walletName: string) => Promise<void> | void;
+  _connectWallet: (walletName: string, ...data: any[]) => Promise<void> | void;
   hasWallets: boolean;
 };
 

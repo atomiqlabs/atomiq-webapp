@@ -7,7 +7,7 @@ import {
   fromTokenIdentifier,
   getChainIdentifierForCurrency,
   includesToken,
-  smartChainTokenArray,
+  smartChainTokenArray, toHumanReadable,
 } from '../../utils/Tokens';
 import {
   fromHumanReadableString,
@@ -39,6 +39,7 @@ import {useExistingSwap} from '../quoting/useExistingSwap';
 import {ChainsConfig} from "../../data/ChainsConfig";
 import {Tokens} from "../../providers/SwapperProvider";
 import {useStateRef} from "../utils/useStateRef";
+import {useWallet} from "../wallets/useWallet";
 
 export type SwapPageUIState = 'show' | 'lock' | 'hide';
 
@@ -171,7 +172,9 @@ export function useSwapPage(): SwapPageState {
       : null;
 
   const inputChainData = useChain(inputToken);
+  const inputWallet = useWallet(inputToken, true);
   const outputChainData = useChain(outputToken);
+  const outputWallet = useWallet(inputToken, false);
 
   const inputTokenStep = useMemo(() => {
     if (inputToken == null) return new BigNumber('0.00000001');
@@ -189,7 +192,7 @@ export function useSwapPage(): SwapPageState {
   //Address
   const [addressFromWebLn, setAddressFromWebLn] = useState<string>(null);
   const [_address, setAddress] = useState<string>(null);
-  const address = outputChainData?.wallet?.address ?? _address;
+  const address = outputWallet?.address ?? _address;
   const [addressData, addressLoading, addressError] = useAddressData(address, (addressData) => {
     if (addressData?.type == null) return;
     let token: Token;
@@ -199,8 +202,16 @@ export function useSwapPage(): SwapPageState {
         break;
       case 'LNURL':
         if (addressData.lnurl.type === 'withdraw') {
-          //TODO: Navigate to scan!
-          //navigate('/scan/2?address=' + encodeURIComponent(address));
+          if(chains.LIGHTNING==null) return 'Address not supported for swaps!';
+          chains.LIGHTNING._connectWallet("LNURL", addressData.lnurl);
+          token = swapper.getSupportedTokens(true).find((val) => isBtcToken(val) && val.lightning);
+          if (token == null) return 'Address not supported for swaps!';
+          const counterTokens = swapper.getSwapCounterTokens(token, true);
+          if (counterTokens.length === 0) return 'Address not supported for swaps!';
+          setInputToken(token);
+          setAddress("");
+          setExactIn(true);
+          setAmount((addressData?.amount ?? addressData?.max).amount);
           return;
         }
       case 'LIGHTNING':
@@ -244,7 +255,7 @@ export function useSwapPage(): SwapPageState {
 
   //WebLN
   const webLnForOutput =
-    outputChainData?.chainId === 'LIGHTNING' && outputChainData?.wallet != null;
+    outputChainData?.chainId === 'LIGHTNING' && outputWallet != null;
   useEffect(() => {
     if (!webLnForOutput) {
       setAddressFromWebLn(null);
@@ -400,16 +411,27 @@ export function useSwapPage(): SwapPageState {
 
   //Swap limits
   const inputLimits = useMemo(() => {
-    if (maxSpendable?.balance == null) return swapInputLimits;
+    let limits = {...swapInputLimits};
+    if (inputWallet?.getSwapLimits!=null) {
+      const walletLimits = inputWallet?.getSwapLimits(true, inputToken);
+      if(walletLimits!=null) {
+        if(walletLimits.min!=null) {
+          const walletLimitMin = toHumanReadable(walletLimits.min, inputToken);
+          limits.min = limits.min==null ? walletLimitMin : BigNumber.max(limits.min, walletLimitMin);
+        }
+        if(walletLimits.max!=null) {
+          const walletLimitMax = toHumanReadable(walletLimits.max, inputToken);
+          limits.max = limits.max==null ? walletLimitMax : BigNumber.min(limits.max, walletLimitMax);
+        }
+      }
+    }
+    if (maxSpendable?.balance == null) return limits;
     const maxSpendableBigNum = new BigNumber(maxSpendable.balance.amount);
-    return {
-      min: swapInputLimits.min,
-      max:
-        swapInputLimits.max == null
-          ? maxSpendableBigNum
-          : BigNumber.min(swapInputLimits.max, maxSpendableBigNum),
-    };
-  }, [swapInputLimits, maxSpendable]);
+    limits.max = limits.max == null
+      ? maxSpendableBigNum
+      : BigNumber.min(limits.max, maxSpendableBigNum);
+    return limits;
+  }, [inputToken, swapInputLimits, maxSpendable, inputWallet]);
   const inputAmountValidator = useCallback(numberValidator(inputLimits, true), [inputLimits]);
 
   const outputLimits = useMemo(() => {
@@ -466,14 +488,14 @@ export function useSwapPage(): SwapPageState {
         randomQuote ? address : quote.getOutputAddress(),
         exactIn ? amount : quote.getInput()?.amount,
         !exactIn ? amount : quote.getOutput()?.amount,
-        (outputChainData?.wallet?.address ?? addressFromWebLn) === quote.getOutputAddress(),
+        (outputWallet?.address ?? addressFromWebLn) === quote.getOutputAddress(),
       ];
     // if(isFixedAmount) return [_address, "", addressData.amount.amount, outputChainData?.wallet?.address!=null];
     return [
       address,
       exactIn ? amount : '',
       !exactIn ? amount : '',
-      outputChainData?.wallet?.address != null || webLnForOutput,
+      outputWallet?.address != null || webLnForOutput,
     ];
   }, [
     exactIn,
@@ -481,7 +503,7 @@ export function useSwapPage(): SwapPageState {
     quote,
     randomQuote,
     address,
-    outputChainData?.wallet?.address,
+    outputWallet?.address,
     addressFromWebLn,
     webLnForOutput,
   ]);
@@ -560,7 +582,7 @@ export function useSwapPage(): SwapPageState {
       return {
         status: 'success',
         text: isOutputWalletAddress
-          ? 'Wallet address fetched from ' + outputChainData.wallet?.name
+          ? 'Wallet address fetched from ' + outputWallet?.name
           : 'Swap amount imported from lightning network invoice',
       };
     if(swapType===SwapType.TO_BTCLN && (address==='' || address==null))
@@ -575,7 +597,7 @@ export function useSwapPage(): SwapPageState {
     address,
     isOutputWalletAddress,
     isFixedAmount,
-    outputChainData,
+    outputWallet,
     quote
   ]);
 
@@ -634,10 +656,10 @@ export function useSwapPage(): SwapPageState {
   return {
     input: {
       wallet:
-        inputChainData?.wallet == null
+        inputWallet == null
           ? undefined
           : {
-              data: inputChainData.wallet,
+              data: inputWallet,
               spendable: maxSpendable?.balance,
               btcFeeRate: maxSpendable?.feeRate,
               disconnect: () => disconnectWallet(inputChainData.chainId),
@@ -677,10 +699,10 @@ export function useSwapPage(): SwapPageState {
     changeDirection,
     output: {
       wallet:
-        outputChainData?.wallet == null
+        outputWallet == null
           ? undefined
           : {
-              data: outputChainData.wallet,
+              data: outputWallet,
               balance: outputMaxSpendable?.balance,
               disconnect: () => disconnectWallet(outputChainData.chainId),
             },
@@ -742,7 +764,7 @@ export function useSwapPage(): SwapPageState {
           fetchInvoice: () => {
             if (outputAddress !== '') return undefined;
             if (validatedAmount == null) return;
-            const webln: WebLNProvider = outputChainData.wallet.instance;
+            const webln: WebLNProvider = outputWallet.instance;
             webln
               .makeInvoice(Number(fromHumanReadableString(validatedAmount, Tokens.BITCOIN.BTCLN)))
               .then((res) => {
@@ -752,7 +774,7 @@ export function useSwapPage(): SwapPageState {
               .catch((e) => console.error(e));
           },
         };
-      }, [webLnForOutput, outputAddress, validatedAmount, outputChainData])
+      }, [webLnForOutput, outputAddress, validatedAmount, outputWallet])
     },
     smartChainId: scCurrency.chainId,
     swapType,

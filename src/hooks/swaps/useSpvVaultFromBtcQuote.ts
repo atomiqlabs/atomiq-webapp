@@ -19,6 +19,7 @@ import { SwapPageUIState } from '../pages/useSwapPage';
 import {TxDataType} from "../../types/swaps/TxDataType";
 import {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {useSwapState} from "./helpers/useSwapState";
+import {useWallet} from "../wallets/useWallet";
 
 export type SpvVaultFromBtcPage = {
   executionSteps?: SingleStep[];
@@ -94,8 +95,8 @@ export function useSpvVaultFromBtcQuote(
     }
   );
 
-  const bitcoinWallet = useChain('BITCOIN')?.wallet;
-  const smartChainWallet = useSmartChainWallet(quote);
+  const bitcoinWallet = useWallet('BITCOIN', true);
+  const smartChainWallet = useSmartChainWallet(quote, undefined, false);
 
   const [txData, setTxData] = useState<TxDataType>(null);
 

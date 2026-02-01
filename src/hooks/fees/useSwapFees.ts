@@ -16,6 +16,7 @@ import { getChainIdentifierForCurrency } from '../../utils/Tokens';
 import { useChain } from '../chains/useChain';
 import { Chain } from '../../providers/ChainsProvider';
 import {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
+import {useWallet} from "../wallets/useWallet";
 
 export type FeeDetails = {
   text: string;
@@ -38,7 +39,7 @@ export function useSwapFees(
   fees: FeeDetails[];
   totalUsdFee: number;
 } {
-  const bitcoinChainData: Chain<ExtensionBitcoinWallet> = useChain('BITCOIN');
+  const bitcoinWallet: Chain<ExtensionBitcoinWallet>["wallet"] = useWallet('BITCOIN');
 
   const fees = useMemo(() => {
     if (swap == null) return null;
@@ -78,7 +79,7 @@ export function useSwapFees(
     return fees;
   }, [swap]);
 
-  const btcWallet = bitcoinChainData?.wallet?.instance;
+  const btcWallet = bitcoinWallet?.instance;
   const [feesWithUsdValue, feesLoading] = useWithAwait(() => {
     if (swap == null || fees == null || !fetchUsdAndNetworkFees) return null;
     let networkFeeSrc: Promise<TokenAmount>;

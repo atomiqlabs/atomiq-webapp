@@ -25,6 +25,7 @@ import {Chain} from "../../providers/ChainsProvider";
 import {WebLNProvider} from "webln";
 import {useCheckAdditionalGas} from "./helpers/useCheckAdditionalGas";
 import {useSwapState} from "./helpers/useSwapState";
+import {useWallet} from "../wallets/useWallet";
 
 export type FromBtcLnQuotePage = {
   executionSteps?: SingleStep[];
@@ -154,8 +155,8 @@ export function useFromBtcLnQuote(
 ): FromBtcLnQuotePage {
   const { swapper } = useContext(SwapperContext);
   const { connectWallet, disconnectWallet } = useContext(ChainsContext);
-  const lightningWallet = useChain('LIGHTNING')?.wallet;
-  const smartChainWallet = useSmartChainWallet(quote, true);
+  const lightningWallet = useWallet('LIGHTNING', true);
+  const smartChainWallet = useSmartChainWallet(quote, true, false);
   const canClaimInOneShot = useMemo(() => {
     if(quote==null) return;
     if(quote.getType() !== SwapType.FROM_BTCLN) return;
@@ -456,7 +457,7 @@ export function useFromBtcLnQuote(
     return {
       error,
       walletConnected:
-        lightningWallet != null && !payingWithNFC && paymentWaiting
+        !quote.isLNURL() && lightningWallet != null && !payingWithNFC && paymentWaiting
           ? {
               lightningWallet,
               payWithWebLn: {
@@ -473,7 +474,7 @@ export function useFromBtcLnQuote(
             }
           : undefined,
       walletDisconnected:
-        lightningWallet == null && !payingWithNFC && paymentWaiting
+        !quote.isLNURL() && lightningWallet == null && !payingWithNFC && paymentWaiting
           ? {
               autoClaim: quote?.getType()===SwapType.FROM_BTCLN_AUTO
                 ? undefined
