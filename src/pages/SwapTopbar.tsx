@@ -47,14 +47,12 @@ export function SwapTopbar(props: { selected: number; enabled: boolean }) {
           if (claimableOrRefundable) {
             const newSet = new Set(swaps);
             newSet.add(id);
-            console.log('SwapTopbar: useEffect(swapper): Removing swap from actionable swaps');
             return newSet;
           }
         } else {
           if (!claimableOrRefundable) {
             const newSet = new Set(swaps);
             newSet.delete(id);
-            console.log('SwapTopbar: useEffect(swapper): Removing swap from actionable swaps');
             return newSet;
           }
         }

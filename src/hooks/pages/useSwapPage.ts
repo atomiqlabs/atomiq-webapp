@@ -249,7 +249,6 @@ export function useSwapPage(): SwapPageState {
       console.log('SwapNew(): Disconnecting wallet: ' + outputChainData.wallet.name);
       disconnectWallet(outputChainData.chainId);
     }
-    console.log(`SwapNew(): Using token based on the ${addressData.address} address: ` + token.ticker);
     setOutputToken(token, false);
   });
 
@@ -276,7 +275,6 @@ export function useSwapPage(): SwapPageState {
   const [_amount, _setAmount] = useDecimalNumberState('');
   const setAmount = useCallback((value: string) => {
     if(webLnForOutput) {
-      console.log("Set address to: ''");
       setAddress('');
     }
     _setAmount(value);

@@ -37,8 +37,6 @@ export function FromBTCLNSwapPanel(props: {
   const chain = useChain(props.quote?.chainIdentifier);
   const page = useFromBtcLnQuote(props.quote, props.UICallback);
 
-  console.log("FromBTCLNPage(): ", page);
-
   const gasAlert = (
     <SwapForGasAlert notEnoughForGas={page.additionalGasRequired} quote={props.quote} />
   );
