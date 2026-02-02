@@ -24,50 +24,50 @@ export function SwapExplorer() {
   const [showChainDropdown, setShowChainDropdown] = useState<boolean>(false);
   const [selectedTokens, setSelectedTokens] = useState<string[]>([]);
   const [showTokenDropdown, setShowTokenDropdown] = useState<boolean>(false);
-  const [statsLoading, setStatsLoading] = useState<boolean>(false);
-  const [stats, setStats] = useState<{
-    totalSwapCount: number;
-    totalUsdVolume: number;
-    chainData: {
-      [chain: string]: {
-        count: number;
-        volume: number;
-        volumeUsd: number;
-      };
-    };
-    timeframes: {
-      [timeframe in '24h' | '7d' | '30d']: {
-        count: number;
-        volume: number;
-        volumeUsd: number;
-      };
-    };
-  }>(null);
+  // const [statsLoading, setStatsLoading] = useState<boolean>(false);
+  // const [stats, setStats] = useState<{
+  //   totalSwapCount: number;
+  //   totalUsdVolume: number;
+  //   chainData: {
+  //     [chain: string]: {
+  //       count: number;
+  //       volume: number;
+  //       volumeUsd: number;
+  //     };
+  //   };
+  //   timeframes: {
+  //     [timeframe in '24h' | '7d' | '30d']: {
+  //       count: number;
+  //       volume: number;
+  //       volumeUsd: number;
+  //     };
+  //   };
+  // }>(null);
 
   const [search, setSearch] = useState<string>();
   const searchRef = useRef<ValidatedInputRef>();
 
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    setStatsLoading(true);
-    fetch(FEConstants.statsUrl + '/GetStats', {
-      signal: abortController.signal,
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((obj) => {
-        setStats(obj);
-        setStatsLoading(false);
-      })
-      .catch((e) => {
-        console.error(e);
-        setStatsLoading(false);
-      });
-
-    return () => abortController.abort();
-  }, []);
+  // useEffect(() => {
+  //   const abortController = new AbortController();
+  //
+  //   setStatsLoading(true);
+  //   fetch(FEConstants.statsUrl + '/GetStats', {
+  //     signal: abortController.signal,
+  //   })
+  //     .then((resp) => {
+  //       return resp.json();
+  //     })
+  //     .then((obj) => {
+  //       setStats(obj);
+  //       setStatsLoading(false);
+  //     })
+  //     .catch((e) => {
+  //       console.error(e);
+  //       setStatsLoading(false);
+  //     });
+  //
+  //   return () => abortController.abort();
+  // }, []);
 
   const toggleChain = (chain: string) => {
     setSelectedChains((prev) =>
@@ -95,29 +95,29 @@ export function SwapExplorer() {
     return additionalData;
   }, [search, selectedChains, selectedTokens]);
 
-  const chainBreakdownCountData = useMemo(() => {
-    if (!stats?.chainData) return [];
-    return Object.entries(stats.chainData)
-      .filter(([chainId]) => chains[chainId] != null)
-      .sort((a,b) => b[1].volumeUsd - a[1].volumeUsd)
-      .map(([chainId, data]: [string, any]) => ({
-        name: chains[chainId].chain.name,
-        icon: chains[chainId].chain.icon,
-        value: data.count,
-      }))
-  }, [stats, chains]);
-
-  const chainBreakdownVolumeData = useMemo(() => {
-    if (!stats?.chainData) return [];
-    return Object.entries(stats.chainData)
-      .filter(([chainId]) => chains[chainId] != null)
-      .sort((a,b) => b[1].volumeUsd - a[1].volumeUsd)
-      .map(([chainId, data]: [string, any]) => ({
-        name: chains[chainId].chain.name,
-        icon: chains[chainId].chain.icon,
-        value: data.volumeUsd,
-      }));
-  }, [stats, chains]);
+  // const chainBreakdownCountData = useMemo(() => {
+  //   if (!stats?.chainData) return [];
+  //   return Object.entries(stats.chainData)
+  //     .filter(([chainId]) => chains[chainId] != null)
+  //     .sort((a,b) => b[1].volumeUsd - a[1].volumeUsd)
+  //     .map(([chainId, data]: [string, any]) => ({
+  //       name: chains[chainId].chain.name,
+  //       icon: chains[chainId].chain.icon,
+  //       value: data.count,
+  //     }))
+  // }, [stats, chains]);
+  //
+  // const chainBreakdownVolumeData = useMemo(() => {
+  //   if (!stats?.chainData) return [];
+  //   return Object.entries(stats.chainData)
+  //     .filter(([chainId]) => chains[chainId] != null)
+  //     .sort((a,b) => b[1].volumeUsd - a[1].volumeUsd)
+  //     .map(([chainId, data]: [string, any]) => ({
+  //       name: chains[chainId].chain.name,
+  //       icon: chains[chainId].chain.icon,
+  //       value: data.volumeUsd,
+  //     }));
+  // }, [stats, chains]);
 
   const chainOptions = useMemo(() => {
     return Object.keys(chains).map((chainId) => {
@@ -141,24 +141,24 @@ export function SwapExplorer() {
   return (
     <div className="container">
       {/*TOTALS*/}
-      <div className="explorer-totals-wrapper">
-        <ExplorerTotals
-          title="Total swaps"
-          count={stats?.totalSwapCount}
-          getDifference={(timeframe) => stats?.timeframes?.[timeframe]?.count}
-          loading={statsLoading}
-          breakdownData={chainBreakdownCountData}
-        />
-        <ExplorerTotals
-          title="Total volume"
-          shortenOnMobile={true}
-          isUsd={true}
-          count={stats?.totalUsdVolume}
-          getDifference={(timeframe) => stats?.timeframes?.[timeframe]?.volumeUsd}
-          loading={statsLoading}
-          breakdownData={chainBreakdownVolumeData}
-        />
-      </div>
+      {/*<div className="explorer-totals-wrapper">*/}
+      {/*  <ExplorerTotals*/}
+      {/*    title="Total swaps"*/}
+      {/*    count={stats?.totalSwapCount}*/}
+      {/*    getDifference={(timeframe) => stats?.timeframes?.[timeframe]?.count}*/}
+      {/*    loading={statsLoading}*/}
+      {/*    breakdownData={chainBreakdownCountData}*/}
+      {/*  />*/}
+      {/*  <ExplorerTotals*/}
+      {/*    title="Total volume"*/}
+      {/*    shortenOnMobile={true}*/}
+      {/*    isUsd={true}*/}
+      {/*    count={stats?.totalUsdVolume}*/}
+      {/*    getDifference={(timeframe) => stats?.timeframes?.[timeframe]?.volumeUsd}*/}
+      {/*    loading={statsLoading}*/}
+      {/*    breakdownData={chainBreakdownVolumeData}*/}
+      {/*  />*/}
+      {/*</div>*/}
 
       {/*TITLE*/}
       <h1 className="page-title">Explorer</h1>
