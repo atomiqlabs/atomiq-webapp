@@ -17,8 +17,8 @@ export function SwapFeePanel(props: {
 }) {
   const { fees: swapFees, totalUsdFee } = useSwapFees(props.swap, props.btcFeeRate);
 
-  const inputToken: Token = props.swap?.getInput()?.token;
-  const outputToken: Token = props.swap?.getOutput()?.token;
+  const inputToken: Token = props.swap?.getInput().token;
+  const outputToken: Token = props.swap?.getOutput().token;
 
   return (
     <GenericFeePanel

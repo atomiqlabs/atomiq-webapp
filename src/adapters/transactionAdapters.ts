@@ -75,13 +75,13 @@ export function swapToProps(swap: ISwap): TransactionEntryProps {
     requiresAction: swap.requiresAction(),
 
     inputToken: inputToken,
-    inputAmount: swap.getInput()?.amount ?? "???",
+    inputAmount: swap.getInput().isUnknown ? "???" : swap.getInput().amount,
     inputAddress,
     inputExplorer,
     inputTxId: txIdInput,
 
     outputToken: outputToken,
-    outputAmount: swap.getOutput()?.amount ?? "???",
+    outputAmount: swap.getOutput().isUnknown ? "???" : swap.getOutput().amount,
     outputAddress,
     outputExplorer,
     outputTxId: txIdOutput,
@@ -93,7 +93,7 @@ export function swapToProps(swap: ISwap): TransactionEntryProps {
     claimable,
     direction: swap.getDirection(),
 
-    usdValue: swap.getInput()?.pastUsdValue ?? swap.getOutput()?.pastUsdValue
+    usdValue: swap.getInput().pastUsdValue || swap.getOutput().pastUsdValue
   };
 }
 
