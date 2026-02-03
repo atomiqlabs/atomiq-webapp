@@ -15,6 +15,10 @@ import {alpenChain, alpenChainId} from './evm/AlpenChainSpec';
 import {goatChain, goatChainId} from './evm/GoatChainSpec';
 import {ChainSwitchingSigner} from "./evm/ChainSwitchingSigner";
 
+const BLOCKED_CONNECTORS = [
+  "app.phantom"
+];
+
 const overrideIcons: {[walletName: string]: string} = {
   WalletConnect: 'wallets/evm/WalletConnect.svg'
 };
@@ -91,12 +95,17 @@ function useEVMChain(enabled: boolean, chainId: number) {
   const currentConnectorRef = useRef<Connector>();
   useMemo(() => currentConnectorRef.current = connector, [connector]);
 
-  const connectors = useConnectors();
+  const _connectors = useConnectors();
+  const connectors = useMemo(
+    () => _connectors.filter(c => !BLOCKED_CONNECTORS.includes(c.id)),
+    [_connectors]
+  );
 
   const [evmSigner, setEvmSigner] = useState<EVMSigner>();
   useEffect(() => {
     setEvmSigner(null);
     if(connector==null || connector.getProvider==null || !isConnected) return;
+    if(BLOCKED_CONNECTORS.includes(connector.id)) return;
     let cancelled = false;
     connector.getProvider({chainId}).then(provider => {
       if(cancelled) return;
