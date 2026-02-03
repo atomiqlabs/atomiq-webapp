@@ -39,7 +39,7 @@ function MultichainWalletMenuItem(props: { wallet: MultichainWallet; className?:
             <img className="mr-0.5" width={24} height={24} src={props.wallet.icon} />
             {chains.map((value, i) => {
               return (
-                <img className={i===0 ? "" : "-ml-1"} style={{zIndex: 100-i}} width={18} height={18} key={value.name} src={value.icon} />
+                <img className={i===0 ? "" : "-ml-1"} style={{zIndex: 10-i}} width={18} height={18} key={value.name} src={value.icon} />
               );
             })}
           </Badge>

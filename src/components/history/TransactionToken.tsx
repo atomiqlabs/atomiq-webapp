@@ -1,21 +1,8 @@
 import { Token } from '@atomiqlabs/sdk';
 import * as React from 'react';
 import { ChainIcon } from '../tokens/ChainIcon';
-import { truncateAddress } from '../../utils/Utils';
+import {truncateAddress, truncateAmount} from '../../utils/Utils';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-
-const MAX_AMOUNT_CHARS = 10;
-
-function truncateAmount(amountStr: string): string {
-  if(amountStr.length<=MAX_AMOUNT_CHARS) return amountStr;
-  const decimalSeparatorPoint = amountStr.indexOf(".");
-  if(decimalSeparatorPoint>=MAX_AMOUNT_CHARS-1) {
-    const fullIntegerValue = amountStr.split(".")[0];
-    return fullIntegerValue;
-  } else {
-    return amountStr.substring(0, MAX_AMOUNT_CHARS);
-  }
-}
 
 export function TransactionToken(props: {
   token: Token;

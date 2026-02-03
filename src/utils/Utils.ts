@@ -132,6 +132,17 @@ export function truncateAddress(address: string, startChars: number = 5, endChar
   return `${address.substring(0, startChars)}...${address.substring(address.length - endChars)}`;
 }
 
+export function truncateAmount(amountStr: string, maxCharacters: number = 10): string {
+  if(amountStr.length<=maxCharacters) return amountStr;
+  const decimalSeparatorPoint = amountStr.indexOf(".");
+  if(decimalSeparatorPoint>=maxCharacters-1) {
+    const fullIntegerValue = amountStr.split(".")[0];
+    return fullIntegerValue;
+  } else {
+    return amountStr.substring(0, maxCharacters);
+  }
+}
+
 export function shortenNumber(value: number): string {
   const absValue = Math.abs(value);
   if (absValue >= 1_000_000_000) {
