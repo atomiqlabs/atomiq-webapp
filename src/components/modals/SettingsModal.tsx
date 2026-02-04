@@ -10,49 +10,6 @@ import {spinner11} from 'react-icons-kit/icomoon/spinner11'
 import {ClearSwapHistoryModal} from "./ClearSwapHistoryModal";
 import {RecoverSwapDataModal} from "./RecoverSwapDataModal";
 
-const logMessages: string[] = [];
-
-function serializeLogMessageChunk(chunk: any) {
-  if(typeof(chunk)==="object") {
-    //Errors
-    if(chunk.stack!=null) {
-      return ""+chunk+": "+chunk.stack;
-    }
-    try {
-      return JSON.stringify(chunk, null, 2);
-    } catch {}
-  }
-  if(chunk!=null) return chunk.toString();
-  return ""+chunk;
-}
-
-//Setup log interceptor
-let cLog = console.log;
-console.log = (...data: any[]) => {
-  logMessages.push(`[LOG]{${new Date().toISOString()}} ${data.map(serializeLogMessageChunk).join(" ")}`);
-  cLog(...data);
-}
-let eLog = console.error;
-console.error = (...data: any[]) => {
-  logMessages.push(`[ERROR]{${new Date().toISOString()}} ${data.map(serializeLogMessageChunk).join(" ")}`);
-  eLog(...data);
-}
-let wLog = console.warn;
-console.warn= (...data: any[]) => {
-  logMessages.push(`[WARN]{${new Date().toISOString()}} ${data.map(serializeLogMessageChunk).join(" ")}`);
-  wLog(...data);
-}
-let iLog = console.info;
-console.info = (...data: any[]) => {
-  logMessages.push(`[INFO]{${new Date().toISOString()}} ${data.map(serializeLogMessageChunk).join(" ")}`);
-  iLog(...data);
-}
-let dLog = console.debug;
-console.debug = (...data: any[]) => {
-  logMessages.push(`[DEBUG]{${new Date().toISOString()}} ${data.map(serializeLogMessageChunk).join(" ")}`);
-  dLog(...data);
-}
-
 function downloadTextFile(filename: string, content: string) {
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -70,6 +27,8 @@ export function SettingsModal(props: {
   close: () => void;
 }) {
   const downloadLogs = useCallback(() => {
+    const logMessages = (window as any).logMessages;
+    if(logMessages==null) return;
     downloadTextFile(`atomiq-log-${new Date().toISOString()}.txt`, logMessages.join("\n"));
   }, []);
 

@@ -26,6 +26,92 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root" class="background"></div>
+    <script>
+      var logMessages = [];
+
+      function __serializeLogMessageChunk(chunk) {
+        if(typeof(chunk)==="object") {
+          //Errors
+          if(chunk.stack!=null) {
+            return ""+chunk+": "+chunk.stack;
+          }
+          try {
+            return JSON.stringify(chunk, null, 2);
+          } catch {}
+        }
+        if(chunk!=null) return chunk.toString();
+        return ""+chunk;
+      }
+
+      //Setup log interceptor
+      var cLog = console.log;
+      console.log = (...data) => {
+        logMessages.push(`[LOG]{${new Date().toISOString()}} ${data.map(__serializeLogMessageChunk).join(" ")}`);
+        cLog(...data);
+      }
+      var eLog = console.error;
+      console.error = (...data) => {
+        logMessages.push(`[ERROR]{${new Date().toISOString()}} ${data.map(__serializeLogMessageChunk).join(" ")}`);
+        eLog(...data);
+      }
+      var wLog = console.warn;
+      console.warn= (...data) => {
+        logMessages.push(`[WARN]{${new Date().toISOString()}} ${data.map(__serializeLogMessageChunk).join(" ")}`);
+        wLog(...data);
+      }
+      var iLog = console.info;
+      console.info = (...data) => {
+        logMessages.push(`[INFO]{${new Date().toISOString()}} ${data.map(__serializeLogMessageChunk).join(" ")}`);
+        iLog(...data);
+      }
+      var dLog = console.debug;
+      console.debug = (...data) => {
+        logMessages.push(`[DEBUG]{${new Date().toISOString()}} ${data.map(__serializeLogMessageChunk).join(" ")}`);
+        dLog(...data);
+      }
+
+      window.addEventListener('error', (event) => {
+        const message = [
+          `[RUNTIME ERROR]`,
+          event.message,
+          `at ${event.filename}:${event.lineno}:${event.colno}`,
+          event.error ? `Stack: ${event.error.stack}` : ''
+        ].join(' ');
+
+        logMessages.push(`[CRASH]{${new Date().toISOString()}} ${message}`);
+        // Keep the original behavior so it still shows in the real console
+        return false;
+      });
+
+      window.addEventListener('unhandledrejection', (event) => {
+        logMessages.push(`[PROMISE REJECTION]{${new Date().toISOString()}} Reason: ${event.reason}`);
+      });
+
+      window.logMessages = logMessages;
+
+      function __downloadLog(event) {
+        event.preventDefault();
+
+        var filename = `atomiq-log-${new Date().toISOString()}.txt`;
+        var content = window.logMessages.join("\n");
+
+        var blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+
+        URL.revokeObjectURL(url);
+      }
+
+      setTimeout(() => {
+        var root = document.getElementById("root");
+        if(root.childNodes.length>0) return;
+        root.innerHTML = "<div style='background: #fff'>Website failed to load, <a href='#' onclick='__downloadLog(event)'>download error log</a></div>";
+      }, 10*1000);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <!--
       This HTML file is a template.
