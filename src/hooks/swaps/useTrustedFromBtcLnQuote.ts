@@ -138,7 +138,7 @@ export function useTrustedFromBtcLnQuote(
   if (isCreated)
     executionSteps[0] = {
       icon: ic_flash_on_outline,
-      text: 'Awaiting lightning paymenxxt',
+      text: 'Awaiting lightning payment',
       type: 'loading',
     };
   if (isQuoteExpired)
@@ -255,6 +255,7 @@ export function useTrustedFromBtcLnQuote(
       retry: waitForPayment
     } : undefined
   }), [
+    isPaid,
     paymentError,
     waitForPayment
   ]);

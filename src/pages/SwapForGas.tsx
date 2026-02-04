@@ -53,7 +53,7 @@ export function SwapForGas() {
   return (
     <>
       <div className="d-flex flex-column align-items-center text-white">
-        <div className="swap-panel">
+        <div className="swap-panel mb-5">
           <div className="alert-message is-info mb-3">
             <i className="alert-message__icon icon icon-info"></i>
             <div className="alert-message__body">
