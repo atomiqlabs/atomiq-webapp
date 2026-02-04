@@ -65,8 +65,8 @@ export function ToBTCSwapPanel(props: {
           show={!!page.step1init.additionalGasRequired}
           type="danger"
           icon={ic_error_outline_outline}
-          title={`Not enough ${page.step1init.additionalGasRequired?.token.ticker} for fees`}
-          description={`You need at least ${page.step1init.additionalGasRequired?.toString()} more to pay for fees and deposits!`}
+          title={`Not enough ${page.step1init.additionalGasRequired?.token.ticker} for network fees`}
+          description={`You need at least ${page.step1init.additionalGasRequired?.toString()} more in your wallet to cover the cost of network gas fees and deposits! Deposit more ${page.step1init.additionalGasRequired?.token?.ticker} to your wallet and retry.`}
         />
 
         <SwapStepAlert

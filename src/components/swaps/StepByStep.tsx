@@ -54,7 +54,7 @@ export function StepByStep(props: {
               </div>
               <div className="swap-steps-wallet__ammounts">
                 <div className="swap-steps-wallet__ammounts__original">
-                  {(input.amount==null ? "???" : truncateAmount(input.amount.amount, 11))+" "+input.token.ticker}
+                  {(input.amount.isUnknown ? "???" : truncateAmount(input.amount.amount, 11))+" "+input.token.ticker}
                 </div>
                 {input.usdValue ? (
                   <div className="swap-steps-wallet__ammounts__dolars">{input.usdValue}</div>
@@ -85,7 +85,7 @@ export function StepByStep(props: {
                 </div>
                 <div className="swap-steps-wallet__ammounts">
                   <div className="swap-steps-wallet__ammounts__original">
-                    {(output.amount==null ? "???" : truncateAmount(output.amount.amount, 11))+" "+output.token.ticker}
+                    {(output.amount.isUnknown ? "???" : truncateAmount(output.amount.amount, 11))+" "+output.token.ticker}
                   </div>
                   {output.usdValue ? (
                     <div className="swap-steps-wallet__ammounts__dolars">{output.usdValue}</div>

@@ -484,8 +484,8 @@ export function useSwapPage(): SwapPageState {
     if (quote != null)
       return [
         randomQuote ? address : quote.getOutputAddress(),
-        exactIn ? amount : quote.getInput()?.amount,
-        !exactIn ? amount : quote.getOutput()?.amount,
+        exactIn ? amount : quote.getInput().amount,
+        !exactIn ? amount : quote.getOutput().amount,
         (outputWallet?.address ?? addressFromWebLn) === quote.getOutputAddress(),
       ];
     // if(isFixedAmount) return [_address, "", addressData.amount.amount, outputChainData?.wallet?.address!=null];
@@ -508,7 +508,7 @@ export function useSwapPage(): SwapPageState {
   const notEnoughBalance =
     quote != null &&
     maxSpendable?.balance != null &&
-    quote.getInput() != null &&
+    !quote.getInput().isUnknown &&
     quote.getInput().rawAmount > maxSpendable.balance.rawAmount;
   const inputValue = usePricing(inputAmount, inputToken);
   const outputValue = usePricing(outputAmount, outputToken);
@@ -617,9 +617,9 @@ export function useSwapPage(): SwapPageState {
         if(!clearAddress) setAddress(existingSwap.getOutputAddress());
         setExactIn(existingSwap.exactIn);
         if (existingSwap.exactIn) {
-          if(existingSwap.getInput()!=null) setAmount(existingSwap.getInput().amount);
+          if(!existingSwap.getInput().isUnknown) setAmount(existingSwap.getInput().amount);
         } else {
-          if(existingSwap.getOutput()!=null) setAmount(existingSwap.getOutput().amount);
+          if(!existingSwap.getOutput().isUnknown) setAmount(existingSwap.getOutput().amount);
         }
         navigate('/');
       }

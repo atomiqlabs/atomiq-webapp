@@ -7,7 +7,7 @@
     "@atomiqlabs/chain-evm": "^2.0.8",
     "@atomiqlabs/chain-solana": "^13.0.9",
     "@atomiqlabs/chain-starknet": "^8.0.11",
-    "@atomiqlabs/sdk": "^8.0.11",
+    "@atomiqlabs/sdk": "^8.1.7",
     "@scure/btc-signer": "1.7.0",
     "@solana/wallet-adapter-base": "0.9.27",
     "@solana/wallet-adapter-react": "0.15.39",

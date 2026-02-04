@@ -248,7 +248,7 @@ export function useFromBtcQuote(
 
   const hasEnoughBalance = useMemo(
     () =>
-      inputWalletBalance == null || quote == null
+      inputWalletBalance == null || quote == null || quote.getInput().isUnknown
         ? true
         : inputWalletBalance >= quote.getInput().rawAmount,
     [inputWalletBalance, quote]

@@ -29,12 +29,12 @@ export function SwapForGasAlert(props: {
     <SwapStepAlert
       show={!!props.notEnoughForGas}
       type="error"
-      title={`Not enough ${feeNeeded?.token?.ticker} for fees`}
+      title={`Not enough ${feeNeeded?.token?.ticker} for destination network fees`}
       description={(
         <>
-          You need at least {feeNeeded?.amount} more {feeNeeded?.token?.ticker} to pay for fees
-          and refundable deposit! You can use <b>Bitcoin Lightning</b> to swap for gas first & then
-          continue swapping here!
+          You need at least {feeNeeded?.amount} more {feeNeeded?.token?.ticker} to cover the cost of gas fees
+          and the refundable deposit on the destination chain ({props.quote?.chainIdentifier})! You can use
+          <b>Bitcoin Lightning</b> to swap small amount of BTC to {feeNeeded?.token?.ticker} first & then continue swapping here!
         </>
       )}
       action={{
