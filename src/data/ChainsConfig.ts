@@ -151,6 +151,10 @@ export const ChainsConfig = {
         ? new WebSocketProviderWithRetries(import.meta.env.VITE_CITREA_RPC_URL)
         : new JsonRpcProviderWithRetries(import.meta.env.VITE_CITREA_RPC_URL),
       chainType: import.meta.env.VITE_CITREA_NETWORK,
+      evmConfig: {
+        maxLogsBlockRange: import.meta.env.VITE_CITREA_MAX_LOGS_BLOCK_RANGE==null ? undefined : parseInt(import.meta.env.VITE_CITREA_MAX_LOGS_BLOCK_RANGE),
+        maxParallelLogRequests: import.meta.env.VITE_CITREA_MAX_PARALLEL_LOG_REQUESTS==null ? undefined : parseInt(import.meta.env.VITE_CITREA_MAX_PARALLEL_LOG_REQUESTS)
+      }
     } : undefined,
   BOTANIX: import.meta.env.VITE_BOTANIX_RPC_URL
     ? {
@@ -165,6 +169,10 @@ export const ChainsConfig = {
         ? new WebSocketProviderWithRetries(import.meta.env.VITE_BOTANIX_RPC_URL)
         : new JsonRpcProviderWithRetries(import.meta.env.VITE_BOTANIX_RPC_URL),
       chainType: import.meta.env.VITE_BOTANIX_NETWORK,
+      evmConfig: {
+        maxLogsBlockRange: import.meta.env.VITE_BOTANIX_MAX_LOGS_BLOCK_RANGE==null ? undefined : parseInt(import.meta.env.VITE_BOTANIX_MAX_LOGS_BLOCK_RANGE),
+        maxParallelLogRequests: import.meta.env.VITE_BOTANIX_MAX_PARALLEL_LOG_REQUESTS==null ? undefined : parseInt(import.meta.env.VITE_BOTANIX_MAX_PARALLEL_LOG_REQUESTS)
+      }
     } : undefined,
   ALPEN: import.meta.env.VITE_ALPEN_RPC_URL
     ? {
@@ -179,6 +187,10 @@ export const ChainsConfig = {
         ? new WebSocketProviderWithRetries(import.meta.env.VITE_ALPEN_RPC_URL)
         : new JsonRpcProviderWithRetries(import.meta.env.VITE_ALPEN_RPC_URL),
       chainType: import.meta.env.VITE_ALPEN_NETWORK,
+      evmConfig: {
+        maxLogsBlockRange: import.meta.env.VITE_ALPEN_MAX_LOGS_BLOCK_RANGE==null ? undefined : parseInt(import.meta.env.VITE_ALPEN_MAX_LOGS_BLOCK_RANGE),
+        maxParallelLogRequests: import.meta.env.VITE_ALPEN_MAX_PARALLEL_LOG_REQUESTS==null ? undefined : parseInt(import.meta.env.VITE_ALPEN_MAX_PARALLEL_LOG_REQUESTS)
+      }
     } : undefined,
   GOAT: import.meta.env.VITE_GOAT_RPC_URL
     ? {
@@ -193,5 +205,9 @@ export const ChainsConfig = {
         ? new WebSocketProviderWithRetries(import.meta.env.VITE_GOAT_RPC_URL)
         : new JsonRpcProviderWithRetries(import.meta.env.VITE_GOAT_RPC_URL),
       chainType: import.meta.env.VITE_GOAT_NETWORK,
+      evmConfig: {
+        maxLogsBlockRange: import.meta.env.VITE_GOAT_MAX_LOGS_BLOCK_RANGE==null ? undefined : parseInt(import.meta.env.VITE_GOAT_MAX_LOGS_BLOCK_RANGE),
+        maxParallelLogRequests: import.meta.env.VITE_GOAT_MAX_PARALLEL_LOG_REQUESTS==null ? undefined : parseInt(import.meta.env.VITE_GOAT_MAX_PARALLEL_LOG_REQUESTS)
+      }
     } : undefined
 } as const;

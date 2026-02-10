@@ -24,20 +24,25 @@ export function RecoverSwapDataModal(props: {
     if(skip) return null;
     const totalSwaps: ISwap[] = [];
     const supportedSmartChains = swapper.getSmartChains();
+    const promises: Promise<void>[] = [];
     for(let chainId in chains) {
       if(!supportedSmartChains.includes(chainId)) continue;
       const chainData: Chain<any> = chains[chainId];
       if(chainData?.wallet?.address==null) continue;
-      try {
-        console.log(`Recovering swaps for ${chainId}, with user's address: ${chainData.wallet.address}`);
-        const chainSwaps = await swapper.recoverSwaps(chainId, chainData.wallet.address);
-        console.log(`Found ${chainSwaps.length} swaps on ${chainId}`);
-        totalSwaps.push(...chainSwaps);
-      } catch (e) {
-        if(e?.message?.startsWith?.("Historical swap recovery is not supported")) continue;
-        throw e;
-      }
+      console.log(`Recovering swaps for ${chainId}, with user's address: ${chainData.wallet.address}`);
+      promises.push(
+        swapper.recoverSwaps(chainId, chainData.wallet.address)
+          .then(chainSwaps => {
+            console.log(`Found ${chainSwaps.length} swaps on ${chainId}`);
+            totalSwaps.push(...chainSwaps);
+          })
+          .catch(e => {
+            if(e?.message?.startsWith?.("Historical swap recovery is not supported")) return;
+            throw e;
+          })
+      );
     }
+    await Promise.all(promises);
     events.emit("reloadHistory");
     return totalSwaps;
   }, [chains, swapper]);
@@ -60,6 +65,7 @@ export function RecoverSwapDataModal(props: {
       onClose={() => props.close(false)}
       title="Recover swap data"
       enableClose={true}
+      enableCloseFromOverlay={false}
     >
       {recoverPastSwapsError!=null ? (
         <SwapStepAlert
@@ -109,8 +115,8 @@ export function RecoverSwapDataModal(props: {
       ) : (
         <>
           <p className="sc-text">
-            Successfully recovered {recoveredPastSwaps.length} swaps, of which {swapsRequiringAction.length} swaps
-            require
+            Successfully recovered {recoveredPastSwaps.length} additional swaps,
+            of which {swapsRequiringAction.length} swaps require
             an action from the user (either refund or claim). Check the swaps in the history page!
           </p>
           <BaseButton variant="secondary" className="" onClick={() => {

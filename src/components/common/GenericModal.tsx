@@ -13,6 +13,7 @@ export interface GenericModalProps {
   type?: 'default' | 'notice' | 'warning';
   icon?: string;
   enableClose?: boolean;
+  enableCloseFromOverlay?: boolean;
 }
 
 export const GenericModal: FC<GenericModalProps> = ({
@@ -26,6 +27,7 @@ export const GenericModal: FC<GenericModalProps> = ({
   size = 'md',
   icon,
   enableClose = true,
+  enableCloseFromOverlay = true
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [fadeIn, setFadeIn] = useState(false);
@@ -89,7 +91,7 @@ export const GenericModal: FC<GenericModalProps> = ({
     };
 
     // Get original overflow
-    const { overflow } = window.getComputedStyle(document.body);
+    // const { overflow } = window.getComputedStyle(document.body);
     // Hack to enable fade in animation after mount
     setTimeout(() => setFadeIn(true), 0);
     // Prevent scrolling on mount
@@ -99,7 +101,7 @@ export const GenericModal: FC<GenericModalProps> = ({
 
     return () => {
       // Re-enable scrolling when component unmounts
-      document.body.style.overflow = overflow;
+      document.body.style.removeProperty("overflow");
       document.removeEventListener('keydown', handleKeyDown, true);
     };
   }, [visible, hideModal, handleTabKey, enableClose]);
@@ -134,7 +136,7 @@ export const GenericModal: FC<GenericModalProps> = ({
             {children}
           </div>
         </div>
-        <div className="generic-modal-overlay" onMouseDown={handleClose} />
+        <div className="generic-modal-overlay" onMouseDown={(e) => enableCloseFromOverlay && handleClose(e)} />
       </div>,
       portal
     )

@@ -4,6 +4,7 @@ import {usePricing} from "../../pricing/usePricing";
 import {useChain} from "../../chains/useChain";
 import {Chain} from "../../../providers/ChainsProvider";
 import {FEConstants} from "../../../FEConstants";
+import {truncateAddress} from "../../../utils/Utils";
 
 export type QuoteAmountsAndAddress = {
   input?: {
@@ -46,9 +47,13 @@ export function useQuoteAmountsAndAddress(quote: ISwap): QuoteAmountsAndAddress 
       usdValue: quote.getOutput().isUnknown ? "$???" : outputUsdValue ? FEConstants.USDollar.format(outputUsdValue) : undefined,
       chain: outputChain
     }), [quote, outputUsdValue, outputChain]),
-    address: useMemo(() => (quote==null ? undefined : {
-      full: quote.getOutputAddress(),
-      short: `${quote.getOutputAddress().slice(0, 5)}...${quote.getOutputAddress().slice(-5)}`
-    }), [quote])
+    address: useMemo(() => {
+      if(quote==null) return undefined;
+      const outputAddress = quote.getOutputAddress();
+      return {
+        full: outputAddress ?? "Unknown",
+        short: truncateAddress(outputAddress) ?? "Unknown"
+      };
+    }, [quote])
   };
 }
