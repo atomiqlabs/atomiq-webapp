@@ -346,6 +346,7 @@ export function useSwapPage(): SwapPageState {
 
   //Url defined amount & swap type
   useEffect(() => {
+    if(swapper==null) return;
     const tokenIn = fromTokenIdentifier(params.get('tokenIn'));
     const tokenOut = fromTokenIdentifier(params.get('tokenOut'));
     if (tokenIn != null) setInputToken(tokenIn);
@@ -356,7 +357,7 @@ export function useSwapPage(): SwapPageState {
       setExactIn(exactIn === 'true');
       setAmount(amount);
     }
-  }, [search]);
+  }, [search, swapper]);
 
   //Gas drop
   const [gasDropChecked, setGasDropChecked] = useState<boolean>(false);
