@@ -379,12 +379,12 @@ export function useSwapPage(): SwapPageState {
     let cancelled = false;
 
     swapper.Utils.getSpendableBalance(addressData?.address, gasDropTokenAmount.token).then(
-      (value) => {
+      (value: TokenAmount) => {
         if (cancelled) return;
         const token = gasDropTokenAmount.token;
         const requiredBalance =
           ChainsConfig[token.chainId]?.assetBalances?.[token.address]?.optimal;
-        if (value < requiredBalance) {
+        if (value.rawAmount!=null && value.rawAmount < requiredBalance) {
           setGasDropChecked(true);
         }
       }

@@ -81,7 +81,12 @@ export function useTrustedFromBtcLnQuote(
   quote: LnForGasSwap<any>
 ): TrustedFromBtcLnQuotePage {
   const { connectWallet, disconnectWallet } = useContext(ChainsContext);
-  const lightningWallet = useWallet('LIGHTNING', true);
+
+  const _lightningWallet = useWallet('LIGHTNING', true);
+  const lightningWallet: Chain<WebLNProvider>["wallet"] | null = _lightningWallet?.instance?._lnurl!=null
+    ? null
+    : _lightningWallet;
+
   const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(quote);
 
   const [pay, payLoading, payResult, payError] = useAsync(

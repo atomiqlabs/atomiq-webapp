@@ -12,7 +12,7 @@ import {ConnectWalletModal} from '../components/wallets/ConnectWalletModal';
 import { EVMSigner } from '@atomiqlabs/chain-evm';
 import {EVMWalletWrapper, useAlpenChain, useBotanixChain, useCitreaChain, useGoatChain} from './chains/useEVMChains';
 import {ChainsConfig} from '../data/ChainsConfig';
-import {Token} from "@atomiqlabs/sdk";
+import {LNURLWithdraw, Token} from "@atomiqlabs/sdk";
 
 export type WalletListData = {
   name: string;
@@ -33,6 +33,7 @@ export type Chain<T> = {
     getSwapLimits?: (input: boolean, token: Token) => {min?: bigint, max?: bigint};
     onlyInput?: boolean;
     instance: T;
+    additionalWalletActions?: {icon: JSX.Element | string, text: string, onClick: () => void}[]
   };
   installedWallets: Array<WalletListData & { isConnected?: boolean }>;
   nonInstalledWallets: Array<WalletListData>;
@@ -44,7 +45,7 @@ export type Chain<T> = {
 
 export type WalletTypes = {
   BITCOIN: ExtensionBitcoinWallet;
-  LIGHTNING: WebLNProvider;
+  LIGHTNING: WebLNProvider | {_lnurl: LNURLWithdraw};
   SOLANA: SolanaSigner;
   STARKNET: StarknetSigner;
   CITREA: EVMSigner;
@@ -98,7 +99,7 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalChainId, setModalChainId] = useState<string>();
-  const modalSelectedChainData = useMemo(() => chains[modalChainId], [modalChainId]);
+  const modalSelectedChainData = useMemo(() => chains[modalChainId], [modalChainId, chains[modalChainId]]);
 
   const connectWalletPromiseCbk = useRef<(success: boolean) => void>();
 
@@ -153,23 +154,21 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
         title={`Select a ${modalSelectedChainData?.chain.name ?? modalChainId} Wallet`}
         installedWallets={modalSelectedChainData?.installedWallets ?? []}
         notInstalledWallets={modalSelectedChainData?.nonInstalledWallets ?? []}
-        onWalletClick={(wallet) => {
+        onWalletClick={async (wallet) => {
           if (modalSelectedChainData == null) return;
-          (async () => {
-            try {
-              await modalSelectedChainData._connectWallet(wallet.name);
-              setModalOpen(false);
-              if (connectWalletPromiseCbk.current) {
-                connectWalletPromiseCbk.current(true);
-                connectWalletPromiseCbk.current = null;
-              }
-            } catch (e) {
-              console.error(e);
-              // alert(
-              //   `Failed to connect to ${wallet.name}. This wallet may not be available or compatible with the ${modalSelectedChainData.chain.name} network.`
-              // );
+          try {
+            await modalSelectedChainData._connectWallet(wallet.name);
+            setModalOpen(false);
+            if (connectWalletPromiseCbk.current) {
+              connectWalletPromiseCbk.current(true);
+              connectWalletPromiseCbk.current = null;
             }
-          })();
+          } catch (e) {
+            console.error(e);
+            // alert(
+            //   `Failed to connect to ${wallet.name}. This wallet may not be available or compatible with the ${modalSelectedChainData.chain.name} network.`
+            // );
+          }
         }}
       />
       {props.children}

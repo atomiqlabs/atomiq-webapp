@@ -1,12 +1,57 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { wallet, WalletAccount } from 'starknet';
 import { getStarknet, StarknetWindowObject } from '@starknet-io/get-starknet-core';
-import { StarknetBrowserSigner, StarknetFees } from '@atomiqlabs/chain-starknet';
+import { StarknetBrowserSigner } from '@atomiqlabs/chain-starknet';
 import { Chain, WalletListData } from '../ChainsProvider';
 import { useLocalStorage } from '../../hooks/utils/useLocalStorage';
-import { FEConstants } from '../../FEConstants';
 import { timeoutPromise } from '../../utils/Utils';
 import {ChainsConfig} from "../../data/ChainsConfig";
+import Controller from "@cartridge/controller";
+
+// Create the instance once, at module level
+const controller = new Controller({
+  defaultChainId: ChainsConfig.STARKNET?.chainId,
+  lazyload: true,
+  slot: "atomiq-exchange-3",
+  tokens: {
+    erc20: ["strk", "usdc", "eth", "wbtc"] as any
+  }
+});
+
+const standardController = controller.asWalletStandard?.();
+if(standardController!=null) {
+  (standardController as any).disconnect = async () => {
+    try {
+      await controller.logout();
+    } catch(e) {
+      console.error("Controller logout error: ", e);
+    }
+    try {
+      await controller.disconnect();
+    } catch(e) {
+      console.error("Controller disconnect error: ", e);
+    }
+  }
+}
+
+// Optional: for newer wallet standards support (if get-starknet uses it)
+(window as any).starknet_cartridge = standardController ?? controller;
+
+const overrideStatusText: {[walletName: string]: string} = {
+  Controller: 'Social login & passkeys'
+};
+
+const overrideAdditionalActions: {[walletName: string]: {icon: JSX.Element | string, text: string, onClick: () => void}[]} = {
+  Controller: [
+    {
+      icon: "icon-connect",
+      text: "Balances",
+      onClick: () => {
+        controller.openProfile("inventory");
+      }
+    }
+  ]
+};
 
 const starknet = getStarknet();
 
@@ -134,6 +179,12 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner>
     await starknet
       .disconnect({ clearLastWallet: true })
       .catch((e) => console.error('useStarknetWalletContext: error while disconnect', e));
+    try {
+      console.log("Current swo: ", currentSWORef.current.swo);
+      if(currentSWORef.current.swo!=null) (currentSWORef.current.swo as any).disconnect();
+    } catch(e) {
+      console.warn("Error when disconnecting starknet wallet: ", e);
+    }
     Object.keys(window.localStorage).forEach((val) => {
       if (val.startsWith('gsw-last-')) window.localStorage.removeItem(val);
     });
@@ -161,11 +212,13 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner>
                         : starknetWalletData?.icon,
                     instance: starknetSigner,
                     address: starknetSigner.getAddress(),
+                    additionalWalletActions: overrideAdditionalActions[starknetWalletData.name]
                   },
-            installedWallets: availableWallets.map((w) => ({
+            installedWallets: availableWallets.sort((a, b) => a.name.localeCompare(b.name)).map((w) => ({
               name: w.name,
               icon: typeof w.icon === 'string' ? w.icon : w.icon.dark,
               isConnected: w.name === starknetWalletData?.name,
+              overrideInstalledStatusText: overrideStatusText[w.name]
             })),
             nonInstalledWallets: nonInstalledWallet,
             chainId: 'STARKNET',

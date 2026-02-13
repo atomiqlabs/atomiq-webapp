@@ -13,8 +13,8 @@ const wallets = [{
   connect: () => requestProvider()
 }];
 
-export function useLightningNetwork(enabled: boolean): Chain<WebLNProvider> {
-  const [wallet, setWallet] = useState<Chain<WebLNProvider>["wallet"]>();
+export function useLightningNetwork(enabled: boolean): Chain<WebLNProvider | {_lnurl: LNURLWithdraw}> {
+  const [wallet, setWallet] = useState<Chain<WebLNProvider | {_lnurl: LNURLWithdraw}>["wallet"]>();
 
   const connect = useCallback(async (walletName: string, lnurl?: LNURLWithdraw) => {
     const wallet = wallets.find(w => w.name===walletName);

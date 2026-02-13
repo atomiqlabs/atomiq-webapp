@@ -1,6 +1,6 @@
 import './assets/style/tailwind.css';
 import './assets/style/import.scss';
-import './App.css'
+import './App.css';
 
 import { Buffer } from 'buffer';
 globalThis.Buffer = Buffer;

@@ -1,17 +1,31 @@
-import type { FC, MouseEvent, ReactNode } from 'react';
+import {FC, MouseEvent, ReactNode, useCallback, useState} from 'react';
 import { GenericModal } from '../common/GenericModal';
 import { WalletListData } from '../../providers/ChainsProvider';
+import {Spinner} from "react-bootstrap";
+import * as React from "react";
 
 export const WalletListItem: FC<{
   name: string;
   icon: string | ReactNode;
   isInstalled: boolean | string;
-  onClick: (event: MouseEvent) => void;
+  onClick: (event: MouseEvent) => Promise<void> | void;
   tabIndex?: number;
 }> = ({ name, icon, isInstalled, onClick, tabIndex = 0 }) => {
+  const [loading, setLoading] = useState<boolean>(false);
+
   return (
     <li>
-      <button className="wallet-modal__item" onClick={onClick} tabIndex={tabIndex}>
+      <button className="wallet-modal__item" onClick={(event) => {
+        const maybePromise = onClick(event);
+        if(maybePromise==null) return;
+        setLoading(true);
+        (maybePromise as Promise<void>)
+          .then(() => setLoading(false))
+          .catch((e) => {
+            setLoading(false);
+            console.error("Connect wallet modal error: ", e);
+          })
+      }} tabIndex={tabIndex}>
         {typeof icon === 'string' ? (
           <img
             width={20}
@@ -25,7 +39,12 @@ export const WalletListItem: FC<{
         )}
         {!isInstalled && 'Install '}
         {name}
-        {isInstalled && <div className="wallet-modal__item__status">{typeof(isInstalled)==='string' ? isInstalled : 'Installed'}</div>}
+        {isInstalled && (
+          loading
+            ? <Spinner animation="border" size="sm" className="ms-auto" />
+            : <div
+              className="wallet-modal__item__status">{typeof (isInstalled) === 'string' ? isInstalled : 'Installed'}</div>
+        )}
       </button>
     </li>
   );
@@ -37,7 +56,7 @@ export interface ConnectWalletModalProps {
   title: string;
   installedWallets: WalletListData[];
   notInstalledWallets?: WalletListData[];
-  onWalletClick: (wallet: WalletListData, event: MouseEvent) => void;
+  onWalletClick: (wallet: WalletListData, event: MouseEvent) => Promise<void>;
   className?: string;
   container?: string;
 }

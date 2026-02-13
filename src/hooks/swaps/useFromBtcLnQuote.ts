@@ -21,7 +21,7 @@ import {SwapperContext} from '../../context/SwapperContext';
 import {NFCStartResult} from '../../utils/NFCReader';
 import {ic_receipt} from 'react-icons-kit/md/ic_receipt';
 import {SwapPageUIState} from "../pages/useSwapPage";
-import {Chain} from "../../providers/ChainsProvider";
+import {Chain, WalletTypes} from "../../providers/ChainsProvider";
 import {WebLNProvider} from "webln";
 import {useCheckAdditionalGas} from "./helpers/useCheckAdditionalGas";
 import {useSwapState} from "./helpers/useSwapState";
@@ -155,7 +155,12 @@ export function useFromBtcLnQuote(
 ): FromBtcLnQuotePage {
   const { swapper } = useContext(SwapperContext);
   const { connectWallet, disconnectWallet } = useContext(ChainsContext);
-  const lightningWallet = useWallet('LIGHTNING', true);
+
+  const _lightningWallet = useWallet('LIGHTNING', true);
+  const lightningWallet: Chain<WebLNProvider>["wallet"] | null = _lightningWallet?.instance?._lnurl!=null
+    ? null
+    : _lightningWallet;
+
   const smartChainWallet = useSmartChainWallet(quote, true, false);
   const canClaimInOneShot = useMemo(() => {
     if(quote==null) return;

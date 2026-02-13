@@ -13,6 +13,7 @@ type MultichainWallet = {
       name: string;
       icon: string;
       chainId: string;
+      additionalWalletActions?: {icon: JSX.Element | string, text: string, onClick: () => void}[];
     };
   };
 };
@@ -72,6 +73,14 @@ function MultichainWalletMenuItem(props: { wallet: MultichainWallet; className?:
                 <div className="icon icon-change-wallet"></div>
                 Change Wallet
               </Dropdown.Item>
+              {value.additionalWalletActions?.map(value => (
+                <Dropdown.Item onClick={value.onClick} key={value.text}>
+                  {typeof(value.icon)==="string" ? (
+                    <div className={`icon ${value.icon}`}></div>
+                  ) : value.icon}
+                  {value.text}
+                </Dropdown.Item>
+              ))}
             </div>
           </div>
         ))}
@@ -103,6 +112,7 @@ export function WalletConnector() {
         name: chainData.chain.name,
         icon: chainData.chain.icon,
         chainId: chain,
+        additionalWalletActions: chainData.wallet.additionalWalletActions
       };
     }
 
