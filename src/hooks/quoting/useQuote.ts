@@ -35,7 +35,7 @@ const RANDOM_BTC_ADDRESS = Address(
 
 function getRandomAddress(swapper: Swapper<any>, token: Token): string {
   if (isSCToken(token)) {
-    return swapper.chains[token.chainId].chainInterface.randomAddress();
+    return swapper.Utils.randomAddress(token.chainId);
   } else if (isBtcToken(token) && !token.lightning) {
     return RANDOM_BTC_ADDRESS;
   }
