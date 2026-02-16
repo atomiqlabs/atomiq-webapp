@@ -4,10 +4,10 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@atomiqlabs/chain-evm": "github:atomiqlabs/atomiq-chain-evm#develop",
+    "@atomiqlabs/chain-evm": "^2.1.10",
     "@atomiqlabs/chain-solana": "^13.0.9",
-    "@atomiqlabs/chain-starknet": "github:atomiqlabs/atomiq-chain-starknet#develop",
-    "@atomiqlabs/sdk": "github:atomiqlabs/atomiq-sdk#ab/add-tsdoc",
+    "@atomiqlabs/chain-starknet": "^8.1.7",
+    "@atomiqlabs/sdk": "^8.3.1",
     "@cartridge/controller": "^0.13.6",
     "@scure/btc-signer": "1.7.0",
     "@solana/wallet-adapter-base": "0.9.27",
