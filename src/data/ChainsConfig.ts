@@ -123,7 +123,7 @@ export const ChainsConfig = {
           minimum: 50000000000000n,
         },
         '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d': {
-          optimal: 5000000000000000000n,
+          optimal: 10000000000000000000n,
           minimum: 1000000000000000000n,
         },
       },
