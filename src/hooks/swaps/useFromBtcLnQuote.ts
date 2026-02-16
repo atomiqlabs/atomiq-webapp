@@ -234,7 +234,7 @@ export function useFromBtcLnQuote(
   }, [quote]);
 
   useEffect(() => {
-    if (quote != null && quote.isInitiated() && quote.state === FromBTCLNSwapState.PR_CREATED) {
+    if (quote != null && quote.isInitiated() && quote.getState() === FromBTCLNSwapState.PR_CREATED) {
       waitForPayment();
     }
   }, [quote]);
@@ -274,7 +274,7 @@ export function useFromBtcLnQuote(
   const isQuoteExpired =
     state === FromBTCLNSwapState.QUOTE_EXPIRED ||
     (state === FromBTCLNSwapState.QUOTE_SOFT_EXPIRED && !committing && !paymentWaiting);
-  const isQuoteExpiredAfterPayment = isQuoteExpired && quote.data != null;
+  const isQuoteExpiredAfterPayment = isQuoteExpired && quote._data != null;
 
   const isFailed = state === FromBTCLNSwapState.FAILED || state === FromBTCLNSwapState.EXPIRED;
 

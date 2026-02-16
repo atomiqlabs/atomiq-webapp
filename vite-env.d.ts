@@ -21,18 +21,26 @@ interface ImportMetaEnv {
     readonly VITE_BOTANIX_RPC_URL?: string;
     readonly VITE_BOTANIX_NETWORK?: 'TESTNET' | 'MAINNET';
     readonly VITE_BOTANIX_BLOCK_EXPLORER?: string;
+    readonly VITE_BOTANIX_MAX_LOGS_BLOCK_RANGE?: string;
+    readonly VITE_BOTANIX_MAX_PARALLEL_LOG_REQUESTS?: string;
 
     readonly VITE_GOAT_RPC_URL?: string;
     readonly VITE_GOAT_NETWORK?: 'TESTNET' | 'MAINNET';
     readonly VITE_GOAT_BLOCK_EXPLORER?: string;
+    readonly VITE_GOAT_MAX_LOGS_BLOCK_RANGE?: string;
+    readonly VITE_GOAT_MAX_PARALLEL_LOG_REQUESTS?: string;
 
     readonly VITE_ALPEN_RPC_URL?: string;
     readonly VITE_ALPEN_NETWORK?: 'TESTNET' | 'MAINNET';
     readonly VITE_ALPEN_BLOCK_EXPLORER?: string;
+    readonly VITE_ALPEN_MAX_LOGS_BLOCK_RANGE?: string;
+    readonly VITE_ALPEN_MAX_PARALLEL_LOG_REQUESTS?: string;
 
     readonly VITE_CITREA_RPC_URL?: string;
     readonly VITE_CITREA_NETWORK?: 'TESTNET4' | 'MAINNET';
     readonly VITE_CITREA_BLOCK_EXPLORER?: string;
+    readonly VITE_CITREA_MAX_LOGS_BLOCK_RANGE?: string;
+    readonly VITE_CITREA_MAX_PARALLEL_LOG_REQUESTS?: string;
 
     //Optional
     readonly VITE_STATS_URL?: string;

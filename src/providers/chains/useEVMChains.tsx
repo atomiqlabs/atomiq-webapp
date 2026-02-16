@@ -149,6 +149,7 @@ function useEVMChain(enabled: boolean, chainId: number) {
   }, [connector?.icon, connector?.iconUrl, isConnected, evmSigner]);
 
   const connectWallet = useCallback(async (walletName: string) => {
+    await disconnect();
     const foundConnector = connectors.find(val => val.name===walletName);
     const result = await foundConnector.connect({chainId});
   }, [connectors, chainId]);

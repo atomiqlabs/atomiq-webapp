@@ -14,18 +14,9 @@ export function ClearSwapHistoryModal(props: {
   const {swapper, events} = useContext(SwapperContext);
 
   const [clearSwapHistory, clearSwapHistoryLoading, clearSwapHistoryResult, clearSwapHistoryError] = useAsync(async () => {
-    const swaps = await swapper.getAllSwaps();
-    const swapsByChain: {[chainId: string]: ISwap[]} = {};
-    swaps.forEach(swap => {
-      (swapsByChain[swap.chainIdentifier] ??= []).push(swap);
-    });
-    for(let chainId in swapsByChain) {
-      const chainSwaps = swapsByChain[chainId];
-      await swapper.chains[chainId].unifiedSwapStorage.removeAll(chainSwaps);
-    }
+    await swapper.wipeStorage();
     events.emit("reloadHistory");
     props.close();
-    return swaps.length;
   }, [swapper]);
 
   return (

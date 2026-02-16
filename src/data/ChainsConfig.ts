@@ -123,7 +123,7 @@ export const ChainsConfig = {
           minimum: 50000000000000n,
         },
         '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d': {
-          optimal: 5000000000000000000n,
+          optimal: 10000000000000000000n,
           minimum: 1000000000000000000n,
         },
       },
@@ -151,6 +151,10 @@ export const ChainsConfig = {
         ? new WebSocketProviderWithRetries(import.meta.env.VITE_CITREA_RPC_URL)
         : new JsonRpcProviderWithRetries(import.meta.env.VITE_CITREA_RPC_URL),
       chainType: import.meta.env.VITE_CITREA_NETWORK,
+      evmConfig: {
+        maxLogsBlockRange: import.meta.env.VITE_CITREA_MAX_LOGS_BLOCK_RANGE==null ? undefined : parseInt(import.meta.env.VITE_CITREA_MAX_LOGS_BLOCK_RANGE),
+        maxParallelLogRequests: import.meta.env.VITE_CITREA_MAX_PARALLEL_LOG_REQUESTS==null ? undefined : parseInt(import.meta.env.VITE_CITREA_MAX_PARALLEL_LOG_REQUESTS)
+      }
     } : undefined,
   BOTANIX: import.meta.env.VITE_BOTANIX_RPC_URL
     ? {
@@ -165,6 +169,10 @@ export const ChainsConfig = {
         ? new WebSocketProviderWithRetries(import.meta.env.VITE_BOTANIX_RPC_URL)
         : new JsonRpcProviderWithRetries(import.meta.env.VITE_BOTANIX_RPC_URL),
       chainType: import.meta.env.VITE_BOTANIX_NETWORK,
+      evmConfig: {
+        maxLogsBlockRange: import.meta.env.VITE_BOTANIX_MAX_LOGS_BLOCK_RANGE==null ? undefined : parseInt(import.meta.env.VITE_BOTANIX_MAX_LOGS_BLOCK_RANGE),
+        maxParallelLogRequests: import.meta.env.VITE_BOTANIX_MAX_PARALLEL_LOG_REQUESTS==null ? undefined : parseInt(import.meta.env.VITE_BOTANIX_MAX_PARALLEL_LOG_REQUESTS)
+      }
     } : undefined,
   ALPEN: import.meta.env.VITE_ALPEN_RPC_URL
     ? {
@@ -179,6 +187,10 @@ export const ChainsConfig = {
         ? new WebSocketProviderWithRetries(import.meta.env.VITE_ALPEN_RPC_URL)
         : new JsonRpcProviderWithRetries(import.meta.env.VITE_ALPEN_RPC_URL),
       chainType: import.meta.env.VITE_ALPEN_NETWORK,
+      evmConfig: {
+        maxLogsBlockRange: import.meta.env.VITE_ALPEN_MAX_LOGS_BLOCK_RANGE==null ? undefined : parseInt(import.meta.env.VITE_ALPEN_MAX_LOGS_BLOCK_RANGE),
+        maxParallelLogRequests: import.meta.env.VITE_ALPEN_MAX_PARALLEL_LOG_REQUESTS==null ? undefined : parseInt(import.meta.env.VITE_ALPEN_MAX_PARALLEL_LOG_REQUESTS)
+      }
     } : undefined,
   GOAT: import.meta.env.VITE_GOAT_RPC_URL
     ? {
@@ -193,5 +205,9 @@ export const ChainsConfig = {
         ? new WebSocketProviderWithRetries(import.meta.env.VITE_GOAT_RPC_URL)
         : new JsonRpcProviderWithRetries(import.meta.env.VITE_GOAT_RPC_URL),
       chainType: import.meta.env.VITE_GOAT_NETWORK,
+      evmConfig: {
+        maxLogsBlockRange: import.meta.env.VITE_GOAT_MAX_LOGS_BLOCK_RANGE==null ? undefined : parseInt(import.meta.env.VITE_GOAT_MAX_LOGS_BLOCK_RANGE),
+        maxParallelLogRequests: import.meta.env.VITE_GOAT_MAX_PARALLEL_LOG_REQUESTS==null ? undefined : parseInt(import.meta.env.VITE_GOAT_MAX_PARALLEL_LOG_REQUESTS)
+      }
     } : undefined
 } as const;

@@ -63,7 +63,7 @@ export function SwapPanel(props: {
     case SwapType.FROM_BTCLN:
     case SwapType.FROM_BTCLN_AUTO:
       const _quote = props.quote as FromBTCLNSwap | FromBTCLNAutoSwap;
-      if (_quote.lnurl != null && props.type !== 'swap') {
+      if (_quote.isLNURL() && props.type !== 'swap') {
         swapElement = <></>;
       } else {
         swapElement = (
