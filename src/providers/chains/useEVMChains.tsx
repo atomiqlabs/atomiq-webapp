@@ -27,6 +27,15 @@ const overrideStatusText: {[walletName: string]: string} = {
   WalletConnect: 'QR code'
 };
 
+const usesECDSADN: {[walletId: string]: boolean} = {
+  'io.rabby': true,
+  'com.binance.wallet': true,
+  'app.keplr': true,
+  'com.okex.wallet': true,
+  'io.metamask': true,
+  'com.coinbase.wallet': true
+};
+
 const installableWallets = [
   {
     name: 'MetaMask',
@@ -107,6 +116,7 @@ function useEVMChain(enabled: boolean, chainId: number) {
     if(connector==null || connector.getProvider==null || !isConnected) return;
     if(BLOCKED_CONNECTORS.includes(connector.id)) return;
     let cancelled = false;
+    console.log(`useEVMChain(): connected wallet name: ${connector.name}, id: ${connector.id}`);
     connector.getProvider({chainId}).then(provider => {
       if(cancelled) return;
       return new BrowserProvider(provider as any).getSigner();
@@ -117,7 +127,9 @@ function useEVMChain(enabled: boolean, chainId: number) {
         (chainId: number) => currentConnectorRef.current.switchChain({chainId}).then(() => {}),
         () => connectedChainIdRef.current
       );
-      setEvmSigner(new EVMBrowserSigner(_signer, signer.address));
+      const evmSigner = new EVMBrowserSigner(_signer, signer.address, usesECDSADN[connector.id]);
+      console.log("useEVMChain(): Using EVM signer: ", evmSigner);
+      setEvmSigner(evmSigner);
     });
     return () => {
       cancelled = true;

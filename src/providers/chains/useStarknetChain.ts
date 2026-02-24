@@ -41,6 +41,16 @@ const overrideStatusText: {[walletName: string]: string} = {
   Controller: 'Social login & passkeys'
 };
 
+const usesECDSADN: {[walletId: string]: boolean} = {
+  controller: false,
+  braavos: true,
+  argentX: true,
+  keplr: true,
+  okxwallet: true,
+  xverse: true,
+  metamask: true
+};
+
 const overrideAdditionalActions: {[walletName: string]: {icon: JSX.Element | string, text: string, onClick: () => void}[]} = {
   Controller: [
     {
@@ -97,7 +107,7 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner>
     }
     const walletAccount = await WalletAccount.connect(ChainsConfig.STARKNET?.rpcUrl, swo);
     const chainId = await wallet.requestChainId(walletAccount.walletProvider);
-    console.log('useStarknetWalletContext(): connected wallet chainId: ', chainId);
+    console.log(`useStarknetWalletContext(): connected wallet chainId: ${chainId}, name: ${swo.name}, id: ${swo.id}`);
     if (chainId != null && ChainsConfig.STARKNET?.chainId !== chainId) {
       setStarknetSigner(null);
       setStarknetWalletData(null);
@@ -111,7 +121,7 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner>
           'useStarknetWalletContext(): accountsChanged listener, new accounts: ',
           accounts
         );
-        const starknetSigner = new StarknetBrowserSigner(walletAccount);
+        const starknetSigner = new StarknetBrowserSigner(walletAccount, usesECDSADN[swo.id]);
         wallet.requestChainId(walletAccount.walletProvider).then((chainId) => {
           console.log('useStarknetWalletContext(): connected wallet chainId: ', chainId);
           if (ChainsConfig.STARKNET?.chainId !== chainId) {
@@ -125,7 +135,8 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner>
     swo.on('accountsChanged', currentSWORef.current.listener);
 
     await waitTillAddressPopulated(walletAccount);
-    const starknetSigner = new StarknetBrowserSigner(walletAccount);
+    const starknetSigner = new StarknetBrowserSigner(walletAccount, usesECDSADN[swo.id]);
+    console.log("useStarknetChain(): Using starknet signer: ", starknetSigner);
     setStarknetSigner(starknetSigner);
     setStarknetWalletData(swo);
   };
