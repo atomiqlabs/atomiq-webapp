@@ -16,6 +16,7 @@ import { ChainsProvider } from './providers/ChainsProvider';
 import { SocialFooter } from './components/layout/SocialFooter';
 import { NotFound } from './pages/NotFound';
 import {SwapperProvider} from "./providers/SwapperProvider";
+import {BitcoinWebWalletProvider} from "./providers/BitcoinWebWalletProvider";
 
 global.atomiqLogLevel = 5;
 
@@ -75,11 +76,13 @@ function App() {
   return (
     <div className="App d-flex flex-column">
       <BrowserRouter>
-        <ChainsProvider>
-          <SwapperProvider>
-            <WrappedApp />
-          </SwapperProvider>
-        </ChainsProvider>
+        <SwapperProvider>
+          <BitcoinWebWalletProvider>
+            <ChainsProvider>
+              <WrappedApp />
+            </ChainsProvider>
+          </BitcoinWebWalletProvider>
+        </SwapperProvider>
       </BrowserRouter>
     </div>
   );

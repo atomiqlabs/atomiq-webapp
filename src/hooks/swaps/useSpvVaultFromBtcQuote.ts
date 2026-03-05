@@ -1,7 +1,7 @@
 import { SingleStep } from '../../components/swaps/StepByStep';
 import { Chain } from '../../providers/ChainsProvider';
-import { ISwap, SpvFromBTCSwap, SpvFromBTCSwapState } from '@atomiqlabs/sdk';
-import { useEffect, useMemo, useState } from 'react';
+import {ISwap, SpvFromBTCSwap, SpvFromBTCSwapState, TokenAmount} from '@atomiqlabs/sdk';
+import {useContext, useEffect, useMemo, useState} from 'react';
 import { useStateRef } from '../utils/useStateRef';
 import { useChain } from '../chains/useChain';
 import { useSmartChainWallet } from '../wallets/useSmartChainWallet';
@@ -20,6 +20,8 @@ import {TxDataType} from "../../types/swaps/TxDataType";
 import {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {useSwapState} from "./helpers/useSwapState";
 import {useWallet} from "../wallets/useWallet";
+import {ChainsContext} from "../../context/ChainsContext";
+import {useLocalStorage} from "../utils/useLocalStorage";
 
 export type SpvVaultFromBtcPage = {
   executionSteps?: SingleStep[];
@@ -39,16 +41,47 @@ export type SpvVaultFromBtcPage = {
       remaining: number;
       total: number;
     };
+    //Display the modal warning to the user to back up the phrase
+    backupWarningModal?: {
+      //Close the modal with the user accepting or not
+      close: (accepted: boolean) => void;
+      //Data for switch about whether to show the dialog again next time
+      showAgain: {
+        checked: boolean;
+        onChange: (checked: boolean) => void;
+      };
+    };
   };
-  step2broadcasting?: {
+  step2paymentWait?: {
     error?: {
       title: string;
       error: Error;
-      retry: () => void;
+      type: "error" | "warning";
+      retry?: () => void;
+    };
+    //Displayed in the QR code and in text field, call copy() when copy icon is clicked
+    address: {
+      value: string;
+      hyperlink: string;
+      copy: () => boolean;
+    };
+    //Pay with external bitcoin wallet by invoking a bitcoin: deeplink
+    payWithBitcoinWallet: {
+      onClick: () => void;
+    };
+    //Connect browser wallet
+    payWithBrowserWallet: {
+      loading: boolean;
+      onClick: () => void;
+    };
+    expiry: {
+      remaining: number;
+      total: number;
     };
   };
   step3awaitingConfirmations?: {
-    txData: TxDataType;
+    broadcasting: boolean,
+    txData?: TxDataType;
     error?: {
       title: string;
       error: Error;
@@ -79,9 +112,12 @@ export function useSpvVaultFromBtcQuote(
   quote: SpvFromBTCSwap<any>,
   UICallback: (quote: ISwap, state: SwapPageUIState) => void,
   feeRate?: number,
-  inputWalletBalance?: bigint
+  inputWalletBalance?: bigint,
+  abortSwap?: () => void
 ): SpvVaultFromBtcPage {
+  const { connectWallet } = useContext(ChainsContext);
   const UICallbackRef = useStateRef(UICallback);
+  const abortSwapRef = useStateRef(abortSwap);
 
   const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(
     quote,
@@ -98,7 +134,18 @@ export function useSpvVaultFromBtcQuote(
   const bitcoinWallet = useWallet('BITCOIN', true);
   const smartChainWallet = useSmartChainWallet(quote, undefined, false);
 
-  const [txData, setTxData] = useState<TxDataType>(null);
+  const [backupWarningModalOpened, setBackupWarningModalOpened] = useState<boolean>(false);
+  const [backupWarning, setBackupWarning] = useLocalStorage(
+    'crossLightning-backupwarning',
+    true
+  );
+
+  const abortSignalRef = useAbortSignalRef([quote]);
+
+  const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => {
+    if (UICallbackRef.current) UICallbackRef.current(quote, 'hide');
+    return quote.waitForPayment(undefined, abortSignalRef.current);
+  }, [quote]);
 
   const [onSend, sendLoading, sendSuccess, sendError] = useAsync(() => {
     if (UICallbackRef.current) UICallbackRef.current(quote, 'lock');
@@ -124,9 +171,9 @@ export function useSpvVaultFromBtcQuote(
       });
   }, [quote, bitcoinWallet, feeRate]);
 
-  const abortSignalRef = useAbortSignalRef([quote]);
+  const [txData, setTxData] = useState<TxDataType>(null);
 
-  const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => {
+  const [onWaitForBitcoinTx, waitingBitcoinTx, waitBitcoinTxSuccess, waitBitcoinTxError] = useAsync(() => {
     return quote.waitForBitcoinTransaction(
       (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
         if (txId == null) {
@@ -158,7 +205,7 @@ export function useSpvVaultFromBtcQuote(
 
   useEffect(() => {
     if (state === SpvFromBTCSwapState.POSTED || state === SpvFromBTCSwapState.BROADCASTED) {
-      onWaitForPayment();
+      onWaitForBitcoinTx();
     }
   }, [state]);
 
@@ -172,16 +219,20 @@ export function useSpvVaultFromBtcQuote(
 
   const isQuoteExpired =
     state === SpvFromBTCSwapState.QUOTE_EXPIRED ||
-    (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && !sendLoading && !waitingPayment);
-  const isCreated =
-    state === SpvFromBTCSwapState.CREATED ||
-    (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && sendLoading);
+    (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && !sendLoading && !waitingBitcoinTx && !waitingPayment);
+  const _isCreated =
+    (state === SpvFromBTCSwapState.CREATED ||
+    (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && sendLoading))
+  const isCreated = quote.getDepositWalletType()==="waitpayment"
+    ? (_isCreated && !isInitiated) :
+    _isCreated;
   const isSending = state === SpvFromBTCSwapState.CREATED && sendLoading;
+  const isWaitingPayment = isInitiated && _isCreated && quote.getDepositWalletType()==="waitpayment";
   const isBroadcasting =
     state === SpvFromBTCSwapState.SIGNED ||
     state === SpvFromBTCSwapState.POSTED ||
     (state === SpvFromBTCSwapState.BROADCASTED && txData == null);
-  const isReceived = state === SpvFromBTCSwapState.BROADCASTED && txData != null;
+  const isBroadcasted = state === SpvFromBTCSwapState.BROADCASTED && txData != null;
   const isBtcTxConfirmed = state === SpvFromBTCSwapState.BTC_TX_CONFIRMED;
   const isClaimable = isBtcTxConfirmed && !claimLoading;
   const isClaiming = isBtcTxConfirmed && claimLoading;
@@ -232,7 +283,7 @@ export function useSpvVaultFromBtcQuote(
       text: 'Awaiting bitcoin transaction',
       type: 'loading',
     };
-  if (isReceived)
+  if (isBroadcasted)
     executionSteps[0] = {
       icon: ic_hourglass_top_outline,
       text: 'Waiting bitcoin confirmations',
@@ -299,7 +350,19 @@ export function useSpvVaultFromBtcQuote(
                     loading: sendLoading,
                     disabled: sendLoading || !hasEnoughBalance,
                   }
-                : undefined,
+                : quote.getDepositWalletType()==="waitpayment"
+                  ? {
+                    onClick: () => {
+                      if(backupWarning) {
+                        setBackupWarningModalOpened(true);
+                      } else {
+                        onWaitForPayment();
+                      }
+                    },
+                    loading: backupWarningModalOpened,
+                    disabled: backupWarningModalOpened
+                  }
+                  : undefined,
             error:
               sendError != null
                 ? {
@@ -314,11 +377,27 @@ export function useSpvVaultFromBtcQuote(
                     total: totalQuoteTime,
                   }
                 : undefined,
+            backupWarningModal:
+              !backupWarningModalOpened
+                ? undefined
+                : {
+                  close: (accepted: boolean) => {
+                    setBackupWarningModalOpened(false);
+                    if(accepted) onWaitForPayment();
+                  },
+                  showAgain: {
+                    checked: backupWarning,
+                    onChange: setBackupWarning
+                  }
+                }
           },
     [
       isCreated,
       bitcoinWallet,
       hasEnoughBalance,
+      backupWarningModalOpened,
+      backupWarning,
+      onWaitForPayment,
       onSend,
       sendError,
       sendLoading,
@@ -327,39 +406,70 @@ export function useSpvVaultFromBtcQuote(
     ]
   );
 
-  const step2broadcasting = useMemo(
+  const step2paymentWait = useMemo(
     () =>
-      !isBroadcasting
+      !isWaitingPayment
         ? undefined
         : {
-            error:
-              waitPaymentError != null
-                ? {
-                    title: 'Connection problem',
-                    error: waitPaymentError,
-                    retry: onWaitForPayment,
-                  }
-                : undefined,
-          },
-    [isBroadcasting, waitPaymentError, onWaitForPayment]
-  );
-
-  const step3awaitingConfirmations = useMemo(
-    () =>
-      !isReceived
-        ? undefined
-        : {
-          txData: waitPaymentError == null ? txData : undefined,
           error:
             waitPaymentError != null
               ? {
                 title: 'Connection problem',
+                type: 'warning' as const,
                 error: waitPaymentError,
                 retry: onWaitForPayment,
               }
               : undefined,
+          address: {
+            value: quote.getAddress(),
+            hyperlink: quote.getHyperlink(),
+            copy: () => {
+              navigator.clipboard.writeText(quote.getAddress());
+              return true;
+            }
+          },
+          payWithBitcoinWallet: {
+            onClick: () => {
+              window.location.href = quote.getHyperlink();
+            }
+          },
+          //Connect browser wallet and automatically pay after
+          payWithBrowserWallet: {
+            loading: false,
+            onClick: () => {
+              connectWallet('BITCOIN').then((success) => {
+                //Abort the current swap and create a new one
+                if(success) {
+                  if(abortSwapRef.current!=null) abortSwapRef.current();
+                }
+              });
+            }
+          },
+          expiry: {
+            remaining: quoteTimeRemaining,
+            total: totalQuoteTime,
+          }
         },
-    [isReceived, txData, waitPaymentError, onWaitForPayment]
+    [isWaitingPayment, quote, ]
+  );
+
+  const step3awaitingConfirmations = useMemo(
+    () =>
+      !isBroadcasted && isBroadcasting
+        ? undefined
+        : {
+          broadcasting: !waitBitcoinTxError ? isBroadcasting : undefined,
+          txData: waitBitcoinTxError == null ? txData : undefined,
+          error:
+            waitBitcoinTxError != null
+              ? {
+                title: 'Connection problem',
+                error: waitBitcoinTxError,
+                retry: onWaitForBitcoinTx,
+              }
+              : undefined,
+        },
+    [isBroadcasting, isBroadcasted, txData, waitBitcoinTxError, onWaitForBitcoinTx]
   );
 
   const step4claim = useMemo(
@@ -417,7 +527,7 @@ export function useSpvVaultFromBtcQuote(
   return {
     executionSteps: isInitiated && !isCreated ? executionSteps : undefined,
     step1init,
-    step2broadcasting,
+    step2paymentWait,
     step3awaitingConfirmations,
     step4claim,
     step5,
