@@ -38,7 +38,7 @@ export type Chain<T> = {
   installedWallets: Array<WalletListData & { isConnected?: boolean }>;
   nonInstalledWallets: Array<WalletListData>;
   chainId: string;
-  _disconnect: () => Promise<void> | void;
+  _disconnect: (walletName?: string) => Promise<void> | void;
   _connectWallet: (walletName: string, ...data: any[]) => Promise<void> | void;
   hasWallets: boolean;
 };

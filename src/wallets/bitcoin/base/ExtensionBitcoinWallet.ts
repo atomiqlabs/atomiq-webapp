@@ -1,10 +1,11 @@
 import { BitcoinNetwork, CoinselectAddressTypes, BitcoinWallet } from '@atomiqlabs/sdk';
 import { NETWORK, TEST_NETWORK, Transaction } from '@scure/btc-signer';
 import { ChainsConfig } from "../../../data/ChainsConfig";
+import {INamedBitcoinWallet} from "./INamedBitcoinWallet";
 
 const feeMultiplier = 1.25;
 
-export abstract class ExtensionBitcoinWallet extends BitcoinWallet {
+export abstract class ExtensionBitcoinWallet extends BitcoinWallet implements INamedBitcoinWallet {
 
   static readonly supportedNetwork: BitcoinNetwork[] = [BitcoinNetwork.MAINNET];
 

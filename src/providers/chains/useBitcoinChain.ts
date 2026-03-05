@@ -1,16 +1,21 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
 import * as React from 'react';
 import { useLocalStorage } from '../../hooks/utils/useLocalStorage';
 import { useStateRef } from '../../hooks/utils/useStateRef';
 import { Chain } from '../ChainsProvider';
 import {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {BitcoinWalletType, getInstalledBitcoinWallets} from "../../wallets/bitcoin/utils/BitcoinWalletUtils";
+import {INamedBitcoinWallet} from "../../wallets/bitcoin/base/INamedBitcoinWallet";
+import {BitcoinWebWalletContext} from "../../context/BitcoinWebWalletContext";
+import {InternalBitcoinWebwallet} from "../../wallets/bitcoin/InternalBitcoinWebwallet";
 
 export function useBitcoinChain(
   enabled: boolean,
   connectedOtherChainWallets: { [chainName: string]: string }
-): Chain<ExtensionBitcoinWallet> {
-  const [bitcoinWallet, setBitcoinWallet] = React.useState<ExtensionBitcoinWallet>(undefined);
+): Chain<INamedBitcoinWallet> {
+  const {wallet: internalWebwallet} = useContext(BitcoinWebWalletContext);
+
+  const [bitcoinWallet, setBitcoinWallet] = React.useState<INamedBitcoinWallet>(undefined);
   const [nonInstalledWallets, setNonInstalledWallets] = useState<BitcoinWalletType[]>([]);
   const [usableWallets, setUsableWallets] = useState<BitcoinWalletType[]>([]);
 
@@ -29,8 +34,8 @@ export function useBitcoinChain(
       const activeWallet = ExtensionBitcoinWallet.loadState();
       if (oldWalletName != null && newWalletName == null && activeWallet?.name === oldWalletName) {
         setAutoConnect(true);
-        if (bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
-          disconnect(true);
+        if (bitcoinWalletRef.current != null && bitcoinWalletRef.current instanceof ExtensionBitcoinWallet && bitcoinWalletRef.current.wasAutomaticallyInitiated)
+          disconnect(undefined, true);
       }
       prevConnectedWalletRef.current[chainName] = newWalletName;
       if (newWalletName == null) continue;
@@ -76,7 +81,7 @@ export function useBitcoinChain(
 
   useEffect(() => {
     if (!enabled) return;
-    if (bitcoinWallet == null) return;
+    if (bitcoinWallet == null || !(bitcoinWallet instanceof ExtensionBitcoinWallet)) return;
     let listener: (newWallet: ExtensionBitcoinWallet) => void;
     bitcoinWallet.onWalletChanged(
       (listener = (newWallet: ExtensionBitcoinWallet) => {
@@ -106,11 +111,13 @@ export function useBitcoinChain(
     []
   );
 
-  const disconnect: (skipToggleAutoConnect?: boolean) => void = useCallback(
-    (skipToggleAutoConnect?: boolean) => {
+  const disconnect: (walletName?: string, skipToggleAutoConnect?: boolean) => void = useCallback(
+    (walletName?: string, skipToggleAutoConnect?: boolean) => {
+      if (walletName!=null && bitcoinWalletRef.current.getName() !== walletName) return;
       if (
         skipToggleAutoConnect !== true &&
         bitcoinWalletRef.current != null &&
+        bitcoinWalletRef.current instanceof ExtensionBitcoinWallet &&
         bitcoinWalletRef.current.wasAutomaticallyInitiated
       )
         setAutoConnect(false);
@@ -122,6 +129,10 @@ export function useBitcoinChain(
 
   const connect = useCallback(
     (walletName: string) => {
+      if(walletName===InternalBitcoinWebwallet.walletName) {
+        setBitcoinWallet(internalWebwallet);
+        return;
+      }
       if (usableWallets == null) return;
       const foundWallet = usableWallets.find((w) => w.name === walletName);
       if (foundWallet == null) return;
@@ -130,7 +141,7 @@ export function useBitcoinChain(
         throw e;
       });
     },
-    [usableWallets]
+    [usableWallets, internalWebwallet]
   );
 
   return useMemo(
@@ -150,6 +161,7 @@ export function useBitcoinChain(
                     icon: bitcoinWallet.getIcon(),
                     instance: bitcoinWallet,
                     address: bitcoinWallet.getReceiveAddress(),
+                    onlyInput: bitcoinWallet.isOnlyInput?.()
                   },
             installedWallets: usableWallets.map((w) => ({
               name: w.name,

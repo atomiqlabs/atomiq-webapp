@@ -1,8 +1,8 @@
 import {createContext} from "react";
-import {SingleAddressBitcoinWallet} from "@atomiqlabs/sdk";
+import {InternalBitcoinWebwallet} from "../wallets/bitcoin/InternalBitcoinWebwallet";
 
 export const BitcoinWebWalletContext: React.Context<{
     recoverWallet: (mnemonic: string) => void,
     getMnemonicPhrase: () => string,
-    wallet?: SingleAddressBitcoinWallet
+    wallet?: InternalBitcoinWebwallet
 }> = createContext(undefined);

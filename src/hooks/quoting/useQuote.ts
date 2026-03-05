@@ -1,4 +1,4 @@
-import { useContext, useMemo, useRef } from 'react';
+import {useContext, useMemo} from 'react';
 import {
   BitcoinNetwork,
   fromHumanReadableString,
@@ -8,20 +8,18 @@ import {
   ISwap,
   LNURLPay,
   LNURLWithdraw,
-  SpvFromBTCSwap,
   Swapper,
   SwapType,
   Token,
 } from '@atomiqlabs/sdk';
-import { SwapperContext } from '../../context/SwapperContext';
-import { useWithAwait } from '../utils/useWithAwait';
-import { useChain } from '../chains/useChain';
-import { Address, NETWORK, TEST_NETWORK } from '@scure/btc-signer';
-import { FEConstants } from '../../FEConstants';
+import {SwapperContext} from '../../context/SwapperContext';
+import {useWithAwait} from '../utils/useWithAwait';
+import {Address, NETWORK, TEST_NETWORK} from '@scure/btc-signer';
 import randomBytes from 'randombytes';
-import { toTokenIdentifier } from '../../utils/Tokens';
+import {toTokenIdentifier} from '../../utils/Tokens';
 import {ChainsConfig} from "../../data/ChainsConfig";
 import {useWallet} from "../wallets/useWallet";
+import {BitcoinWebWalletContext} from "../../context/BitcoinWebWalletContext";
 
 const btcFeeMaxOffset = 3;
 const btcFeeMaxMultiple = 1.5;
@@ -53,12 +51,19 @@ export function useQuote(
   pause?: boolean
 ): [() => void, ISwap, boolean, boolean, any] {
   const { swapper } = useContext(SwapperContext);
+  const { getMnemonicPhrase } = useContext(BitcoinWebWalletContext);
 
   const inputWallet = useWallet(inToken, true);
   let inputAddress: string | LNURLWithdraw = inputWallet?.instance?._lnurl ?? inputWallet?.address;
   if (inToken != null && isBtcToken(inToken) && inToken.lightning && isLNURLWithdraw(address)) {
     inputAddress = address;
     address = null;
+  }
+  if (
+    swapper!=null && inToken != null && outToken != null &&
+    swapper.getSwapType(inToken, outToken)===SwapType.SPV_VAULT_FROM_BTC && inputWallet==null
+  ) {
+    inputAddress = getMnemonicPhrase();
   }
 
   const outputWallet = useWallet(outToken, false);

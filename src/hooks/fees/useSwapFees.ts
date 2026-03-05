@@ -61,6 +61,16 @@ export function useSwapFees(
           composition: value.fee.composition,
         };
       }
+      if (value.type === FeeType.NETWORK_INPUT) {
+        return {
+          text:
+            capitalizeFirstLetter(getChainIdentifierForCurrency(value.fee.amountInSrcToken.token)) +
+            ' network fee',
+          description: 'Transaction fees on the input network',
+          fee: value.fee,
+          composition: value.fee.composition,
+        };
+      }
     });
     if (swap instanceof FromBTCSwap) {
       const amount = swap.getClaimerBounty();

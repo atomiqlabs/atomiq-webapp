@@ -76,7 +76,7 @@ export function useSolanaChain(enabled: boolean): Chain<SolanaSigner> {
           downloadLink: w.adapter.url,
         })),
       chainId: 'SOLANA',
-      _disconnect: disconnect,
+      _disconnect: () => disconnect(),
       _connectWallet: connectWallet,
       hasWallets: availableWallets.length > 0,
     };

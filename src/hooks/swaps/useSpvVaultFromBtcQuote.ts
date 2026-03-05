@@ -103,8 +103,7 @@ export type SpvVaultFromBtcPage = {
     };
   };
   step5?: {
-    state: 'success' | 'failed' | 'expired';
-    showConnectWalletButton: boolean;
+    state: 'success' | 'failed' | 'expired' | 'expired_uninitialized';
   };
 };
 
@@ -222,7 +221,7 @@ export function useSpvVaultFromBtcQuote(
     (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && !sendLoading && !waitingBitcoinTx && !waitingPayment);
   const _isCreated =
     (state === SpvFromBTCSwapState.CREATED ||
-    (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && sendLoading))
+    (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && (sendLoading || waitingPayment)))
   const isCreated = quote.getDepositWalletType()==="waitpayment"
     ? (_isCreated && !isInitiated) :
     _isCreated;
@@ -450,12 +449,12 @@ export function useSpvVaultFromBtcQuote(
             total: totalQuoteTime,
           }
         },
-    [isWaitingPayment, quote, ]
+    [isWaitingPayment, waitPaymentError, onWaitForPayment, quote, quoteTimeRemaining, totalQuoteTime, connectWallet]
   );
 
   const step3awaitingConfirmations = useMemo(
     () =>
-      !isBroadcasted && isBroadcasting
+      !isBroadcasted && !isBroadcasting
         ? undefined
         : {
           broadcasting: !waitBitcoinTxError ? isBroadcasting : undefined,
@@ -518,10 +517,9 @@ export function useSpvVaultFromBtcQuote(
               ? ('success' as const)
               : isFailed
                 ? ('failed' as const)
-                : ('expired' as const),
-            showConnectWalletButton: isQuoteExpired && bitcoinWallet==null
+                : isInitiated ? ('expired' as const) : ('expired_uninitialized' as const)
           },
-    [isSuccess, isFailed, isQuoteExpired, bitcoinWallet]
+    [isSuccess, isFailed, isQuoteExpired, isInitiated, bitcoinWallet]
   );
 
   return {

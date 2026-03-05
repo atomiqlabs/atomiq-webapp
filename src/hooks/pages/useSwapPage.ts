@@ -40,6 +40,8 @@ import {ChainsConfig} from "../../data/ChainsConfig";
 import {Tokens} from "../../providers/SwapperProvider";
 import {useStateRef} from "../utils/useStateRef";
 import {useWallet} from "../wallets/useWallet";
+import {BitcoinWebWalletContext} from "../../context/BitcoinWebWalletContext";
+import {InternalBitcoinWebwallet} from "../../wallets/bitcoin/InternalBitcoinWebwallet";
 
 export type SwapPageUIState = 'show' | 'lock' | 'hide';
 
@@ -106,7 +108,7 @@ export type SwapPageState = {
     gasDrop?: {
       checked: boolean;
       onChange: (checked: boolean) => void;
-      amount: TokenAmount<string, SCToken>;
+      amount: TokenAmount<SCToken>;
       disabled: boolean;
     };
     address?: {
@@ -402,7 +404,8 @@ export function useSwapPage(): SwapPageState {
     scCurrency.chainId,
     gasDropTokenAmount != null && gasDropChecked,
     false,
-    minBtcTxFee
+    minBtcTxFee,
+    true
   );
 
   // Output wallet balance for display
@@ -461,7 +464,7 @@ export function useSwapPage(): SwapPageState {
     outputToken,
     addressData?.lnurl ?? addressData?.address,
     gasDropChecked ? gasDropTokenAmount?.rawAmount : undefined,
-    maxSpendable?.feeRate,
+    inputWallet ? maxSpendable?.feeRate : undefined,
     addressLoading || !!existingSwap
   );
   const randomQuote = existingSwap!=null ? false : _randomQuote;
@@ -599,6 +602,30 @@ export function useSwapPage(): SwapPageState {
     outputWallet,
     quote
   ]);
+
+  //Check if the internal webwallet has some balance in it, if yes connect it as a bitcoin wallet
+  // so it can be used to swap remaining funds there!
+  const {wallet: internalWebwallet} = useContext(BitcoinWebWalletContext);
+  useEffect(() => {
+    if (inputToken == null || !isBtcToken(inputToken) || inputToken.lightning) return;
+    if (internalWebwallet == null) return;
+    if (inputWallet != null) {
+      if (inputWallet.instance instanceof InternalBitcoinWebwallet) {
+        internalWebwallet.getBalance().then(balance => {
+          console.log("Internal wallet balance: ", balance);
+          if(balance.confirmedBalance + balance.unconfirmedBalance <= 0n)
+            chains.BITCOIN._disconnect(InternalBitcoinWebwallet.walletName);
+        });
+      }
+      return;
+    }
+    //Check spendable balance of the webwallet
+    internalWebwallet.getBalance().then(balance => {
+      console.log("Internal wallet balance: ", balance);
+      if(balance.confirmedBalance + balance.unconfirmedBalance > 0n)
+        chains.BITCOIN._connectWallet(InternalBitcoinWebwallet.walletName);
+    });
+  }, [inputToken, inputWallet, internalWebwallet, quote]);
 
   //Leaves existing swap
   const leaveExistingSwapOrRefresh = useCallback(

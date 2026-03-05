@@ -4,22 +4,29 @@ import {BitcoinWebWalletContext} from "../context/BitcoinWebWalletContext";
 import {ChainsConfig} from "../data/ChainsConfig";
 import {useLocalStorage} from "../hooks/utils/useLocalStorage";
 import {useWithAwait} from "../hooks/utils/useWithAwait";
+import {InternalBitcoinWebwallet} from "../wallets/bitcoin/InternalBitcoinWebwallet";
 
 const MNEMONIC_STORAGE_KEY = "atomiq-btc-webwallet-mnemonic";
 
 export function BitcoinWebWalletProvider(props: { children: React.ReactNode }) {
-  const [mnemonicPhrase, setMnemonicPhrase] = useLocalStorage<string>(
-    MNEMONIC_STORAGE_KEY,
-    SingleAddressBitcoinWallet.generateRandomMnemonic()
+  const [_mnemonicPhrase, setMnemonicPhrase] = useLocalStorage<string | undefined>(
+    MNEMONIC_STORAGE_KEY, undefined
   );
 
-  const [wallet] = useWithAwait<SingleAddressBitcoinWallet>(
+  const mnemonicPhrase = useMemo(() => {
+    if(_mnemonicPhrase!=null) return _mnemonicPhrase;
+    const generatedMnemonic = SingleAddressBitcoinWallet.generateRandomMnemonic();
+    setMnemonicPhrase(generatedMnemonic);
+    return generatedMnemonic;
+  }, [_mnemonicPhrase]);
+
+  const [wallet] = useWithAwait<InternalBitcoinWebwallet>(
     async () => {
       const privateKey = await SingleAddressBitcoinWallet.mnemonicToPrivateKey(
         mnemonicPhrase,
         ChainsConfig.BITCOIN.network
       );
-      return new SingleAddressBitcoinWallet(
+      return new InternalBitcoinWebwallet(
         ChainsConfig.BITCOIN.rpc,
         ChainsConfig.BITCOIN.network,
         privateKey
