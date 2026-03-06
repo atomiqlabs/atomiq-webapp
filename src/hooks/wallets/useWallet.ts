@@ -5,8 +5,10 @@ import { Chain } from '../../providers/ChainsProvider';
 import { getChainIdentifierForCurrency } from '../../utils/Tokens';
 
 export function useWallet(tokenOrChainId: Token | string, input?: boolean): Chain<any>['wallet'] {
-  const {chains} = useContext(ChainsContext);
+  const chainsContext = useContext(ChainsContext);
   if (!tokenOrChainId) return undefined;
+  if (chainsContext == null) return undefined;
+  const {chains} = chainsContext;
   const chain: Chain<any> = chains[
     typeof tokenOrChainId === 'string'
       ? tokenOrChainId

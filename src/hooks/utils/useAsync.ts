@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 export function useAsync<Args extends any[], Result>(
   executor: (...args: Args) => Promise<Result>,
   deps: any[]
-): [(...args: Args) => Promise<Result>, boolean, Result, any] {
+): [(...args: Args) => Promise<Result>, boolean, Result, any, () => void] {
   const [loading, setLoading] = useState<boolean>(false);
   const [success, setSuccess] = useState<Result>(null);
   const [error, setError] = useState<any>(null);
@@ -32,5 +32,12 @@ export function useAsync<Args extends any[], Result>(
       });
   }, deps);
 
-  return [fn, loading, success, error];
+  const clear = useCallback(() => {
+    if(executingRef.current) return;
+    setLoading(false);
+    setSuccess(null);
+    setError(null);
+  }, []);
+
+  return [fn, loading, success, error, clear];
 }

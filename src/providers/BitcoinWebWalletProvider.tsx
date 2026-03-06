@@ -1,5 +1,6 @@
-import {useCallback, useMemo} from "react";
+import {useCallback, useMemo, useState} from "react";
 import {SingleAddressBitcoinWallet} from "@atomiqlabs/sdk";
+import {SendBitcoinToAddressModal} from "../components/modals/SendBitcoinToAddressModal";
 import {BitcoinWebWalletContext} from "../context/BitcoinWebWalletContext";
 import {ChainsConfig} from "../data/ChainsConfig";
 import {useLocalStorage} from "../hooks/utils/useLocalStorage";
@@ -9,16 +10,16 @@ import {InternalBitcoinWebwallet} from "../wallets/bitcoin/InternalBitcoinWebwal
 const MNEMONIC_STORAGE_KEY = "atomiq-btc-webwallet-mnemonic";
 
 export function BitcoinWebWalletProvider(props: { children: React.ReactNode }) {
-  const [_mnemonicPhrase, setMnemonicPhrase] = useLocalStorage<string | undefined>(
+  const [mnemonicPhraseState, setMnemonicPhrase] = useLocalStorage<string | undefined>(
     MNEMONIC_STORAGE_KEY, undefined
   );
 
   const mnemonicPhrase = useMemo(() => {
-    if(_mnemonicPhrase!=null) return _mnemonicPhrase;
+    if (mnemonicPhraseState != null) return mnemonicPhraseState;
     const generatedMnemonic = SingleAddressBitcoinWallet.generateRandomMnemonic();
     setMnemonicPhrase(generatedMnemonic);
     return generatedMnemonic;
-  }, [_mnemonicPhrase]);
+  }, [mnemonicPhraseState]);
 
   const [wallet] = useWithAwait<InternalBitcoinWebwallet>(
     async () => {
@@ -36,16 +37,32 @@ export function BitcoinWebWalletProvider(props: { children: React.ReactNode }) {
     true
   );
 
+  const [sendToAddressModalOpen, setSendToAddressModalOpen] = useState<boolean>(false);
+
+  const openSendToAddressModal = useCallback(() => {
+    setSendToAddressModalOpen(true);
+  }, []);
+
+  const closeSendToAddressModal = useCallback(() => {
+    setSendToAddressModalOpen(false);
+  }, []);
+
   const getMnemonicPhrase = useCallback(() => mnemonicPhrase, [mnemonicPhrase]);
 
   const value = useMemo(() => ({
     recoverWallet: setMnemonicPhrase,
     getMnemonicPhrase,
+    openSendToAddressModal,
     wallet
-  }), [setMnemonicPhrase, getMnemonicPhrase, wallet]);
+  }), [setMnemonicPhrase, getMnemonicPhrase, openSendToAddressModal, wallet]);
 
   return (
     <BitcoinWebWalletContext.Provider value={value}>
+      <SendBitcoinToAddressModal
+        opened={sendToAddressModalOpen}
+        close={closeSendToAddressModal}
+        wallet={wallet}
+      />
       {props.children}
     </BitcoinWebWalletContext.Provider>
   );

@@ -17,10 +17,12 @@ export function useWalletBalance(
   requestGasDrop?: boolean,
   pause?: boolean,
   minBtcFeeRate?: number,
-  input?: boolean
+  input?: boolean,
+  walletOverride?: { instance: any }
 ): WalletBalanceResult {
   const { swapper } = useContext(SwapperContext);
-  const wallet = useWallet(currency, input);
+  const contextWallet = useWallet(currency, input);
+  const wallet = walletOverride ?? contextWallet;
 
   const pauseRef = useStateRef(pause);
 

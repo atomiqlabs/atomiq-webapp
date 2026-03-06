@@ -13,7 +13,7 @@ export function useBitcoinChain(
   enabled: boolean,
   connectedOtherChainWallets: { [chainName: string]: string }
 ): Chain<INamedBitcoinWallet> {
-  const {wallet: internalWebwallet} = useContext(BitcoinWebWalletContext);
+  const {wallet: internalWebwallet, openSendToAddressModal} = useContext(BitcoinWebWalletContext);
 
   const [bitcoinWallet, setBitcoinWallet] = React.useState<INamedBitcoinWallet>(undefined);
   const [nonInstalledWallets, setNonInstalledWallets] = useState<BitcoinWalletType[]>([]);
@@ -161,7 +161,15 @@ export function useBitcoinChain(
                     icon: bitcoinWallet.getIcon(),
                     instance: bitcoinWallet,
                     address: bitcoinWallet.getReceiveAddress(),
-                    onlyInput: bitcoinWallet.isOnlyInput?.()
+                    onlyInput: bitcoinWallet.isOnlyInput?.(),
+                    additionalWalletActions:
+                      openSendToAddressModal != null && bitcoinWallet instanceof InternalBitcoinWebwallet
+                        ? [{
+                          icon: 'icon-send-claim',
+                          text: 'Send BTC',
+                          onClick: openSendToAddressModal
+                        }]
+                        : undefined
                   },
             installedWallets: usableWallets.map((w) => ({
               name: w.name,
@@ -178,6 +186,6 @@ export function useBitcoinChain(
             _disconnect: bitcoinWallet != null ? disconnect : null,
             hasWallets: usableWallets.length > 0 || nonInstalledWallets.length > 0,
           },
-    [bitcoinWallet, usableWallets, nonInstalledWallets, connect, disconnect]
+    [bitcoinWallet, usableWallets, nonInstalledWallets, connect, disconnect, openSendToAddressModal]
   );
 }

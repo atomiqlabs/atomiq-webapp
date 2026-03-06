@@ -4,5 +4,6 @@ import {InternalBitcoinWebwallet} from "../wallets/bitcoin/InternalBitcoinWebwal
 export const BitcoinWebWalletContext: React.Context<{
     recoverWallet: (mnemonic: string) => void,
     getMnemonicPhrase: () => string,
+    openSendToAddressModal?: () => void,
     wallet?: InternalBitcoinWebwallet
 }> = createContext(undefined);
