@@ -612,7 +612,6 @@ export function useSwapPage(): SwapPageState {
     if (inputWallet != null) {
       if (inputWallet.instance instanceof InternalBitcoinWebwallet) {
         internalWebwallet.getBalance().then(balance => {
-          console.log("Internal wallet balance: ", balance);
           if(balance.confirmedBalance + balance.unconfirmedBalance <= 0n)
             chains.BITCOIN._disconnect(InternalBitcoinWebwallet.walletName);
         });
@@ -621,9 +620,9 @@ export function useSwapPage(): SwapPageState {
     }
     //Check spendable balance of the webwallet
     internalWebwallet.getBalance().then(balance => {
-      console.log("Internal wallet balance: ", balance);
       if(balance.confirmedBalance + balance.unconfirmedBalance > 0n)
         chains.BITCOIN._connectWallet(InternalBitcoinWebwallet.walletName);
+      //TODO: In this case we can automatically pre-fill the amount to maximum
     });
   }, [inputToken, inputWallet, internalWebwallet, quote]);
 

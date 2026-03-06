@@ -328,20 +328,47 @@ export function SpvVaultFromBTCSwapPanel(props: {
               type="danger"
               icon={ic_warning}
               title="Swap expired"
-              description="Swap expired before the transaction was received!"
+              description={
+                <>
+                  <div>Swap expired before the transaction was received!</div>
+                  <div>
+                    In case <strong>you've already sent the BTC</strong>, just create a new swap, your already
+                    deposited balance will be immediately available!
+                  </div>
+                </>
+              }
+            />
+          ) : (
+            ''
+          )}
+
+          {page.step5.state === 'deposit_error' ? (
+            <SwapStepAlert
+              type="danger"
+              icon={ic_warning}
+              title={page.step5.depositIssue?.title}
+              description={page.step5.depositIssue?.description}
+              action={{
+                type: 'button',
+                text: 'Request New Quote',
+                variant: 'secondary',
+                onClick: () => props.refreshQuote(),
+              }}
             />
           ) : (
             ''
           )}
         </div>
 
-        <BaseButton
-          onClick={() => props.refreshQuote()}
-          variant="primary"
-          className="swap-panel__action"
-        >
-          New Swap
-        </BaseButton>
+        {page.step5.state !== 'deposit_error' &&
+          <BaseButton
+              onClick={() => props.refreshQuote()}
+              variant="primary"
+              className="swap-panel__action"
+          >
+              New Swap
+          </BaseButton>}
+
       </>
     );
   }

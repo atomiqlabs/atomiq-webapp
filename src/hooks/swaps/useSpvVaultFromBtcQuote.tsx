@@ -1,27 +1,102 @@
-import { SingleStep } from '../../components/swaps/StepByStep';
-import { Chain } from '../../providers/ChainsProvider';
-import {ISwap, SpvFromBTCSwap, SpvFromBTCSwapState, TokenAmount} from '@atomiqlabs/sdk';
+import {SingleStep} from '../../components/swaps/StepByStep';
+import {Chain} from '../../providers/ChainsProvider';
+import {
+  BitcoinTokens,
+  ISwap,
+  SpvFromBTCSwap,
+  SpvFromBTCSwapDepositState,
+  SpvFromBTCSwapDepositStatus,
+  SpvFromBTCSwapState
+} from '@atomiqlabs/sdk';
 import {useContext, useEffect, useMemo, useState} from 'react';
-import { useStateRef } from '../utils/useStateRef';
-import { useChain } from '../chains/useChain';
-import { useSmartChainWallet } from '../wallets/useSmartChainWallet';
-import { useAsync } from '../utils/useAsync';
-import { useAbortSignalRef } from '../utils/useAbortSignal';
-import { ic_hourglass_disabled_outline } from 'react-icons-kit/md/ic_hourglass_disabled_outline';
-import { ic_hourglass_empty_outline } from 'react-icons-kit/md/ic_hourglass_empty_outline';
-import { ic_check_outline } from 'react-icons-kit/md/ic_check_outline';
-import { bitcoin } from 'react-icons-kit/fa/bitcoin';
-import { ic_hourglass_top_outline } from 'react-icons-kit/md/ic_hourglass_top_outline';
-import { ic_receipt } from 'react-icons-kit/md/ic_receipt';
-import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
-import { getDeltaText } from '../../utils/Utils';
-import { SwapPageUIState } from '../pages/useSwapPage';
+import {useStateRef} from '../utils/useStateRef';
+import {useSmartChainWallet} from '../wallets/useSmartChainWallet';
+import {useAsync} from '../utils/useAsync';
+import {useAbortSignalRef} from '../utils/useAbortSignal';
+import {ic_hourglass_disabled_outline} from 'react-icons-kit/md/ic_hourglass_disabled_outline';
+import {ic_hourglass_empty_outline} from 'react-icons-kit/md/ic_hourglass_empty_outline';
+import {ic_check_outline} from 'react-icons-kit/md/ic_check_outline';
+import {bitcoin} from 'react-icons-kit/fa/bitcoin';
+import {ic_hourglass_top_outline} from 'react-icons-kit/md/ic_hourglass_top_outline';
+import {ic_receipt} from 'react-icons-kit/md/ic_receipt';
+import {ic_refresh} from 'react-icons-kit/md/ic_refresh';
+import {getDeltaText} from '../../utils/Utils';
+import {SwapPageUIState} from '../pages/useSwapPage';
 import {TxDataType} from "../../types/swaps/TxDataType";
 import {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {useSwapState} from "./helpers/useSwapState";
 import {useWallet} from "../wallets/useWallet";
 import {ChainsContext} from "../../context/ChainsContext";
 import {useLocalStorage} from "../utils/useLocalStorage";
+import {toHumanReadable} from "../../utils/Tokens";
+
+type DepositTxIssue = {
+  type: 'underpaid' | 'overpaid' | 'bad_network_fee';
+  title: string;
+  description: string | JSX.Element;
+};
+
+function formatDepositedAmount(actualAmount?: number): string {
+  if (actualAmount == null) return 'unknown';
+  return `${toHumanReadable(BigInt(actualAmount), BitcoinTokens.BTC).toFixed(8)} BTC`;
+}
+
+function formatNetworkFeeRate(actualFeeRate?: number): string {
+  if (actualFeeRate == null) return 'unknown';
+  return `${actualFeeRate.toFixed(2)} sats/vB`;
+}
+
+function getDepositTxIssue(
+  depositStatus: SpvFromBTCSwapDepositStatus | null | undefined
+): DepositTxIssue | undefined {
+  if (depositStatus == null) return undefined;
+  switch (depositStatus.state) {
+    case SpvFromBTCSwapDepositState.UNDERPAID:
+      return {
+        type: 'underpaid',
+        title: 'Bitcoin payment too low',
+        description: (
+          <>
+            <div>Received amount: <strong>{formatDepositedAmount(depositStatus.actualAmount)}</strong></div>
+            <div>
+              The received BTC amount is lower than required for this quote. Please request a new
+              quote with the available amount.
+            </div>
+          </>
+        ),
+      };
+    case SpvFromBTCSwapDepositState.OVERPAID:
+      return {
+        type: 'overpaid',
+        title: 'Bitcoin payment too high',
+        description: (
+          <>
+            <div>Received amount: <strong>{formatDepositedAmount(depositStatus.actualAmount)}</strong></div>
+            <div>
+              The received BTC amount is higher than required for this quote. Please request a new
+              quote for this amount.
+            </div>
+          </>
+        ),
+      };
+    case SpvFromBTCSwapDepositState.BAD_NETWORK_FEE:
+      return {
+        type: 'bad_network_fee',
+        title: 'Bitcoin transaction fee too low',
+        description: (
+          <>
+            <div>Paid network fee rate: <strong>{formatNetworkFeeRate(depositStatus.actualFeeRate)}</strong></div>
+            <div>
+              The received BTC transaction paid too little network fee for this quote. Please
+              request a new quote and retry.
+            </div>
+          </>
+        ),
+      };
+    default:
+      return undefined;
+  }
+}
 
 export type SpvVaultFromBtcPage = {
   executionSteps?: SingleStep[];
@@ -103,7 +178,8 @@ export type SpvVaultFromBtcPage = {
     };
   };
   step5?: {
-    state: 'success' | 'failed' | 'expired' | 'expired_uninitialized';
+    state: 'success' | 'failed' | 'expired' | 'expired_uninitialized' | 'deposit_error';
+    depositIssue?: DepositTxIssue;
   };
 };
 
@@ -117,10 +193,14 @@ export function useSpvVaultFromBtcQuote(
   const { connectWallet } = useContext(ChainsContext);
   const UICallbackRef = useStateRef(UICallback);
   const abortSwapRef = useStateRef(abortSwap);
+  const [depositStatus, setDepositStatus] = useState<SpvFromBTCSwapDepositStatus | null>(
+    quote?.getDepositStatus() ?? null
+  );
 
   const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(
     quote,
     (state: SpvFromBTCSwapState) => {
+      setDepositStatus(quote?.getDepositStatus?.() ?? null);
       if (
         state === SpvFromBTCSwapState.CREATED ||
         state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED ||
@@ -215,6 +295,9 @@ export function useSpvVaultFromBtcQuote(
         : inputWalletBalance >= quote.getInput().rawAmount,
     [inputWalletBalance, quote]
   );
+  const hasDepositIssue =
+    depositStatus != null &&
+    depositStatus.state < SpvFromBTCSwapDepositState.UNFUNDED;
 
   const isQuoteExpired =
     state === SpvFromBTCSwapState.QUOTE_EXPIRED ||
@@ -226,7 +309,11 @@ export function useSpvVaultFromBtcQuote(
     ? (_isCreated && !isInitiated) :
     _isCreated;
   const isSending = state === SpvFromBTCSwapState.CREATED && sendLoading;
-  const isWaitingPayment = isInitiated && _isCreated && quote.getDepositWalletType()==="waitpayment";
+  const isWaitingPayment =
+    isInitiated &&
+    _isCreated &&
+    quote.getDepositWalletType()==="waitpayment" &&
+    !hasDepositIssue;
   const isBroadcasting =
     state === SpvFromBTCSwapState.SIGNED ||
     state === SpvFromBTCSwapState.POSTED ||
@@ -304,6 +391,25 @@ export function useSpvVaultFromBtcQuote(
     executionSteps[0] = {
       icon: ic_refresh,
       text: 'Bitcoin payment reverted',
+      type: 'failed',
+    };
+
+  if (depositStatus?.state === SpvFromBTCSwapDepositState.UNDERPAID)
+    executionSteps[0] = {
+      icon: ic_refresh,
+      text: 'Bitcoin payment too low',
+      type: 'failed',
+    };
+  if (depositStatus?.state === SpvFromBTCSwapDepositState.OVERPAID)
+    executionSteps[0] = {
+      icon: ic_refresh,
+      text: 'Bitcoin payment too high',
+      type: 'failed',
+    };
+  if (depositStatus?.state === SpvFromBTCSwapDepositState.BAD_NETWORK_FEE)
+    executionSteps[0] = {
+      icon: ic_refresh,
+      text: 'Bitcoin network fee too low',
       type: 'failed',
     };
 
@@ -509,17 +615,22 @@ export function useSpvVaultFromBtcQuote(
   );
 
   const step5 = useMemo(
-    () =>
-      !isSuccess && !isFailed && !isQuoteExpired
-        ? undefined
-        : {
-            state: isSuccess
-              ? ('success' as const)
-              : isFailed
-                ? ('failed' as const)
-                : isInitiated ? ('expired' as const) : ('expired_uninitialized' as const)
-          },
-    [isSuccess, isFailed, isQuoteExpired, isInitiated, bitcoinWallet]
+    () => {
+      if (!isSuccess && !isFailed && !isQuoteExpired && !hasDepositIssue) return undefined;
+      return {
+        state: isSuccess
+          ? ('success' as const)
+          : isFailed
+            ? ('failed' as const)
+            : hasDepositIssue
+              ? ('deposit_error' as const)
+              : isInitiated
+                ? ('expired' as const)
+                : ('expired_uninitialized' as const),
+        depositIssue: getDepositTxIssue(depositStatus)
+      };
+    },
+    [isSuccess, isFailed, isQuoteExpired, isInitiated, depositStatus, hasDepositIssue]
   );
 
   return {
