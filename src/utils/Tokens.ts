@@ -74,7 +74,10 @@ if (ChainsConfig.STARKNET) {
   smartChainTokenArray.push(Tokens.STARKNET.WBTC);
   smartChainTokenArray.push(Tokens.STARKNET.STRK);
   smartChainTokenArray.push(Tokens.STARKNET.ETH);
+  smartChainTokenArray.push(Tokens.STARKNET.USDC);
 }
+
+export const supportedSmartChainTokenIdentifiers = new Set(smartChainTokenArray.map(toTokenIdentifier));
 
 export function toHumanReadable(amount: bigint, currencySpec: Token): BigNumber {
   if (amount == null) return null;
