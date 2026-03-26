@@ -82,7 +82,8 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
         mempoolApi: ChainsConfig.BITCOIN.mempoolApi,
         defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
         automaticClockDriftCorrection: true,
-        dontCheckPastSwaps: true //Check manually after loading the swapper
+        dontCheckPastSwaps: true, //Check manually after loading the swapper
+        saveUninitializedSwaps: false
       });
 
       console.log('Swapper: ', _swapper);
