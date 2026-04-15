@@ -23,6 +23,7 @@ yarn.lock
 .env
 
 _MANUAL_TESTS.md
+_SDK_MANUAL_TESTS.md
 
 npm-debug.log*
 yarn-debug.log*
