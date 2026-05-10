@@ -9,7 +9,10 @@ export const SwapperContext: React.Context<{
   syncing: boolean;
   syncingError?: any;
   retry?: () => void;
-  events: EventEmitter
+  events: EventEmitter;
+
+  stickyAddress?: boolean;
+  setStickyAddress?: (value: boolean) => void;
 }> = createContext({
   swapper: null,
   loading: false,

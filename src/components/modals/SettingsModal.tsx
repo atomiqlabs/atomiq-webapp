@@ -2,13 +2,15 @@ import * as React from 'react';
 import { GenericModal } from '../common/GenericModal';
 import { BaseButton } from '../common/BaseButton';
 import {useCallback, useState} from "react";
-import {OverlayTrigger, Tooltip} from "react-bootstrap";
+import {Form, OverlayTrigger, Tooltip} from "react-bootstrap";
 import Icon from 'react-icons-kit';
 import {download} from 'react-icons-kit/icomoon/download';
 import {trash} from 'react-icons-kit/fa/trash';
 import {spinner11} from 'react-icons-kit/icomoon/spinner11'
 import {ClearSwapHistoryModal} from "./ClearSwapHistoryModal";
 import {RecoverSwapDataModal} from "./RecoverSwapDataModal";
+import {SwapperContext} from "../../context/SwapperContext";
+import ValidatedInput from "../ValidatedInput";
 
 function downloadTextFile(filename: string, content: string) {
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
@@ -26,6 +28,8 @@ export function SettingsModal(props: {
   opened: boolean;
   close: () => void;
 }) {
+  const { stickyAddress, setStickyAddress } = React.useContext(SwapperContext);
+
   const downloadLogs = useCallback(() => {
     const logMessages = (window as any).logMessages;
     if(logMessages==null) return;
@@ -90,6 +94,22 @@ export function SettingsModal(props: {
                         onClick={() => setRecoverSwapsOpened(true)}>
               <Icon size={18} icon={spinner11}/>
             </BaseButton>
+          </div>
+          <div className="flex flex-row align-items-center">
+            <span className="me-1">Sticky addreses</span>
+            <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip id="logs-tooltip">Requests to use static deposit address from the LPs, this means that after the first successful Bitcoin to Smart chain (Starknet, EVM, etc.) swap the LPs address will be fixed for the same destination wallet address!</Tooltip>}
+            >
+              <div className="w-4 h-4 icon icon-question"></div>
+            </OverlayTrigger>
+            <ValidatedInput
+                type={'checkbox'}
+                className="ms-auto h-6 px-2"
+                onChange={setStickyAddress}
+                value={stickyAddress}
+                onValidate={() => null}
+            />
           </div>
         </div>
       </GenericModal>

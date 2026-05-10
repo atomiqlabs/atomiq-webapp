@@ -15,6 +15,7 @@ import {FEConstants} from "../FEConstants";
 import {ChainsConfig} from "../data/ChainsConfig";
 import {SwapperContext} from "../context/SwapperContext";
 import EventEmitter from "events";
+import {useLocalStorage} from "../hooks/utils/useLocalStorage";
 
 export const Factory = new SwapperFactory<readonly [
   SolanaInitializerType,
@@ -49,6 +50,8 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
   const [swapperSyncingError, setSwapperSyncingError] = useState<any>();
   const [swapperSyncing, setSwapperSyncing] = useState<boolean>(false);
 
+  const [stickyAddress, setStickyAddress] = useLocalStorage<boolean>("atomiq-stickyAddress", false);
+
   const { pathname } = useLocation();
 
   const searchParams = new URLSearchParams(window.location.search);
@@ -77,7 +80,7 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
         pricingFeeDifferencePPM: 50000n,
         defaultAdditionalParameters: {
           affiliate: affiliateLink,
-          feeOverrideCode: 'frontend',
+          feeOverrideCode: 'frontend'
         },
         mempoolApi: ChainsConfig.BITCOIN.mempoolApi,
         defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
@@ -125,7 +128,9 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
       syncing: swapperSyncing,
       syncingError: swapperSyncingError,
       retry: loadSwapper,
-      events
+      events,
+      stickyAddress,
+      setStickyAddress
     }}>
       {props.children}
     </SwapperContext.Provider>
