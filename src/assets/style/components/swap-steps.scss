@@ -224,7 +224,7 @@
     }
 
     &__original {
-      @apply text-[18px] font-semibold text-white leading-none;
+      @apply text-[18px] font-semibold text-white leading-none whitespace-nowrap;
 
       @media (max-width: 600px) {
         @apply text-[14px];
