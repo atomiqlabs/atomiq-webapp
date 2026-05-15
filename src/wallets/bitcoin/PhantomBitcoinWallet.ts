@@ -47,6 +47,15 @@ function deduplicateAccounts(accounts: PhantomBtcAccount[]): PhantomBtcAccount[]
     //Prefer payment accounts
     if (accountMap[acc.address] != null && accountMap[acc.address].purpose === 'payment') return;
     accountMap[acc.address] = acc;
+
+    if(acc.addressType==="p2tr") {
+      if(acc.publicKey.length!==66) return;
+      if(
+          !acc.publicKey.startsWith("03") &&
+          !acc.publicKey.startsWith("02")
+      ) throw new Error("Invalid public key passed for taproot bitcoin wallet, expected an X-only 32-byte public key, or a compressed 33-byte public key");
+      acc.publicKey = acc.publicKey.substring(2);
+    }
   });
   return Object.keys(accountMap).map((address) => accountMap[address]);
 }
