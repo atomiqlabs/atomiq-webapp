@@ -183,7 +183,7 @@ export function useFromBtcLnQuote(
     if(UICallbackRef.current) UICallbackRef.current(quote, "hide");
   });
 
-  const [autoClaim, setAutoClaim] = useLocalStorage('crossLightning-autoClaim', false);
+  const [autoClaim, setAutoClaim] = useLocalStorage('crossLightning-autoClaim', true);
   const [showHyperlinkWarning, setShowHyperlinkWarning] = useLocalStorage(
     'crossLightning-showHyperlinkWarning',
     true

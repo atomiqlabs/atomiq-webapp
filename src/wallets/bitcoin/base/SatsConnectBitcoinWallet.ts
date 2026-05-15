@@ -54,6 +54,17 @@ export class SatsConnectBitcoinWallet extends ExtensionBitcoinWallet {
     this.walletName = walletName;
     this.iconUrl = iconUrl;
     this.addressType = identifyAddressType(account.address, this.network);
+
+    // Some wallets seem to be returning a full 33-byte compressed pubkey instead of a taproot
+    //  32-byte long X-only key. Handle these cases here
+    if(this.addressType==="p2tr") {
+      if(this.account.publicKey.length!==66) return;
+      if(
+          !this.account.publicKey.startsWith("03") &&
+          !this.account.publicKey.startsWith("02")
+      ) throw new Error("Invalid public key passed for taproot bitcoin wallet, expected an X-only 32-byte public key, or a compressed 33-byte public key");
+      this.account.publicKey = this.account.publicKey.substring(2);
+    }
   }
 
   static async isInstalled(): Promise<boolean> {

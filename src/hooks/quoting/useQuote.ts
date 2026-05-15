@@ -52,7 +52,7 @@ export function useQuote(
   btcFeeRate?: number,
   pause?: boolean
 ): [() => void, ISwap, boolean, boolean, any] {
-  const { swapper } = useContext(SwapperContext);
+  const { swapper, stickyAddress } = useContext(SwapperContext);
 
   const inputWallet = useWallet(inToken, true);
   let inputAddress: string | LNURLWithdraw = inputWallet?.instance?._lnurl ?? inputWallet?.address;
@@ -105,6 +105,7 @@ export function useQuote(
           gasAmount: gasDropAmount,
           maxAllowedNetworkFeeRate:
             btcFeeRate == null ? null : btcFeeMaxOffset + btcFeeRate * btcFeeMaxMultiple,
+          stickyAddress
           // unsafeZeroWatchtowerFee: swapType === SwapType.SPV_VAULT_FROM_BTC,
         })
         .then((quote) => {

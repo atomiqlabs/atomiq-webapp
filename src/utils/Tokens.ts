@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import {
+  BitcoinNetwork,
   isBtcToken,
   isSCToken,
   SCToken,
@@ -40,7 +41,9 @@ export const TokenIcons: {
   TBTC: null,
   CBTC: '/icons/crypto/BTC.svg',
   PBTC: '/icons/crypto/BTC.svg',
-  _PBTC_DEV: '/icons/crypto/BTC.svg'
+  _PBTC_DEV: '/icons/crypto/BTC.svg',
+  strkBTC: '/icons/crypto/strkBTC.png',
+  _TESTNET_strkBTC: '/icons/crypto/strkBTC.png'
 };
 
 export const smartChainTokenArray: SCToken[] = [];
@@ -71,10 +74,18 @@ if(ChainsConfig.GOAT) {
 }
 
 if (ChainsConfig.STARKNET) {
-  smartChainTokenArray.push(Tokens.STARKNET.WBTC);
-  smartChainTokenArray.push(Tokens.STARKNET.STRK);
-  smartChainTokenArray.push(Tokens.STARKNET.ETH);
-  smartChainTokenArray.push(Tokens.STARKNET.USDC);
+  if(ChainsConfig.BITCOIN.network===BitcoinNetwork.MAINNET) {
+    smartChainTokenArray.push(Tokens.STARKNET.WBTC);
+    smartChainTokenArray.push(Tokens.STARKNET.strkBTC);
+    smartChainTokenArray.push(Tokens.STARKNET.STRK);
+    smartChainTokenArray.push(Tokens.STARKNET.ETH);
+    smartChainTokenArray.push(Tokens.STARKNET.USDC);
+  } else {
+    smartChainTokenArray.push(Tokens.STARKNET._TESTNET_WBTC_VESU);
+    smartChainTokenArray.push(Tokens.STARKNET._TESTNET_strkBTC);
+    smartChainTokenArray.push(Tokens.STARKNET.STRK);
+    smartChainTokenArray.push(Tokens.STARKNET.ETH);
+  }
 }
 
 export const supportedSmartChainTokenIdentifiers = new Set(smartChainTokenArray.map(toTokenIdentifier));

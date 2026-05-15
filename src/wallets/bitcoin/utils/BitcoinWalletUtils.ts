@@ -83,7 +83,10 @@ export async function getInstalledBitcoinWallets(): Promise<{
     const _installableBitcoinWallets: BitcoinWalletType[] = [];
     await Promise.all(
       bitcoinWalletList.map((wallet) =>
-        wallet.detect().then((detected) => {
+        wallet.detect().catch(e => {
+          console.error(`getInstalledBitcoinWallets(): Failed to check Bitcoin ${wallet.name} presence! `, e);
+          return false;
+        }).then((detected) => {
           if (detected) {
             _installedBitcoinWallets.push(wallet);
           } else {
