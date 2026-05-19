@@ -364,7 +364,7 @@ export function useSwapPage(): SwapPageState {
   const gasDropTokenAmount = useMemo(() => {
     if (swapper != null && swapTypeData?.supportsGasDrop) {
       const nativeToken = swapper.Utils.getNativeToken(scCurrency.chainId);
-      if (nativeToken.address === scCurrency.address) return;
+      if (!swapper.Utils.destinationTokenSupportsGasDrop(scCurrency)) return;
       return toTokenAmount(
         ChainsConfig[nativeToken.chainId]?.assetBalances?.[nativeToken.address]?.optimal,
         nativeToken,
@@ -383,7 +383,7 @@ export function useSwapPage(): SwapPageState {
         if (cancelled) return;
         const token = gasDropTokenAmount.token;
         const requiredBalance =
-          ChainsConfig[token.chainId]?.assetBalances?.[token.address]?.optimal;
+          ChainsConfig[token.chainId]?.assetBalances?.[token.address]?.minimum;
         if (value.rawAmount!=null && value.rawAmount < requiredBalance) {
           setGasDropChecked(true);
         }
