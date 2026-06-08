@@ -86,7 +86,8 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
         defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
         automaticClockDriftCorrection: true,
         dontCheckPastSwaps: true, //Check manually after loading the swapper
-        saveUninitializedSwaps: false
+        saveUninitializedSwaps: false,
+        gracefullyHandleChainErrors: true
       });
 
       console.log('Swapper: ', _swapper);
