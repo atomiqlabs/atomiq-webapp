@@ -1,5 +1,5 @@
 import {Swapper, SwapperFactory, TypedSwapper} from "@atomiqlabs/sdk";
-import {SolanaInitializer, SolanaInitializerType} from "@atomiqlabs/chain-solana";
+import {SolanaInitializerV2, SolanaInitializerType} from "@atomiqlabs/chain-solana";
 import {StarknetInitializer, StarknetInitializerType} from "@atomiqlabs/chain-starknet";
 import {
   AlpenInitializer,
@@ -18,14 +18,14 @@ import EventEmitter from "events";
 import {useLocalStorage} from "../hooks/utils/useLocalStorage";
 
 export const Factory = new SwapperFactory<readonly [
-  SolanaInitializerType,
+  SolanaInitializerType<"v2">,
   StarknetInitializerType,
   CitreaInitializerType,
   BotanixInitializerType,
   AlpenInitializerType,
   GoatInitializerType,
 ]>([
-  SolanaInitializer,
+  SolanaInitializerV2,
   StarknetInitializer,
   CitreaInitializer,
   BotanixInitializer,
