@@ -576,6 +576,11 @@ export function useSwapPage(): SwapPageState {
           status: 'warning',
           text: 'The payment will likely fail: destination not payable',
         };
+      if (_quote.hasLongExpiration())
+        return {
+          status: 'warning',
+          text: 'Invoice requires longer HTLC lockup: your funds might be stuck for longer in case of uncooperative LP!',
+        };
     }
     if (isOutputWalletAddress || isFixedAmount)
       return {
