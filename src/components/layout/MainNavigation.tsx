@@ -99,6 +99,8 @@ export function MainNavigation(props: {}) {
       },
       icon: 'cog', title: 'Settings'
     },
+    { link: 'https://www.atomiqlabs.com/terms-of-service', icon: 'file-text', title: 'Terms of Service' },
+    { link: 'https://www.atomiqlabs.com/privacy-cookie-policy', icon: 'user', title: 'Privacy Policy' }
   ];
 
   const anchorNavigate = useAnchorNavigate();
@@ -184,7 +186,7 @@ export function MainNavigation(props: {}) {
                 menuVariant="dark"
               >
                 {navItems.slice(3).map((item) => (
-                  <NavDropdown.Item key={item.link} href={item.link} onClick={item.action ?? anchorNavigate}>
+                  <NavDropdown.Item key={item.link} href={item.link} target="_blank" onClick={item.action ?? anchorNavigate}>
                     <span
                       className={`me-2 main-navigation__item__icon icon icon-${item.icon}`}
                     ></span>

@@ -25,15 +25,6 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-book:before {
-  content: "\e92b";
-}
-.icon-cog:before {
-  content: "\e994";
-}
-.icon-embed2:before {
-  content: "\ea80";
-}
 .icon-verified:before {
   content: "\e92a";
 }
@@ -162,4 +153,19 @@
 }
 .icon-Wallet-Disconnect:before {
   content: "\e929";
+}
+.icon-book:before {
+  content: "\e92b";
+}
+.icon-cog:before {
+  content: "\e994";
+}
+.icon-embed2:before {
+  content: "\ea80";
+}
+.icon-file-text:before {
+  content: "\e92c";
+}
+.icon-user:before {
+  content: "\e971";
 }
