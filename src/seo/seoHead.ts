@@ -11,6 +11,8 @@ export function renderHead(route: ResolvedRoute): string {
   const url = `${ORIGIN}/swap/${route.slug}`;
   const t = esc(route.title);
   const d = esc(route.description);
+  // No FAQPage schema: Google deprecated FAQ rich results (2026-05-07), so visible FAQ
+  // text on the page carries the relevance signal instead. (seoHead.test.ts asserts this.)
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [

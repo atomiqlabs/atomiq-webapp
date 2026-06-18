@@ -14,6 +14,8 @@ import type { ResolvedRoute, SeoToken } from '../src/seo/types';
 
 const BUILD = path.resolve('build');
 
+// `as any`: the build script only needs Factory.Tokens as a lookup table, so we skip
+// re-declaring the full generic initializer chain that SwapperProvider maintains for runtime.
 const Factory = new SwapperFactory([
   SolanaInitializerV2, StarknetInitializer, CitreaInitializer, BotanixInitializer, AlpenInitializer, GoatInitializer,
 ] as any);
@@ -66,6 +68,7 @@ function htmlDocument(route: ResolvedRoute, body: string, css: string): string {
 
 function main() {
   const css = cssHref();
+  console.log('Using CSS asset:', css);
   const routes = buildRoutes();
   const composed = routes.map(composeRoute);
 
