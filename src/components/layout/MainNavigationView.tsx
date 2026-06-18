@@ -16,27 +16,34 @@ export type NavItem = {
   title: React.ReactNode;
   count?: number;
   external?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 };
 
 export function MainNavigationView(props: {
   navItems: NavItem[];
   walletSlot: React.ReactNode;
-  settingsSlot?: React.ReactNode;
   currentPath: string;
   networkBadge: { show: boolean; label: string };
   actionRequiredCount?: number;
   onNavClick?: (e: React.MouseEvent) => void;
 }) {
-  const { navItems, walletSlot, settingsSlot, currentPath, networkBadge, onNavClick } = props;
+  const { navItems, walletSlot, currentPath, networkBadge, onNavClick } = props;
   const actionRequiredCount = props.actionRequiredCount ?? 0;
   const primary = navItems.slice(0, 3);
   const more = navItems.slice(3);
+
+  // Internal links use onNavClick (SPA navigation); items with an explicit onClick
+  // (e.g. Settings) use that; external links navigate normally in a new tab.
+  const clickHandler = (item: NavItem) => item.onClick ?? (item.external ? undefined : onNavClick);
+  const externalAttrs = (item: NavItem) =>
+    item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 
   const renderLink = (item: NavItem, mobileOnly: boolean) => (
     <a
       key={item.link}
       href={item.link}
-      onClick={item.external ? undefined : onNavClick}
+      onClick={clickHandler(item)}
+      {...externalAttrs(item)}
       className={classNames('main-navigation__nav__item', {
         'is-active': currentPath === item.link,
         'is-mobile': mobileOnly,
@@ -90,18 +97,25 @@ export function MainNavigationView(props: {
 
               {more.length > 0 && (
                 <div className="main-navigation__more dropdown" data-nav-dropdown>
-                  <button type="button" className="main-navigation__more__label" data-nav-dropdown-toggle>
-                    <span className="main-navigation__more__text">More</span>
-                    <Icon icon={angleDown} size={20} className="main-navigation__more__icon" />
+                  <button type="button" className="dropdown-toggle" data-nav-dropdown-toggle>
+                    <span className="main-navigation__more__label">
+                      <span className="main-navigation__more__text">More</span>
+                      <Icon icon={angleDown} size={20} className="main-navigation__more__icon" />
+                    </span>
                   </button>
                   <div className="dropdown-menu dropdown-menu-dark">
                     {more.map((item) => (
-                      <a key={item.link} href={item.link} onClick={item.external ? undefined : onNavClick} className="dropdown-item">
+                      <a
+                        key={item.link}
+                        href={item.link}
+                        onClick={clickHandler(item)}
+                        {...externalAttrs(item)}
+                        className="dropdown-item"
+                      >
                         {item.icon && <span className={`me-2 main-navigation__item__icon icon icon-${item.icon}`} />}
                         {item.title}
                       </a>
                     ))}
-                    {settingsSlot}
                   </div>
                 </div>
               )}
