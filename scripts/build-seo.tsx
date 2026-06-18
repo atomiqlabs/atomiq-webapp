@@ -31,9 +31,20 @@ function cssHref(): string {
   const manifestPath = path.join(BUILD, '.vite', 'manifest.json');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   const entry = manifest['index.html'] ?? Object.values(manifest).find((e: any) => e.isEntry);
+  // single-entry build: only one CSS chunk is expected
   const css = (entry as any)?.css?.[0];
   if (!css) throw new Error('No CSS asset found in Vite manifest');
   return '/' + css;
+}
+
+// Rank candidate sibling routes by relevance so the internal links reinforce the
+// most useful relationships first (exact reverse, then same token, then same chain).
+function siblingScore(r: ResolvedRoute, route: ResolvedRoute): number {
+  if (r.from.key === route.to.key && r.to.key === route.from.key) return 0; // exact reverse
+  if (r.from.key === route.to.key || r.to.key === route.from.key) return 1; // shares a token
+  if (r.to.chainKey === route.to.chainKey && r.from.chainKey === route.from.chainKey) return 2;
+  if (r.to.chainKey === route.to.chainKey || r.from.chainKey === route.from.chainKey) return 3;
+  return 4;
 }
 
 function htmlDocument(route: ResolvedRoute, body: string, css: string): string {
@@ -75,6 +86,7 @@ function main() {
         r.from.key === route.to.key || r.to.key === route.from.key ||
         r.from.chainKey === route.from.chainKey || r.to.chainKey === route.to.chainKey
       ))
+      .sort((a, b) => siblingScore(a, route) - siblingScore(b, route))
       .slice(0, 8)
       .map((r) => r.slug);
 
