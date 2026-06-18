@@ -1,7 +1,7 @@
 import * as React from 'react';
 import classNames from 'classnames';
 import { Badge } from 'react-bootstrap';
-import Icon from 'react-icons-kit';
+import { Icon } from 'react-icons-kit';
 import { angleDown } from 'react-icons-kit/fa/angleDown';
 import { close } from 'react-icons-kit/fa/close';
 import { SocialFooterView } from './SocialFooterView';
