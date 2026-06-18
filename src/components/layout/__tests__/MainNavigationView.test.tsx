@@ -31,4 +31,18 @@ describe('MainNavigationView', () => {
     );
     expect(html).toMatch(/is-active[^>]*>(?:(?!<\/a>).)*Explorer/s);
   });
+
+  it('renders the mobile action-count alert when actionRequiredCount > 0', () => {
+    const html = renderToStaticMarkup(
+      <MainNavigationView
+        navItems={items}
+        walletSlot={null}
+        currentPath="/"
+        networkBadge={{ show: false, label: '' }}
+        actionRequiredCount={3}
+      />,
+    );
+    expect(html).toContain('main-navigation__alert');
+    expect(html).toContain('>3</div>');
+  });
 });

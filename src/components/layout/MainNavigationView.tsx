@@ -3,11 +3,13 @@ import classNames from 'classnames';
 import { Badge } from 'react-bootstrap';
 import Icon from 'react-icons-kit';
 import { angleDown } from 'react-icons-kit/fa/angleDown';
+import { close } from 'react-icons-kit/fa/close';
 import { SocialFooterView } from './SocialFooterView';
 
 // Menu open/close is driven by public/navMenu.js (loaded via <script> in index.html
 // and on static pages) using the data-nav-* hooks below. Do NOT add React state for
-// the mobile toggle / dropdown — keep this component presentational.
+// the mobile toggle / dropdown — keep this component presentational. navMenu.js also
+// creates/removes the .main-navigation__overlay backdrop when the menu opens/closes.
 export type NavItem = {
   link: string;
   icon?: string;
@@ -22,9 +24,11 @@ export function MainNavigationView(props: {
   settingsSlot?: React.ReactNode;
   currentPath: string;
   networkBadge: { show: boolean; label: string };
+  actionRequiredCount?: number;
   onNavClick?: (e: React.MouseEvent) => void;
 }) {
   const { navItems, walletSlot, settingsSlot, currentPath, networkBadge, onNavClick } = props;
+  const actionRequiredCount = props.actionRequiredCount ?? 0;
   const primary = navItems.slice(0, 3);
   const more = navItems.slice(3);
 
@@ -64,10 +68,23 @@ export function MainNavigationView(props: {
             <span className="navbar-toggler-icon" />
           </button>
 
+          {actionRequiredCount > 0 && (
+            <div className="main-navigation__alert">{actionRequiredCount}</div>
+          )}
+
           <div className="main-navigation__wallet">{walletSlot}</div>
 
           <div className="main-navigation__collapse navbar-collapse" data-nav-collapse role="navigation">
             <div className="main-navigation__nav navbar-nav">
+              <div className="main-navigation__nav__mobile-header">
+                <a className="nav-link" href="/" onClick={onNavClick}>
+                  <img src="/main_logo.png" className="main-navigation__nav__logo" alt="logo" />
+                </a>
+                <div className="main-navigation__nav__close" data-nav-toggle>
+                  <Icon size={20} icon={close} />
+                </div>
+              </div>
+
               {primary.map((item) => renderLink(item, false))}
               {more.map((item) => renderLink(item, true))}
 

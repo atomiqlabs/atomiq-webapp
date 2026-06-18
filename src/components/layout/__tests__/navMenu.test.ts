@@ -43,4 +43,13 @@ describe('navMenu', () => {
     (document.querySelector('[data-nav-dropdown-toggle]') as HTMLElement).click();
     expect(dd.classList.contains('show')).toBe(true);
   });
+
+  it('injects an overlay when opening and removes it on close', async () => {
+    await loadNavMenu();
+    const toggle = document.querySelector('[data-nav-toggle]') as HTMLElement;
+    toggle.click();
+    expect(document.querySelector('.main-navigation__overlay')).not.toBeNull();
+    toggle.click();
+    expect(document.querySelector('.main-navigation__overlay')).toBeNull();
+  });
 });
