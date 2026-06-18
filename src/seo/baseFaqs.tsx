@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { FAQContent } from '../data/FAQContent';
 import type { FaqItem } from './types';
 
