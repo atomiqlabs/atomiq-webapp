@@ -21,8 +21,10 @@ import { ErrorAlert } from '../../components/_deprecated/ErrorAlert';
 import { useStateWithOverride } from '../../hooks/utils/useStateWithOverride';
 import {SwapPanel} from "../../components/swappanels/SwapPanel";
 import {Tokens} from "../../providers/SwapperProvider";
+import { useNoindex } from '../../hooks/utils/useNoindex';
 
 export function QuickScanExecute() {
+  useNoindex();
   const { swapper } = useContext(SwapperContext);
 
   const navigate = useNavigate();
