@@ -42,7 +42,7 @@ export function AboutPage(props: {}) {
             <p>
               <strong>atomiq.exchange</strong> is secured by Bitcoin light client (leveraging
               bitcoin's proof-of-work) & atomic swaps. Our smart contracts are{' '}
-              <a onClick={navigateHref} href="/FAQPage?tabOpen=6">
+              <a onClick={navigateHref} href="/faq?tabOpen=6">
                 fully audited by Ackee Blockchain & CSC
               </a>{' '}
               and are immutably deployed on Solana & Starknet (with no upgrade authority).
