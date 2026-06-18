@@ -1,204 +1,91 @@
 import * as React from 'react';
-import classNames from 'classnames';
-import {Navbar, Container, Nav, Badge, NavDropdown, Spinner} from 'react-bootstrap';
+import { Spinner } from 'react-bootstrap';
 import Icon from 'react-icons-kit';
-import { FEConstants } from '../../FEConstants';
+import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import { BitcoinNetwork, SwapType } from '@atomiqlabs/sdk';
-import { WalletConnector } from '../wallets/WalletConnector';
-import { angleDown } from 'react-icons-kit/fa/angleDown';
-import { close } from 'react-icons-kit/fa/close';
 import { useLocation } from 'react-router-dom';
-import { SocialFooter } from './SocialFooter';
+import { useState } from 'react';
+import { WalletConnector } from '../wallets/WalletConnector';
 import { SwapperContext } from '../../context/SwapperContext';
 import { useAnchorNavigate } from '../../hooks/navigation/useAnchorNavigate';
-import {ChainsConfig} from "../../data/ChainsConfig";
-import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import {useState} from "react";
-import {SettingsModal} from "../modals/SettingsModal";
+import { ChainsConfig } from '../../data/ChainsConfig';
+import { SettingsModal } from '../modals/SettingsModal';
+import { MainNavigationView, NavItem } from './MainNavigationView';
 
 export function MainNavigation(props: {}) {
   const location = useLocation();
-  const [isOpen, setIsOpen] = React.useState(false);
   const [actionRequiredCount, setActionRequiredCount] = React.useState<number>(0);
-  const collapseRef = React.useRef<HTMLDivElement>(null);
   const { swapper, syncing, syncingError } = React.useContext(SwapperContext);
+  const [settingsOpened, setSettingsOpened] = useState<boolean>(false);
+  const anchorNavigate = useAnchorNavigate();
 
   React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        collapseRef.current &&
-        !collapseRef.current.contains(event.target as Node) &&
-        !event
-          .composedPath()
-          .some((el) => (el as HTMLElement).classList?.contains('navbar-toggler'))
-      ) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  React.useEffect(() => {
-    setIsOpen(false);
-  }, [location.pathname]);
-
-  React.useEffect(() => {
-    if (swapper == null) {
-      return;
-    }
-
+    if (swapper == null) return;
     const updateActionCount = async () => {
       const swaps = await swapper.getActionableSwaps();
       const initiated = swaps.filter((swap) => swap.isInitiated());
       const notTrusted = initiated.filter(
         (swap) =>
           swap.getType() !== SwapType.TRUSTED_FROM_BTC &&
-          swap.getType() !== SwapType.TRUSTED_FROM_BTCLN
+          swap.getType() !== SwapType.TRUSTED_FROM_BTCLN,
       );
-      const requiresAction = notTrusted.filter((swap) => swap.requiresAction());
-      setActionRequiredCount(requiresAction.length);
+      setActionRequiredCount(notTrusted.filter((swap) => swap.requiresAction()).length);
     };
-
     updateActionCount();
-
-    const listener = () => {
-      updateActionCount();
-    };
+    const listener = () => updateActionCount();
     swapper.on('swapState', listener);
-
     return () => {
       swapper.off('swapState', listener);
     };
   }, [swapper]);
 
-  const [settingsOpened, setSettingsOpened] = useState<boolean>(false);
-
-  const navItems = [
+  const navItems: NavItem[] = [
     { link: '/', icon: 'swap-nav', title: 'Swap' },
     {
       link: '/history',
       icon: 'Swap-History',
-      title: <>
-        <span>Swap History</span>
-        {syncing && <Spinner className="text-white ms-2" size="sm" />}
-        {syncingError && <Icon size={20} className="ms-2 flex" icon={ic_warning} />}
-      </>,
+      title: (
+        <>
+          <span>Swap History</span>
+          {syncing && <Spinner className="text-white ms-2" size="sm" />}
+          {syncingError && <Icon size={20} className="ms-2 flex" icon={ic_warning} />}
+        </>
+      ),
       count: actionRequiredCount > 0 ? actionRequiredCount : undefined,
     },
     { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
-    { link: 'https://docs.atomiq.exchange/', icon: 'book', title: 'Docs' },
-    { link: 'https://npmjs.com/@atomiqlabs/sdk', icon: 'embed2', title: 'SDK' },
-    {
-      link: '/settings',
-      action: (e) => {
-        e.preventDefault();
-        setSettingsOpened(true);
-      },
-      icon: 'cog', title: 'Settings'
-    },
-    { link: 'https://www.atomiqlabs.com/terms-of-service', icon: 'file-text', title: 'Terms of Service' },
-    { link: 'https://www.atomiqlabs.com/privacy-cookie-policy', icon: 'user', title: 'Privacy Policy' }
+    { link: 'https://docs.atomiq.exchange/', icon: 'book', title: 'Docs', external: true },
+    { link: 'https://npmjs.com/@atomiqlabs/sdk', icon: 'embed2', title: 'SDK', external: true },
   ];
 
-  const anchorNavigate = useAnchorNavigate();
+  const settingsSlot = (
+    <a
+      href="/settings"
+      onClick={(e) => {
+        e.preventDefault();
+        setSettingsOpened(true);
+      }}
+      className="dropdown-item"
+    >
+      <span className="me-2 main-navigation__item__icon icon icon-cog" />
+      Settings
+    </a>
+  );
 
   return (
-    <Container className="max-width-100">
-      <SettingsModal opened={settingsOpened} close={() => setSettingsOpened(false)}/>
-
-      <div>
-        <Navbar expand="lg" collapseOnSelect className="main-navigation">
-          {isOpen && <div className="main-navigation__overlay" />}
-          <Navbar.Brand href="/">
-            <div className="d-flex flex-row" style={{ fontSize: '1.5rem' }}>
-              <img src="/main_logo.png" className="main-navigation__logo is-desktop" />
-              <img src="/logo192.png" className="main-navigation__logo is-mobile" />
-
-              {ChainsConfig.BITCOIN.network !== BitcoinNetwork.MAINNET ? (
-                <Badge
-                  className="main-navigation__network ms-2 my-0 align-items-center font-smallest"
-                  bg="danger"
-                >
-                  {BitcoinNetwork[ChainsConfig.BITCOIN.network]}
-                </Badge>
-              ) : (
-                ''
-              )}
-            </div>
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={() => setIsOpen(!isOpen)} />
-          {actionRequiredCount > 0 && (
-            <div className="main-navigation__alert">{actionRequiredCount}</div>
-          )}
-          <div className="main-navigation__wallet">
-            <WalletConnector />
-          </div>
-          <Navbar.Collapse
-            ref={collapseRef}
-            in={isOpen}
-            role="navigation"
-            id="basic-navbar-nav"
-            className={classNames('main-navigation__collapse', { show: isOpen })}
-          >
-            <Nav className="main-navigation__nav">
-              <div className="main-navigation__nav__mobile-header">
-                <Nav.Link href="/">
-                  <img src="/main_logo.png" className="main-navigation__nav__logo" alt="logo" />
-                </Nav.Link>
-                <div className="main-navigation__nav__close" onClick={() => setIsOpen(false)}>
-                  <Icon size={20} icon={close} />
-                </div>
-              </div>
-
-              {navItems.map((item, index) => (
-                <Nav.Link
-                  key={item.link}
-                  href={item.link}
-                  onClick={item.action ?? anchorNavigate}
-                  className={classNames('main-navigation__nav__item', {
-                    'is-active': location.pathname === item.link,
-                    'is-mobile': index >= 3,
-                  })}
-                >
-                  {item.icon && (
-                    <span
-                      className={`main-navigation__nav__item__icon icon icon-${item.icon}`}
-                    ></span>
-                  )}
-                  <span className="main-navigation__nav__item__text">{item.title}</span>
-                  {item.count && (
-                    <div className="main-navigation__nav__item__count">{item.count}</div>
-                  )}
-                </Nav.Link>
-              ))}
-
-              <NavDropdown
-                className="main-navigation__more"
-                title={
-                  <span className="main-navigation__more__label">
-                    <span className="main-navigation__more__text">More</span>
-                    <Icon icon={angleDown} size={20} className="main-navigation__more__icon" />
-                  </span>
-                }
-                menuVariant="dark"
-              >
-                {navItems.slice(3).map((item) => (
-                  <NavDropdown.Item key={item.link} href={item.link} target="_blank" onClick={item.action ?? anchorNavigate}>
-                    <span
-                      className={`me-2 main-navigation__item__icon icon icon-${item.icon}`}
-                    ></span>
-                    {item.title}
-                  </NavDropdown.Item>
-                ))}
-              </NavDropdown>
-              <SocialFooter />
-            </Nav>
-          </Navbar.Collapse>
-        </Navbar>
-      </div>
-    </Container>
+    <>
+      <SettingsModal opened={settingsOpened} close={() => setSettingsOpened(false)} />
+      <MainNavigationView
+        navItems={navItems}
+        walletSlot={<WalletConnector />}
+        settingsSlot={settingsSlot}
+        currentPath={location.pathname}
+        networkBadge={{
+          show: ChainsConfig.BITCOIN.network !== BitcoinNetwork.MAINNET,
+          label: BitcoinNetwork[ChainsConfig.BITCOIN.network],
+        }}
+        onNavClick={anchorNavigate}
+      />
+    </>
   );
 }
