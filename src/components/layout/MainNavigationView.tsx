@@ -44,7 +44,7 @@ export function MainNavigationView(props: {
       href={item.link}
       onClick={clickHandler(item)}
       {...externalAttrs(item)}
-      className={classNames('main-navigation__nav__item', {
+      className={classNames('nav-link', 'main-navigation__nav__item', {
         'is-active': currentPath === item.link,
         'is-mobile': mobileOnly,
       })}
