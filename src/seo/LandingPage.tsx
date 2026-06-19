@@ -92,14 +92,18 @@ export function LandingPage(props: { route: ResolvedRoute; siblingSlugs: string[
         </div>
 
         <h2 className="page-title mt-5">FAQ</h2>
-        <div className="row">
+        {/* Native <details> accordion: matches the main FAQ look with zero JS, and keeps
+            every answer in the crawlable HTML so the SEO signal is preserved. */}
+        <div className="seo-faqs">
           {route.faqs.map((faq, i) => (
-            <div className="col-12 col-lg-6 pb-3" key={i}>
-              <div className={`${CARD_CLASS} height-100`}>
-                <h3 className="fs-5 fw-semibold mb-2">{faq.question}</h3>
-                <div className="text-white text-opacity-75 seo-faq-answer">{faq.answer}</div>
-              </div>
-            </div>
+            <details key={i} open={i === 0}>
+              <summary>
+                <span className="seo-faq-number">{i + 1}.</span>
+                <span>{faq.question}</span>
+                <span className="seo-faq-arrow icon icon-caret-down" aria-hidden="true" />
+              </summary>
+              <div className="seo-faq-answer">{faq.answer}</div>
+            </details>
           ))}
         </div>
 
