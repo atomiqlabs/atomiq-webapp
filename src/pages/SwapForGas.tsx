@@ -15,12 +15,10 @@ import { SwapStepAlert } from '../components/swaps/SwapStepAlert';
 import { BaseButton } from '../components/common/BaseButton';
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
 import {useWallet} from "../hooks/wallets/useWallet";
-import { useNoindex } from '../hooks/utils/useNoindex';
 
 const defaultSwapAmount = '12500000';
 
 export function SwapForGas() {
-  useNoindex();
   const { swapper } = useContext(SwapperContext);
 
   const navigate = useNavigate();

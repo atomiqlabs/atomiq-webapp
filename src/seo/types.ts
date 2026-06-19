@@ -5,8 +5,7 @@ export type SeoToken = {
   ticker: string;       // 'USDC', 'BTC'
   chainKey: string;     // 'solana' | 'starknet' | 'citrea' | 'bitcoin' | 'lightning'
   chainName: string;    // 'Solana', 'Starknet', 'Citrea', 'Bitcoin', 'Lightning Network'
-  sdkPath?: [string, string]; // ['SOLANA','USDC'] for smart-chain tokens; omitted for BTC/LN
-  literalId?: string;   // 'BITCOIN' | 'LIGHTNING' for the BTC side
+  tokenId: string;      // app swap identifier: '<chainId>:<address>' for smart-chain tokens, 'BITCOIN'/'LIGHTNING' for the BTC side
   isBtcSide: boolean;
 };
 

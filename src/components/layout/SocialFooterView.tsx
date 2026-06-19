@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 const socialLink = [
   { link: 'https://twitter.com/atomiqlabs', image: 'twitter.png', title: 'Twitter' },
@@ -11,9 +11,15 @@ export function SocialFooterView(props: { isHorizontal: boolean }) {
   return (
     <div className={`social-footer ${props.isHorizontal ? 'is-horizontal pt-3' : ''}`}>
       {socialLink.map(({ link, image, title }) => (
-        <a key={link} href={link} target="_blank" rel="noreferrer" className="social-footer__link" title={title}>
-          <img className="social-footer__icon" src={`/icons/socials/${image}`} alt={title} />
-        </a>
+        <OverlayTrigger
+          key={link}
+          placement={props.isHorizontal ? 'top' : 'left'}
+          overlay={<Tooltip id={`social-tooltip-${title}`}>{title}</Tooltip>}
+        >
+          <a href={link} target="_blank" rel="noreferrer" className="social-footer__link">
+            <img className="social-footer__icon" src={`/icons/socials/${image}`} alt={title} />
+          </a>
+        </OverlayTrigger>
       ))}
     </div>
   );

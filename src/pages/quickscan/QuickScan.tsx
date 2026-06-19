@@ -11,10 +11,8 @@ import { SCToken } from '@atomiqlabs/sdk';
 import { useNFCScanner } from '../../hooks/nfc/useNFCScanner';
 import { NFCStartResult } from '../../utils/NFCReader';
 import {QRScanner} from "../../components/qrscanner/QRScanner";
-import { useNoindex } from '../../hooks/utils/useNoindex';
 
 export function QuickScan() {
-  useNoindex();
   const navigate = useNavigate();
 
   const [selectedCurrency, setSelectedCurrency] = useState<SCToken>(null);

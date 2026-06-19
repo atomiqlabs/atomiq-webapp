@@ -6,12 +6,10 @@ import { TransactionsTable } from '../components/table/TransactionsTable';
 import {Spinner} from "react-bootstrap";
 import Icon from "react-icons-kit";
 import { ic_warning } from 'react-icons-kit/md/ic_warning';
-import { useNoindex } from '../hooks/utils/useNoindex';
 
 const SHOW_FILTER = false; // TODO implement filter and uncomment this to display it
 
 export function HistoryPage() {
-  useNoindex();
   const { swapper, syncingError, syncing, events } = useContext(SwapperContext);
 
   const [swaps, setSwaps] = useState<ISwap[]>([]);

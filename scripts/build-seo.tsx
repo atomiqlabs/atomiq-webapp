@@ -2,32 +2,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as React from 'react';
-import { SwapperFactory } from '@atomiqlabs/sdk';
-import { SolanaInitializerV2 } from '@atomiqlabs/chain-solana';
-import { StarknetInitializer } from '@atomiqlabs/chain-starknet';
-import { CitreaInitializer, BotanixInitializer, AlpenInitializer, GoatInitializer } from '@atomiqlabs/chain-evm';
 import { buildRoutes } from '../src/seo/routes';
 import { composeRoute } from '../src/seo/content';
 import { renderHead, ORIGIN } from '../src/seo/seoHead';
 import { LandingPage } from '../src/seo/LandingPage';
-import type { ResolvedRoute, SeoToken } from '../src/seo/types';
+import type { ResolvedRoute } from '../src/seo/types';
 
 const BUILD = path.resolve('build');
-
-// `as any`: the build script only needs Factory.Tokens as a lookup table, so we skip
-// re-declaring the full generic initializer chain that SwapperProvider maintains for runtime.
-const Factory = new SwapperFactory([
-  SolanaInitializerV2, StarknetInitializer, CitreaInitializer, BotanixInitializer, AlpenInitializer, GoatInitializer,
-] as any);
-const Tokens: any = Factory.Tokens;
-
-function identifier(token: SeoToken): string {
-  if (token.literalId) return token.literalId;
-  const [chain, name] = token.sdkPath!;
-  const t = Tokens[chain]?.[name];
-  if (t == null) throw new Error(`Unknown SDK token ${chain}.${name} for ${token.key}`);
-  return `${t.chainId}:${t.address}`;
-}
 
 function cssHref(): string {
   const manifestPath = path.join(BUILD, '.vite', 'manifest.json');
@@ -72,16 +53,12 @@ function main() {
   const routes = buildRoutes();
   const composed = routes.map(composeRoute);
 
-  const resolved: ResolvedRoute[] = composed.map((c) => {
-    const tokenInId = identifier(c.from);
-    const tokenOutId = identifier(c.to);
-    return {
-      ...c,
-      tokenInId,
-      tokenOutId,
-      ctaHref: `/?tokenIn=${tokenInId}&tokenOut=${tokenOutId}`,
-    };
-  });
+  const resolved: ResolvedRoute[] = composed.map((c) => ({
+    ...c,
+    tokenInId: c.from.tokenId,
+    tokenOutId: c.to.tokenId,
+    ctaHref: `/?tokenIn=${c.from.tokenId}&tokenOut=${c.to.tokenId}`,
+  }));
 
   for (const route of resolved) {
     const siblings = resolved
