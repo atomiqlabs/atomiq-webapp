@@ -304,7 +304,7 @@ export function useSwapPage(): SwapPageState {
           );
         newOutputToken ??= supportedCounterTokens[0];
         if (newOutputToken == null) {
-          setInputToken(inputToken);
+          _setInputToken(inputToken);
           return;
         }
       }
