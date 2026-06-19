@@ -36,6 +36,7 @@ export function LandingPage(props: { route: ResolvedRoute; siblingSlugs: string[
         }
         currentPath={`/swap/${route.slug}`}
         networkBadge={{ show: false, label: '' }}
+        noTooltip
       />
 
       <div className="d-flex flex-grow-1 flex-column mt-4 mt-md-5">
@@ -90,7 +91,7 @@ export function LandingPage(props: { route: ResolvedRoute; siblingSlugs: string[
         </div>
       </div>
 
-      <SocialFooterView isHorizontal={false} />
+      <SocialFooterView isHorizontal={false} noTooltip />
     </div>
   );
 }

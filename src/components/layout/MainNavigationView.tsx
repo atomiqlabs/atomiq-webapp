@@ -26,6 +26,7 @@ export function MainNavigationView(props: {
   networkBadge: { show: boolean; label: string };
   actionRequiredCount?: number;
   onNavClick?: (e: React.MouseEvent) => void;
+  noTooltip?: boolean;
 }) {
   const { navItems, walletSlot, currentPath, networkBadge, onNavClick } = props;
   const actionRequiredCount = props.actionRequiredCount ?? 0;
@@ -120,7 +121,7 @@ export function MainNavigationView(props: {
                 </div>
               )}
 
-              <SocialFooterView isHorizontal={false} />
+              <SocialFooterView isHorizontal={false} noTooltip={props.noTooltip} />
             </div>
           </div>
         </nav>
