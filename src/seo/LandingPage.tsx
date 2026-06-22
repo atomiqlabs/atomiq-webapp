@@ -1,6 +1,6 @@
 import { MainNavigationView, NavItem } from '../components/layout/MainNavigationView';
 import { SocialFooterView } from '../components/layout/SocialFooterView';
-import type { ResolvedRoute } from './types';
+import type {ResolvedRoute, SeoToken} from './types';
 
 const NAV_ITEMS: NavItem[] = [
   { link: '/', icon: 'swap-nav', title: 'Swap' },
@@ -41,12 +41,16 @@ const BENEFITS: { title: string; text: string }[] = [
   },
 ];
 
-function prettySlug(slug: string): string {
-  return slug.replace(/-to-/g, ' → ').replace(/-/g, ' ');
+function prettyToken(token: SeoToken): string {
+  if(token.isBtcSide) {
+    return token.chainName;
+  } else {
+    return token.ticker+" on "+token.chainName;
+  }
 }
 
-export function LandingPage(props: { route: ResolvedRoute; siblingSlugs: string[] }) {
-  const { route, siblingSlugs } = props;
+export function LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRoute[] }) {
+  const { route, siblings } = props;
   const counterpartyChain = route.from.isBtcSide ? route.to.chainName : route.from.chainName;
 
   return (
@@ -113,16 +117,16 @@ export function LandingPage(props: { route: ResolvedRoute; siblingSlugs: string[
         <h2 className="page-title mt-5">Other swap routes</h2>
         <div className={`${CARD_CLASS} mb-3`}>
           <ul className="mb-0 ps-3 d-flex flex-column gap-1">
-            {siblingSlugs.map((slug) => (
-              <li key={slug}>
-                <a href={`/swap/${slug}`} className="text-white">
-                  {prettySlug(slug)}
+            {siblings.map((sibling) => (
+              <li key={sibling.slug}>
+                <a href={`/swap/${sibling.slug}`} className="text-white">
+                  {prettyToken(sibling.from)} → {prettyToken(sibling.to)}
                 </a>
               </li>
             ))}
             <li className="mt-2">
               <a href="/" className="text-white">
-                Open the Atomiq app
+                Open the atomiq.exchange app
               </a>
             </li>
           </ul>

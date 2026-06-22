@@ -67,10 +67,9 @@ function main() {
         r.from.chainKey === route.from.chainKey || r.to.chainKey === route.to.chainKey
       ))
       .sort((a, b) => siblingScore(a, route) - siblingScore(b, route))
-      .slice(0, 8)
-      .map((r) => r.slug);
+      .slice(0, 8);
 
-    const body = renderToStaticMarkup(React.createElement(LandingPage, { route, siblingSlugs: siblings }));
+    const body = renderToStaticMarkup(React.createElement(LandingPage, { route, siblings }));
     const dir = path.join(BUILD, 'swap', route.slug);
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, 'index.html'), htmlDocument(route, body, css));
