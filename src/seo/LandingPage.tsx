@@ -6,6 +6,9 @@ const NAV_ITEMS: NavItem[] = [
   { link: '/', icon: 'swap-nav', title: 'Swap' },
   { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
   { link: 'https://docs.atomiq.exchange/', icon: 'book', title: 'Docs', external: true },
+  { link: 'https://npmjs.com/@atomiqlabs/sdk', icon: 'embed2', title: 'SDK', external: true },
+  { link: 'https://www.atomiqlabs.com/terms-of-service', icon: 'file-text', title: 'Terms of Service', external: true },
+  { link: 'https://www.atomiqlabs.com/privacy-cookie-policy', icon: 'user', title: 'Privacy Policy', external: true },
 ];
 
 // Reuse the app's swap-CTA look (BaseButton `--primary`: the purple gradient) so the

@@ -1,5 +1,6 @@
 import type { ResolvedRoute } from './types';
 
+export const ATOMIQ_LABS_PAGE = 'https://www.atomiqlabs.com';
 export const ORIGIN = 'https://app.atomiq.exchange';
 const OG_IMAGE = `${ORIGIN}/logo512.png`;
 
@@ -16,13 +17,13 @@ export function renderHead(route: ResolvedRoute): string {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
-      { '@type': 'Organization', name: 'Atomiq', url: ORIGIN, logo: OG_IMAGE },
-      { '@type': 'WebSite', name: 'Atomiq', url: ORIGIN },
+      { '@type': 'Organization', name: 'atomiq labs', url: ATOMIQ_LABS_PAGE, logo: OG_IMAGE },
+      { '@type': 'WebSite', name: 'atomiq.exchange', url: ORIGIN },
       { '@type': 'WebApplication', name: route.title, url, applicationCategory: 'FinanceApplication', operatingSystem: 'Web' },
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Atomiq', item: ORIGIN },
+          { '@type': 'ListItem', position: 1, name: 'atomiq.exchange', item: ORIGIN },
           { '@type': 'ListItem', position: 2, name: route.h1, item: url },
         ],
       },

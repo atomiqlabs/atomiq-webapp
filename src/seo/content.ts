@@ -37,13 +37,13 @@ export function composeRoute(route: SeoRoute): ComposedRoute {
   const to = display(route.to, true);
   const fromFull = display(route.from, true);
 
-  const title = `Swap ${from} to ${to} | Atomiq`;
+  const title = `Swap ${from} to ${to} | atomiq.exchange`;
   const h1 = `Swap ${from} to ${to}`;
   const description =
-    `Swap ${fromFull} to ${to} trustlessly with Atomiq — a non-custodial, atomic cross-chain DEX. ` +
+    `Swap ${fromFull} to ${to} trustlessly via atomiq.exchange — a non-custodial, atomic cross-chain DEX. ` +
     `No centralized exchange, no custodial bridge: just connect your wallets and swap.`;
   const intro =
-    `Atomiq lets you swap ${fromFull} to ${to} in a fully trustless, atomic way. ` +
+    `atomiq.exchange lets you swap ${fromFull} to ${to} in a fully trustless, atomic way. ` +
     `Swaps are secured by a Bitcoin light client and on-chain smart contracts, so you keep custody of your funds the entire time and can always reclaim them if a swap does not complete.`;
 
   const extras: FaqItem[] = [];
