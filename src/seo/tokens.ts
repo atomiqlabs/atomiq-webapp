@@ -24,14 +24,14 @@ const CURATED: [string, string][] = [
   ['SOLANA', 'SOL'],
   ['SOLANA', 'USDC'],
   ['SOLANA', 'WBTC'],
-  ['SOLANA', 'BONK'],
+  // ['SOLANA', 'BONK'],
   ['STARKNET', 'STRK'],
   ['STARKNET', 'ETH'],
   ['STARKNET', 'WBTC'],
   ['STARKNET', 'strkBTC'],
   ['STARKNET', 'USDC'],
   ['CITREA', 'CBTC'],
-  ['CITREA', 'USDC'],
+  // ['CITREA', 'USDC'],
 ];
 
 // 'SOLANA' -> 'Solana'. Works for every curated chain; the BTC side sets its names above.
