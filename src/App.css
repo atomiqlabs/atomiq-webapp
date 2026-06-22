@@ -159,3 +159,26 @@
 .font-monospace {
   font-family: monospace;
 }
+
+/* FAQ answer lists — restore markers stripped by Tailwind Preflight.
+   `.faq-answer` is shared by the bootstrap FAQ accordion and the static
+   <details> SEO landing pages. */
+.faq-answer ul {
+  list-style: disc;
+}
+.faq-answer ol {
+  list-style: decimal;
+}
+
+.faq-answer ul,
+.faq-answer ol {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem; /* overrides Bootstrap's leftover 2rem */
+}
+
+.faq-answer li {
+  margin-bottom: 0.5rem;
+}
+.faq-answer li::marker {
+  color: rgba(255, 255, 255, 0.4);
+}

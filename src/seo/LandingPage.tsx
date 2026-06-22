@@ -102,7 +102,7 @@ export function LandingPage(props: { route: ResolvedRoute; siblingSlugs: string[
                 <span>{faq.question}</span>
                 <span className="seo-faq-arrow icon icon-caret-down" aria-hidden="true" />
               </summary>
-              <div className="seo-faq-answer">{faq.answer}</div>
+              <div className="seo-faq-answer faq-answer">{faq.answer}</div>
             </details>
           ))}
         </div>

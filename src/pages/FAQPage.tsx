@@ -45,7 +45,7 @@ export function FAQPage(props: {}) {
                     {faq.question}
                     <i className="faq-arrow icon icon-caret-down"></i>
                   </Accordion.Header>
-                  <Accordion.Body>
+                  <Accordion.Body className="faq-answer">
                     {typeof faq.answer === 'function' ? faq.answer(anchorNavigate) : faq.answer}
                   </Accordion.Body>
                 </Accordion.Item>
