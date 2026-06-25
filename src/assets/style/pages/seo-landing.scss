@@ -1,0 +1,56 @@
+// Static (no-JS) FAQ accordion for the prerendered SEO landing pages. Built on native
+// <details>/<summary>, so it works with zero JavaScript while keeping every answer in the
+// crawlable HTML (Google indexes collapsed <details> content). Mirrors the look of the main
+// FAQ accordion in pages/faqs.scss, but keyed off `details[open]` instead of the bootstrap
+// JS `.collapsed` state.
+.seo-faqs {
+  @apply flex flex-col gap-2;
+
+  summary {
+    @apply flex items-center bg-white/10 rounded-[11px] p-6 text-[18px] font-semibold cursor-pointer hover:bg-white/15;
+    list-style: none;
+    transition:
+      background 0.2s ease-in-out,
+      border-radius 0.35s ease-in-out;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  details[open] > summary {
+    @apply rounded-b-none bg-white/15 pb-3;
+
+    .seo-faq-arrow {
+      transform: rotate(-180deg);
+    }
+
+    .seo-faq-number {
+      @apply opacity-100;
+    }
+  }
+
+  .seo-faq-number {
+    @apply opacity-50 mr-6;
+  }
+
+  .seo-faq-arrow {
+    @apply ml-auto transition-all text-[15px];
+  }
+
+  .seo-faq-answer {
+    @apply bg-white/15 rounded-b-[11px] text-left text-white/75 text-[16px] leading-[24px] pt-0 pr-6 pb-6 pl-[60px];
+
+    p:last-child {
+      @apply mb-0;
+    }
+
+    h4 {
+      @apply text-[16px] font-semibold;
+    }
+
+    a {
+      @apply text-inherit;
+    }
+  }
+}

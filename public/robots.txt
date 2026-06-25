@@ -1,3 +1,7 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Disallow: /history
+Disallow: /scan
+Disallow: /gas
+
+Sitemap: https://app.atomiq.exchange/sitemap.xml

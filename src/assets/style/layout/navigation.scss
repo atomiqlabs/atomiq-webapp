@@ -124,10 +124,24 @@
   .navbar-nav .main-navigation__more {
     & {
       @apply flex items-center active:text-white;
+      position: relative;
     }
 
     &.show .main-navigation__more__icon {
       rotate: 180deg;
+    }
+
+    // Menu visibility/position is driven by navMenu.js toggling `.show` on this wrapper
+    // (no Popper, unlike the old react-bootstrap NavDropdown), so anchor + reveal it here.
+    .dropdown-menu {
+      top: 100%;
+      right: 0;
+      left: auto;
+      margin-top: 0.25rem;
+    }
+
+    &.show .dropdown-menu {
+      display: block;
     }
 
     &__label {

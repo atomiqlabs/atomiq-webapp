@@ -64,6 +64,7 @@ export default defineConfig({
     // **Add SPA fallback for React Router**
     build: {
         outDir: 'build',
+        manifest: true,
         rollupOptions: {
             input: '/index.html',
         },

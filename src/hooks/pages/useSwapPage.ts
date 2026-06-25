@@ -37,7 +37,7 @@ import {usePricing} from '../pricing/usePricing';
 import {WebLNProvider} from 'webln';
 import {useExistingSwap} from '../quoting/useExistingSwap';
 import {ChainsConfig} from "../../data/ChainsConfig";
-import {Tokens} from "../../providers/SwapperProvider";
+import {Tokens} from "../../utils/SwapperFactory";
 import {useStateRef} from "../utils/useStateRef";
 import {useWallet} from "../wallets/useWallet";
 
@@ -106,7 +106,7 @@ export type SwapPageState = {
     gasDrop?: {
       checked: boolean;
       onChange: (checked: boolean) => void;
-      amount: TokenAmount<string, SCToken>;
+      amount: TokenAmount<SCToken>;
       disabled: boolean;
     };
     address?: {
@@ -304,7 +304,7 @@ export function useSwapPage(): SwapPageState {
           );
         newOutputToken ??= supportedCounterTokens[0];
         if (newOutputToken == null) {
-          setInputToken(inputToken);
+          _setInputToken(inputToken);
           return;
         }
       }

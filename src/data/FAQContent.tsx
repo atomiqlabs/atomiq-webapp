@@ -30,7 +30,7 @@ export const FAQContent: FAQItem[] = [
     answer: (anchorNavigate) => (
       <>
         <h4>Connect your Solana or Starknet wallet and Bitcoin wallet</h4>
-        <p>
+        <div>
           In order to interact with atomiq.exchange webapp, you need a Solana or Starknet wallet and
           a Bitcoin wallet. In case you don't have any wallet yet we recommend downloading:
           <ul>
@@ -53,11 +53,11 @@ export const FAQContent: FAQItem[] = [
               - works with Starknet only
             </li>
           </ul>
-        </p>
+        </div>
         <p>Connect your wallets by clicking on "Connect" when prompted.</p>
 
         <h4>Paying to a bitcoin/lightning qr code (Scan function)</h4>
-        <p>
+        <div>
           If you are presented with a Bitcoin/Lightning network QR code and want to initiate a
           Solana/Starknet -&gt; Bitcoin swap:
           <ol>
@@ -79,10 +79,10 @@ export const FAQContent: FAQItem[] = [
             </li>
             <li>In a few seconds the swap will be executed</li>
           </ol>
-        </p>
+        </div>
 
         <h4>Swapping Solana/Starknet -&gt; Bitcoin (Swap function)</h4>
-        <p>
+        <div>
           You can seamlessly swap Solana and Starknet assets to Bitcoin (on-chain and lightning):
           <ol>
             <li>
@@ -108,10 +108,10 @@ export const FAQContent: FAQItem[] = [
             </li>
             <li>In a few seconds the swap will be executed</li>
           </ol>
-        </p>
+        </div>
 
         <h4>Swapping Bitcoin -&gt; Solana/Starknet (Swap function)</h4>
-        <p>
+        <div>
           Seamlessly swapping Bitcoin (on-chain and lightning) to Solana assets (like SOL and USDC):
           <ol>
             <li>
@@ -147,7 +147,7 @@ export const FAQContent: FAQItem[] = [
               required confirmations
             </li>
           </ol>
-        </p>
+        </div>
       </>
     ),
   },
@@ -273,7 +273,7 @@ export const FAQContent: FAQItem[] = [
   {
     question: 'Are you audited?',
     answer: (
-      <p>
+      <div>
         Our smart contracts were audited by independent security auditors:
         <ul>
           <li>
@@ -304,7 +304,7 @@ export const FAQContent: FAQItem[] = [
             </a>
           </li>
         </ul>
-      </p>
+      </div>
     ),
   },
 ];

@@ -1,14 +1,4 @@
-import {Swapper, SwapperFactory, TypedSwapper} from "@atomiqlabs/sdk";
-import {SolanaInitializerV2, SolanaInitializerType} from "@atomiqlabs/chain-solana";
-import {StarknetInitializer, StarknetInitializerType} from "@atomiqlabs/chain-starknet";
-import {
-  AlpenInitializer,
-  AlpenInitializerType,
-  BotanixInitializer,
-  BotanixInitializerType,
-  CitreaInitializer,
-  CitreaInitializerType, GoatInitializer, GoatInitializerType
-} from "@atomiqlabs/chain-evm";
+import {Swapper} from "@atomiqlabs/sdk";
 import {useEffect, useRef, useState} from "react";
 import {useLocation} from "react-router-dom";
 import {FEConstants} from "../FEConstants";
@@ -16,25 +6,7 @@ import {ChainsConfig} from "../data/ChainsConfig";
 import {SwapperContext} from "../context/SwapperContext";
 import EventEmitter from "events";
 import {useLocalStorage} from "../hooks/utils/useLocalStorage";
-
-export const Factory = new SwapperFactory<readonly [
-  SolanaInitializerType<"v2">,
-  StarknetInitializerType,
-  CitreaInitializerType,
-  BotanixInitializerType,
-  AlpenInitializerType,
-  GoatInitializerType,
-]>([
-  SolanaInitializerV2,
-  StarknetInitializer,
-  CitreaInitializer,
-  BotanixInitializer,
-  AlpenInitializer,
-  GoatInitializer,
-] as const);
-
-export const Tokens = Factory.Tokens;
-export const TokenResolver = Factory.TokenResolver;
+import {Factory} from "../utils/SwapperFactory";
 
 console.log('Factory: ', Factory);
 
