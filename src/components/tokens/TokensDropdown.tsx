@@ -1,4 +1,4 @@
-import { Dropdown, Nav } from 'react-bootstrap';
+import {Dropdown, Nav, Spinner} from 'react-bootstrap';
 import * as React from 'react';
 import { isSCToken, Token } from '@atomiqlabs/sdk';
 import { TokenIcon } from './TokenIcon';
@@ -6,9 +6,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { toTokenIdentifier } from '../../utils/Tokens';
 import {useChain} from "../../hooks/chains/useChain";
 import { ChainIcon } from './ChainIcon';
+import {Icon} from "react-icons-kit";
+import { ic_not_interested } from 'react-icons-kit/md/ic_not_interested';
 
 export function TokensDropdown(props: {
-  tokensList: Token[];
+  tokensList: Token[] | null;
   onSelect: (currency: Token) => void;
   value: Token;
   className?: string;
@@ -102,19 +104,34 @@ export function TokensDropdown(props: {
             />
             <div className="icon icon-search"></div>
           </div>
-          {!!displayedTokens && displayedTokens.map(token => (
-            <Dropdown.Item
-              key={toTokenIdentifier(token)}
-              onClick={() => {
-                setShow(false);
-                props.onSelect(token);
-              }}
-            >
-              <ChainIcon token={token} />
-              <div className="sc-ticker">{token.ticker}</div>
-              <div className="sc-name">{token.name}</div>
-            </Dropdown.Item>
-          ))}
+          {props.tokensList==null
+            ? (
+              <div className="d-flex align-items-center justify-content-center text-light text-opacity-75">
+                <Spinner animation="border" size="sm" className="mr-2"/>
+                <h6 className="my-3">Loading available tokens</h6>
+              </div>
+            )
+            : !displayedTokens || displayedTokens.length===0
+              ? (
+                <div className="d-flex align-items-center justify-content-center text-light text-opacity-75">
+                  <Icon size={24} className="pb-1 me-2" icon={ic_not_interested} />
+                  <h6 className="my-3">No tokens available</h6>
+                </div>
+              )
+              : displayedTokens.map(token => (
+                <Dropdown.Item
+                    key={toTokenIdentifier(token)}
+                    onClick={() => {
+                      setShow(false);
+                      props.onSelect(token);
+                    }}
+                >
+                  <ChainIcon token={token} />
+                  <div className="sc-ticker">{token.ticker}</div>
+                  <div className="sc-name">{token.name}</div>
+                </Dropdown.Item>
+              ))
+          }
         </div>
       </Dropdown.Menu>
     </Dropdown>

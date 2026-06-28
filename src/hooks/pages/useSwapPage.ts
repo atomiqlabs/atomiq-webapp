@@ -40,6 +40,7 @@ import {ChainsConfig} from "../../data/ChainsConfig";
 import {Tokens} from "../../utils/SwapperFactory";
 import {useStateRef} from "../utils/useStateRef";
 import {useWallet} from "../wallets/useWallet";
+import {useStateWithRef} from "../utils/useStateWithRef";
 
 export type SwapPageUIState = 'show' | 'lock' | 'hide';
 
@@ -147,7 +148,7 @@ export type SwapPageState = {
 
 export function useSwapPage(): SwapPageState {
   const { chains, disconnectWallet, connectWallet } = useContext(ChainsContext);
-  const { swapper } = useContext(SwapperContext);
+  const { swapper, initializedSwapper } = useContext(SwapperContext);
 
   const navigate = useNavigate();
   const { search } = useLocation();
@@ -158,8 +159,8 @@ export function useSwapPage(): SwapPageState {
   const [inputTokens, outputTokens] = useSupportedTokens();
 
   //Tokens
-  const [inputToken, _setInputToken] = useState<Token>(Tokens.BITCOIN.BTC);
-  const [outputToken, _setOutputToken] = useState<Token>(smartChainTokenArray[0]);
+  const [inputToken, _setInputToken, inputTokenRef] = useStateWithRef<Token>(Tokens.BITCOIN.BTC);
+  const [outputToken, _setOutputToken, outputTokenRef] = useStateWithRef<Token>(smartChainTokenArray[0]);
   const swapType = useMemo(
     () => swapper?.getSwapType(inputToken, outputToken),
     [swapper, inputToken, outputToken]
@@ -193,20 +194,21 @@ export function useSwapPage(): SwapPageState {
   const [addressFromWebLn, setAddressFromWebLn] = useState<string>(null);
   const [_address, setAddress] = useState<string>(null);
   const address = outputWallet?.address ?? _address;
-  const [addressData, addressLoading, addressError] = useAddressData(address, (addressData) => {
+  const addressCallback = useCallback((addressData) => {
+    if (initializedSwapper==null) return;
     if (addressData?.type == null) return;
     let token: Token;
     switch (addressData.type) {
       case 'BITCOIN':
-        token = swapper.getSupportedTokens(false).find((val) => isBtcToken(val) && !val.lightning);
+        token = initializedSwapper.getSupportedTokens(false).find((val) => isBtcToken(val) && !val.lightning);
         break;
       case 'LNURL':
         if (addressData.lnurl.type === 'withdraw') {
           if(chains.LIGHTNING==null) return 'Address not supported for swaps!';
           chains.LIGHTNING._connectWallet("LNURL", addressData.lnurl);
-          token = swapper.getSupportedTokens(true).find((val) => isBtcToken(val) && val.lightning);
+          token = initializedSwapper.getSupportedTokens(true).find((val) => isBtcToken(val) && val.lightning);
           if (token == null) return 'Address not supported for swaps!';
-          const counterTokens = swapper.getSwapCounterTokens(token, true);
+          const counterTokens = initializedSwapper.getSwapCounterTokens(token, true);
           if (counterTokens.length === 0) return 'Address not supported for swaps!';
           setInputToken(token);
           setAddress("");
@@ -215,42 +217,43 @@ export function useSwapPage(): SwapPageState {
           return;
         }
       case 'LIGHTNING':
-        token = swapper.getSupportedTokens(false).find((val) => isBtcToken(val) && val.lightning);
+        token = initializedSwapper.getSupportedTokens(false).find((val) => isBtcToken(val) && val.lightning);
         break;
       default:
         if (
-          isSCToken(outputToken) &&
-          (
-            outputToken.chainId === addressData.type ||
-            swapper.Utils.isValidSmartChainAddress(addressData.address, outputToken.chainId)
-          )
+            isSCToken(outputTokenRef.current) &&
+            (
+                outputTokenRef.current.chainId === addressData.type ||
+                initializedSwapper.Utils.isValidSmartChainAddress(addressData.address, outputTokenRef.current.chainId)
+            )
         ) {
-          token = outputToken;
+          token = outputTokenRef.current;
         } else {
-          token = swapper
-            .getSupportedTokens(false)
-            .find((val) => isSCToken(val) && val.chainId === addressData.type);
+          token = initializedSwapper
+              .getSupportedTokens(false)
+              .find((val) => isSCToken(val) && val.chainId === addressData.type);
         }
         break;
     }
-    if (outputToken === token) return;
+    if (outputTokenRef.current === token) return;
     if (token == null) return 'Address not supported for swaps!';
-    const counterTokens = swapper.getSwapCounterTokens(token, false);
+    const counterTokens = initializedSwapper.getSwapCounterTokens(token, false);
     if (counterTokens.length === 0) return 'Address not supported for swaps!';
     const outputChainData: Chain<any> = chains[getChainIdentifierForCurrency(token)];
     //This handles the case when the chain to be switched to already has a wallet connected,
     // a connected wallet would block the address from being used, therefore the wallet
     // is disconnected here
     if (
-      outputChainData.wallet != null &&
-      outputChainData.wallet.address != null &&
-      outputChainData.wallet.address !== addressData.address
+        outputChainData.wallet != null &&
+        outputChainData.wallet.address != null &&
+        outputChainData.wallet.address !== addressData.address
     ) {
       console.log('SwapNew(): Disconnecting wallet: ' + outputChainData.wallet.name);
       disconnectWallet(outputChainData.chainId);
     }
     setOutputToken(token, false);
-  });
+  }, [initializedSwapper, chains]);
+  const [addressData, addressLoading, addressError] = useAddressData(address, addressCallback);
 
   //WebLN
   const webLnForOutput =
@@ -290,13 +293,16 @@ export function useSwapPage(): SwapPageState {
   //Tokens setters
   const setInputToken = useCallback(
     (val: Token) => {
-      const supportedCounterTokens = swapper.getSwapCounterTokens(val, true);
+      if (initializedSwapper==null) return;
+      const inputToken = inputTokenRef.current;
+      const outputToken = outputTokenRef.current;
+      const supportedCounterTokens = initializedSwapper.getSwapCounterTokens(val, true);
       _setInputToken(val);
-      if (includesToken(supportedCounterTokens, outputToken)) return;
+      if (includesToken(supportedCounterTokens, outputToken)) return true;
       let newOutputToken: Token;
       if (includesToken(supportedCounterTokens, inputToken)) {
         newOutputToken = inputToken;
-        setExactIn(!exactIn);
+        setExactIn(value => !value);
       } else {
         if (isSCToken(outputToken))
           newOutputToken = supportedCounterTokens.find(
@@ -305,7 +311,7 @@ export function useSwapPage(): SwapPageState {
         newOutputToken ??= supportedCounterTokens[0];
         if (newOutputToken == null) {
           _setInputToken(inputToken);
-          return;
+          return false;
         }
       }
       _setOutputToken(newOutputToken);
@@ -313,20 +319,24 @@ export function useSwapPage(): SwapPageState {
         getChainIdentifierForCurrency(newOutputToken) !== getChainIdentifierForCurrency(outputToken)
       )
         setAddress('');
+
+      return true;
     },
-    [swapper, outputToken, inputToken, exactIn]
+    [initializedSwapper]
   );
   const setOutputToken = useCallback(
     (val: Token, resetAddress: boolean = true) => {
-      if (val === outputToken) return;
+      if (initializedSwapper==null) return;
+      const inputToken = inputTokenRef.current;
+      const outputToken = outputTokenRef.current;
       if (resetAddress && getChainIdentifierForCurrency(val) !== getChainIdentifierForCurrency(outputToken))
         setAddress('');
-      const supportedCounterTokens = swapper.getSwapCounterTokens(val, false);
+      const supportedCounterTokens = initializedSwapper.getSwapCounterTokens(val, false);
       _setOutputToken(val);
-      if (includesToken(supportedCounterTokens, inputToken)) return;
+      if (includesToken(supportedCounterTokens, inputToken)) return true;
       if (includesToken(supportedCounterTokens, outputToken)) {
         _setInputToken(outputToken);
-        setExactIn(!exactIn);
+        setExactIn(value => !value);
       } else {
         let token: Token;
         if (isSCToken(inputToken))
@@ -336,12 +346,14 @@ export function useSwapPage(): SwapPageState {
         token ??= supportedCounterTokens[0];
         if (token == null) {
           _setOutputToken(outputToken);
-          return;
+          return false;
         }
         _setInputToken(token);
       }
+
+      return true;
     },
-    [swapper, outputToken, inputToken, exactIn]
+    [initializedSwapper]
   );
 
   //Url defined amount & swap type
@@ -349,8 +361,38 @@ export function useSwapPage(): SwapPageState {
     if(swapper==null) return;
     const tokenIn = fromTokenIdentifier(params.get('tokenIn'));
     const tokenOut = fromTokenIdentifier(params.get('tokenOut'));
-    if (tokenIn != null) setInputToken(tokenIn);
-    if (tokenOut != null) setOutputToken(tokenOut);
+    if (initializedSwapper==null) {
+      if(tokenIn != null && tokenOut != null) {
+        let swapType: SwapType | null;
+        try {
+          swapType = swapper.getSwapType(tokenIn, tokenOut);
+        } catch (e) {}
+        if(swapType!=null) {
+          _setInputToken(tokenIn);
+          _setOutputToken(tokenOut);
+        }
+      } else {
+        if(tokenIn!=null) {
+          _setInputToken(tokenIn);
+          if(isSCToken(tokenIn)) {
+            _setOutputToken(Tokens.BITCOIN.BTC);
+          } else {
+            _setOutputToken(smartChainTokenArray[0]);
+          }
+        }
+        if(tokenOut!=null) {
+          _setOutputToken(tokenOut);
+          if(isSCToken(tokenOut)) {
+            _setInputToken(Tokens.BITCOIN.BTC);
+          } else {
+            _setInputToken(smartChainTokenArray[0]);
+          }
+        }
+      }
+    } else {
+      if (tokenIn != null) setInputToken(tokenIn);
+      if (tokenOut != null) setOutputToken(tokenOut);
+    }
     const exactIn = params.get('exactIn');
     const amount = params.get('amount');
     if (exactIn != null && amount != null) {
@@ -358,6 +400,16 @@ export function useSwapPage(): SwapPageState {
       setAmount(amount);
     }
   }, [search, swapper]);
+
+  //Input/Output token verify check post swapper initialization
+  useEffect(() => {
+    if(initializedSwapper==null) return;
+    if(!setInputToken(inputToken) && !setOutputToken(outputToken)) {
+      const supportedInputCurrencies = initializedSwapper.getSupportedTokens(true);
+      if(supportedInputCurrencies.length===0) return;
+      setInputToken(supportedInputCurrencies[0]);
+    }
+  }, [initializedSwapper]);
 
   //Gas drop
   const [gasDropChecked, setGasDropChecked] = useState<boolean>(false);
@@ -516,10 +568,10 @@ export function useSwapPage(): SwapPageState {
 
   //Changes the direction of the swap, reverses input and output tokens
   const changeDirection = useCallback(() => {
-    if (swapper == null) return;
-    const allowedCounterTokens = swapper.getSwapCounterTokens(inputToken, false);
+    if (initializedSwapper == null) return;
+    const allowedCounterTokens = initializedSwapper.getSwapCounterTokens(inputToken, false);
     if (allowedCounterTokens.length === 0) {
-      const allowedCounterTokens = swapper.getSwapCounterTokens(outputToken, true);
+      const allowedCounterTokens = initializedSwapper.getSwapCounterTokens(outputToken, true);
       if (allowedCounterTokens.length === 0) return;
       _setInputToken(outputToken);
       _setOutputToken(allowedCounterTokens[0]);
@@ -533,7 +585,7 @@ export function useSwapPage(): SwapPageState {
     }
     setExactIn((val) => !val);
     setAddress('');
-  }, [inputToken, outputToken, swapper]);
+  }, [inputToken, outputToken, initializedSwapper]);
 
   //Show "Use external wallet" when amount is too high
   const showUseExternalWallet = useMemo(() => {
@@ -608,16 +660,18 @@ export function useSwapPage(): SwapPageState {
   //Leaves existing swap
   const leaveExistingSwapOrRefresh = useCallback(
     (clearAddress?: boolean) => {
-      if(clearAddress) setAddress('');
+      if (clearAddress) setAddress('');
       if (existingSwap != null) {
-        const inputToken = existingSwap.getInputToken();
-        const outputToken = existingSwap.getOutputToken();
-        const supportedCounterTokens = swapper.getSwapCounterTokens(inputToken, true);
-        if (includesToken(supportedCounterTokens, outputToken)) {
-          _setInputToken(inputToken);
-          _setOutputToken(outputToken);
-        } else {
-          setInputToken(inputToken);
+        if (initializedSwapper!=null) {
+          const inputToken = existingSwap.getInputToken();
+          const outputToken = existingSwap.getOutputToken();
+          const supportedCounterTokens = initializedSwapper.getSwapCounterTokens(inputToken, true);
+          if (includesToken(supportedCounterTokens, outputToken)) {
+            _setInputToken(inputToken);
+            _setOutputToken(outputToken);
+          } else {
+            setInputToken(inputToken);
+          }
         }
 
         if(!clearAddress) setAddress(existingSwap.getOutputAddress());
@@ -631,7 +685,7 @@ export function useSwapPage(): SwapPageState {
       }
       refreshQuote();
     },
-    [existingSwap, refreshQuote, navigate]
+    [initializedSwapper, existingSwap, refreshQuote, navigate]
   );
 
   const [_UIState, _setUIState] = useState<{quote: ISwap, state: SwapPageUIState}>();
@@ -647,15 +701,17 @@ export function useSwapPage(): SwapPageState {
 
   const swapButtonHint = existingSwapLoading
     ? 'Loading swap...'
-    : amount==null || amount===''
-      ? 'Amounts empty'
-      : (!swapTypeData?.requiresOutputWallet && (outputAddress==null || outputAddress===''))
-        ? 'Destination address empty'
-        : _quoteLoading
-          ? 'Fetching quote...'
-          : quoteError!=null
-            ? 'Quote error'
-            : 'Swap';
+    : initializedSwapper==null
+      ? 'Initializing swap backend...'
+      : amount==null || amount===''
+        ? 'Amounts empty'
+        : (!swapTypeData?.requiresOutputWallet && (outputAddress==null || outputAddress===''))
+          ? 'Destination address empty'
+          : _quoteLoading
+            ? 'Fetching quote...'
+            : quoteError!=null
+              ? 'Quote error'
+              : 'Swap';
 
   return {
     input: {

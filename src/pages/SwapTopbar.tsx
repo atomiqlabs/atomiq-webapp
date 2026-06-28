@@ -26,11 +26,11 @@ const tabs = [
 export function SwapTopbar(props: { selected: number; enabled: boolean }) {
   const navigate = useNavigate();
 
-  const { swapper } = useContext(SwapperContext);
+  const { initializedSwapper } = useContext(SwapperContext);
 
   const [actionableSwaps, setActionableSwaps] = useState<Set<string>>(new Set());
   useEffect(() => {
-    if (swapper == null) return;
+    if (initializedSwapper == null) return;
     const listener = (swap: ISwap) => {
       const claimableOrRefundable = swap.requiresAction();
       console.log(
@@ -60,15 +60,15 @@ export function SwapTopbar(props: { selected: number; enabled: boolean }) {
       });
     };
 
-    swapper
+    initializedSwapper
       .getActionableSwaps()
       .then((swaps) => setActionableSwaps(new Set(swaps.map((swap) => swap.getId()))));
-    swapper.on('swapState', listener);
+    initializedSwapper.on('swapState', listener);
 
     return () => {
-      swapper.off('swapState', listener);
+      initializedSwapper.off('swapState', listener);
     };
-  }, [swapper]);
+  }, [initializedSwapper]);
 
   return (
     <div className="mt-3 pb-2 z-1">

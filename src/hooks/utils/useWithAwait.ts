@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useStateRef} from "./useStateRef";
 
 type AwaitLatestProcessedState<Result> = {
@@ -132,7 +132,14 @@ export function useWithAwait<Result>(
   }, [runAction, refreshCount]);
   const refresh = useCallback(() => setRefreshCount((val) => val + 1), []);
 
-  if (latestProcessed.sequence === _loadingSequence)
-    return [latestProcessed.value, false, latestProcessed.error, refresh];
-  return [_success, _loadingSequence !== -1, _error, refresh];
+  const result: [Result, boolean, any, () => void] = latestProcessed.sequence === _loadingSequence
+    ? [latestProcessed.value, false, latestProcessed.error, refresh]
+    : [_success, _loadingSequence !== -1, _error, refresh];
+
+  useEffect(() => {
+    if (callback != null)
+      callback(result[0], result[2]);
+  }, [callback]);
+
+  return result;
 }

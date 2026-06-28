@@ -4,24 +4,24 @@ import {isSCToken, Token} from '@atomiqlabs/sdk';
 import {supportedSmartChainTokenIdentifiers, toTokenIdentifier} from "../../utils/Tokens";
 
 export function useSupportedTokens(): [Token[], Token[]] {
-  const { swapper } = useContext(SwapperContext);
+  const { initializedSwapper } = useContext(SwapperContext);
   const [updateCount, setUpdateCount] = useState<number>(0);
   useEffect(() => {
-    if (swapper == null) return;
+    if (initializedSwapper == null) return;
     const listener = () => {
       setUpdateCount((val) => val + 1);
     };
-    swapper.on('lpsRemoved', listener);
-    swapper.on('lpsAdded', listener);
+    initializedSwapper.on('lpsRemoved', listener);
+    initializedSwapper.on('lpsAdded', listener);
     return () => {
-      swapper.removeListener('lpsRemoved', listener);
-      swapper.removeListener('lpsAdded', listener);
+      initializedSwapper.removeListener('lpsRemoved', listener);
+      initializedSwapper.removeListener('lpsAdded', listener);
     };
-  }, [swapper]);
+  }, [initializedSwapper]);
   return useMemo(() => {
     return [
-      swapper?.getSupportedTokens(true)?.filter(token => !isSCToken(token) || supportedSmartChainTokenIdentifiers.has(toTokenIdentifier(token))),
-      swapper?.getSupportedTokens(false)?.filter(token => !isSCToken(token) || supportedSmartChainTokenIdentifiers.has(toTokenIdentifier(token)))
+      initializedSwapper?.getSupportedTokens(true)?.filter(token => !isSCToken(token) || supportedSmartChainTokenIdentifiers.has(toTokenIdentifier(token))),
+      initializedSwapper?.getSupportedTokens(false)?.filter(token => !isSCToken(token) || supportedSmartChainTokenIdentifiers.has(toTokenIdentifier(token)))
     ];
-  }, [swapper, updateCount]);
+  }, [initializedSwapper, updateCount]);
 }

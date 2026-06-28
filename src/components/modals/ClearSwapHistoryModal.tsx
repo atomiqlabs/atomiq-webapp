@@ -11,13 +11,13 @@ export function ClearSwapHistoryModal(props: {
   opened: boolean;
   close: () => void;
 }) {
-  const {swapper, events} = useContext(SwapperContext);
+  const {initializedSwapper, events} = useContext(SwapperContext);
 
   const [clearSwapHistory, clearSwapHistoryLoading, clearSwapHistoryResult, clearSwapHistoryError] = useAsync(async () => {
-    await swapper.wipeStorage();
+    await initializedSwapper.wipeStorage();
     events.emit("reloadHistory");
     props.close();
-  }, [swapper]);
+  }, [initializedSwapper]);
 
   return (
     <GenericModal
@@ -34,8 +34,8 @@ export function ClearSwapHistoryModal(props: {
         (like lightning network invoices, lnurls) will be completely lost. Only do this if you certainly
         know what you are doing!
       </p>
-      <BaseButton variant="danger" className="" onClick={clearSwapHistory}>
-        Understood, clear swap history
+      <BaseButton variant="danger" className="" onClick={clearSwapHistory} disabled={initializedSwapper==null}>
+        {initializedSwapper==null ? 'Awaiting swap backend warmup...' : 'Understood, clear swap history'}
       </BaseButton>
     </GenericModal>
   );

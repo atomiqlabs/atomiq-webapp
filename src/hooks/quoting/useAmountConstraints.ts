@@ -31,14 +31,14 @@ export function useAmountConstraints(
   input: { min: BigNumber; max: BigNumber };
   output: { min: BigNumber; max: BigNumber };
 } {
-  const { swapper } = useContext(SwapperContext);
+  const { initializedSwapper } = useContext(SwapperContext);
 
   const [updateCount, setUpdateCounts] = useState<number>(0);
 
   useEffect(() => {
-    if (swapper == null) return;
+    if (initializedSwapper == null) return;
     let listener;
-    swapper.on(
+    initializedSwapper.on(
       'swapLimitsChanged',
       (listener = () => {
         console.log('useAmountConstraints(): Swap limits changed!');
@@ -46,17 +46,17 @@ export function useAmountConstraints(
       })
     );
     return () => {
-      swapper.removeListener('swapLimitsChanged', listener);
+      initializedSwapper.removeListener('swapLimitsChanged', listener);
     };
-  }, [swapper]);
+  }, [initializedSwapper]);
 
   return useMemo(() => {
-    if (swapper == null || inCurrency == null || outCurrency == null)
+    if (initializedSwapper == null || inCurrency == null || outCurrency == null)
       return {
         input: toBigNumbers(defaultConstraints, inCurrency),
         output: toBigNumbers(defaultConstraints, outCurrency),
       };
-    const res = swapper.getSwapLimits(inCurrency, outCurrency);
+    const res = initializedSwapper.getSwapLimits(inCurrency, outCurrency);
     return {
       input: toBigNumbers(
         { min: res.input.min?.rawAmount, max: res.input.max?.rawAmount },
@@ -67,5 +67,5 @@ export function useAmountConstraints(
         outCurrency
       ),
     };
-  }, [swapper, inCurrency, outCurrency, updateCount]);
+  }, [initializedSwapper, inCurrency, outCurrency, updateCount]);
 }

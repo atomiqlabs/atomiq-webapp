@@ -19,7 +19,7 @@ import {useWallet} from "../hooks/wallets/useWallet";
 const defaultSwapAmount = '12500000';
 
 export function SwapForGas() {
-  const { swapper } = useContext(SwapperContext);
+  const { swapper, initializedSwapper, loading: swapperLoading } = useContext(SwapperContext);
 
   const navigate = useNavigate();
   const navigateHref = useAnchorNavigate();
@@ -34,13 +34,13 @@ export function SwapForGas() {
   const outputWallet: Chain<AbstractSigner>["wallet"] = useWallet(nativeCurrency, false);
 
   const [createSwap, loading, swapData, error] = useAsync(() => {
-    if (swapper == null || outputWallet == null) return null;
-    return swapper.createTrustedLNForGasSwap(
+    if (initializedSwapper == null || outputWallet == null) return null;
+    return initializedSwapper.createTrustedLNForGasSwap(
       chainId,
       outputWallet.instance.getAddress(),
       amount
     );
-  }, [swapper, outputWallet, chainId]);
+  }, [initializedSwapper, outputWallet, chainId]);
 
   useEffect(() => {
     createSwap();
@@ -88,7 +88,7 @@ export function SwapForGas() {
               }
             />
 
-            {loading ? (
+            {swapperLoading || loading ? (
               <div className="d-flex flex-column align-items-center p-2 gap-3">
                 <Spinner />
                 <label>Creating gas swap...</label>

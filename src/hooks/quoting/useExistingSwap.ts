@@ -4,16 +4,17 @@ import { SwapperContext } from '../../context/SwapperContext';
 import { useWithAwait } from '../utils/useWithAwait';
 
 export function useExistingSwap(swapId: string): [ISwap, boolean] {
-  const { swapper } = useContext(SwapperContext);
+  const { initializedSwapper } = useContext(SwapperContext);
 
-  const [loading, swap] = useWithAwait(
-    () => {
-      if (swapper == null || swapId == null) return Promise.resolve<ISwap>(null);
-      return swapper.getSwapById(swapId);
+  const [result, loading] = useWithAwait<{swapperInitializing: boolean, swap: ISwap}>(
+    async () => {
+      if (swapId == null) return {swapperInitializing: false, swap: null};
+      if (initializedSwapper == null) return {swapperInitializing: true, swap: null};
+      return {swapperInitializing: false, swap: await initializedSwapper.getSwapById(swapId)};
     },
-    [swapper, swapId],
+    [initializedSwapper, swapId],
     true
   );
 
-  return [loading, swap];
+  return [result?.swap, loading || result?.swapperInitializing];
 }
