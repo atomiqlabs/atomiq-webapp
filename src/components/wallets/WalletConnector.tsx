@@ -26,10 +26,9 @@ function MultichainWalletMenuItem(props: { wallet: MultichainWallet; className?:
 
   return (
     <Dropdown align="end" show={show} onToggle={(isOpen) => setShow(isOpen)}>
-      <div
-        className="wallet-connections__trigger"
-        onClick={() => setShow((s) => !s)}
-        aria-expanded={show}
+      <Dropdown.Toggle
+        as="div"
+        bsPrefix="wallet-connections__trigger"
         role="button"
       >
         <div className="wallet-connections__badge">
@@ -46,7 +45,7 @@ function MultichainWalletMenuItem(props: { wallet: MultichainWallet; className?:
           </Badge>
         </div>
         <div className="icon icon-dropdown"></div>
-      </div>
+      </Dropdown.Toggle>
 
       <Dropdown.Menu
         popperConfig={{ strategy: 'absolute' }}
