@@ -74,7 +74,7 @@ Infra step (Adam, not solo-doable): point `atomiq.exchange` at the landing outpu
 
 - No app routing changes; no move of the swap app to a `/app` subpath.
 - No canonical consolidation of the `/swap` pages onto the apex.
-- No analytics/tracking (per Marci's preference; Cloudflare stats suffice).
+- No analytics/tracking (Cloudflare stats suffice).
 - The company Webflow page (`atomiqlabs.com`) is untouched — separate track.
 - The infinite-scroll footer bug on the app's history/explorer pages is noted separately and is not part of this work.
 
