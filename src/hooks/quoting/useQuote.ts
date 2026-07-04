@@ -105,7 +105,8 @@ export function useQuote(
           gasAmount: gasDropAmount,
           maxAllowedNetworkFeeRate:
             btcFeeRate == null ? null : btcFeeMaxOffset + btcFeeRate * btcFeeMaxMultiple,
-          stickyAddress
+          stickyAddress,
+          unsafeSkipLnNodeCheck: true
           // unsafeZeroWatchtowerFee: swapType === SwapType.SPV_VAULT_FROM_BTC,
         })
         .then((quote) => {
