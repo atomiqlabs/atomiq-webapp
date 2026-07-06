@@ -3,5 +3,3 @@ User-agent: *
 Disallow: /history
 Disallow: /scan
 Disallow: /gas
-
-Sitemap: https://app.atomiq.exchange/sitemap.xml

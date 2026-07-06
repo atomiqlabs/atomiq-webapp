@@ -4,11 +4,14 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import * as React from 'react';
 import { buildRoutes } from '../src/seo/routes';
 import { composeRoute } from '../src/seo/content';
-import { renderHead, ORIGIN } from '../src/seo/seoHead';
+import { renderHead, renderLandingHead, ORIGIN } from '../src/seo/seoHead';
+import { APP_ORIGIN } from '../src/seo/homeContent';
 import { LandingPage } from '../src/seo/LandingPage';
+import { LandingHome } from '../src/seo/LandingHome';
 import type { ResolvedRoute } from '../src/seo/types';
 
-const BUILD = path.resolve('build');
+const BUILD = path.resolve('build');          // vite app build: read manifest + assets from here
+const OUT = path.resolve('dist-marketing');   // marketing bundle: write everything here
 
 function cssHref(): string {
   const manifestPath = path.join(BUILD, '.vite', 'manifest.json');
@@ -30,7 +33,7 @@ function siblingScore(r: ResolvedRoute, route: ResolvedRoute): number {
   return 4;
 }
 
-function htmlDocument(route: ResolvedRoute, body: string, css: string): string {
+function htmlDocument(headHtml: string, body: string, css: string): string {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -38,7 +41,7 @@ function htmlDocument(route: ResolvedRoute, body: string, css: string): string {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="${css}" />
-    ${renderHead(route)}
+    ${headHtml}
   </head>
   <body>
     <div id="root" class="background">${body}</div>
@@ -47,9 +50,23 @@ function htmlDocument(route: ResolvedRoute, body: string, css: string): string {
 </html>`;
 }
 
+// Copy the static assets the prerendered pages reference so the marketing bundle serves
+// standalone from its own storage account, with no dependency on the app origin.
+function copyAssets(): void {
+  fs.cpSync(path.join(BUILD, 'assets'), path.join(OUT, 'assets'), { recursive: true });
+  if (fs.existsSync(path.join(BUILD, 'icons'))) {
+    fs.cpSync(path.join(BUILD, 'icons'), path.join(OUT, 'icons'), { recursive: true });
+  }
+  for (const f of ['favicon.ico', 'main_logo.png', 'logo192.png', 'logo512.png', 'navMenu.js']) {
+    const src = path.join(BUILD, f);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(OUT, f));
+  }
+}
+
 function main() {
   const css = cssHref();
   console.log('Using CSS asset:', css);
+
   const routes = buildRoutes();
   const composed = routes.map(composeRoute);
 
@@ -57,8 +74,11 @@ function main() {
     ...c,
     tokenInId: c.from.tokenId,
     tokenOutId: c.to.tokenId,
-    ctaHref: `/?tokenIn=${c.from.tokenId}&tokenOut=${c.to.tokenId}`,
+    // App deep-link is absolute: the swap pages live on www, the app on app.atomiq.exchange.
+    ctaHref: `${APP_ORIGIN}/?tokenIn=${c.from.tokenId}&tokenOut=${c.to.tokenId}`,
   }));
+
+  fs.mkdirSync(OUT, { recursive: true });
 
   for (const route of resolved) {
     const siblings = resolved
@@ -70,19 +90,27 @@ function main() {
       .slice(0, 8);
 
     const body = renderToStaticMarkup(React.createElement(LandingPage, { route, siblings }));
-    const dir = path.join(BUILD, 'swap', route.slug);
+    const dir = path.join(OUT, 'swap', route.slug);
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, 'index.html'), htmlDocument(route, body, css));
+    fs.writeFileSync(path.join(dir, 'index.html'), htmlDocument(renderHead(route), body, css));
   }
 
+  // Landing page at the marketing root.
+  const landingBody = renderToStaticMarkup(React.createElement(LandingHome));
+  fs.writeFileSync(path.join(OUT, 'index.html'), htmlDocument(renderLandingHead(), landingBody, css));
+
+  // One sitemap + robots on the canonical www origin.
   const urls = ['/', ...resolved.map((r) => `/swap/${r.slug}`)];
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${ORIGIN}${u}</loc></url>`).join('\n')}
 </urlset>`;
-  fs.writeFileSync(path.join(BUILD, 'sitemap.xml'), sitemap);
+  fs.writeFileSync(path.join(OUT, 'sitemap.xml'), sitemap);
+  fs.writeFileSync(path.join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 
-  console.log(`Generated ${resolved.length} landing pages + sitemap (${urls.length} urls).`);
+  copyAssets();
+
+  console.log(`Generated ${resolved.length} swap pages + landing + sitemap/robots into dist-marketing/.`);
 }
 
 main();
