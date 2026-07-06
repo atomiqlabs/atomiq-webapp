@@ -37,10 +37,11 @@ export const SUPPORTED_CHAINS: string[] = Array.from(
 );
 
 export type PopularRoute = { slug: string; label: string };
-// First eight BTC -> smart-chain routes, straight from buildRoutes() so every slug is real.
+// Up to nine BTC -> smart-chain routes (currently all of them, incl. Citrea), straight
+// from buildRoutes() so every slug is real.
 export const POPULAR_ROUTES: PopularRoute[] = buildRoutes()
   .filter((r) => r.from.key === 'bitcoin' && !r.to.isBtcSide)
-  .slice(0, 8)
+  .slice(0, 9)
   .map((r) => ({ slug: r.slug, label: `BTC to ${r.to.ticker} on ${r.to.chainName}` }));
 
 export const HOME_FAQS: FaqItem[] = BASE_FAQS;
