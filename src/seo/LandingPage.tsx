@@ -1,10 +1,11 @@
 import { MainNavigationView, NavItem } from '../components/layout/MainNavigationView';
-import { SocialFooterView } from '../components/layout/SocialFooterView';
+import { SiteFooterView } from '../components/layout/SiteFooterView';
+import { BENEFITS, APP_ORIGIN } from './homeContent';
 import type {ResolvedRoute, SeoToken} from './types';
 
 const NAV_ITEMS: NavItem[] = [
-  { link: '/', icon: 'swap-nav', title: 'Swap' },
-  { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
+  { link: `${APP_ORIGIN}/`, icon: 'swap-nav', title: 'Swap' },
+  { link: `${APP_ORIGIN}/explorer`, icon: 'Explorer', title: 'Explorer' },
   { link: 'https://docs.atomiq.exchange/', icon: 'book', title: 'Docs', external: true },
   { link: 'https://npmjs.com/@atomiqlabs/sdk', icon: 'embed2', title: 'SDK', external: true },
   { link: 'https://www.atomiqlabs.com/terms-of-service', icon: 'file-text', title: 'Terms of Service', external: true },
@@ -21,25 +22,6 @@ const LAUNCH_CLASS =
 // Translucent card surface (matches the About page's `bg-white/10` cards) on a plain div,
 // which sidesteps the bootstrap `.card` background winning the cascade.
 const CARD_CLASS = 'bg-white/10 rounded-2xl p-4';
-
-const BENEFITS: { title: string; text: string }[] = [
-  {
-    title: 'Trustless & atomic',
-    text: 'You keep custody the entire time and can always reclaim your funds if a swap does not complete.',
-  },
-  {
-    title: 'No bridge or CEX',
-    text: 'No custodial bridge and no centralized exchange: no deposits, no withdrawals, no counterparty risk.',
-  },
-  {
-    title: 'Bitcoin-secured',
-    text: 'Swaps are verified against Bitcoin proof-of-work via an on-chain Bitcoin light client.',
-  },
-  {
-    title: 'RFQ pricing',
-    text: 'Competitive quotes straight from market makers, with no AMM pools and no slippage.',
-  },
-];
 
 function prettyToken(token: SeoToken): string {
   if(token.isBtcSide) {
@@ -59,7 +41,7 @@ export function LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRou
         navItems={NAV_ITEMS}
         walletSlot={
           <div className="d-flex justify-content-end">
-            <a href="/" className={LAUNCH_CLASS}>
+            <a href={`${APP_ORIGIN}/`} className={LAUNCH_CLASS}>
               Launch App
             </a>
           </div>
@@ -125,7 +107,7 @@ export function LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRou
               </li>
             ))}
             <li className="mt-2">
-              <a href="/" className="text-white">
+              <a href={`${APP_ORIGIN}/`} className="text-white">
                 Open the atomiq.exchange app
               </a>
             </li>
@@ -133,7 +115,7 @@ export function LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRou
         </div>
       </div>
 
-      <SocialFooterView isHorizontal={false} noTooltip />
+      <SiteFooterView noTooltip />
     </div>
   );
 }

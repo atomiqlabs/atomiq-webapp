@@ -50,4 +50,11 @@ describe('LandingPage', () => {
     expect(html).toContain('href="/swap/usdc-solana-to-bitcoin"');
     expect(html).toContain('href="/"');
   });
+  it('renders the full site footer', () => {
+    expect(html).toContain('Quick Links');
+    expect(html).toContain('All rights reserved');
+  });
+  it('points app links at the app subdomain (absolute)', () => {
+    expect(html).toContain('href="https://app.atomiq.exchange/"');
+  });
 });
