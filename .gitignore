@@ -13,6 +13,7 @@ yarn.lock
 # production
 /build
 /_build
+/dist-marketing
 
 # misc
 .DS_Store
