@@ -2,35 +2,36 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a static, JS-free marketing landing page for the apex `atomiq.exchange`, reusing the app's existing SEO/prerender pipeline, with a full site footer shared by the landing and the `/swap/<slug>` pages.
+**Goal:** Build a static, JS-free marketing site (a landing page plus the existing `/swap/<slug>` SEO pages) served from the canonical `www.atomiq.exchange`, as a separate build bundle from the SPA app, with a full shared site footer.
 
-**Architecture:** The app and its `/swap/<slug>` SEO pages stay untouched on `app.atomiq.exchange`. We add a new `LandingHome` component prerendered to a static `build/landing/index.html` for the apex. Because the landing lives on the apex and the app on the subdomain, every app-directed link on the landing is absolute to `https://app.atomiq.exchange`. Infra later removes the apex redirect and serves the landing output (out of scope for this plan).
+**Architecture (per Adam's topology, 2026-07-03):** Cloudflare fronts two Azure Storage static sites. `atomiq.exchange` redirects to `https://www.atomiq.exchange/$path`. `www.atomiq.exchange` serves the marketing bundle (landing + `/swap` pages) and is the canonical domain. `app.atomiq.exchange` serves the SPA, unchanged. The marketing bundle and the app build are two separate outputs from this one repo (shared components). All app-directed links on the marketing site are absolute to `https://app.atomiq.exchange`; all marketing-internal links are relative.
 
 **Tech Stack:** React 18 + `react-dom/server` `renderToStaticMarkup`, TypeScript, Vite, `tsx` build script, Vitest + jsdom, Bootstrap + Tailwind utility classes.
 
 ## Global Constraints
 
-- No app routing changes; the SPA stays at `app.atomiq.exchange`. This plan touches only `src/seo/*`, `src/components/layout/*`, `scripts/build-seo.tsx`, and their tests.
-- The landing ships no React runtime; plain anchors carry styling (same convention as `src/seo/LandingPage.tsx`).
-- App-directed links on the landing are absolute to `https://app.atomiq.exchange`. The existing `/swap` pages keep using relative links.
-- Landing canonical is `https://atomiq.exchange/`; the route pages keep `ORIGIN = 'https://app.atomiq.exchange'` (do not rename `ORIGIN`).
-- Do not change the app's in-app footer. The full footer is a NEW `SiteFooterView`; the existing social-only `SocialFooterView` stays as-is and is embedded inside it.
-- Public-facing copy uses no em dashes or en dashes (brand voice rule): use commas, periods, colons, parentheses, or plain hyphens only. Copy in this plan already follows this.
-- Tests use Vitest with `renderToStaticMarkup` + string assertions (match `src/seo/__tests__/*`). Run with `npx vitest run <path>`.
+- Canonical marketing origin is `https://www.atomiq.exchange` (the `ORIGIN` constant). The app/deep-link origin is `https://app.atomiq.exchange` (`APP_ORIGIN`, defined in `homeContent.ts`).
+- No app routing changes; the SPA stays at `app.atomiq.exchange`. This plan touches only `src/seo/*`, `src/components/layout/*`, `scripts/build-seo.tsx`, `public/robots.txt`, and their tests.
+- The landing and `/swap` pages ship no React runtime; plain anchors carry styling.
+- App-directed links (landing + `/swap` pages): absolute to `https://app.atomiq.exchange`. Marketing-internal links (landing↔`/swap`, `/swap`↔sibling, footer routes): relative.
+- Two build outputs: the SPA in `build/` (via `vite build`), the marketing bundle in `dist-marketing/` (via `build:seo`). `build:seo` writes only to `dist-marketing/` and never into `build/`.
+- Do not change the app's in-app footer. The full footer is a NEW `SiteFooterView`; the existing social-only `SocialFooterView` stays and is embedded inside it.
+- Public-facing copy uses no em dashes or en dashes (brand voice rule): commas, periods, colons, parentheses, or plain hyphens only.
+- Tests use Vitest with `renderToStaticMarkup` + string assertions. Run with `npx vitest run <path>`.
 - Commit messages are plain, with no `Co-Authored-By` or AI-attribution trailer.
 
 ---
 
 ### Task 1: Green the pre-existing failing tests (baseline)
 
-Two tests from the squashed PR #56 are stale and fail on `develop`. Fix them so the suite is green before building on top. These fixes are also worth cherry-picking to `develop`.
+Two tests from the squashed PR #56 are stale and fail on `develop`. Fix them so the suite is green before building on top. Worth cherry-picking to `develop`.
 
 **Files:**
 - Modify: `src/seo/__tests__/content.test.tsx:11`
 - Modify: `src/seo/__tests__/LandingPage.test.tsx:21` (and add a sibling fixture)
 
 **Interfaces:**
-- Consumes: `LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRoute[] })` (current signature), `composeRoute` producing titles suffixed `| atomiq.exchange`.
+- Consumes: `LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRoute[] })`; `composeRoute` producing titles suffixed `| atomiq.exchange`.
 - Produces: nothing new.
 
 - [ ] **Step 1: Run the suite to observe the two failures**
@@ -54,7 +55,7 @@ to:
 
 - [ ] **Step 3: Fix the stale `LandingPage` prop**
 
-In `src/seo/__tests__/LandingPage.test.tsx`, add a sibling fixture just after the `route` fixture (before the `describe`):
+In `src/seo/__tests__/LandingPage.test.tsx`, add a sibling fixture right after the `route` fixture (before the `describe`):
 
 ```tsx
 const sibling: ResolvedRoute = {
@@ -68,7 +69,7 @@ const sibling: ResolvedRoute = {
   faqs: [],
   tokenInId: route.to.tokenId,
   tokenOutId: route.from.tokenId,
-  ctaHref: '/?tokenIn=SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&tokenOut=BITCOIN',
+  ctaHref: 'https://app.atomiq.exchange/?tokenIn=SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&tokenOut=BITCOIN',
 };
 ```
 
@@ -87,7 +88,7 @@ to:
 - [ ] **Step 4: Run the suite to verify green**
 
 Run: `npx vitest run src/seo src/components/layout`
-Expected: PASS — all tests green.
+Expected: PASS.
 
 - [ ] **Step 5: Commit**
 
@@ -100,7 +101,7 @@ git commit -m "test(seo): fix stale content + LandingPage tests to match current
 
 ### Task 2: Home content module
 
-One module holding all homepage copy and derived data, so the component stays presentational and the copy is testable. Reuses `tokens.ts`, `routes.ts`, and `baseFaqs.ts` so lists cannot drift.
+All homepage copy and derived data in one module. Also defines `APP_ORIGIN`, the single source for the app/deep-link origin.
 
 **Files:**
 - Create: `src/seo/homeContent.ts`
@@ -108,7 +109,7 @@ One module holding all homepage copy and derived data, so the component stays pr
 
 **Interfaces:**
 - Consumes: `BTC_SIDE`, `SMART_CHAIN_TOKENS` from `./tokens`; `buildRoutes` from `./routes`; `BASE_FAQS` from `./baseFaqs`; `FaqItem` from `./types`.
-- Produces: `APP_ORIGIN: string`; `HERO: { headline, subhead, primaryCta: {label,href}, secondaryCta: {label,href} }`; `BENEFITS: {title,text}[]`; `ESCROW_HEADING: string`; `ESCROW_STEPS: string[]`; `SUPPORTED_CHAINS: string[]`; `POPULAR_ROUTES: {slug,label}[]`; `HOME_FAQS: FaqItem[]`.
+- Produces: `APP_ORIGIN: string`; `DOCS_URL: string`; `HERO: { headline, subhead, primaryCta:{label,href}, secondaryCta:{label,href} }`; `BENEFITS: {title,text}[]`; `ESCROW_HEADING: string`; `ESCROW_STEPS: string[]`; `SUPPORTED_CHAINS: string[]`; `POPULAR_ROUTES: {slug,label}[]`; `HOME_FAQS: FaqItem[]`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -122,7 +123,7 @@ import {
 import { buildRoutes } from '../routes';
 
 describe('homeContent', () => {
-  it('hero primary CTA points at the app subdomain root', () => {
+  it('APP_ORIGIN is the app subdomain and the hero CTA points at it', () => {
     expect(APP_ORIGIN).toBe('https://app.atomiq.exchange');
     expect(HERO.primaryCta.href).toBe('https://app.atomiq.exchange/');
   });
@@ -164,6 +165,8 @@ import { BASE_FAQS } from './baseFaqs';
 import { BTC_SIDE, SMART_CHAIN_TOKENS } from './tokens';
 import { buildRoutes } from './routes';
 
+// The app / deep-link origin. The marketing site lives on www.atomiq.exchange (see seoHead ORIGIN);
+// every app-directed link is absolute to this subdomain.
 export const APP_ORIGIN = 'https://app.atomiq.exchange';
 export const DOCS_URL = 'https://docs.atomiq.exchange/';
 
@@ -221,7 +224,7 @@ git commit -m "feat(seo): home content module for the root landing page"
 
 ### Task 3: SiteFooterView component
 
-The full site footer: link columns mirroring atomiqlabs.com, a curated popular-routes group, and the existing socials row. Reused by the landing and the `/swap` pages. `appOrigin` prefixes app-relative links (`''` on the subdomain pages, the app origin on the apex landing).
+The full site footer: link columns mirroring atomiqlabs.com, a curated popular-routes group, and the socials row. Reused by the landing and the `/swap` pages, which share the www origin, so all route links are relative and there is no `appOrigin` prop.
 
 **Files:**
 - Create: `src/components/layout/SiteFooterView.tsx`
@@ -229,7 +232,7 @@ The full site footer: link columns mirroring atomiqlabs.com, a curated popular-r
 
 **Interfaces:**
 - Consumes: `SocialFooterView` from `./SocialFooterView`; `POPULAR_ROUTES` from `../../seo/homeContent`.
-- Produces: `SiteFooterView(props: { appOrigin?: string; noTooltip?: boolean })`.
+- Produces: `SiteFooterView(props: { noTooltip?: boolean })`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -241,8 +244,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { SiteFooterView } from '../SiteFooterView';
 
 describe('SiteFooterView', () => {
+  const html = renderToStaticMarkup(<SiteFooterView />);
   it('renders link columns, socials, and copyright', () => {
-    const html = renderToStaticMarkup(<SiteFooterView />);
     expect(html).toContain('Quick Links');
     expect(html).toContain('Resources');
     expect(html).toContain('Legal');
@@ -251,13 +254,9 @@ describe('SiteFooterView', () => {
     expect(html).toContain('href="https://twitter.com/atomiqlabs"'); // from SocialFooterView
     expect(html).toContain('All rights reserved');
   });
-  it('uses relative /swap route links by default', () => {
-    const html = renderToStaticMarkup(<SiteFooterView />);
+  it('uses relative /swap route links (same www origin)', () => {
     expect(html).toMatch(/href="\/swap\/[a-z0-9-]+"/);
-  });
-  it('prefixes route links with appOrigin when provided', () => {
-    const html = renderToStaticMarkup(<SiteFooterView appOrigin="https://app.atomiq.exchange" />);
-    expect(html).toContain('href="https://app.atomiq.exchange/swap/');
+    expect(html).not.toContain('href="https://app.atomiq.exchange/swap/');
   });
 });
 ```
@@ -276,56 +275,45 @@ import * as React from 'react';
 import { SocialFooterView } from './SocialFooterView';
 import { POPULAR_ROUTES } from '../../seo/homeContent';
 
-type FooterLink = { label: string; href: string; external?: boolean };
+type FooterLink = { label: string; href: string };
 type FooterColumn = { title: string; links: FooterLink[] };
 
+// Column links mirror the atomiqlabs.com footer; all are external, so they carry absolute URLs.
 const COLUMNS: FooterColumn[] = [
   {
     title: 'Quick Links',
     links: [
-      { label: 'About us', href: 'https://www.atomiqlabs.com/about', external: true },
-      { label: 'Contact us', href: 'mailto:info@atomiqlabs.com', external: true },
+      { label: 'About us', href: 'https://www.atomiqlabs.com/about' },
+      { label: 'Contact us', href: 'mailto:info@atomiqlabs.com' },
     ],
   },
   {
     title: 'Resources',
     links: [
-      { label: 'FAQs', href: 'https://www.atomiqlabs.com/resources#faq', external: true },
-      { label: 'Docs', href: 'https://docs.atomiq.exchange/', external: true },
-      { label: 'Audits', href: 'https://github.com/atomiqlabs/atomiq-readme/tree/main/audits', external: true },
-      { label: 'SDK', href: 'https://npmjs.com/@atomiqlabs/sdk', external: true },
+      { label: 'FAQs', href: 'https://www.atomiqlabs.com/resources#faq' },
+      { label: 'Docs', href: 'https://docs.atomiq.exchange/' },
+      { label: 'Audits', href: 'https://github.com/atomiqlabs/atomiq-readme/tree/main/audits' },
+      { label: 'SDK', href: 'https://npmjs.com/@atomiqlabs/sdk' },
     ],
   },
   {
     title: 'Legal',
     links: [
-      { label: 'Terms of Service', href: 'https://www.atomiqlabs.com/terms-of-service', external: true },
-      { label: 'Privacy Policy', href: 'https://www.atomiqlabs.com/privacy-cookie-policy', external: true },
-      { label: 'Cookie Policy', href: 'https://www.atomiqlabs.com/privacy-cookie-policy', external: true },
+      { label: 'Terms of Service', href: 'https://www.atomiqlabs.com/terms-of-service' },
+      { label: 'Privacy Policy', href: 'https://www.atomiqlabs.com/privacy-cookie-policy' },
+      { label: 'Cookie Policy', href: 'https://www.atomiqlabs.com/privacy-cookie-policy' },
     ],
   },
   {
     title: 'Company',
     links: [
-      { label: 'The Lab', href: 'https://www.atomiqlabs.com/about', external: true },
-      { label: 'Meet the Team', href: 'https://www.atomiqlabs.com/about#team', external: true },
+      { label: 'The Lab', href: 'https://www.atomiqlabs.com/about' },
+      { label: 'Meet the Team', href: 'https://www.atomiqlabs.com/about#team' },
     ],
   },
 ];
 
-function FooterLinkItem({ link }: { link: FooterLink }) {
-  const attrs = link.external ? { target: '_blank', rel: 'noreferrer' } : {};
-  return (
-    <li className="mb-2">
-      <a href={link.href} className="text-white text-opacity-75 text-decoration-none" {...attrs}>
-        {link.label}
-      </a>
-    </li>
-  );
-}
-
-export function SiteFooterView(props: { appOrigin?: string; noTooltip?: boolean }) {
-  const appOrigin = props.appOrigin ?? '';
+export function SiteFooterView(props: { noTooltip?: boolean }) {
   return (
     <footer className="site-footer text-white container pt-5 pb-4">
       <div className="row">
@@ -334,7 +322,11 @@ export function SiteFooterView(props: { appOrigin?: string; noTooltip?: boolean 
             <h3 className="fs-6 fw-semibold mb-3">{col.title}</h3>
             <ul className="list-unstyled mb-0">
               {col.links.map((l) => (
-                <FooterLinkItem key={l.label} link={l} />
+                <li className="mb-2" key={l.label}>
+                  <a href={l.href} className="text-white text-opacity-75 text-decoration-none" target="_blank" rel="noreferrer">
+                    {l.label}
+                  </a>
+                </li>
               ))}
             </ul>
           </div>
@@ -345,7 +337,7 @@ export function SiteFooterView(props: { appOrigin?: string; noTooltip?: boolean 
           <ul className="list-unstyled mb-0">
             {POPULAR_ROUTES.map((r) => (
               <li className="mb-2" key={r.slug}>
-                <a href={`${appOrigin}/swap/${r.slug}`} className="text-white text-opacity-75 text-decoration-none">
+                <a href={`/swap/${r.slug}`} className="text-white text-opacity-75 text-decoration-none">
                   {r.label}
                 </a>
               </li>
@@ -379,96 +371,19 @@ git commit -m "feat(layout): full SiteFooterView with columns, routes, and socia
 
 ---
 
-### Task 4: Use SiteFooterView and shared BENEFITS in LandingPage
+### Task 4: Flip canonical origin to www + add the landing head builder
 
-Point the existing `/swap` route pages at the full footer, and consume `BENEFITS` from `homeContent` so it is defined once. No prop changes to `LandingPage`.
-
-**Files:**
-- Modify: `src/seo/LandingPage.tsx`
-- Modify: `src/seo/__tests__/LandingPage.test.tsx` (add a footer assertion)
-
-**Interfaces:**
-- Consumes: `SiteFooterView` from `../components/layout/SiteFooterView`; `BENEFITS` from `./homeContent`.
-- Produces: unchanged `LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRoute[] })`.
-
-- [ ] **Step 1: Add the failing footer assertion**
-
-In `src/seo/__tests__/LandingPage.test.tsx`, add this test inside the `describe('LandingPage', ...)` block:
-
-```tsx
-  it('renders the full site footer', () => {
-    expect(html).toContain('Quick Links');
-    expect(html).toContain('All rights reserved');
-  });
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `npx vitest run src/seo/__tests__/LandingPage.test.tsx`
-Expected: FAIL — the current footer (`SocialFooterView`) has no "Quick Links".
-
-- [ ] **Step 3: Update LandingPage**
-
-In `src/seo/LandingPage.tsx`:
-
-Replace the top imports (lines 1-3):
-
-```tsx
-import { MainNavigationView, NavItem } from '../components/layout/MainNavigationView';
-import { SocialFooterView } from '../components/layout/SocialFooterView';
-import type {ResolvedRoute, SeoToken} from './types';
-```
-
-with:
-
-```tsx
-import { MainNavigationView, NavItem } from '../components/layout/MainNavigationView';
-import { SiteFooterView } from '../components/layout/SiteFooterView';
-import { BENEFITS } from './homeContent';
-import type {ResolvedRoute, SeoToken} from './types';
-```
-
-Delete the local `BENEFITS` block (the `const BENEFITS: { title: string; text: string }[] = [ ... ];` array, lines 25-42).
-
-Replace the footer element near the end:
-
-```tsx
-      <SocialFooterView isHorizontal={false} noTooltip />
-```
-
-with (note: `/swap` pages are served on the subdomain, so the default relative `appOrigin` is correct):
-
-```tsx
-      <SiteFooterView noTooltip />
-```
-
-- [ ] **Step 4: Run the suite to verify green**
-
-Run: `npx vitest run src/seo src/components/layout`
-Expected: PASS — LandingPage renders the full footer; nothing else regresses.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add src/seo/LandingPage.tsx src/seo/__tests__/LandingPage.test.tsx
-git commit -m "refactor(seo): LandingPage uses SiteFooterView and shared BENEFITS"
-```
-
----
-
-### Task 5: Apex head builder in seoHead
-
-Add the apex origin constant and a landing-specific head builder (homepage title/description/canonical + Organization and WebSite JSON-LD, no route-specific schema). The existing `ORIGIN` and `renderHead(route)` are untouched.
+Move the canonical marketing origin to `www.atomiq.exchange` and add the homepage head builder. `renderHead(route)` already uses `ORIGIN`, so its `/swap` canonical, sitemap loc, and OG image move to www with only the constant change.
 
 **Files:**
 - Modify: `src/seo/seoHead.ts`
 - Modify: `src/seo/__tests__/seoHead.test.ts`
 
 **Interfaces:**
-- Consumes: existing `esc`, `ORIGIN`, `OG_IMAGE`, `ATOMIQ_LABS_PAGE` in `seoHead.ts`.
-- Produces: `SITE_ORIGIN: string`; `renderLandingHead(): string`.
+- Consumes: existing `esc`, `OG_IMAGE`, `ATOMIQ_LABS_PAGE` in `seoHead.ts`.
+- Produces: `ORIGIN` (value now `https://www.atomiq.exchange`); `renderLandingHead(): string`.
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Update the tests (they will fail)**
 
 In `src/seo/__tests__/seoHead.test.ts`, change the import line:
 
@@ -479,7 +394,15 @@ import { renderHead, ORIGIN } from '../seoHead';
 to:
 
 ```ts
-import { renderHead, renderLandingHead, ORIGIN, SITE_ORIGIN } from '../seoHead';
+import { renderHead, renderLandingHead, ORIGIN } from '../seoHead';
+```
+
+Add a `www` assertion inside the existing `describe('renderHead', ...)` block:
+
+```ts
+  it('canonicalizes to the www marketing origin', () => {
+    expect(ORIGIN).toBe('https://www.atomiq.exchange');
+  });
 ```
 
 Then append this block at the end of the file:
@@ -487,9 +410,8 @@ Then append this block at the end of the file:
 ```ts
 describe('renderLandingHead', () => {
   const head = renderLandingHead();
-  it('canonicalizes to the apex origin', () => {
-    expect(SITE_ORIGIN).toBe('https://atomiq.exchange');
-    expect(head).toContain(`<link rel="canonical" href="${SITE_ORIGIN}/"/>`);
+  it('uses the www canonical origin at the root', () => {
+    expect(head).toContain(`<link rel="canonical" href="${ORIGIN}/"/>`);
   });
   it('emits a title and description', () => {
     expect(head).toContain('<title>');
@@ -504,17 +426,23 @@ describe('renderLandingHead', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **Step 2: Run tests to verify they fail**
 
 Run: `npx vitest run src/seo/__tests__/seoHead.test.ts`
-Expected: FAIL — `renderLandingHead`/`SITE_ORIGIN` are not exported.
+Expected: FAIL — `ORIGIN` is still the app subdomain and `renderLandingHead` is not exported.
 
-- [ ] **Step 3: Add the constant and builder**
+- [ ] **Step 3: Flip ORIGIN and add the builder**
 
-In `src/seo/seoHead.ts`, add after the existing `export const ORIGIN = 'https://app.atomiq.exchange';` line:
+In `src/seo/seoHead.ts`, change:
 
 ```ts
-export const SITE_ORIGIN = 'https://atomiq.exchange';
+export const ORIGIN = 'https://app.atomiq.exchange';
+```
+
+to:
+
+```ts
+export const ORIGIN = 'https://www.atomiq.exchange';
 ```
 
 Then add this function at the end of the file:
@@ -524,7 +452,7 @@ export function renderLandingHead(): string {
   const title = 'atomiq.exchange | Trustless cross-chain swaps for Bitcoin';
   const description =
     'Swap trustlessly between Bitcoin and other blockchains with atomiq.exchange. Our cross-chain DEX uses atomic swaps for secure, non-custodial trading with no intermediaries.';
-  const url = `${SITE_ORIGIN}/`;
+  const url = `${ORIGIN}/`;
   const t = esc(title);
   const d = esc(description);
   const jsonLd = {
@@ -552,23 +480,153 @@ export function renderLandingHead(): string {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run src/seo/__tests__/seoHead.test.ts`
-Expected: PASS.
+Expected: PASS (the existing `${ORIGIN}/swap/...` canonical assertion now resolves to www).
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add src/seo/seoHead.ts src/seo/__tests__/seoHead.test.ts
-git commit -m "feat(seo): apex SITE_ORIGIN + renderLandingHead for the landing page"
+git commit -m "feat(seo): canonical www origin + renderLandingHead for the landing"
+```
+
+---
+
+### Task 5: Point LandingPage links at the app + use SiteFooterView
+
+The `/swap` pages now live on the www marketing domain, so their app-directed links must be absolute to `APP_ORIGIN`. Also adopt the full footer and the shared `BENEFITS`. Prop signature is unchanged.
+
+**Files:**
+- Modify: `src/seo/LandingPage.tsx`
+- Modify: `src/seo/__tests__/LandingPage.test.tsx`
+
+**Interfaces:**
+- Consumes: `SiteFooterView` from `../components/layout/SiteFooterView`; `BENEFITS`, `APP_ORIGIN` from `./homeContent`.
+- Produces: unchanged `LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRoute[] })`.
+
+- [ ] **Step 1: Add failing assertions**
+
+In `src/seo/__tests__/LandingPage.test.tsx`, add these tests inside the `describe('LandingPage', ...)` block:
+
+```tsx
+  it('renders the full site footer', () => {
+    expect(html).toContain('Quick Links');
+    expect(html).toContain('All rights reserved');
+  });
+  it('points app links at the app subdomain (absolute)', () => {
+    expect(html).toContain('href="https://app.atomiq.exchange/"');
+  });
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `npx vitest run src/seo/__tests__/LandingPage.test.tsx`
+Expected: FAIL — current footer has no "Quick Links" and app links are still relative `/`.
+
+- [ ] **Step 3: Update LandingPage**
+
+In `src/seo/LandingPage.tsx`:
+
+Replace the top imports (lines 1-3):
+
+```tsx
+import { MainNavigationView, NavItem } from '../components/layout/MainNavigationView';
+import { SocialFooterView } from '../components/layout/SocialFooterView';
+import type {ResolvedRoute, SeoToken} from './types';
+```
+
+with:
+
+```tsx
+import { MainNavigationView, NavItem } from '../components/layout/MainNavigationView';
+import { SiteFooterView } from '../components/layout/SiteFooterView';
+import { BENEFITS, APP_ORIGIN } from './homeContent';
+import type {ResolvedRoute, SeoToken} from './types';
+```
+
+Delete the local `BENEFITS` block (the `const BENEFITS: { title: string; text: string }[] = [ ... ];` array).
+
+Change the first two `NAV_ITEMS` entries from:
+
+```tsx
+  { link: '/', icon: 'swap-nav', title: 'Swap' },
+  { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
+```
+
+to:
+
+```tsx
+  { link: `${APP_ORIGIN}/`, icon: 'swap-nav', title: 'Swap' },
+  { link: `${APP_ORIGIN}/explorer`, icon: 'Explorer', title: 'Explorer' },
+```
+
+Change the "Launch App" button href from:
+
+```tsx
+            <a href="/" className={LAUNCH_CLASS}>
+              Launch App
+            </a>
+```
+
+to:
+
+```tsx
+            <a href={`${APP_ORIGIN}/`} className={LAUNCH_CLASS}>
+              Launch App
+            </a>
+```
+
+Change the "Open the atomiq.exchange app" link at the end of the "Other swap routes" list from:
+
+```tsx
+            <li className="mt-2">
+              <a href="/" className="text-white">
+                Open the atomiq.exchange app
+              </a>
+            </li>
+```
+
+to:
+
+```tsx
+            <li className="mt-2">
+              <a href={`${APP_ORIGIN}/`} className="text-white">
+                Open the atomiq.exchange app
+              </a>
+            </li>
+```
+
+Replace the footer element near the end:
+
+```tsx
+      <SocialFooterView isHorizontal={false} noTooltip />
+```
+
+with:
+
+```tsx
+      <SiteFooterView noTooltip />
+```
+
+- [ ] **Step 4: Run the suite to verify green**
+
+Run: `npx vitest run src/seo src/components/layout`
+Expected: PASS.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/seo/LandingPage.tsx src/seo/__tests__/LandingPage.test.tsx
+git commit -m "refactor(seo): LandingPage links to app subdomain + uses SiteFooterView"
 ```
 
 ---
 
 ### Task 6: LandingHome component
 
-The homepage itself: nav (with a Launch App button and app-absolute nav links), hero, supported chains, benefits, escrow steps, popular routes, FAQ accordion, and the full footer. JS-free.
+The homepage: nav (Launch App + app-absolute Swap/Explorer), hero, supported chains, benefits, escrow steps, popular routes (relative `/swap`), FAQ accordion, and the full footer. JS-free.
 
 **Files:**
 - Create: `src/seo/LandingHome.tsx`
@@ -594,11 +652,12 @@ describe('LandingHome', () => {
     expect((html.match(/<h1/g) || []).length).toBe(1);
     expect(html).toContain('Swap fully trustlessly between Bitcoin');
   });
-  it('points the primary CTA and Launch App at the app subdomain root', () => {
+  it('points the primary CTA, Launch App, and Swap nav at the app subdomain', () => {
     expect(html).toContain(`href="${APP_ORIGIN}/"`);
   });
-  it('links popular routes to the app-subdomain /swap pages', () => {
-    expect(html).toContain(`href="${APP_ORIGIN}/swap/`);
+  it('links popular routes with relative /swap paths', () => {
+    expect(html).toMatch(/href="\/swap\/[a-z0-9-]+"/);
+    expect(html).not.toContain(`href="${APP_ORIGIN}/swap/`);
   });
   it('renders one FAQ <details> per base FAQ', () => {
     expect((html.match(/<details/g) || []).length).toBe(HOME_FAQS.length);
@@ -626,8 +685,7 @@ import {
   APP_ORIGIN, HERO, BENEFITS, ESCROW_HEADING, ESCROW_STEPS, SUPPORTED_CHAINS, POPULAR_ROUTES, HOME_FAQS,
 } from './homeContent';
 
-// Swap/Explorer navigate to the app in the same tab (absolute, cross-subdomain);
-// Docs/SDK/legal are external sites opened in a new tab.
+// Swap/Explorer navigate to the app (absolute, cross-subdomain); Docs/SDK/legal are external.
 const NAV_ITEMS: NavItem[] = [
   { link: `${APP_ORIGIN}/`, icon: 'swap-nav', title: 'Swap' },
   { link: `${APP_ORIGIN}/explorer`, icon: 'Explorer', title: 'Explorer' },
@@ -712,7 +770,7 @@ export function LandingHome() {
           <ul className="mb-0 ps-3 d-flex flex-column gap-1">
             {POPULAR_ROUTES.map((r) => (
               <li key={r.slug}>
-                <a href={`${APP_ORIGIN}/swap/${r.slug}`} className="text-white">
+                <a href={`/swap/${r.slug}`} className="text-white">
                   {r.label}
                 </a>
               </li>
@@ -735,7 +793,7 @@ export function LandingHome() {
         </div>
       </div>
 
-      <SiteFooterView appOrigin={APP_ORIGIN} noTooltip />
+      <SiteFooterView noTooltip />
     </div>
   );
 }
@@ -750,45 +808,64 @@ Expected: PASS.
 
 ```bash
 git add src/seo/LandingHome.tsx src/seo/__tests__/LandingHome.test.tsx
-git commit -m "feat(seo): LandingHome component for the apex landing page"
+git commit -m "feat(seo): LandingHome component for the marketing landing page"
 ```
 
 ---
 
-### Task 7: Generate the landing in build-seo + full-build verification
+### Task 7: Marketing bundle in build-seo + app deindex + full build
 
-Wire `LandingHome` + `renderLandingHead` into the static build: emit `build/landing/index.html` for the apex and its own sitemap; drop the `/` entry from the subdomain sitemap (it moves to the apex sitemap). This task has no unit test (the script does filesystem IO, matching the existing `build-seo` pattern); it is verified by a real build.
+Rework `build-seo` into the marketing-bundle builder: render the landing + `/swap` pages into `dist-marketing/` (never into `build/`), absolute app `ctaHref`, one www sitemap + robots, and copied assets so the bundle is self-contained. Then deindex the app subdomain and verify with a real build. No unit test (filesystem IO, matching the existing pattern).
 
 **Files:**
-- Modify: `scripts/build-seo.tsx`
+- Modify: `scripts/build-seo.tsx` (full replacement)
+- Modify: `public/robots.txt`
 
 **Interfaces:**
-- Consumes: `LandingHome` from `../src/seo/LandingHome`; `renderLandingHead`, `SITE_ORIGIN` from `../src/seo/seoHead` (alongside the existing `renderHead`, `ORIGIN`).
-- Produces: `build/landing/index.html`, `build/landing/sitemap.xml`; a `build/sitemap.xml` that lists only `/swap/<slug>`.
+- Consumes: `buildRoutes`, `composeRoute`, `renderHead`, `renderLandingHead`, `ORIGIN`, `APP_ORIGIN`, `LandingPage`, `LandingHome`, `ResolvedRoute`.
+- Produces: `dist-marketing/index.html`, `dist-marketing/swap/<slug>/index.html`, `dist-marketing/sitemap.xml`, `dist-marketing/robots.txt`, copied `dist-marketing/assets` + public files.
 
-- [ ] **Step 1: Add imports**
+- [ ] **Step 1: Replace `scripts/build-seo.tsx`**
 
-In `scripts/build-seo.tsx`, extend the two SEO imports. Change:
-
-```tsx
-import { renderHead, ORIGIN } from '../src/seo/seoHead';
-import { LandingPage } from '../src/seo/LandingPage';
-```
-
-to:
+Replace the entire contents of `scripts/build-seo.tsx` with:
 
 ```tsx
-import { renderHead, renderLandingHead, ORIGIN, SITE_ORIGIN } from '../src/seo/seoHead';
+import * as fs from 'fs';
+import * as path from 'path';
+import { renderToStaticMarkup } from 'react-dom/server';
+import * as React from 'react';
+import { buildRoutes } from '../src/seo/routes';
+import { composeRoute } from '../src/seo/content';
+import { renderHead, renderLandingHead, ORIGIN } from '../src/seo/seoHead';
+import { APP_ORIGIN } from '../src/seo/homeContent';
 import { LandingPage } from '../src/seo/LandingPage';
 import { LandingHome } from '../src/seo/LandingHome';
-```
+import type { ResolvedRoute } from '../src/seo/types';
 
-- [ ] **Step 2: Add a landing document helper**
+const BUILD = path.resolve('build');          // vite app build: read manifest + assets from here
+const OUT = path.resolve('dist-marketing');   // marketing bundle: write everything here
 
-In `scripts/build-seo.tsx`, add this function right after the existing `htmlDocument(...)` function:
+function cssHref(): string {
+  const manifestPath = path.join(BUILD, '.vite', 'manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const entry = manifest['index.html'] ?? Object.values(manifest).find((e: any) => e.isEntry);
+  // single-entry build: only one CSS chunk is expected
+  const css = (entry as any)?.css?.[0];
+  if (!css) throw new Error('No CSS asset found in Vite manifest');
+  return '/' + css;
+}
 
-```tsx
-function landingDocument(body: string, css: string): string {
+// Rank candidate sibling routes by relevance so the internal links reinforce the
+// most useful relationships first (exact reverse, then same token, then same chain).
+function siblingScore(r: ResolvedRoute, route: ResolvedRoute): number {
+  if (r.from.key === route.to.key && r.to.key === route.from.key) return 0; // exact reverse
+  if (r.from.key === route.to.key || r.to.key === route.from.key) return 1; // shares a token
+  if (r.to.chainKey === route.to.chainKey && r.from.chainKey === route.from.chainKey) return 2;
+  if (r.to.chainKey === route.to.chainKey || r.from.chainKey === route.from.chainKey) return 3;
+  return 4;
+}
+
+function htmlDocument(headHtml: string, body: string, css: string): string {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -796,7 +873,7 @@ function landingDocument(body: string, css: string): string {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="${css}" />
-    ${renderLandingHead()}
+    ${headHtml}
   </head>
   <body>
     <div id="root" class="background">${body}</div>
@@ -804,87 +881,140 @@ function landingDocument(body: string, css: string): string {
   </body>
 </html>`;
 }
-```
 
-- [ ] **Step 3: Emit the landing page and split the sitemaps**
+// Copy the static assets the prerendered pages reference so the marketing bundle serves
+// standalone from its own storage account, with no dependency on the app origin.
+function copyAssets(): void {
+  fs.cpSync(path.join(BUILD, 'assets'), path.join(OUT, 'assets'), { recursive: true });
+  if (fs.existsSync(path.join(BUILD, 'icons'))) {
+    fs.cpSync(path.join(BUILD, 'icons'), path.join(OUT, 'icons'), { recursive: true });
+  }
+  for (const f of ['favicon.ico', 'main_logo.png', 'logo192.png', 'logo512.png', 'navMenu.js']) {
+    const src = path.join(BUILD, f);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(OUT, f));
+  }
+}
 
-In `scripts/build-seo.tsx`, replace the sitemap block at the end of `main()` (the lines from `const urls = ['/', ...resolved.map(...)]` through the final `console.log(...)`):
+function main() {
+  const css = cssHref();
+  console.log('Using CSS asset:', css);
 
-```tsx
+  const routes = buildRoutes();
+  const composed = routes.map(composeRoute);
+
+  const resolved: ResolvedRoute[] = composed.map((c) => ({
+    ...c,
+    tokenInId: c.from.tokenId,
+    tokenOutId: c.to.tokenId,
+    // App deep-link is absolute: the swap pages live on www, the app on app.atomiq.exchange.
+    ctaHref: `${APP_ORIGIN}/?tokenIn=${c.from.tokenId}&tokenOut=${c.to.tokenId}`,
+  }));
+
+  fs.mkdirSync(OUT, { recursive: true });
+
+  for (const route of resolved) {
+    const siblings = resolved
+      .filter((r) => r.slug !== route.slug && (
+        r.from.key === route.to.key || r.to.key === route.from.key ||
+        r.from.chainKey === route.from.chainKey || r.to.chainKey === route.to.chainKey
+      ))
+      .sort((a, b) => siblingScore(a, route) - siblingScore(b, route))
+      .slice(0, 8);
+
+    const body = renderToStaticMarkup(React.createElement(LandingPage, { route, siblings }));
+    const dir = path.join(OUT, 'swap', route.slug);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'index.html'), htmlDocument(renderHead(route), body, css));
+  }
+
+  // Landing page at the marketing root.
+  const landingBody = renderToStaticMarkup(React.createElement(LandingHome));
+  fs.writeFileSync(path.join(OUT, 'index.html'), htmlDocument(renderLandingHead(), landingBody, css));
+
+  // One sitemap + robots on the canonical www origin.
   const urls = ['/', ...resolved.map((r) => `/swap/${r.slug}`)];
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${ORIGIN}${u}</loc></url>`).join('\n')}
 </urlset>`;
-  fs.writeFileSync(path.join(BUILD, 'sitemap.xml'), sitemap);
+  fs.writeFileSync(path.join(OUT, 'sitemap.xml'), sitemap);
+  fs.writeFileSync(path.join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 
-  console.log(`Generated ${resolved.length} landing pages + sitemap (${urls.length} urls).`);
+  copyAssets();
+
+  console.log(`Generated ${resolved.length} swap pages + landing + sitemap/robots into dist-marketing/.`);
+}
+
+main();
 ```
 
-with:
+- [ ] **Step 2: Deindex the app subdomain**
 
-```tsx
-  // Subdomain sitemap: swap route pages only (the apex root is listed on the apex sitemap).
-  const swapUrls = resolved.map((r) => `/swap/${r.slug}`);
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${swapUrls.map((u) => `  <url><loc>${ORIGIN}${u}</loc></url>`).join('\n')}
-</urlset>`;
-  fs.writeFileSync(path.join(BUILD, 'sitemap.xml'), sitemap);
+Replace the contents of `public/robots.txt` with (keep the reference comment; this ships in the app bundle at `app.atomiq.exchange`):
 
-  // Apex landing page + its own sitemap (served at atomiq.exchange, out-of-plan infra step).
-  const landingBody = renderToStaticMarkup(React.createElement(LandingHome));
-  const landingDir = path.join(BUILD, 'landing');
-  fs.mkdirSync(landingDir, { recursive: true });
-  fs.writeFileSync(path.join(landingDir, 'index.html'), landingDocument(landingBody, css));
-
-  const landingSitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>${SITE_ORIGIN}/</loc></url>
-</urlset>`;
-  fs.writeFileSync(path.join(landingDir, 'sitemap.xml'), landingSitemap);
-
-  console.log(`Generated ${resolved.length} swap pages + apex landing + 2 sitemaps.`);
+```
+# https://www.robotstxt.org/robotstxt.html
+# app.atomiq.exchange is the application, not the canonical SEO surface.
+# Crawlable marketing content lives on https://www.atomiq.exchange (see its sitemap).
+User-agent: *
+Disallow: /
 ```
 
-- [ ] **Step 4: Confirm the whole unit-test suite still passes**
+- [ ] **Step 3: Confirm the whole unit-test suite still passes**
 
 Run: `npx vitest run`
 Expected: PASS — all test files green.
 
-- [ ] **Step 5: Run a full build and verify the landing output**
+- [ ] **Step 4: Run a full build and verify both bundles**
 
 Prerequisite: dependencies installed (`npm install --force` if needed) and an env file present (`cp .env.mainnet .env` if `.env` is missing). Then:
 
 Run: `npm run build`
-Expected: completes with `Generated N swap pages + apex landing + 2 sitemaps.`
+Expected: `vite build` writes `build/`, then build-seo prints `Generated N swap pages + landing + sitemap/robots into dist-marketing/.`
 
-Then verify the artifact:
+Verify the marketing bundle:
 
-Run: `test -f build/landing/index.html && grep -c "Swap fully trustlessly between Bitcoin" build/landing/index.html && grep -c 'rel="canonical" href="https://atomiq.exchange/"' build/landing/index.html`
-Expected: prints the file exists and both greps return `1`.
+Run:
+```bash
+test -f dist-marketing/index.html \
+ && grep -c "Swap fully trustlessly between Bitcoin" dist-marketing/index.html \
+ && grep -c 'rel="canonical" href="https://www.atomiq.exchange/"' dist-marketing/index.html \
+ && test -f dist-marketing/swap/bitcoin-to-sol-solana/index.html \
+ && grep -c 'href="https://app.atomiq.exchange/?tokenIn=' dist-marketing/swap/bitcoin-to-sol-solana/index.html \
+ && test -f dist-marketing/sitemap.xml \
+ && test -d dist-marketing/assets
+```
+Expected: file/dir checks pass and each grep returns `1` (or more).
 
-- [ ] **Step 6: Eyeball the rendered page (manual)**
+Verify the app bundle no longer contains swap pages:
 
-Preview the build and screenshot the landing at desktop and mobile widths (Playwright), checking the hero, cards, escrow steps, popular-route links, and footer render correctly.
+Run: `test ! -d build/swap && echo "app bundle clean"`
+Expected: prints `app bundle clean`.
 
-Run: `npm run preview` then open the served `/landing/` path (or open `build/landing/index.html` directly), capture at 1440px and 390px.
-Expected: layout matches the app's dark theme; all CTA/nav/route links point at `https://app.atomiq.exchange`.
+- [ ] **Step 5: Eyeball the rendered pages (manual)**
 
-- [ ] **Step 7: Commit**
+Preview and screenshot the landing and one `/swap` page at desktop (1440px) and mobile (390px) widths (Playwright), checking the hero, cards, escrow steps, popular-route links, footer, and that all CTA/nav links point at `https://app.atomiq.exchange`.
+
+Run: serve `dist-marketing/` (e.g. `npx serve dist-marketing` or open the files directly) and capture.
+Expected: layout matches the app's dark theme; internal `/swap` links stay relative, app links absolute.
+
+- [ ] **Step 6: Commit**
 
 ```bash
-git add scripts/build-seo.tsx
-git commit -m "feat(seo): generate apex landing page + split sitemaps in build-seo"
+git add scripts/build-seo.tsx public/robots.txt
+git commit -m "feat(seo): marketing bundle (dist-marketing) on www + deindex app subdomain"
 ```
 
 ---
 
 ## Deploy handoff (out of scope, for Adam)
 
-The build now produces `build/landing/index.html` (+ `build/landing/sitemap.xml`). To go live: serve that output at `atomiq.exchange` and remove the apex to subdomain redirect. Recommended: serve the same `build/` artifact at the apex with its index mapped to `landing/index.html` (no asset duplication, no CSS-hash coupling). If the apex must be a fully independent deploy, emit a self-contained bundle by also copying the referenced assets (`build/assets/*`, `main_logo.png`, `logo192.png`, favicon, `/icons/socials/*`). No new subdomain or DNS record is needed.
+Two bundles from `npm run build`: `build/` (SPA → Azure Storage Account B → `app.atomiq.exchange`) and `dist-marketing/` (landing + `/swap` pages + assets → Azure Storage Account A → `www.atomiq.exchange`). Cloudflare: redirect `atomiq.exchange` → `https://www.atomiq.exchange/$path`. The marketing bundle is self-contained (own CSS/fonts/logos/icons), so it serves independently of the app deploy.
 
 ## Notes
 
-- The Webflow brand illustrations (hero flasks, escrow vault) are not wired in by this plan; the landing reuses the app's own dark-theme styling. If we want those illustrations, add a follow-up task to download them into `public/` and reference them from `LandingHome`.
-- Tasks 1's fixes to `content.test.tsx` and `LandingPage.test.tsx` address pre-existing red tests on `develop`; consider cherry-picking that commit back to `develop`.
+- The app-subdomain deindex (`Disallow: /`) consolidates SEO on www; if Adam wants `app.atomiq.exchange` discoverable, relax it (e.g. keep only the utility-route disallows) — the canonical tags already point to www.
+- The Webflow brand illustrations (hero flasks, escrow vault) are not wired in by this plan; the landing reuses the app's own dark-theme styling. If we want them, add a follow-up to download them into `public/` and reference them from `LandingHome`.
+- Task 1's fixes to `content.test.tsx` and `LandingPage.test.tsx` address pre-existing red tests on `develop`; consider cherry-picking that commit back to `develop`.
+- `build-seo.tsx` keeps its filename but now builds the marketing bundle; rename to `build-marketing.tsx` later if desired (also update the `build:seo` script name).
+```

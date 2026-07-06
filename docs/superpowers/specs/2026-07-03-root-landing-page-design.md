@@ -4,26 +4,32 @@ Date: 2026-07-03. Branch: `feat/root-landing-page` (off `develop`). Status: appr
 
 ## Problem / goal
 
-Today the apex `atomiq.exchange` 30x-redirects to `app.atomiq.exchange`, where the SPA lives, so a visitor lands straight in the swap form with no marketing page. We want a garden.finance-style static marketing landing page served at the apex, with a "Launch App" CTA into the app. This gives us a crawlable brand homepage (SEO + first-touch messaging) without touching the app itself.
+Today the apex `atomiq.exchange` 30x-redirects to `app.atomiq.exchange`, where the SPA lives, so a visitor lands straight in the swap form with no marketing page. We want a garden.finance-style static marketing landing page, plus the existing `/swap/<slug>` SEO pages, served from a single canonical marketing domain, with "Launch App" CTAs into the app. This gives us one crawlable brand domain (better SEO + first-touch messaging) with the app cleanly separated on its own subdomain.
 
 ## Decisions (locked with Marci)
 
-- Wiring: remove the apex→subdomain redirect and serve a new static landing page at `atomiq.exchange`. The app and all existing `/swap/<slug>` SEO pages stay unchanged on `app.atomiq.exchange`. There are no app routing changes.
-- Canonical domain: minimal. The landing canonicalizes to `https://atomiq.exchange/`. The `/swap/<slug>` pages keep canonicalizing to `https://app.atomiq.exchange/...` exactly as they do now. No consolidation of the route pages onto the apex.
-- Footer: a full nav-columns site footer (link columns + a curated set of swap-route links + the existing socials row), reused on the landing and on the `/swap/<slug>` pages. The app's in-app footer stays social-only and unchanged.
-- The landing is static and JS-free, prerendered through the existing `build-seo` pipeline, mirroring how the `/swap` pages are built.
+- Topology (per Adam, 2026-07-03): the marketing static site and the app deploy as two separate bundles from this one repo, fronted by Cloudflare + Azure Storage static hosting.
+  - `atomiq.exchange` (apex) → Cloudflare redirect rule → `https://www.atomiq.exchange/$path`.
+  - `www.atomiq.exchange` → marketing static site (the landing **and** the `/swap/<slug>` pages) → Azure Storage Account A. This is the canonical domain.
+  - `app.atomiq.exchange` → the SPA app → Azure Storage Account B.
+  - Canonical is `www.atomiq.exchange`, not the bare apex: Azure static-website hosting does not serve apex roots well, hence the www canonical plus the apex redirect.
+- Canonical domain: consolidate. Both the landing and the `/swap/<slug>` pages live on and canonicalize to `https://www.atomiq.exchange`. This moves the route pages off `app.atomiq.exchange` onto the marketing domain, giving one canonical domain for all crawlable content and removing the SPA-vs-static-routing clash on the app subdomain.
+- Two build outputs, one repo: an app bundle (the SPA, `build/`) and a self-contained marketing bundle (landing + `/swap` pages + its own copied assets, `dist-marketing/`). Same repo, so components and styles are shared.
+- Footer: a full nav-columns site footer (link columns + a curated set of relative `/swap` route links + the existing socials row), reused on the landing and on the `/swap/<slug>` pages. The app's in-app footer stays social-only and unchanged.
+- The landing and route pages are static and JS-free, prerendered through the `build-seo` pipeline. There are no app routing changes.
 
 ## Architecture
 
-The origin split (nothing about the app or the route pages changes; only the apex gains a page and loses its redirect):
+The topology (Cloudflare in front of two Azure Storage static sites):
 
 ```
-atomiq.exchange/               ->  NEW static LandingHome            (apex, canonical https://atomiq.exchange/)
-app.atomiq.exchange/           ->  SPA swap app                      (unchanged)
-app.atomiq.exchange/swap/<slug>->  existing static SEO route pages   (unchanged, canonical on the subdomain)
+atomiq.exchange/                 ->  Cloudflare redirect            -> https://www.atomiq.exchange/$path
+www.atomiq.exchange/             ->  NEW static LandingHome         [Bundle A, canonical https://www.atomiq.exchange/]
+www.atomiq.exchange/swap/<slug>  ->  static SEO route pages (moved) [Bundle A, canonical .../swap/<slug>]
+app.atomiq.exchange/             ->  SPA swap app                   [Bundle B, unchanged]
 ```
 
-Cross-origin rule: because the landing sits on the apex and the app on the subdomain, every app-directed link on the landing (Launch App, hero CTA, popular-route links, nav items into the app) is an absolute URL to `https://app.atomiq.exchange`. The `/swap` pages keep using relative links, since they are served same-origin with the app.
+Link rule: all app-directed links on the marketing site (the landing's Launch App and Swap CTAs, the `/swap` pages' swap CTAs, and the Swap/Explorer nav items) are absolute to `https://app.atomiq.exchange`. All marketing-internal links (landing → `/swap`, `/swap` → sibling `/swap`, footer route links) are relative, since the landing and the route pages share the `www.atomiq.exchange` origin.
 
 ## Components and files
 
@@ -31,49 +37,48 @@ New:
 
 - `src/seo/LandingHome.tsx` — the homepage component: nav + hero + supported-chains + benefits + how-it-works + popular routes + FAQ + `SiteFooterView`. JS-free; plain anchors carry all styling (same convention as `LandingPage.tsx`).
 - `src/seo/homeContent.ts` — homepage copy and section data in one place: hero headline/subhead, the shared `BENEFITS` array (hoisted out of `LandingPage.tsx`), the how-it-works steps, the supported-chains list derived from `tokens.ts` so it can never drift, the curated list of popular-route slugs, and the homepage FAQ set (`BASE_FAQS` plus any homepage-specific extras).
-- `src/components/layout/SiteFooterView.tsx` — the full footer: link columns (Quick Links / Resources / Legal / Company, mirroring the atomiqlabs.com footer — see appendix), a curated set of swap-route links, and the existing socials row (embeds `SocialFooterView` rather than duplicating it). Takes an `appOrigin` prop: `''` (default) on the `/swap` pages for subdomain-relative links, `'https://app.atomiq.exchange'` on the apex landing so app links are absolute.
+- `src/components/layout/SiteFooterView.tsx` — the full footer: link columns (Quick Links / Resources / Legal / Company, mirroring the atomiqlabs.com footer — see appendix), a curated set of **relative** `/swap/<slug>` route links, and the existing socials row (embeds `SocialFooterView` rather than duplicating it). No `appOrigin` prop: the landing and the `/swap` pages share the www origin, so route links are relative and the column links are external.
 - `src/seo/__tests__/LandingHome.test.tsx` and `src/components/layout/__tests__/SiteFooterView.test.tsx`.
 
 Changed:
 
-- `src/seo/seoHead.ts` — keep the existing `ORIGIN = 'https://app.atomiq.exchange'` (the app/subdomain origin, still imported by `build-seo.tsx` and used by the route pages — no rename) and add `SITE_ORIGIN = 'https://atomiq.exchange'` for the apex. Add `renderLandingHead()` that builds the homepage head — title, meta description, `canonical` = `https://atomiq.exchange/`, OG/Twitter tags, and JSON-LD for `Organization` + `WebSite` (no route-specific `WebApplication`/`BreadcrumbList`). The existing `renderHead(route)` is untouched.
-- `src/seo/LandingPage.tsx` — swap its inline `SocialFooterView` for `SiteFooterView` so the `/swap` pages gain the full footer; consume the `BENEFITS` array from `homeContent.ts` instead of its local copy.
-- `scripts/build-seo.tsx` — add a `renderLandingHome()` step that renders `LandingHome` to static markup and writes the landing output. The existing per-route generation and the sitemap stay as they are, except the landing gets its head via `renderLandingHead()` and the apex sitemap entry uses `SITE_ORIGIN` (see SEO).
+- `src/seo/seoHead.ts` — flip `ORIGIN` from the app subdomain to the canonical marketing origin `https://www.atomiq.exchange`. `renderHead(route)` already uses `ORIGIN` for the `/swap` canonical, sitemap loc, and OG image, so those move to www automatically (no signature change). The CTA/deep-link target `APP_ORIGIN` (`https://app.atomiq.exchange`) is defined in `homeContent.ts` and imported where needed. Add `renderLandingHead()` for the homepage head — title, meta description, `canonical` = `https://www.atomiq.exchange/`, OG/Twitter, and JSON-LD `Organization` + `WebSite` (no route-specific `WebApplication`/`BreadcrumbList`).
+- `src/seo/LandingPage.tsx` — the `/swap` pages now live on the marketing domain, so their app-directed links become absolute to `APP_ORIGIN`: the nav Swap/Explorer items, the "Launch App" button, and the "Open the app" link. Sibling `/swap` links stay relative. Swap its inline `SocialFooterView` for `SiteFooterView`, and consume `BENEFITS` from `homeContent.ts` instead of its local copy.
+- `scripts/build-seo.tsx` — becomes the marketing-bundle builder. It renders the landing (`LandingHome` + `renderLandingHead()`) and the per-route `/swap` pages into a separate `dist-marketing/` output (not the app's `build/`), builds each per-route `ctaHref` as an absolute `${APP_ORIGIN}/?tokenIn=…&tokenOut=…`, writes one www `sitemap.xml` (`/` + every `/swap/<slug>`) and a `robots.txt`, and copies the referenced static assets (`build/assets/`, favicon, logos, `/icons/**`, `navMenu.js`) into `dist-marketing/` so the bundle is self-contained.
+- `public/robots.txt` — the app subdomain should not compete with the canonical www content, so the app bundle's `robots.txt` disallows indexing (the marketing bundle ships its own `Allow` + sitemap).
 
 ## Build and deploy
 
-`npm run build:seo` gains one output: the static landing for the apex. The landing references only assets that already exist in the app build — the hashed CSS resolved from the Vite manifest (same `cssHref()` mechanism used today), plus public assets (`/main_logo.png`, `/logo192.png`, favicon, `/icons/socials/*`, and the icon/webfonts the CSS pulls in).
+`npm run build` produces the two bundles. `vite build` writes the SPA to `build/` (Bundle B → Azure Account B → `app.atomiq.exchange`). `npm run build:seo` then writes the marketing bundle to `dist-marketing/` (Bundle A → Azure Account A → `www.atomiq.exchange`): the landing `index.html`, the `/swap/<slug>/index.html` pages, `sitemap.xml`, `robots.txt`, and a copy of the static assets they reference (the hashed CSS resolved from the Vite manifest, plus `assets/`, favicon, logos, `/icons/**`, `navMenu.js`). The marketing bundle is self-contained so it can serve from its own storage account with no dependency on the app origin.
 
-Recommended deploy: serve the same `build/` artifact at the apex with its index mapped to the landing HTML (e.g. emit `build/landing/index.html` and have the apex host serve that as `/`). This avoids asset duplication and any CSS-hash coupling, because both origins serve the identical build. Alternative, if the apex must be a fully independent deploy: emit a self-contained `build-landing/` bundle with the referenced assets copied in. Which one we use depends on the hosting setup — that is the single question for Adam.
-
-Infra step (Adam, not solo-doable): point `atomiq.exchange` at the landing output and remove the apex→subdomain redirect. This is a redirect removal plus a static deploy target — no new subdomain, no DNS record creation.
+Infra step (Adam): a Cloudflare redirect `atomiq.exchange` → `https://www.atomiq.exchange/$path`; point `www.atomiq.exchange` at Azure Storage Account A (`dist-marketing/`) and `app.atomiq.exchange` at Account B (`build/`).
 
 ## Landing page sections
 
-1. Header/nav — `MainNavigationView` with a "Launch App" button to the app subdomain. Nav items that point into the app use absolute subdomain URLs.
+1. Header/nav — `MainNavigationView` with a "Launch App" button (absolute to `https://app.atomiq.exchange/`). Nav Swap/Explorer items are absolute app-subdomain URLs; Docs/SDK/legal are external.
 2. Hero — the company page's headline "Swap fully trustlessly between Bitcoin & other chains" + subhead, primary CTA "Swap now" → `https://app.atomiq.exchange/`, secondary "Read Docs" → `https://docs.atomiq.exchange/`. Exact copy in the appendix.
 3. Supported chains/assets — BTC and Lightning on one side; Solana, Starknet, Citrea (and the other configured EVM L2s) on the other. Derived from `tokens.ts` so the list can't drift from what the app actually supports.
 4. Why Atomiq — the four `BENEFITS`: trustless and atomic, no bridge or CEX, Bitcoin-secured, RFQ pricing.
 5. How the atomiq escrow works — the four-step escrow explanation reused from the company page (lock the vault → counterparty sends a valid BTC tx → a Bitcoin light client verifies it → funds release, or you get your tokens back), paired with the escrow-vault illustration. Exact copy in the appendix.
-6. Popular swap routes — a curated grid linking to `https://app.atomiq.exchange/swap/<slug>` (drives internal links to the route pages; the main SEO win of putting the homepage in front).
+6. Popular swap routes — a curated grid of **relative** `/swap/<slug>` links (same www origin as the landing) to the route pages; the main SEO win of putting the homepage in front.
 7. FAQ — the `BASE_FAQS` set as a native `<details>` accordion (zero JS, answers in crawlable HTML).
 8. `SiteFooterView`.
 
 ## SEO
 
-- Head: `<title>`, meta description, `canonical` = `https://atomiq.exchange/`, OG + Twitter cards, JSON-LD `Organization` + `WebSite`.
-- Sitemap: keep the apex and subdomain sitemaps separate (minimal). The subdomain sitemap keeps listing `/swap/<slug>` under `APP_ORIGIN` as today; the apex serves its own small sitemap listing `/` under `SITE_ORIGIN`. (The current `build-seo` sitemap already lists `/` — that entry moves to the apex sitemap.)
+- Head: `<title>`, meta description, `canonical` = `https://www.atomiq.exchange/`, OG + Twitter cards, JSON-LD `Organization` + `WebSite`.
+- Sitemap: one sitemap on the marketing domain (`dist-marketing/sitemap.xml`) listing `/` and every `/swap/<slug>` under `https://www.atomiq.exchange`. The marketing `robots.txt` allows crawling and points to that sitemap; the app subdomain's `robots.txt` disallows indexing so it does not compete with the canonical www content.
 - No `FAQPage` schema — consistent with the existing decision (Google deprecated FAQ rich results 2026-05-07); visible FAQ text carries the signal.
 
 ## Testing
 
-- Vitest, mirroring the existing `src/seo/__tests__` style. `LandingHome`: renders, exactly one `<h1>`, the hero CTA and popular-route/nav links into the app are absolute to `https://app.atomiq.exchange`, and FAQ answer text is present in the HTML. `SiteFooterView`: renders the link columns, route links, and socials; `appOrigin` prefixes app links; the `noTooltip` path renders plain anchors.
+- Vitest, mirroring the existing `src/seo/__tests__` style. `LandingHome`: renders, exactly one `<h1>`, the hero CTA and Swap/Explorer nav point at `https://app.atomiq.exchange`, the popular-route links are relative `/swap/<slug>`, and FAQ answers are in the HTML. `SiteFooterView`: renders the columns, relative `/swap` route links, and socials. `seoHead`: `renderHead` canonicalizes to `https://www.atomiq.exchange/swap/<slug>` and `renderLandingHead` to `https://www.atomiq.exchange/`.
 - Manual: `npm run build`, then eyeball the landing output at desktop and mobile widths (Playwright screenshot) before handing off to Adam.
 
 ## Out of scope (YAGNI)
 
 - No app routing changes; no move of the swap app to a `/app` subpath.
-- No canonical consolidation of the `/swap` pages onto the apex.
+- Consolidating the `/swap` pages onto the www marketing domain IS in scope (Adam's topology); the app keeps its own routes unchanged.
 - No analytics/tracking (Cloudflare stats suffice).
 - The company Webflow page (`atomiqlabs.com`) is untouched — separate track.
 - The infinite-scroll footer bug on the app's history/explorer pages is noted separately and is not part of this work.
