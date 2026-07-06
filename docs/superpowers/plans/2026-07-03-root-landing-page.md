@@ -813,9 +813,9 @@ git commit -m "feat(seo): LandingHome component for the marketing landing page"
 
 ---
 
-### Task 7: Marketing bundle in build-seo + app deindex + full build
+### Task 7: Marketing bundle in build-seo + app robots cleanup + full build
 
-Rework `build-seo` into the marketing-bundle builder: render the landing + `/swap` pages into `dist-marketing/` (never into `build/`), absolute app `ctaHref`, one www sitemap + robots, and copied assets so the bundle is self-contained. Then deindex the app subdomain and verify with a real build. No unit test (filesystem IO, matching the existing pattern).
+Rework `build-seo` into the marketing-bundle builder: render the landing + `/swap` pages into `dist-marketing/` (never into `build/`), absolute app `ctaHref`, one www sitemap + robots, and copied assets so the bundle is self-contained. Then fix the app's stale robots sitemap reference (the app stays indexable) and verify with a real build. No unit test (filesystem IO, matching the existing pattern).
 
 **Files:**
 - Modify: `scripts/build-seo.tsx` (full replacement)
@@ -948,16 +948,16 @@ ${urls.map((u) => `  <url><loc>${ORIGIN}${u}</loc></url>`).join('\n')}
 main();
 ```
 
-- [ ] **Step 2: Deindex the app subdomain**
+- [ ] **Step 2: Fix the app's stale sitemap reference (keep it indexable)**
 
-Replace the contents of `public/robots.txt` with (keep the reference comment; this ships in the app bundle at `app.atomiq.exchange`):
+The app subdomain should stay in search, so do NOT disallow it. Only drop the stale `Sitemap: https://app.atomiq.exchange/sitemap.xml` line (that sitemap now lives on www). Edit `public/robots.txt` to remove that `Sitemap:` line, leaving:
 
 ```
 # https://www.robotstxt.org/robotstxt.html
-# app.atomiq.exchange is the application, not the canonical SEO surface.
-# Crawlable marketing content lives on https://www.atomiq.exchange (see its sitemap).
 User-agent: *
-Disallow: /
+Disallow: /history
+Disallow: /scan
+Disallow: /gas
 ```
 
 - [ ] **Step 3: Confirm the whole unit-test suite still passes**
@@ -1002,7 +1002,7 @@ Expected: layout matches the app's dark theme; internal `/swap` links stay relat
 
 ```bash
 git add scripts/build-seo.tsx public/robots.txt
-git commit -m "feat(seo): marketing bundle (dist-marketing) on www + deindex app subdomain"
+git commit -m "feat(seo): marketing bundle (dist-marketing) on www + drop stale app sitemap ref"
 ```
 
 ---
@@ -1013,7 +1013,7 @@ Two bundles from `npm run build`: `build/` (SPA → Azure Storage Account B → 
 
 ## Notes
 
-- The app-subdomain deindex (`Disallow: /`) consolidates SEO on www; if Adam wants `app.atomiq.exchange` discoverable, relax it (e.g. keep only the utility-route disallows) — the canonical tags already point to www.
+- The app subdomain stays indexable (Marci's call); its `robots.txt` keeps the utility-route disallows and only drops the stale app-sitemap reference. The `/swap` canonical tags point to www, so there is no duplicate-content competition.
 - The Webflow brand illustrations (hero flasks, escrow vault) are not wired in by this plan; the landing reuses the app's own dark-theme styling. If we want them, add a follow-up to download them into `public/` and reference them from `LandingHome`.
 - Task 1's fixes to `content.test.tsx` and `LandingPage.test.tsx` address pre-existing red tests on `develop`; consider cherry-picking that commit back to `develop`.
 - `build-seo.tsx` keeps its filename but now builds the marketing bundle; rename to `build-marketing.tsx` later if desired (also update the `build:seo` script name).

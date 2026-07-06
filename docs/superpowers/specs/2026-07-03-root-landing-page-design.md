@@ -45,7 +45,7 @@ Changed:
 - `src/seo/seoHead.ts` — flip `ORIGIN` from the app subdomain to the canonical marketing origin `https://www.atomiq.exchange`. `renderHead(route)` already uses `ORIGIN` for the `/swap` canonical, sitemap loc, and OG image, so those move to www automatically (no signature change). The CTA/deep-link target `APP_ORIGIN` (`https://app.atomiq.exchange`) is defined in `homeContent.ts` and imported where needed. Add `renderLandingHead()` for the homepage head — title, meta description, `canonical` = `https://www.atomiq.exchange/`, OG/Twitter, and JSON-LD `Organization` + `WebSite` (no route-specific `WebApplication`/`BreadcrumbList`).
 - `src/seo/LandingPage.tsx` — the `/swap` pages now live on the marketing domain, so their app-directed links become absolute to `APP_ORIGIN`: the nav Swap/Explorer items, the "Launch App" button, and the "Open the app" link. Sibling `/swap` links stay relative. Swap its inline `SocialFooterView` for `SiteFooterView`, and consume `BENEFITS` from `homeContent.ts` instead of its local copy.
 - `scripts/build-seo.tsx` — becomes the marketing-bundle builder. It renders the landing (`LandingHome` + `renderLandingHead()`) and the per-route `/swap` pages into a separate `dist-marketing/` output (not the app's `build/`), builds each per-route `ctaHref` as an absolute `${APP_ORIGIN}/?tokenIn=…&tokenOut=…`, writes one www `sitemap.xml` (`/` + every `/swap/<slug>`) and a `robots.txt`, and copies the referenced static assets (`build/assets/`, favicon, logos, `/icons/**`, `navMenu.js`) into `dist-marketing/` so the bundle is self-contained.
-- `public/robots.txt` — the app subdomain should not compete with the canonical www content, so the app bundle's `robots.txt` disallows indexing (the marketing bundle ships its own `Allow` + sitemap).
+- `public/robots.txt` — the app stays indexable (it should appear in search, per Marci). Only drop the now-stale `Sitemap: https://app.atomiq.exchange/sitemap.xml` line (that sitemap moves to www) and keep the existing utility-route disallows. The marketing bundle ships its own `robots.txt` with `Allow` + the www sitemap.
 
 ## Build and deploy
 
@@ -67,7 +67,7 @@ Infra step (Adam): a Cloudflare redirect `atomiq.exchange` → `https://www.atom
 ## SEO
 
 - Head: `<title>`, meta description, `canonical` = `https://www.atomiq.exchange/`, OG + Twitter cards, JSON-LD `Organization` + `WebSite`.
-- Sitemap: one sitemap on the marketing domain (`dist-marketing/sitemap.xml`) listing `/` and every `/swap/<slug>` under `https://www.atomiq.exchange`. The marketing `robots.txt` allows crawling and points to that sitemap; the app subdomain's `robots.txt` disallows indexing so it does not compete with the canonical www content.
+- Sitemap: one sitemap on the marketing domain (`dist-marketing/sitemap.xml`) listing `/` and every `/swap/<slug>` under `https://www.atomiq.exchange`. The marketing `robots.txt` allows crawling and points to that sitemap. The app subdomain stays crawlable/indexable (per Marci); its `robots.txt` just drops the stale app-sitemap reference and keeps the utility-route disallows. The `/swap` canonical tags point to www, so there is no duplicate-content competition.
 - No `FAQPage` schema — consistent with the existing decision (Google deprecated FAQ rich results 2026-05-07); visible FAQ text carries the signal.
 
 ## Testing
