@@ -8,7 +8,7 @@ describe('composeRoute', () => {
 
   it('builds a title, description, h1 with token + chain context', () => {
     const c = composeRoute(btcToUsdcSol);
-    expect(c.title).toBe('Swap BTC to USDC on Solana | Atomiq');
+    expect(c.title).toBe('Swap BTC to USDC on Solana | atomiq.exchange');
     expect(c.h1).toBe('Swap BTC to USDC on Solana');
     expect(c.description.length).toBeGreaterThan(40);
   });

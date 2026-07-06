@@ -17,8 +17,22 @@ const route: ResolvedRoute = {
   ctaHref: '/?tokenIn=BITCOIN&tokenOut=SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
 };
 
+const sibling: ResolvedRoute = {
+  slug: 'usdc-solana-to-bitcoin',
+  from: route.to,
+  to: route.from,
+  title: 'Swap USDC on Solana to BTC | atomiq.exchange',
+  description: 'desc',
+  h1: 'Swap USDC on Solana to BTC',
+  intro: 'intro',
+  faqs: [],
+  tokenInId: route.to.tokenId,
+  tokenOutId: route.from.tokenId,
+  ctaHref: 'https://app.atomiq.exchange/?tokenIn=SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&tokenOut=BITCOIN',
+};
+
 describe('LandingPage', () => {
-  const html = renderToStaticMarkup(<LandingPage route={route} siblingSlugs={['usdc-solana-to-bitcoin']} />);
+  const html = renderToStaticMarkup(<LandingPage route={route} siblings={[sibling]} />);
   it('renders the h1 and intro', () => {
     expect(html).toContain('<h1');
     expect(html).toContain('Swap BTC to USDC on Solana');
