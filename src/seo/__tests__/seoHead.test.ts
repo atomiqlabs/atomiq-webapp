@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { renderHead, ORIGIN } from '../seoHead';
+import { renderHead, renderLandingHead, ORIGIN } from '../seoHead';
 import type { ResolvedRoute } from '../types';
 
 const fixture: ResolvedRoute = {
@@ -31,5 +31,25 @@ describe('renderHead', () => {
     expect(head).toContain('"@type":"WebApplication"');
     expect(head).toContain('"@type":"BreadcrumbList"');
     expect(head).not.toContain('FAQPage');
+  });
+  it('canonicalizes to the www marketing origin', () => {
+    expect(ORIGIN).toBe('https://www.atomiq.exchange');
+  });
+});
+
+describe('renderLandingHead', () => {
+  const head = renderLandingHead();
+  it('uses the www canonical origin at the root', () => {
+    expect(head).toContain(`<link rel="canonical" href="${ORIGIN}/"/>`);
+  });
+  it('emits a title and description', () => {
+    expect(head).toContain('<title>');
+    expect(head).toContain('<meta name="description"');
+  });
+  it('emits Organization + WebSite JSON-LD, no route schema', () => {
+    expect(head).toContain('"@type":"Organization"');
+    expect(head).toContain('"@type":"WebSite"');
+    expect(head).not.toContain('WebApplication');
+    expect(head).not.toContain('BreadcrumbList');
   });
 });
