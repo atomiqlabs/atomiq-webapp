@@ -75,6 +75,7 @@
     "build:marketing": "vite build --config vite.marketing.config.ts && npm run build:seo",
     "build:seo": "tsx scripts/build-seo.tsx",
     "preview": "vite preview",
+    "preview:marketing": "vite preview --config vite.marketing.config.ts",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
