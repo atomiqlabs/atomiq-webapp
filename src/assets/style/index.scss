@@ -247,6 +247,11 @@ td {
     transform: rotate(150deg);
     pointer-events: none;
   }
+
+  //Moves the magenta blob a bit up on the main swap page
+  &:has(.swap-page):after {
+    bottom: -20%;
+  }
 }
 
 .card {
