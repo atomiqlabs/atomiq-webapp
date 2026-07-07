@@ -6,14 +6,14 @@ import {Tokens} from "../utils/SwapperFactory";
 
 // The app / deep-link origin. The marketing site lives on www.atomiq.exchange (see seoHead ORIGIN);
 // every app-directed link is absolute to this subdomain.
-export const APP_ORIGIN = 'https://app.atomiq.exchange/';
+export const APP_ORIGIN = 'https://app.atomiq.exchange';
 export const DOCS_URL = 'https://docs.atomiq.exchange/';
 
 export const HERO = {
   headline: 'Swap fully trustlessly between Bitcoin & other chains',
   subhead:
     'Unlock fully trustless swaps between Bitcoin and other chains. Enjoy secure, efficient transactions with no intermediaries, fully non-custodial.',
-  primaryCta: { label: 'Swap now', href: APP_ORIGIN },
+  primaryCta: { label: 'Swap now', href: APP_ORIGIN+"/" },
   secondaryCta: { label: 'Read Docs', href: DOCS_URL },
 };
 
@@ -40,7 +40,7 @@ export const SUPPORTED_CHAINS: string[] = Array.from(
 // App deep-link for a token pair: opens the app with both sides prefilled. APP_ORIGIN
 // already carries a trailing slash, so no extra '/' before the query string.
 export function appSwapHref(fromTokenId: string, toTokenId: string): string {
-  return `${APP_ORIGIN}?tokenIn=${fromTokenId}&tokenOut=${toTokenId}`;
+  return `${APP_ORIGIN}/?tokenIn=${fromTokenId}&tokenOut=${toTokenId}`;
 }
 
 // Label for a route chip in the "Popular / Other swap routes" grids, e.g.

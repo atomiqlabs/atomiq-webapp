@@ -14,7 +14,7 @@ describe('LandingHome', () => {
   });
   it('deep-links popular-route chips into the app, keeping /swap SEO links in the footer', () => {
     // On-page chips prefill the app; the footer keeps the /swap/<slug>/ SEO links for internal equity.
-    expect(html).toContain(`href="${APP_ORIGIN}?tokenIn=`);
+    expect(html).toContain(`href="${APP_ORIGIN}/?tokenIn=`);
     expect(html).toMatch(/href="\/swap\/[a-z0-9-]+\/"/);
     expect(html).not.toContain(`href="${APP_ORIGIN}/swap/`);
   });
