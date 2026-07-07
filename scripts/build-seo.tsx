@@ -8,7 +8,6 @@ import { renderHead, renderLandingHead, ORIGIN } from '../src/seo/seoHead';
 import { APP_ORIGIN } from '../src/seo/homeContent';
 import { LandingPage } from '../src/seo/LandingPage';
 import { LandingHome } from '../src/seo/LandingHome';
-import { LANDING_CSS } from '../src/seo/landingStyles';
 import type { ResolvedRoute } from '../src/seo/types';
 
 const OUT = path.resolve('build-marketing'); // marketing Vite build + generated static pages
@@ -38,7 +37,7 @@ function siblingScore(r: ResolvedRoute, route: ResolvedRoute): number {
   return 4;
 }
 
-function htmlDocument(headHtml: string, body: string, css: string[], headExtra = ''): string {
+function htmlDocument(headHtml: string, body: string, css: string[]): string {
   const stylesheetLinks = css
     .map((href) => `<link rel="stylesheet" href="${href}" />`)
     .join('\n    ');
@@ -51,7 +50,6 @@ function htmlDocument(headHtml: string, body: string, css: string[], headExtra =
     <link rel="icon" href="/favicon.ico" />
     ${stylesheetLinks}
     ${headHtml}
-    ${headExtra}
   </head>
   <body>
     <div id="root" class="background">${body}</div>
@@ -97,7 +95,7 @@ function main() {
     // Swap pages share the landing's .mk-home look, so they get the same inline stylesheet.
     fs.writeFileSync(
       path.join(dir, 'index.html'),
-      htmlDocument(renderHead(route), body, css, `<style>${LANDING_CSS}</style>`)
+      htmlDocument(renderHead(route), body, css)
     );
   }
 
@@ -106,7 +104,7 @@ function main() {
   const landingBody = renderToStaticMarkup(React.createElement(LandingHome));
   fs.writeFileSync(
     path.join(OUT, 'index.html'),
-    htmlDocument(renderLandingHead(), landingBody, css, `<style>${LANDING_CSS}</style>`)
+    htmlDocument(renderLandingHead(), landingBody, css)
   );
 
   removeMarketingShell();
