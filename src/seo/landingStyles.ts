@@ -31,23 +31,29 @@ export const LANDING_CSS = `
 /* ---------- hero ---------- */
 .mk-hero{position:relative; overflow:hidden; padding:clamp(2.5rem,6vw,5.5rem) 0 clamp(2.5rem,5vw,4rem);}
 .mk-hero__inner{position:relative; z-index:3; max-width:840px; margin:0 auto; text-align:center;}
-.mk-hero__aura{
-  position:absolute; z-index:1; left:50%; top:34%; width:min(1080px,124%); height:660px;
-  transform:translate(-50%,-50%); pointer-events:none; filter:blur(24px);
-  background:radial-gradient(closest-side, rgba(255,84,205,.30), rgba(148,74,252,.20) 46%, rgba(252,150,38,.10) 70%, transparent 79%);
-}
 .mk-hero__title{font-size:clamp(2.5rem,6vw,4.4rem);}
 .mk-hero__sub{max-width:600px; margin:1.6rem auto 0; font-size:clamp(1.02rem,1.3vw,1.2rem); line-height:1.6; color:var(--mk-muted);}
 .mk-cta{display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; align-items:center; margin-top:2.3rem;}
 
-/* full-bleed lab scene (company-page hero illustration). Its transparent SVG tucks up
-   under the CTAs; a bottom fade seats the flasks into the ink so the chains band below
-   reads as one surface. */
-.mk-hero__scene{position:relative; z-index:2; width:100%; margin-top:clamp(-1rem,-3vw,-3.25rem); pointer-events:none;}
-.mk-hero__scene-img{display:block; width:100%; height:auto;}
+/* full-bleed lab scene (company-page hero illustration). The SVG renders at a FIXED
+   intrinsic size and is centered + clipped, so as the window narrows the outer flasks
+   bleed off the edges instead of the whole scene scaling down. A bottom fade seats the
+   flasks into the ink so the chains band below reads as one surface.
+   Knobs: --mk-scene-w (fixed width), the two margin-tops (gap above/below the scene). */
+.mk-hero__scene{
+  position:relative; z-index:2; width:100%; overflow:hidden;
+  display:flex; justify-content:center; margin-top:-20rem; pointer-events:none;
+}
+.mk-hero__scene-img{flex:none; width:3000px; max-width:none; height:auto; display:block;}
 .mk-hero__scene::after{
   content:''; position:absolute; left:0; right:0; bottom:-1px; height:34%; pointer-events:none;
   background:linear-gradient(180deg, transparent 0%, var(--mk-ink) 92%);
+}
+/* Small screens: a fixed 1600px scene would show only its dull center, so let it scale
+   to fit here (the "don't scale" rule is about desktop window resizing). */
+@media (max-width:768px){
+  .mk-hero__scene{margin-top:-5rem;}
+  .mk-hero__scene-img{width:200%;}
 }
 
 /* ---------- buttons ---------- */
@@ -65,7 +71,8 @@ export const LANDING_CSS = `
 .mk-btn:hover .mk-btn__arrow{transform:translateX(3px);}
 
 /* ---------- supported chains strip (seated below the lab scene) ---------- */
-.mk-chains{position:relative; z-index:3; margin-top:clamp(-1.5rem,-3vw,-3rem); padding-bottom:clamp(1rem,3vw,2.5rem);}
+.mk-chains{position:relative; z-index:3; margin-top:-23rem; padding-bottom:clamp(1rem,3vw,2.5rem);}
+@media (max-width:768px){.mk-chains{margin-top:-5rem;}}
 .mk-chains__label{
   display:flex; align-items:center; gap:1rem; justify-content:center; margin:0 auto 1.6rem; max-width:560px;
   font-size:.72rem; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--mk-faint);

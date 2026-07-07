@@ -49,8 +49,6 @@ export function LandingHome() {
 
       {/* ---------- hero ---------- */}
       <section className="mk-hero">
-        <div className="mk-hero__aura" aria-hidden="true" />
-
         <div className="mk-wrap">
           <div className="mk-hero__inner">
             <span className="mk-eyebrow">Trustless cross-chain DEX</span>
