@@ -1,52 +1,70 @@
-import { useEffect } from 'react';
-import { elementInViewport } from '../utils/Utils';
+import { useEffect, useRef } from 'react';
 import * as React from 'react';
 
 /**
- * An element with a workaround for scrolling to bottom, triggered when the trigger param changes from false to true
+ * An element with a workaround for scrolling to itself, triggered when the trigger param changes from false to true
  *
  * @param props
  * @constructor
  */
 export function ScrollAnchor(props: { trigger: boolean }) {
+  const anchorRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (!props.trigger) return;
 
-    let lastScrollTime: number = 0;
-    let scrollListener = () => {
-      lastScrollTime = Date.now();
+    const elementInViewport = (element: HTMLElement): boolean => {
+      const rect = element.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+
+      return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= viewportHeight &&
+        rect.right <= viewportWidth
+      );
     };
-    window.addEventListener('scroll', scrollListener);
 
-    const isScrolling = () => lastScrollTime && Date.now() < lastScrollTime + 100;
+    const scrollToAnchor = () => {
+      const anchorElement = anchorRef.current;
+      if (anchorElement == null) return false;
 
-    let interval;
-    interval = setInterval(() => {
-      const anchorElement = document.getElementById('scrollAnchor');
-      if (anchorElement == null) return;
+      if (elementInViewport(anchorElement)) return true;
 
-      if (elementInViewport(anchorElement)) {
-        clearInterval(interval);
-        window.removeEventListener('scroll', scrollListener);
-        scrollListener = null;
-        interval = null;
-        return;
-      }
+      const rect = anchorElement.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 
-      if (!isScrolling()) {
-        // @ts-ignore
+      if (rect.bottom > viewportHeight) {
         window.scrollBy({
           left: 0,
-          top: 99999,
+          top: rect.bottom - viewportHeight,
+        });
+      } else if (rect.top < 0) {
+        window.scrollBy({
+          left: 0,
+          top: rect.top,
         });
       }
-    }, 100);
+
+      return elementInViewport(anchorElement);
+    };
+
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    if (!scrollToAnchor()) {
+      interval = setInterval(() => {
+        if (!scrollToAnchor() || interval == null) return;
+
+        clearInterval(interval);
+        interval = null;
+      }, 100);
+    }
 
     return () => {
       if (interval != null) clearInterval(interval);
-      if (scrollListener != null) window.removeEventListener('scroll', scrollListener);
     };
   }, [props.trigger]);
 
-  return <div id="scrollAnchor"></div>;
+  return <div id="scrollAnchor" ref={anchorRef}></div>;
 }
