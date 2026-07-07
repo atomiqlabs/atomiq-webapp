@@ -5,6 +5,7 @@ import { useStateRef } from '../../hooks/utils/useStateRef';
 import { Chain } from '../ChainsProvider';
 import {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {BitcoinWalletType, getInstalledBitcoinWallets} from "../../wallets/bitcoin/utils/BitcoinWalletUtils";
+import {Chains} from "../../utils/Chains";
 
 export function useBitcoinChain(
   enabled: boolean,
@@ -138,10 +139,7 @@ export function useBitcoinChain(
       !enabled
         ? null
         : {
-            chain: {
-              name: 'Bitcoin',
-              icon: '/icons/chains/BITCOIN.svg',
-            },
+            chain: Chains.BITCOIN,
             wallet:
               bitcoinWallet == null
                 ? null

@@ -4,6 +4,7 @@ import { Chain } from '../ChainsProvider';
 import {isBtcToken, LNURLWithdraw, Token} from "@atomiqlabs/sdk";
 import {truncateAddress} from "../../utils/Utils";
 import {useLocation} from "react-router-dom";
+import {Chains} from "../../utils/Chains";
 
 const wallets = [{
   name: 'WebLN',
@@ -76,10 +77,7 @@ export function useLightningNetwork(enabled: boolean): Chain<WebLNProvider | {_l
       const installedWallets = wallets
         .filter(val => val.detect());
       return {
-          chain: {
-            name: 'Lightning',
-            icon: '/icons/chains/LIGHTNING.svg',
-          },
+          chain: Chains.LIGHTNING,
           wallet,
           installedWallets: installedWallets
             .map(val => ({...val, isConnected: wallet?.name===val.name})),

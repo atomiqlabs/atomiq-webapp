@@ -5,6 +5,7 @@ import {
 } from './homeContent';
 
 import {TokenIcons} from "../utils/TokenIcons";
+import {ChainIcon} from "../components/tokens/ChainIcon";
 
 // Swap/Explorer navigate to the app (absolute, cross-subdomain); Docs/SDK/legal are external.
 const NAV_ITEMS: NavItem[] = [
@@ -133,9 +134,9 @@ export function LandingHome() {
           <div className="mk-routes">
             {POPULAR_ROUTES.map((r) => (
               <a className="mk-route" href={r.appHref} key={r.slug}>
-                <img src={TokenIcons[r.route.from.token.ticker]} alt="" aria-hidden="true" />
+                {/*<img src={TokenIcons[r.route.from.token.ticker]} alt="" aria-hidden="true" />*/}
+                <ChainIcon className="mk-route__icon" token={r.route.from.token}/>
                 <span>{r.label}</span>
-                <span className="mk-route__arrow" aria-hidden="true">→</span>
               </a>
             ))}
           </div>

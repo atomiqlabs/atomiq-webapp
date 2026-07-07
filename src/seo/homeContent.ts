@@ -48,11 +48,11 @@ export function appSwapHref(fromTokenId: string, toTokenId: string): string {
 // landing's popular chips and the swap pages' sibling chips read identically.
 export function routeChipLabel(from: SeoToken, to: SeoToken): string {
   return from.isBtcSide
-    ? `${from.ticker} to ${to.ticker} on ${to.chainName}`
-    : `${from.ticker} on ${from.chainName} to ${to.ticker}`;
+    ? `${from.ticker} → ${to.ticker} on ${to.chainName}`
+    : `${from.ticker} on ${from.chainName} → ${to.ticker}`;
 }
 
-export type PopularRoute = { slug: string; label: string; route: SeoRoute; appHref: string };
+export type PopularRoute = { slug: string; label: string | JSX.Element | JSX.Element[]; route: SeoRoute; appHref: string };
 // Up to nine BTC -> smart-chain routes (currently all of them, incl. Citrea), straight
 // from buildRoutes() so every slug is real. `appHref` deep-links into the app with the
 // pair prefilled (used by the on-page "Popular swap routes" chips); the footer instead

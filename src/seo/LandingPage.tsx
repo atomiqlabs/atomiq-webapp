@@ -3,6 +3,7 @@ import { SiteFooterView } from '../components/layout/SiteFooterView';
 import { BENEFITS, APP_ORIGIN, DOCS_URL, appSwapHref, routeChipLabel } from './homeContent';
 import { TokenIcons } from '../utils/TokenIcons';
 import type { ResolvedRoute } from './types';
+import {ChainIcon} from "../components/tokens/ChainIcon";
 
 // Swap/Explorer navigate to the app (absolute, cross-subdomain); Docs/SDK/legal are external.
 const NAV_ITEMS: NavItem[] = [
@@ -97,10 +98,9 @@ export function LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRou
           </div>
           <div className="mk-routes">
             {siblings.map((sibling) => (
-              <a className="mk-route" href={`/swap/${sibling.slug}`} key={sibling.slug}>
-                <img src={TokenIcons[sibling.from.token.ticker]} alt="" aria-hidden="true" />
+              <a className="mk-route" href={`/swap/${sibling.slug}/`} key={sibling.slug}>
+                <ChainIcon className="mk-route__icon" token={sibling.from.token}/>
                 <span>{routeChipLabel(sibling.from, sibling.to)}</span>
-                <span className="mk-route__arrow" aria-hidden="true">→</span>
               </a>
             ))}
           </div>

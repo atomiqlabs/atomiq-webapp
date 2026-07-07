@@ -45,10 +45,6 @@ export const LANDING_CSS = `
   display:flex; justify-content:center; margin-top:-25rem; pointer-events:none;
 }
 .mk-hero__scene-img{flex:none; width:3000px; max-width:none; height:auto; display:block;}
-.mk-hero__scene::after{
-  content:''; position:absolute; left:0; right:0; bottom:-1px; height:34%; pointer-events:none;
-  background:linear-gradient(180deg, transparent 0%, var(--mk-ink) 92%);
-}
 /* Small screens: a fixed 1600px scene would show only its dull center, so let it scale
    to fit here (the "don't scale" rule is about desktop window resizing). */
 @media (max-width:768px){
@@ -123,17 +119,17 @@ export const LANDING_CSS = `
 .mk-step__text{margin:0; font-size:.95rem; line-height:1.55; color:var(--mk-muted);}
 
 /* popular route chips */
-.mk-routes{display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem;}
-@media (max-width:900px){.mk-routes{grid-template-columns:repeat(2,1fr);}}
+.mk-routes{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem;}
+@media (max-width:900px){.mk-routes{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media (max-width:560px){.mk-routes{grid-template-columns:1fr;}}
 .mk-route{
-  display:flex; align-items:center; gap:.7rem; padding:.9rem 1.05rem; border-radius:12px; color:#fff;
+  display:flex; align-items:center; gap:.7rem; min-width:0; padding:.9rem 1.05rem; border-radius:12px; color:#fff;
   background:var(--mk-glass); border:1px solid var(--mk-border); text-decoration:none; font-size:.95rem; font-weight:500;
   transition:transform .16s ease, border-color .16s ease, background .16s ease;
 }
 .mk-route:hover{transform:translateY(-2px); border-color:var(--mk-border2); background:var(--mk-glass2); color:#fff;}
-.mk-route img{width:22px; height:22px; display:block;}
-.mk-route__arrow{margin-left:auto; color:var(--mk-magenta); font-weight:600;}
+.mk-route__icon{flex:0 0 1.5rem; width:1.5rem; height:1.5rem; display:block;}
+.mk-route > span{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 
 /* single centered info card ("What you need" on the swap pages) */
 .mk-note{
