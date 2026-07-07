@@ -1,12 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { LandingPage } from '../LandingPage';
+import { appSwapHref } from '../homeContent';
 import type { ResolvedRoute } from '../types';
 
+// `token` (the SDK Token) isn't read by the presentational component, so the fixtures stub it.
 const route: ResolvedRoute = {
   slug: 'bitcoin-to-usdc-solana',
-  from: { key: 'bitcoin', ticker: 'BTC', chainKey: 'bitcoin', chainName: 'Bitcoin', tokenId: 'BITCOIN', isBtcSide: true },
-  to: { key: 'usdc-solana', ticker: 'USDC', chainKey: 'solana', chainName: 'Solana', tokenId: 'SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', isBtcSide: false },
+  from: { key: 'bitcoin', ticker: 'BTC', chainKey: 'bitcoin', chainName: 'Bitcoin', tokenId: 'BITCOIN', isBtcSide: true, token: null as any },
+  to: { key: 'usdc-solana', ticker: 'USDC', chainKey: 'solana', chainName: 'Solana', tokenId: 'SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', isBtcSide: false, token: null as any },
   title: 'Swap BTC to USDC on Solana | Atomiq',
   description: 'desc',
   h1: 'Swap BTC to USDC on Solana',
@@ -38,9 +40,10 @@ describe('LandingPage', () => {
     expect(html).toContain('Swap BTC to USDC on Solana');
     expect(html).toContain('trustlessly');
   });
-  it('renders the CTA deep-link', () => {
+  it('renders the CTA deep-link into the app with the pair prefilled', () => {
     // renderToStaticMarkup HTML-encodes & as &amp; in attributes
-    expect(html).toContain(`href="${route.ctaHref.replace(/&/g, '&amp;')}"`);
+    const expected = appSwapHref(route.from.tokenId, route.to.tokenId).replace(/&/g, '&amp;');
+    expect(html).toContain(`href="${expected}"`);
   });
   it('renders FAQ text expanded (crawlable, no accordion)', () => {
     expect(html).toContain('What is Solana?');

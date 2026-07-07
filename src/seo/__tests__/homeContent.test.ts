@@ -6,7 +6,7 @@ import { buildRoutes } from '../routes';
 
 describe('homeContent', () => {
   it('APP_ORIGIN is the app subdomain and the hero CTA points at it', () => {
-    expect(APP_ORIGIN).toBe('https://app.atomiq.exchange');
+    expect(APP_ORIGIN).toBe('https://app.atomiq.exchange/');
     expect(HERO.primaryCta.href).toBe('https://app.atomiq.exchange/');
   });
   it('has four benefits and four escrow steps', () => {
@@ -21,6 +21,13 @@ describe('homeContent', () => {
     const valid = new Set(buildRoutes().map((r) => r.slug));
     expect(POPULAR_ROUTES.length).toBeGreaterThan(0);
     for (const r of POPULAR_ROUTES) expect(valid.has(r.slug)).toBe(true);
+  });
+  it('popular routes deep-link into the app with the pair prefilled', () => {
+    for (const r of POPULAR_ROUTES) {
+      expect(r.appHref.startsWith(APP_ORIGIN)).toBe(true);
+      expect(r.appHref).toContain(`tokenIn=${r.route.from.tokenId}`);
+      expect(r.appHref).toContain(`tokenOut=${r.route.to.tokenId}`);
+    }
   });
   it('home FAQs reuse the three base FAQs', () => {
     expect(HOME_FAQS).toHaveLength(3);

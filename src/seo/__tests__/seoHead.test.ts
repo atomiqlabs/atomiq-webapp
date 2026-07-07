@@ -4,8 +4,8 @@ import type { ResolvedRoute } from '../types';
 
 const fixture: ResolvedRoute = {
   slug: 'bitcoin-to-usdc-solana',
-  from: { key: 'bitcoin', ticker: 'BTC', chainKey: 'bitcoin', chainName: 'Bitcoin', tokenId: 'BITCOIN', isBtcSide: true },
-  to: { key: 'usdc-solana', ticker: 'USDC', chainKey: 'solana', chainName: 'Solana', tokenId: 'SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', isBtcSide: false },
+  from: { key: 'bitcoin', ticker: 'BTC', chainKey: 'bitcoin', chainName: 'Bitcoin', tokenId: 'BITCOIN', isBtcSide: true, token: null as any },
+  to: { key: 'usdc-solana', ticker: 'USDC', chainKey: 'solana', chainName: 'Solana', tokenId: 'SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', isBtcSide: false, token: null as any },
   title: 'Swap BTC to USDC on Solana | Atomiq',
   description: 'desc',
   h1: 'Swap BTC to USDC on Solana',

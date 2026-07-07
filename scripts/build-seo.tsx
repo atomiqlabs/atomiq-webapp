@@ -97,7 +97,11 @@ function main() {
     const body = renderToStaticMarkup(React.createElement(LandingPage, { route, siblings }));
     const dir = path.join(OUT, 'swap', route.slug);
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, 'index.html'), htmlDocument(renderHead(route), body, css));
+    // Swap pages share the landing's .mk-home look, so they get the same inline stylesheet.
+    fs.writeFileSync(
+      path.join(dir, 'index.html'),
+      htmlDocument(renderHead(route), body, css, `<style>${LANDING_CSS}</style>`)
+    );
   }
 
   // Landing page at the marketing root. Its bespoke stylesheet ships inline and scoped

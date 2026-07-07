@@ -1,4 +1,4 @@
-import type {FaqItem, SeoRoute, SeoToken} from './types';
+import type {FaqItem, SeoRoute} from './types';
 import { BASE_FAQS } from './baseFaqs';
 import { BTC_SIDE, SMART_CHAIN_TOKENS } from './tokens';
 import {pairTokens} from './routes';
@@ -37,9 +37,17 @@ export const SUPPORTED_CHAINS: string[] = Array.from(
   new Set([...BTC_SIDE, ...SMART_CHAIN_TOKENS].map((t) => t.chainName)),
 );
 
-export type PopularRoute = { slug: string; label: string, route: SeoRoute };
+// App deep-link for a token pair: opens the app with both sides prefilled. APP_ORIGIN
+// already carries a trailing slash, so no extra '/' before the query string.
+export function appSwapHref(fromTokenId: string, toTokenId: string): string {
+  return `${APP_ORIGIN}?tokenIn=${fromTokenId}&tokenOut=${toTokenId}`;
+}
+
+export type PopularRoute = { slug: string; label: string; route: SeoRoute; appHref: string };
 // Up to nine BTC -> smart-chain routes (currently all of them, incl. Citrea), straight
-// from buildRoutes() so every slug is real.
+// from buildRoutes() so every slug is real. `appHref` deep-links into the app with the
+// pair prefilled (used by the on-page "Popular swap routes" chips); the footer instead
+// links each route to its /swap/<slug> SEO page for internal-link equity.
 export const POPULAR_ROUTES: PopularRoute[] = [
   pairTokens(Tokens.BITCOIN.BTC, Tokens.STARKNET.strkBTC),
   pairTokens(Tokens.STARKNET.strkBTC, Tokens.BITCOIN.BTC),
@@ -56,7 +64,8 @@ export const POPULAR_ROUTES: PopularRoute[] = [
   .map((r) => ({
     slug: r.slug,
     label: r.from.isBtcSide ? `${r.from.ticker} to ${r.to.ticker} on ${r.to.chainName}` : `${r.from.ticker} on ${r.from.chainName} to ${r.to.ticker}`,
-    route: r
+    route: r,
+    appHref: appSwapHref(r.from.tokenId, r.to.tokenId),
   }));
 
 export const HOME_FAQS: FaqItem[] = BASE_FAQS;

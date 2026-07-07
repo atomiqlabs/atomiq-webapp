@@ -132,7 +132,7 @@ export function LandingHome() {
           </div>
           <div className="mk-routes">
             {POPULAR_ROUTES.map((r) => (
-              <a className="mk-route" href={`/swap/${r.slug}/`} key={r.slug}>
+              <a className="mk-route" href={r.appHref} key={r.slug}>
                 <img src={TokenIcons[r.route.from.token.ticker]} alt="" aria-hidden="true" />
                 <span>{r.label}</span>
                 <span className="mk-route__arrow" aria-hidden="true">→</span>

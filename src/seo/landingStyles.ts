@@ -1,6 +1,6 @@
-// Bespoke, self-contained stylesheet for the marketing landing page. Injected as a
-// <style> into dist-marketing/index.html only (see build-seo.tsx) so it never touches the
-// SPA bundle or the /swap SEO pages. Everything is scoped under `.mk-home` to guarantee that.
+// Bespoke, self-contained stylesheet for the marketing pages. Injected as a <style> into
+// the landing index.html AND every /swap/<slug> SEO page (see build-seo.tsx), so both share
+// one look. Everything is scoped under `.mk-home`, so it never leaks into the SPA app bundle.
 //
 // Design language mirrors the company page (atomiqlabs.com): near-black ink, the flask
 // "potion" gradient (orange -> magenta -> purple) as the brand accent, purple gradient for
@@ -30,7 +30,7 @@ export const LANDING_CSS = `
 
 /* ---------- hero ---------- */
 .mk-hero{position:relative; overflow:hidden; padding:clamp(2.5rem,6vw,5.5rem) 0 clamp(2.5rem,5vw,4rem);}
-.mk-hero__inner{position:relative; z-index:3; max-width:840px; margin:0 auto; text-align:center;}
+.mk-hero__inner{position:relative; z-index:3; max-width:1040px; margin:0 auto; text-align:center;}
 .mk-hero__title{font-size:clamp(2.5rem,6vw,4.4rem);}
 .mk-hero__sub{max-width:600px; margin:1.6rem auto 0; font-size:clamp(1.02rem,1.3vw,1.2rem); line-height:1.6; color:var(--mk-muted);}
 .mk-cta{display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; align-items:center; margin-top:2.3rem;}
@@ -42,7 +42,7 @@ export const LANDING_CSS = `
    Knobs: --mk-scene-w (fixed width), the two margin-tops (gap above/below the scene). */
 .mk-hero__scene{
   position:relative; z-index:2; width:100%; overflow:hidden;
-  display:flex; justify-content:center; margin-top:-20rem; pointer-events:none;
+  display:flex; justify-content:center; margin-top:-25rem; pointer-events:none;
 }
 .mk-hero__scene-img{flex:none; width:3000px; max-width:none; height:auto; display:block;}
 .mk-hero__scene::after{
@@ -52,7 +52,7 @@ export const LANDING_CSS = `
 /* Small screens: a fixed 1600px scene would show only its dull center, so let it scale
    to fit here (the "don't scale" rule is about desktop window resizing). */
 @media (max-width:768px){
-  .mk-hero__scene{margin-top:-5rem;}
+  .mk-hero__scene{margin-top:-2.5rem;}
   .mk-hero__scene-img{width:200%;}
 }
 
@@ -72,7 +72,7 @@ export const LANDING_CSS = `
 
 /* ---------- supported chains strip (seated below the lab scene) ---------- */
 .mk-chains{position:relative; z-index:3; margin-top:-23rem; padding-bottom:clamp(1rem,3vw,2.5rem);}
-@media (max-width:768px){.mk-chains{margin-top:-5rem;}}
+@media (max-width:768px){.mk-chains{margin-top:-6rem;}}
 .mk-chains__label{
   display:flex; align-items:center; gap:1rem; justify-content:center; margin:0 auto 1.6rem; max-width:560px;
   font-size:.72rem; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--mk-faint);
@@ -90,8 +90,7 @@ export const LANDING_CSS = `
 
 /* ---------- sections ---------- */
 .mk-section{position:relative; z-index:3; padding:clamp(3.25rem,6.5vw,5.5rem) 0;}
-.mk-section__head{max-width:660px; margin:0 0 2.6rem;}
-.mk-section--center .mk-section__head{margin-left:auto; margin-right:auto; text-align:center;}
+.mk-section__head{max-width:660px; margin:0 auto 2.6rem; text-align:center;}
 .mk-section__title{font-size:clamp(1.85rem,3.4vw,2.7rem);}
 .mk-section__lead{margin:1rem 0 0; font-size:1.05rem; line-height:1.6; color:var(--mk-muted);}
 
@@ -135,6 +134,22 @@ export const LANDING_CSS = `
 .mk-route:hover{transform:translateY(-2px); border-color:var(--mk-border2); background:var(--mk-glass2); color:#fff;}
 .mk-route img{width:22px; height:22px; display:block;}
 .mk-route__arrow{margin-left:auto; color:var(--mk-magenta); font-weight:600;}
+
+/* single centered info card ("What you need" on the swap pages) */
+.mk-note{
+  max-width:640px; margin:0 auto; text-align:center; padding:1.6rem; border-radius:18px;
+  background:var(--mk-glass); border:1px solid var(--mk-border); color:var(--mk-muted); line-height:1.6;
+}
+
+/* related-route text links → sibling /swap SEO pages (internal linking, distinct from the
+   app-linking route chips above). */
+.mk-related{display:flex; flex-wrap:wrap; justify-content:center; gap:.6rem .7rem; max-width:860px; margin:0 auto;}
+.mk-related__link{
+  display:inline-flex; align-items:center; padding:.5rem .95rem; border-radius:999px; font-size:.9rem;
+  color:var(--mk-muted); text-decoration:none; background:var(--mk-glass); border:1px solid var(--mk-border);
+  transition:color .16s ease, border-color .16s ease, background .16s ease;
+}
+.mk-related__link:hover{color:#fff; border-color:var(--mk-border2); background:var(--mk-glass2);}
 
 /* FAQ (reuses .seo-faqs from the app bundle; just spacing here) */
 .mk-faq{margin-top:.5rem;}
