@@ -1,4 +1,4 @@
-import type {FaqItem, SeoRoute} from './types';
+import type {FaqItem, SeoRoute, SeoToken} from './types';
 import { BASE_FAQS } from './baseFaqs';
 import { BTC_SIDE, SMART_CHAIN_TOKENS } from './tokens';
 import {pairTokens} from './routes';
@@ -43,6 +43,15 @@ export function appSwapHref(fromTokenId: string, toTokenId: string): string {
   return `${APP_ORIGIN}?tokenIn=${fromTokenId}&tokenOut=${toTokenId}`;
 }
 
+// Label for a route chip in the "Popular / Other swap routes" grids, e.g.
+// "BTC to strkBTC on Starknet" or "strkBTC on Starknet to BTC". Shared so the
+// landing's popular chips and the swap pages' sibling chips read identically.
+export function routeChipLabel(from: SeoToken, to: SeoToken): string {
+  return from.isBtcSide
+    ? `${from.ticker} to ${to.ticker} on ${to.chainName}`
+    : `${from.ticker} on ${from.chainName} to ${to.ticker}`;
+}
+
 export type PopularRoute = { slug: string; label: string; route: SeoRoute; appHref: string };
 // Up to nine BTC -> smart-chain routes (currently all of them, incl. Citrea), straight
 // from buildRoutes() so every slug is real. `appHref` deep-links into the app with the
@@ -63,7 +72,7 @@ export const POPULAR_ROUTES: PopularRoute[] = [
   .slice(0, 9)
   .map((r) => ({
     slug: r.slug,
-    label: r.from.isBtcSide ? `${r.from.ticker} to ${r.to.ticker} on ${r.to.chainName}` : `${r.from.ticker} on ${r.from.chainName} to ${r.to.ticker}`,
+    label: routeChipLabel(r.from, r.to),
     route: r,
     appHref: appSwapHref(r.from.tokenId, r.to.tokenId),
   }));

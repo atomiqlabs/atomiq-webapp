@@ -32,7 +32,14 @@ const COLUMNS: FooterColumn[] = [
   }
 ];
 
-export function SiteFooterView(props: { noTooltip?: boolean }) {
+// The "Popular routes" column defaults to the site-wide POPULAR_ROUTES (used on the
+// landing). Swap pages pass their own sibling routes so the footer mirrors the on-page
+// "Other swap routes" list. Both keep the /swap/<slug>/ SEO links for internal equity.
+export function SiteFooterView(props: {
+  noTooltip?: boolean;
+  popularRoutes?: { slug: string; label: string }[];
+}) {
+  const popularRoutes = props.popularRoutes ?? POPULAR_ROUTES;
   return (
     <footer className="site-footer text-white container pt-5 pb-4">
       <div className="row">
@@ -54,7 +61,7 @@ export function SiteFooterView(props: { noTooltip?: boolean }) {
         <div className="col-6 col-md-3 col-lg-3 pb-3">
           <h3 className="fs-6 fw-semibold mb-3">Popular routes</h3>
           <ul className="list-unstyled mb-0">
-            {POPULAR_ROUTES.map((r) => (
+            {popularRoutes.map((r) => (
               <li className="mb-2" key={r.slug}>
                 <a href={`/swap/${r.slug}/`} className="text-white text-opacity-75 text-decoration-none">
                   {r.label}

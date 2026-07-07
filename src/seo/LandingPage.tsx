@@ -1,8 +1,8 @@
 import { MainNavigationView, NavItem } from '../components/layout/MainNavigationView';
 import { SiteFooterView } from '../components/layout/SiteFooterView';
-import { BENEFITS, APP_ORIGIN, DOCS_URL, POPULAR_ROUTES, appSwapHref } from './homeContent';
+import { BENEFITS, APP_ORIGIN, DOCS_URL, appSwapHref, routeChipLabel } from './homeContent';
 import { TokenIcons } from '../utils/TokenIcons';
-import type { ResolvedRoute, SeoToken } from './types';
+import type { ResolvedRoute } from './types';
 
 // Swap/Explorer navigate to the app (absolute, cross-subdomain); Docs/SDK/legal are external.
 const NAV_ITEMS: NavItem[] = [
@@ -16,10 +16,6 @@ const NAV_ITEMS: NavItem[] = [
 
 const LAUNCH_CLASS =
   'btn base-button base-button--primary base-button--smaller d-inline-flex align-items-center text-white text-decoration-none';
-
-function prettyToken(token: SeoToken): string {
-  return token.isBtcSide ? token.chainName : `${token.ticker} on ${token.chainName}`;
-}
 
 export function LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRoute[] }) {
   const { route, siblings } = props;
@@ -92,18 +88,18 @@ export function LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRou
         </div>
       </section>
 
-      {/* ---------- popular routes → app (pair prefilled) ---------- */}
+      {/* ---------- other swap routes → sibling SEO pages (internal linking, popular-route chip style) ---------- */}
       <section className="mk-section">
         <div className="mk-wrap">
           <div className="mk-section__head">
-            <span className="mk-eyebrow">Start here</span>
-            <h2 className="mk-display mk-section__title">Popular swap routes</h2>
+            <span className="mk-eyebrow">Keep exploring</span>
+            <h2 className="mk-display mk-section__title">Other swap routes</h2>
           </div>
           <div className="mk-routes">
-            {POPULAR_ROUTES.map((r) => (
-              <a className="mk-route" href={r.appHref} key={r.slug}>
-                <img src={TokenIcons[r.route.from.token.ticker]} alt="" aria-hidden="true" />
-                <span>{r.label}</span>
+            {siblings.map((sibling) => (
+              <a className="mk-route" href={`/swap/${sibling.slug}`} key={sibling.slug}>
+                <img src={TokenIcons[sibling.from.token.ticker]} alt="" aria-hidden="true" />
+                <span>{routeChipLabel(sibling.from, sibling.to)}</span>
                 <span className="mk-route__arrow" aria-hidden="true">→</span>
               </a>
             ))}
@@ -135,27 +131,10 @@ export function LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRou
         </div>
       </section>
 
-      {/* ---------- other swap routes → sibling SEO pages (internal linking) ---------- */}
-      <section className="mk-section">
-        <div className="mk-wrap">
-          <div className="mk-section__head">
-            <span className="mk-eyebrow">Keep exploring</span>
-            <h2 className="mk-display mk-section__title">Other swap routes</h2>
-          </div>
-          <div className="mk-related">
-            {siblings.map((sibling) => (
-              <a className="mk-related__link" href={`/swap/${sibling.slug}`} key={sibling.slug}>
-                {prettyToken(sibling.from)} → {prettyToken(sibling.to)}
-              </a>
-            ))}
-            <a className="mk-related__link" href={APP_ORIGIN}>
-              Open the atomiq.exchange app
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <SiteFooterView noTooltip />
+      <SiteFooterView
+        noTooltip
+        popularRoutes={siblings.map((s) => ({ slug: s.slug, label: routeChipLabel(s.from, s.to) }))}
+      />
     </div>
   );
 }

@@ -4,11 +4,11 @@ import { LandingPage } from '../LandingPage';
 import { appSwapHref } from '../homeContent';
 import type { ResolvedRoute } from '../types';
 
-// `token` (the SDK Token) isn't read by the presentational component, so the fixtures stub it.
+// Only `token.ticker` is read (for the sibling-chip icon), so the fixtures stub just that.
 const route: ResolvedRoute = {
   slug: 'bitcoin-to-usdc-solana',
-  from: { key: 'bitcoin', ticker: 'BTC', chainKey: 'bitcoin', chainName: 'Bitcoin', tokenId: 'BITCOIN', isBtcSide: true, token: null as any },
-  to: { key: 'usdc-solana', ticker: 'USDC', chainKey: 'solana', chainName: 'Solana', tokenId: 'SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', isBtcSide: false, token: null as any },
+  from: { key: 'bitcoin', ticker: 'BTC', chainKey: 'bitcoin', chainName: 'Bitcoin', tokenId: 'BITCOIN', isBtcSide: true, token: { ticker: 'BTC' } as any },
+  to: { key: 'usdc-solana', ticker: 'USDC', chainKey: 'solana', chainName: 'Solana', tokenId: 'SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', isBtcSide: false, token: { ticker: 'USDC' } as any },
   title: 'Swap BTC to USDC on Solana | Atomiq',
   description: 'desc',
   h1: 'Swap BTC to USDC on Solana',
@@ -49,15 +49,19 @@ describe('LandingPage', () => {
     expect(html).toContain('What is Solana?');
     expect(html).toContain('Solana is fast.');
   });
-  it('links to sibling pages and home', () => {
+  it('lists sibling routes as chips linking to their SEO pages, plus home', () => {
+    expect(html).toContain('Other swap routes');
     expect(html).toContain('href="/swap/usdc-solana-to-bitcoin"');
     expect(html).toContain('href="/"');
+  });
+  it('mirrors the sibling routes in the footer (with the /swap/<slug>/ SEO link)', () => {
+    expect(html).toContain('href="/swap/usdc-solana-to-bitcoin/"');
   });
   it('renders the full site footer', () => {
     expect(html).toContain('Quick Links');
     expect(html).toContain('All rights reserved');
   });
   it('points app links at the app subdomain (absolute)', () => {
-    expect(html).toContain('href="https://app.atomiq.exchange/"');
+    expect(html).toContain('href="https://app.atomiq.exchange/');
   });
 });

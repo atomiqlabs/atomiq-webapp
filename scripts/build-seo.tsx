@@ -31,9 +31,10 @@ function cssHrefs(): string[] {
 // most useful relationships first (exact reverse, then same token, then same chain).
 function siblingScore(r: ResolvedRoute, route: ResolvedRoute): number {
   if (r.from.key === route.to.key && r.to.key === route.from.key) return 0; // exact reverse
-  if (r.from.key === route.to.key || r.to.key === route.from.key) return 1; // shares a token
-  if (r.to.chainKey === route.to.chainKey && r.from.chainKey === route.from.chainKey) return 2;
-  if (r.to.chainKey === route.to.chainKey || r.from.chainKey === route.from.chainKey) return 3;
+  if (r.from.isBtcSide && r.to.chainKey === route.to.chainKey) return 1; // from BTC side, shares a chain
+  if (r.to.isBtcSide && r.from.chainKey === route.from.chainKey) return 1; // to BTC side, shares a chain
+  if (r.from.key === route.from.key || r.to.key === route.to.key) return 2; // shares a token
+  if (r.to.chainKey === route.to.chainKey || r.from.chainKey === route.from.chainKey) return 3; // shares a chain
   return 4;
 }
 
@@ -85,14 +86,10 @@ function main() {
     const siblings = resolved
       .filter(
         (r) =>
-          r.slug !== route.slug &&
-          (r.from.key === route.to.key ||
-            r.to.key === route.from.key ||
-            r.from.chainKey === route.from.chainKey ||
-            r.to.chainKey === route.to.chainKey)
+          r.slug !== route.slug
       )
       .sort((a, b) => siblingScore(a, route) - siblingScore(b, route))
-      .slice(0, 8);
+      .slice(0, 9);
 
     const body = renderToStaticMarkup(React.createElement(LandingPage, { route, siblings }));
     const dir = path.join(OUT, 'swap', route.slug);
