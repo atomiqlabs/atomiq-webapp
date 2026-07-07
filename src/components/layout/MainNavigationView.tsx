@@ -27,6 +27,7 @@ export function MainNavigationView(props: {
   actionRequiredCount?: number;
   onNavClick?: (e: React.MouseEvent) => void;
   noTooltip?: boolean;
+  ellipsisText?: string;
 }) {
   const { navItems, walletSlot, currentPath, networkBadge, onNavClick } = props;
   const actionRequiredCount = props.actionRequiredCount ?? 0;
@@ -100,7 +101,7 @@ export function MainNavigationView(props: {
                 <div className="main-navigation__more dropdown" data-nav-dropdown>
                   <button type="button" className="dropdown-toggle" data-nav-dropdown-toggle>
                     <span className="main-navigation__more__label">
-                      <span className="main-navigation__more__text">More</span>
+                      <span className="main-navigation__more__text">{props.ellipsisText ?? "More"}</span>
                       <Icon icon={angleDown} size={20} className="main-navigation__more__icon" />
                     </span>
                   </button>

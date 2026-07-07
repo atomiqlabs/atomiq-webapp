@@ -21,7 +21,8 @@ const COLUMNS: FooterColumn[] = [
       { label: 'FAQs', href: 'https://www.atomiqlabs.com/resources#faq' },
       { label: 'Docs', href: 'https://docs.atomiq.exchange/' },
       { label: 'Audits', href: 'https://github.com/atomiqlabs/atomiq-readme/tree/main/audits' },
-      { label: 'SDK', href: 'https://npmjs.com/@atomiqlabs/sdk' },
+      { label: 'SDK', href: 'https://docs.atomiq.exchange/sdk-guide/' },
+      { label: 'API', href: 'https://docs.atomiq.exchange/rest-api-guide/' },
     ],
   },
   {

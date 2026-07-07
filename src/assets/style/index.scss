@@ -210,6 +210,8 @@ td {
 }
 
 .background {
+  --background-bottom-blob-size: 150rem;
+
   background: #180931;
   overflow: hidden;
   position: relative;
@@ -220,17 +222,14 @@ td {
 
   &:after {
     content: '';
-    width: 872px;
-    height: 872px;
+    width: var(--background-bottom-blob-size);
+    height: var(--background-bottom-blob-size);
     left: 50%;
-    bottom: -80%;
+    bottom: calc(var(--background-bottom-blob-size) / -2 - 23rem);
     transform: translateX(-50%);
-    background: linear-gradient(180deg, #8d54e9 0%, #c75f91 47%, #ee9943 100%);
-    opacity: 0.5;
-    filter: blur(519.22px);
+    background: url('/blur-blob-bottom.webp') center / contain no-repeat;
     position: absolute;
     pointer-events: none;
-    border-radius: 50%;
   }
 
   &:before {
@@ -250,7 +249,7 @@ td {
 
   //Moves the magenta blob a bit up on the main swap page
   &:has(.swap-page):after {
-    bottom: -20%;
+    bottom: calc(var(--background-bottom-blob-size) / -2 + 12rem);
   }
 }
 

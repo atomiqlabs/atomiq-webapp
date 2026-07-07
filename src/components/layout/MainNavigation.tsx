@@ -54,8 +54,8 @@ export function MainNavigation(props: {}) {
       count: actionRequiredCount > 0 ? actionRequiredCount : undefined,
     },
     { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
-    { link: 'https://docs.atomiq.exchange/', icon: 'book', title: 'Docs', external: true },
-    { link: 'https://npmjs.com/@atomiqlabs/sdk', icon: 'embed2', title: 'SDK', external: true },
+    { link: 'https://docs.atomiq.exchange/sdk-guide/', icon: 'embed2', title: 'SDK', external: true },
+    { link: 'https://docs.atomiq.exchange/rest-api-guide/', icon: 'file-text', title: 'API', external: true },
     {
       link: '/settings',
       icon: 'cog',
@@ -64,9 +64,7 @@ export function MainNavigation(props: {}) {
         e.preventDefault();
         setSettingsOpened(true);
       },
-    },
-    { link: 'https://www.atomiqlabs.com/terms-of-service', icon: 'file-text', title: 'Terms of Service', external: true },
-    { link: 'https://www.atomiqlabs.com/privacy-cookie-policy', icon: 'user', title: 'Privacy Policy', external: true },
+    }
   ];
 
   return (
