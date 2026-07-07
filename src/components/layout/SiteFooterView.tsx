@@ -74,9 +74,6 @@ export function SiteFooterView(props: {
 
       <div className="d-flex flex-column flex-md-row align-items-center justify-content-between pt-3 mt-3">
         <SocialFooterView isHorizontal noTooltip={props.noTooltip} />
-        <div className="site-footer__copyright text-white text-opacity-50 mt-3 mt-md-0">
-          atomiq labs. All rights reserved.
-        </div>
       </div>
     </footer>
   );
