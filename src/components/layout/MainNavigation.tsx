@@ -15,14 +15,14 @@ import { MainNavigationView, NavItem } from './MainNavigationView';
 export function MainNavigation(props: {}) {
   const location = useLocation();
   const [actionRequiredCount, setActionRequiredCount] = React.useState<number>(0);
-  const { swapper, syncing, syncingError } = React.useContext(SwapperContext);
+  const { initializedSwapper, loading, syncing, syncingError } = React.useContext(SwapperContext);
   const [settingsOpened, setSettingsOpened] = useState<boolean>(false);
   const anchorNavigate = useAnchorNavigate();
 
   React.useEffect(() => {
-    if (swapper == null) return;
+    if (initializedSwapper == null) return;
     const updateActionCount = async () => {
-      const swaps = await swapper.getActionableSwaps();
+      const swaps = await initializedSwapper.getActionableSwaps();
       const initiated = swaps.filter((swap) => swap.isInitiated());
       const notTrusted = initiated.filter(
         (swap) =>
@@ -33,11 +33,11 @@ export function MainNavigation(props: {}) {
     };
     updateActionCount();
     const listener = () => updateActionCount();
-    swapper.on('swapState', listener);
+    initializedSwapper.on('swapState', listener);
     return () => {
-      swapper.off('swapState', listener);
+      initializedSwapper.off('swapState', listener);
     };
-  }, [swapper]);
+  }, [initializedSwapper]);
 
   const navItems: NavItem[] = [
     { link: '/', icon: 'swap-nav', title: 'Swap' },
@@ -47,7 +47,7 @@ export function MainNavigation(props: {}) {
       title: (
         <>
           <span>Swap History</span>
-          {syncing && <Spinner className="text-white ms-2" size="sm" />}
+          {(loading || syncing) && <Spinner className="text-white ms-2" size="sm" />}
           {syncingError && <Icon size={20} className="ms-2 flex" icon={ic_warning} />}
         </>
       ),

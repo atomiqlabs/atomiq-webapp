@@ -52,7 +52,7 @@ export function useQuote(
   btcFeeRate?: number,
   pause?: boolean
 ): [() => void, ISwap, boolean, boolean, any] {
-  const { swapper, stickyAddress } = useContext(SwapperContext);
+  const { swapper, initializedSwapper, stickyAddress } = useContext(SwapperContext);
 
   const inputWallet = useWallet(inToken, true);
   let inputAddress: string | LNURLWithdraw = inputWallet?.instance?._lnurl ?? inputWallet?.address;
@@ -94,13 +94,13 @@ export function useQuote(
           ' pause: ' +
           pause
       );
-      if (swapper == null || inToken == null || outToken == null || amount == null || pause)
+      if (initializedSwapper == null || inToken == null || outToken == null || amount == null || pause)
         return null;
-      const outAddress = (address as any) ?? getRandomAddress(swapper, outToken);
+      const outAddress = (address as any) ?? getRandomAddress(initializedSwapper, outToken);
       if (outAddress == null) return null;
-      const inAddress = (inputAddress as any) ?? getRandomAddress(swapper, inToken);
+      const inAddress = (inputAddress as any) ?? getRandomAddress(initializedSwapper, inToken);
       const rawAmount = fromHumanReadableString(amount, exactIn ? inToken : outToken);
-      return swapper
+      return initializedSwapper
         .swap(inToken, outToken, rawAmount, exactIn, inAddress, outAddress, {
           gasAmount: gasDropAmount,
           maxAllowedNetworkFeeRate:
@@ -114,7 +114,7 @@ export function useQuote(
         });
     },
     [
-      swapper,
+      initializedSwapper,
       amount,
       exactIn,
       toTokenIdentifier(inToken),

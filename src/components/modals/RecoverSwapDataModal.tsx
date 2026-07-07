@@ -17,13 +17,13 @@ export function RecoverSwapDataModal(props: {
   close: (recovered: boolean) => void;
 }) {
   const navigate = useNavigate();
-  const {swapper, events} = useContext(SwapperContext);
+  const {initializedSwapper, events} = useContext(SwapperContext);
   const {chains} = useContext(ChainsContext);
 
   const [recoverPastSwaps, recoverPastSwapsLoading, recoveredPastSwaps, recoverPastSwapsError] = useAsync(async (skip?: boolean) => {
     if(skip) return null;
     const totalSwaps: ISwap[] = [];
-    const supportedSmartChains = swapper.getSmartChains();
+    const supportedSmartChains = initializedSwapper.getSmartChains();
     const promises: Promise<void>[] = [];
     for(let chainId in chains) {
       if(!supportedSmartChains.includes(chainId)) continue;
@@ -31,7 +31,7 @@ export function RecoverSwapDataModal(props: {
       if(chainData?.wallet?.address==null) continue;
       console.log(`Recovering swaps for ${chainId}, with user's address: ${chainData.wallet.address}`);
       promises.push(
-        swapper.recoverSwaps(chainId, chainData.wallet.address)
+          initializedSwapper.recoverSwaps(chainId, chainData.wallet.address)
           .then(chainSwaps => {
             console.log(`Found ${chainSwaps.length} swaps on ${chainId}`);
             totalSwaps.push(...chainSwaps);
@@ -45,7 +45,7 @@ export function RecoverSwapDataModal(props: {
     await Promise.all(promises);
     events.emit("reloadHistory");
     return totalSwaps;
-  }, [chains, swapper]);
+  }, [chains, initializedSwapper]);
 
   const swapsRequiringAction: ISwap[] = useMemo(() => {
     if(recoveredPastSwaps==null) return [];
@@ -94,7 +94,7 @@ export function RecoverSwapDataModal(props: {
             <p className="text-start">
               Addresses to be re-scanned:
             </p>
-            {swapper?.getSmartChains().map(chainId => chains[chainId]).filter(val => val.wallet != null).map((chain: Chain<any>) => (
+            {initializedSwapper?.getSmartChains().map(chainId => chains[chainId]).filter(val => val.wallet != null).map((chain: Chain<any>) => (
               <div className="flex flex-row" key={chain.chainId}>
                 <div className="swap-steps__address">
                   <div>
@@ -107,9 +107,9 @@ export function RecoverSwapDataModal(props: {
           </div>
 
           <BaseButton variant="secondary" className="" onClick={() => recoverPastSwaps()}
-                      disabled={recoverPastSwapsLoading}>
-            {recoverPastSwapsLoading && <Spinner animation="border" size="sm" className="mr-2"/>}
-            {recoverPastSwapsLoading ? "Recovering..." : "Begin recovery"}
+                      disabled={initializedSwapper==null || recoverPastSwapsLoading}>
+            {(initializedSwapper==null || recoverPastSwapsLoading) && <Spinner animation="border" size="sm" className="mr-2"/>}
+            {initializedSwapper==null ? "Awaiting swap backend warmup..." : recoverPastSwapsLoading ? "Recovering..." : "Begin recovery"}
           </BaseButton>
         </>
       ) : (

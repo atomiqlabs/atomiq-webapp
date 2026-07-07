@@ -10,7 +10,7 @@ import { ic_warning } from 'react-icons-kit/md/ic_warning';
 const SHOW_FILTER = false; // TODO implement filter and uncomment this to display it
 
 export function HistoryPage() {
-  const { swapper, syncingError, syncing, events } = useContext(SwapperContext);
+  const { initializedSwapper, syncingError, syncing, events } = useContext(SwapperContext);
 
   const [swaps, setSwaps] = useState<ISwap[]>([]);
   const [reloadCount, setReloadCount] = useState<number>(0);
@@ -26,8 +26,8 @@ export function HistoryPage() {
   }, [events]);
 
   useEffect(() => {
-    if (swapper == null) return;
-    swapper.getAllSwaps().then((swaps) => {
+    if (initializedSwapper == null) return;
+    initializedSwapper.getAllSwaps().then((swaps) => {
       setSwaps(
         swaps
           .filter(
@@ -58,13 +58,13 @@ export function HistoryPage() {
         return [swap, ...swaps];
       });
     };
-    swapper.on('swapState', listener);
+    initializedSwapper.on('swapState', listener);
 
     return () => {
-      swapper.off('swapState', listener);
+      initializedSwapper.off('swapState', listener);
       setSwaps([]);
     };
-  }, [swapper, reloadCount]);
+  }, [initializedSwapper, reloadCount]);
 
   return (
     <div className="history-page">

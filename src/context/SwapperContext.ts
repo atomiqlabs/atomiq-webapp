@@ -4,6 +4,7 @@ import EventEmitter from "events";
 
 export const SwapperContext: React.Context<{
   swapper: Swapper<any>;
+  initializedSwapper: Swapper<any>;
   loading: boolean;
   loadingError?: any;
   syncing: boolean;
@@ -15,6 +16,7 @@ export const SwapperContext: React.Context<{
   setStickyAddress?: (value: boolean) => void;
 }> = createContext({
   swapper: null,
+  initializedSwapper: null,
   loading: false,
   syncing: false,
   events: new EventEmitter()

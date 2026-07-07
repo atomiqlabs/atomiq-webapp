@@ -254,7 +254,7 @@ export function SwapNew() {
                             textEnd={
                               swapPage.output.address?.loading ? (
                                 <Spinner className="text-white" />
-                              ) : swapPage.output.address?.value==='' ?
+                              ) : swapPage.output.address?.value==='' || swapPage.output.address?.value==null ?
                                   null
                               : swapPage.output.address?.validation?.status === 'success' ? (
                                 <span className="icon icon-check"></span>

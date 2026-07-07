@@ -23,7 +23,7 @@ import {SwapPanel} from "../../components/swappanels/SwapPanel";
 import {Tokens} from "../../utils/SwapperFactory";
 
 export function QuickScanExecute() {
-  const { swapper } = useContext(SwapperContext);
+  const { initializedSwapper } = useContext(SwapperContext);
 
   const navigate = useNavigate();
   const goBack = () => navigate('/scan');
@@ -101,9 +101,9 @@ export function QuickScanExecute() {
   );
 
   const selectableCurrencies = useMemo(() => {
-    if (swapper == null) return smartChainTokenArray;
-    return swapper.getSwapCounterTokens(btcToken, exactIn);
-  }, [swapper, exactIn, btcToken]);
+    if (initializedSwapper == null) return smartChainTokenArray;
+    return initializedSwapper.getSwapCounterTokens(btcToken, exactIn);
+  }, [initializedSwapper, exactIn, btcToken]);
 
   const walletBalanceResp = useWalletBalance(inToken, addressResult?.swapType);
   const walletBalance = walletBalanceResp?.balance?.rawAmount ?? null;
@@ -133,7 +133,7 @@ export function QuickScanExecute() {
               ''
             )}
 
-            {addressError == null && swapper != null && !addressLoading ? (
+            {addressError == null && initializedSwapper != null && !addressLoading ? (
               <div className="mt-3 tab-accent-p3 text-center">
                 <label className="fw-bold mb-1">{!exactIn ? 'Pay' : 'Withdraw'}</label>
 

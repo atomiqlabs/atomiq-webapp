@@ -16,6 +16,7 @@ const events = new EventEmitter();
 
 export function SwapperProvider(props: { children: React.ReactNode }) {
   const [swapper, setSwapper] = useState<Swapper<any>>();
+  const [initializedSwapper, setInitializedSwapper] = useState<Swapper<any>>();
   const [swapperLoadingError, setSwapperLoadingError] = useState<any>();
   const [swapperLoading, setSwapperLoading] = useState<boolean>(false);
 
@@ -62,6 +63,8 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
         gracefullyHandleChainErrors: true
       });
 
+      setSwapper(_swapper);
+
       console.log('Swapper: ', _swapper);
 
       await _swapper.init();
@@ -69,7 +72,7 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
 
       console.log('Swapper initialized!');
 
-      setSwapper(_swapper);
+      setInitializedSwapper(_swapper);
       setSwapperLoading(false);
     } catch (e) {
       setSwapperLoadingError(e);
@@ -96,6 +99,7 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
   return (
     <SwapperContext.Provider value={{
       swapper,
+      initializedSwapper,
       loading: swapperLoading,
       loadingError: swapperLoadingError,
       syncing: swapperSyncing,
