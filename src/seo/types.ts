@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import {Token} from "@atomiqlabs/sdk";
 
 export type SeoToken = {
   key: string;          // unique slug part, e.g. 'usdc-solana' | 'bitcoin' | 'lightning'
@@ -7,6 +8,7 @@ export type SeoToken = {
   chainName: string;    // 'Solana', 'Starknet', 'Citrea', 'Bitcoin', 'Lightning Network'
   tokenId: string;      // app swap identifier: '<chainId>:<address>' for smart-chain tokens, 'BITCOIN'/'LIGHTNING' for the BTC side
   isBtcSide: boolean;
+  token: Token;
 };
 
 export type SeoRoute = {

@@ -4,6 +4,8 @@ import {
   APP_ORIGIN, HERO, BENEFITS, ESCROW_HEADING, ESCROW_STEPS, SUPPORTED_CHAINS, POPULAR_ROUTES, HOME_FAQS,
 } from './homeContent';
 
+import {TokenIcons} from "../utils/TokenIcons";
+
 // Swap/Explorer navigate to the app (absolute, cross-subdomain); Docs/SDK/legal are external.
 const NAV_ITEMS: NavItem[] = [
   { link: `${APP_ORIGIN}/`, icon: 'swap-nav', title: 'Swap' },
@@ -129,8 +131,8 @@ export function LandingHome() {
           </div>
           <div className="mk-routes">
             {POPULAR_ROUTES.map((r) => (
-              <a className="mk-route" href={`/swap/${r.slug}`} key={r.slug}>
-                <img src="/icons/crypto/BTC.svg" alt="" aria-hidden="true" />
+              <a className="mk-route" href={`/swap/${r.slug}/`} key={r.slug}>
+                <img src={TokenIcons[r.route.from.token.ticker]} alt="" aria-hidden="true" />
                 <span>{r.label}</span>
                 <span className="mk-route__arrow" aria-hidden="true">→</span>
               </a>

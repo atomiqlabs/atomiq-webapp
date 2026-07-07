@@ -30,14 +30,7 @@ const COLUMNS: FooterColumn[] = [
       { label: 'Privacy Policy', href: 'https://www.atomiqlabs.com/privacy-cookie-policy' },
       { label: 'Cookie Policy', href: 'https://www.atomiqlabs.com/privacy-cookie-policy' },
     ],
-  },
-  {
-    title: 'Company',
-    links: [
-      { label: 'The Lab', href: 'https://www.atomiqlabs.com/about' },
-      { label: 'Meet the Team', href: 'https://www.atomiqlabs.com/about#team' },
-    ],
-  },
+  }
 ];
 
 export function SiteFooterView(props: { noTooltip?: boolean }) {
@@ -45,7 +38,7 @@ export function SiteFooterView(props: { noTooltip?: boolean }) {
     <footer className="site-footer text-white container pt-5 pb-4">
       <div className="row">
         {COLUMNS.map((col) => (
-          <div className="col-6 col-md-3 col-lg-2 pb-3" key={col.title}>
+          <div className="col-6 col-md-3 col-lg-3 pb-3" key={col.title}>
             <h3 className="fs-6 fw-semibold mb-3">{col.title}</h3>
             <ul className="list-unstyled mb-0">
               {col.links.map((l) => (
@@ -59,12 +52,12 @@ export function SiteFooterView(props: { noTooltip?: boolean }) {
           </div>
         ))}
 
-        <div className="col-6 col-md-3 col-lg-2 pb-3">
+        <div className="col-6 col-md-3 col-lg-3 pb-3">
           <h3 className="fs-6 fw-semibold mb-3">Popular routes</h3>
           <ul className="list-unstyled mb-0">
             {POPULAR_ROUTES.map((r) => (
               <li className="mb-2" key={r.slug}>
-                <a href={`/swap/${r.slug}`} className="text-white text-opacity-75 text-decoration-none">
+                <a href={`/swap/${r.slug}/`} className="text-white text-opacity-75 text-decoration-none">
                   {r.label}
                 </a>
               </li>
