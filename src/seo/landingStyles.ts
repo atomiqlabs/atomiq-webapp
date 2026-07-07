@@ -40,20 +40,15 @@ export const LANDING_CSS = `
 .mk-hero__sub{max-width:600px; margin:1.6rem auto 0; font-size:clamp(1.02rem,1.3vw,1.2rem); line-height:1.6; color:var(--mk-muted);}
 .mk-cta{display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; align-items:center; margin-top:2.3rem;}
 
-/* flask emblems flanking the hero (company-page beaker motif) */
-.mk-hero__flask{
-  position:absolute; z-index:2; bottom:-4%; width:clamp(96px,11vw,158px); opacity:.95;
-  filter:drop-shadow(0 16px 46px rgba(255,84,205,.4)); pointer-events:none;
+/* full-bleed lab scene (company-page hero illustration). Its transparent SVG tucks up
+   under the CTAs; a bottom fade seats the flasks into the ink so the chains band below
+   reads as one surface. */
+.mk-hero__scene{position:relative; z-index:2; width:100%; margin-top:clamp(-1rem,-3vw,-3.25rem); pointer-events:none;}
+.mk-hero__scene-img{display:block; width:100%; height:auto;}
+.mk-hero__scene::after{
+  content:''; position:absolute; left:0; right:0; bottom:-1px; height:34%; pointer-events:none;
+  background:linear-gradient(180deg, transparent 0%, var(--mk-ink) 92%);
 }
-.mk-hero__flask.is-left{left:3%;}
-.mk-hero__flask.is-right{right:3%;}
-@media (max-width:900px){.mk-hero__flask{display:none;}}
-
-/* ambient rising bubbles */
-.mk-bubble{position:absolute; z-index:2; border-radius:50%; background:var(--mk-flame); opacity:.5; filter:blur(.5px); pointer-events:none;}
-.mk-bubble.b1{width:10px; height:10px; left:22%; bottom:14%;}
-.mk-bubble.b2{width:6px; height:6px; left:72%; bottom:26%;}
-.mk-bubble.b3{width:8px; height:8px; left:64%; bottom:10%;}
 
 /* ---------- buttons ---------- */
 .mk-btn{
@@ -69,8 +64,8 @@ export const LANDING_CSS = `
 .mk-btn__arrow{transition:transform .2s ease;}
 .mk-btn:hover .mk-btn__arrow{transform:translateX(3px);}
 
-/* ---------- supported chains strip ---------- */
-.mk-chains{position:relative; z-index:3; margin-top:clamp(2.5rem,5vw,3.75rem);}
+/* ---------- supported chains strip (seated below the lab scene) ---------- */
+.mk-chains{position:relative; z-index:3; margin-top:clamp(-1.5rem,-3vw,-3rem); padding-bottom:clamp(1rem,3vw,2.5rem);}
 .mk-chains__label{
   display:flex; align-items:center; gap:1rem; justify-content:center; margin:0 auto 1.6rem; max-width:560px;
   font-size:.72rem; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--mk-faint);
@@ -150,13 +145,6 @@ export const LANDING_CSS = `
 .mk-home a:focus-visible,.mk-btn:focus-visible{outline:2px solid var(--mk-magenta); outline-offset:3px; border-radius:6px;}
 @media (prefers-reduced-motion:no-preference){
   .mk-hero__inner{animation:mk-rise .7s ease-out both;}
-  .mk-hero__flask.is-left{animation:mk-float 6s ease-in-out infinite alternate;}
-  .mk-hero__flask.is-right{animation:mk-float 6s ease-in-out -3s infinite alternate;}
-  .mk-bubble{animation:mk-drift 7s ease-in infinite;}
-  .mk-bubble.b2{animation-duration:9s; animation-delay:-2s;}
-  .mk-bubble.b3{animation-duration:8s; animation-delay:-4s;}
 }
 @keyframes mk-rise{from{opacity:0; transform:translateY(18px);} to{opacity:1; transform:none;}}
-@keyframes mk-float{from{transform:translateY(0);} to{transform:translateY(-14px);}}
-@keyframes mk-drift{0%{transform:translateY(0); opacity:0;} 15%{opacity:.55;} 100%{transform:translateY(-120px); opacity:0;}}
 `;

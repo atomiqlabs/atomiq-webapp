@@ -50,11 +50,6 @@ export function LandingHome() {
       {/* ---------- hero ---------- */}
       <section className="mk-hero">
         <div className="mk-hero__aura" aria-hidden="true" />
-        <img className="mk-hero__flask is-left" src="/icons/atomiq-flask.png" alt="" aria-hidden="true" />
-        <img className="mk-hero__flask is-right" src="/icons/atomiq-flask.png" alt="" aria-hidden="true" />
-        <span className="mk-bubble b1" aria-hidden="true" />
-        <span className="mk-bubble b2" aria-hidden="true" />
-        <span className="mk-bubble b3" aria-hidden="true" />
 
         <div className="mk-wrap">
           <div className="mk-hero__inner">
@@ -71,7 +66,15 @@ export function LandingHome() {
               </a>
             </div>
           </div>
+        </div>
 
+        {/* Full-bleed lab scene from the company page; the supported-chains strip sits
+            below it (see .mk-chains) so it never overlaps the flasks. */}
+        <div className="mk-hero__scene" aria-hidden="true">
+          <img className="mk-hero__scene-img" src="/hero-lab.svg" alt="" />
+        </div>
+
+        <div className="mk-wrap">
           <div className="mk-chains">
             <div className="mk-chains__label">Supported chains</div>
             <ul className="mk-chains__row list-unstyled mb-0">
