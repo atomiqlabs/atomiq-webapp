@@ -11,17 +11,20 @@ import { LandingHome } from '../src/seo/LandingHome';
 import { LANDING_CSS } from '../src/seo/landingStyles';
 import type { ResolvedRoute } from '../src/seo/types';
 
-const BUILD = path.resolve('build');          // vite app build: read manifest + assets from here
-const OUT = path.resolve('dist-marketing');   // marketing bundle: write everything here
+const OUT = path.resolve('build-marketing'); // marketing Vite build + generated static pages
+const MARKETING_SHELL = 'marketing.html';
 
-function cssHref(): string {
-  const manifestPath = path.join(BUILD, '.vite', 'manifest.json');
+function cssHrefs(): string[] {
+  const manifestPath = path.join(OUT, '.vite', 'manifest.json');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-  const entry = manifest['index.html'] ?? Object.values(manifest).find((e: any) => e.isEntry);
-  // single-entry build: only one CSS chunk is expected
-  const css = (entry as any)?.css?.[0];
-  if (!css) throw new Error('No CSS asset found in Vite manifest');
-  return '/' + css;
+  const entry =
+    manifest[MARKETING_SHELL] ??
+    Object.values(manifest).find((e: any) => e.css?.length || e.file?.endsWith('.css'));
+
+  const css =
+    (entry as any)?.css ?? ((entry as any)?.file?.endsWith('.css') ? [(entry as any).file] : []);
+  if (!css.length) throw new Error('No marketing CSS assets found in Vite manifest');
+  return css.map((href: string) => '/' + href);
 }
 
 // Rank candidate sibling routes by relevance so the internal links reinforce the
@@ -34,14 +37,18 @@ function siblingScore(r: ResolvedRoute, route: ResolvedRoute): number {
   return 4;
 }
 
-function htmlDocument(headHtml: string, body: string, css: string, headExtra = ''): string {
+function htmlDocument(headHtml: string, body: string, css: string[], headExtra = ''): string {
+  const stylesheetLinks = css
+    .map((href) => `<link rel="stylesheet" href="${href}" />`)
+    .join('\n    ');
+
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.ico" />
-    <link rel="stylesheet" href="${css}" />
+    ${stylesheetLinks}
     ${headHtml}
     ${headExtra}
   </head>
@@ -52,22 +59,14 @@ function htmlDocument(headHtml: string, body: string, css: string, headExtra = '
 </html>`;
 }
 
-// Copy the static assets the prerendered pages reference so the marketing bundle serves
-// standalone from its own storage account, with no dependency on the app origin.
-function copyAssets(): void {
-  fs.cpSync(path.join(BUILD, 'assets'), path.join(OUT, 'assets'), { recursive: true });
-  if (fs.existsSync(path.join(BUILD, 'icons'))) {
-    fs.cpSync(path.join(BUILD, 'icons'), path.join(OUT, 'icons'), { recursive: true });
-  }
-  for (const f of ['favicon.ico', 'main_logo.png', 'logo192.png', 'logo512.png', 'navMenu.js']) {
-    const src = path.join(BUILD, f);
-    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(OUT, f));
-  }
+function removeMarketingShell(): void {
+  const shellPath = path.join(OUT, MARKETING_SHELL);
+  if (fs.existsSync(shellPath)) fs.unlinkSync(shellPath);
 }
 
 function main() {
-  const css = cssHref();
-  console.log('Using CSS asset:', css);
+  const css = cssHrefs();
+  console.log('Using CSS assets:', css.join(', '));
 
   const routes = buildRoutes();
   const composed = routes.map(composeRoute);
@@ -84,10 +83,14 @@ function main() {
 
   for (const route of resolved) {
     const siblings = resolved
-      .filter((r) => r.slug !== route.slug && (
-        r.from.key === route.to.key || r.to.key === route.from.key ||
-        r.from.chainKey === route.from.chainKey || r.to.chainKey === route.to.chainKey
-      ))
+      .filter(
+        (r) =>
+          r.slug !== route.slug &&
+          (r.from.key === route.to.key ||
+            r.to.key === route.from.key ||
+            r.from.chainKey === route.from.chainKey ||
+            r.to.chainKey === route.to.chainKey)
+      )
       .sort((a, b) => siblingScore(a, route) - siblingScore(b, route))
       .slice(0, 8);
 
@@ -102,8 +105,10 @@ function main() {
   const landingBody = renderToStaticMarkup(React.createElement(LandingHome));
   fs.writeFileSync(
     path.join(OUT, 'index.html'),
-    htmlDocument(renderLandingHead(), landingBody, css, `<style>${LANDING_CSS}</style>`),
+    htmlDocument(renderLandingHead(), landingBody, css, `<style>${LANDING_CSS}</style>`)
   );
+
+  removeMarketingShell();
 
   // One sitemap + robots on the canonical www origin.
   const urls = ['/', ...resolved.map((r) => `/swap/${r.slug}`)];
@@ -112,11 +117,14 @@ function main() {
 ${urls.map((u) => `  <url><loc>${ORIGIN}${u}</loc></url>`).join('\n')}
 </urlset>`;
   fs.writeFileSync(path.join(OUT, 'sitemap.xml'), sitemap);
-  fs.writeFileSync(path.join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`);
+  fs.writeFileSync(
+    path.join(OUT, 'robots.txt'),
+    `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`
+  );
 
-  copyAssets();
-
-  console.log(`Generated ${resolved.length} swap pages + landing + sitemap/robots into dist-marketing/.`);
+  console.log(
+    `Generated ${resolved.length} swap pages + landing + sitemap/robots into build-marketing/.`
+  );
 }
 
 main();

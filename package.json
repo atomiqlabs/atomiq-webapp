@@ -71,7 +71,8 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "vite build && npm run build:seo",
+    "build": "vite build && npm run build:marketing",
+    "build:marketing": "vite build --config vite.marketing.config.ts && npm run build:seo",
     "build:seo": "tsx scripts/build-seo.tsx",
     "preview": "vite preview",
     "format": "prettier --write .",
