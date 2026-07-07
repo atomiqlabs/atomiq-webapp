@@ -14,16 +14,23 @@ const NAV_ITEMS: NavItem[] = [
   { link: 'https://www.atomiqlabs.com/privacy-cookie-policy', icon: 'user', title: 'Privacy Policy', external: true },
 ];
 
-// Copied from LandingPage.tsx so the landing buttons match the app's primary CTA look.
-const CTA_CLASS =
-  'btn base-button base-button--primary base-button--large w-100 d-flex align-items-center justify-content-center text-white text-decoration-none';
 const LAUNCH_CLASS =
   'btn base-button base-button--primary base-button--smaller d-inline-flex align-items-center text-white text-decoration-none';
-const CARD_CLASS = 'bg-white/10 rounded-2xl p-4';
+
+// Colored chain logos (copied into the marketing bundle via build/icons). Keyed by the
+// derived chainName so this stays in step with SUPPORTED_CHAINS; a chain without a mapped
+// icon still renders as a text-only chip.
+const CHAIN_ICONS: Record<string, string> = {
+  Bitcoin: '/icons/chains/BITCOIN.svg',
+  'Lightning Network': '/icons/chains/LIGHTNING.svg',
+  Solana: '/icons/chains/SOLANA.svg',
+  Starknet: '/icons/chains/STARKNET.svg',
+  Citrea: '/icons/chains/CITREA.svg',
+};
 
 export function LandingHome() {
   return (
-    <div className="App d-flex flex-column">
+    <div className="App d-flex flex-column mk-home">
       <MainNavigationView
         navItems={NAV_ITEMS}
         walletSlot={
@@ -38,79 +45,136 @@ export function LandingHome() {
         noTooltip
       />
 
-      <div className="flex-fill text-white container text-start mt-4 mt-md-5 mb-5">
-        <h1 className="page-title">{HERO.headline}</h1>
+      {/* ---------- hero ---------- */}
+      <section className="mk-hero">
+        <div className="mk-hero__aura" aria-hidden="true" />
+        <img className="mk-hero__flask is-left" src="/icons/atomiq-flask.png" alt="" aria-hidden="true" />
+        <img className="mk-hero__flask is-right" src="/icons/atomiq-flask.png" alt="" aria-hidden="true" />
+        <span className="mk-bubble b1" aria-hidden="true" />
+        <span className="mk-bubble b2" aria-hidden="true" />
+        <span className="mk-bubble b3" aria-hidden="true" />
 
-        <div className={`${CARD_CLASS} mb-3`}>
-          <p className="mb-4">{HERO.subhead}</p>
-          <a href={HERO.primaryCta.href} className={CTA_CLASS}>
-            {HERO.primaryCta.label}
-          </a>
-          <a href={HERO.secondaryCta.href} className="d-inline-block mt-3 text-white" target="_blank" rel="noreferrer">
-            {HERO.secondaryCta.label}
-          </a>
+        <div className="mk-wrap">
+          <div className="mk-hero__inner">
+            <span className="mk-eyebrow">Trustless cross-chain DEX</span>
+            <h1 className="mk-display mk-hero__title">{HERO.headline}</h1>
+            <p className="mk-hero__sub">{HERO.subhead}</p>
+            <div className="mk-cta">
+              <a href={HERO.primaryCta.href} className="mk-btn mk-btn--primary">
+                {HERO.primaryCta.label}
+              </a>
+              <a href={HERO.secondaryCta.href} className="mk-btn mk-btn--ghost" target="_blank" rel="noreferrer">
+                {HERO.secondaryCta.label}
+                <span className="mk-btn__arrow" aria-hidden="true">→</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="mk-chains">
+            <div className="mk-chains__label">Supported chains</div>
+            <ul className="mk-chains__row list-unstyled mb-0">
+              {SUPPORTED_CHAINS.map((c) => (
+                <li key={c} className="mk-chain">
+                  {CHAIN_ICONS[c] && <img src={CHAIN_ICONS[c]} alt="" aria-hidden="true" />}
+                  <span>{c}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
+      </section>
 
-        <h2 className="page-title mt-5">Supported chains</h2>
-        <div className={`${CARD_CLASS} mb-3`}>
-          <ul className="d-flex flex-wrap gap-3 mb-0 list-unstyled">
-            {SUPPORTED_CHAINS.map((c) => (
-              <li key={c} className="fw-semibold">{c}</li>
+      {/* ---------- why atomiq ---------- */}
+      <section className="mk-section">
+        <div className="mk-wrap">
+          <div className="mk-section__head">
+            <span className="mk-eyebrow">Why atomiq</span>
+            <h2 className="mk-display mk-section__title">Swap between Bitcoin &amp; other chains with zero slippage</h2>
+          </div>
+          <div className="mk-grid">
+            {BENEFITS.map((b) => (
+              <div className="mk-card" key={b.title}>
+                <h3 className="mk-card__title">{b.title}</h3>
+                <p className="mk-card__text">{b.text}</p>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
+      </section>
 
-        <h2 className="page-title mt-5">Why swap with Atomiq</h2>
-        <div className="row">
-          {BENEFITS.map((b) => (
-            <div className="col-12 col-md-6 col-lg-3 pb-3" key={b.title}>
-              <div className={`${CARD_CLASS} height-100`}>
-                <h3 className="fs-5 fw-semibold mb-2">{b.title}</h3>
-                <p className="mb-0 text-white text-opacity-75">{b.text}</p>
+      {/* ---------- escrow reaction chain ---------- */}
+      <section className="mk-section">
+        <div className="mk-wrap">
+          <div className="mk-section__head">
+            <span className="mk-eyebrow">How it works</span>
+            <h2 className="mk-display mk-section__title">{ESCROW_HEADING}</h2>
+          </div>
+          <div className="mk-steps">
+            {ESCROW_STEPS.map((step, i) => (
+              <div className="mk-step" key={step}>
+                <div className="mk-step__num"><span>{i + 1}</span></div>
+                <p className="mk-step__text">{step}</p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
+      </section>
 
-        <h2 className="page-title mt-5">{ESCROW_HEADING}</h2>
-        <div className="row">
-          {ESCROW_STEPS.map((step, i) => (
-            <div className="col-12 col-md-6 col-lg-3 pb-3" key={i}>
-              <div className={`${CARD_CLASS} height-100`}>
-                <div className="fs-4 fw-bold mb-2">{i + 1}</div>
-                <p className="mb-0 text-white text-opacity-75">{step}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <h2 className="page-title mt-5">Popular swap routes</h2>
-        <div className={`${CARD_CLASS} mb-3`}>
-          <ul className="mb-0 ps-3 d-flex flex-column gap-1">
+      {/* ---------- popular routes ---------- */}
+      <section className="mk-section">
+        <div className="mk-wrap">
+          <div className="mk-section__head">
+            <span className="mk-eyebrow">Start here</span>
+            <h2 className="mk-display mk-section__title">Popular swap routes</h2>
+          </div>
+          <div className="mk-routes">
             {POPULAR_ROUTES.map((r) => (
-              <li key={r.slug}>
-                <a href={`/swap/${r.slug}`} className="text-white">
-                  {r.label}
-                </a>
-              </li>
+              <a className="mk-route" href={`/swap/${r.slug}`} key={r.slug}>
+                <img src="/icons/crypto/BTC.svg" alt="" aria-hidden="true" />
+                <span>{r.label}</span>
+                <span className="mk-route__arrow" aria-hidden="true">→</span>
+              </a>
             ))}
-          </ul>
+          </div>
         </div>
+      </section>
 
-        <h2 className="page-title mt-5">FAQ</h2>
-        <div className="seo-faqs">
-          {HOME_FAQS.map((faq, i) => (
-            <details key={i} open={i === 0}>
-              <summary>
-                <span className="seo-faq-number">{i + 1}.</span>
-                <span>{faq.question}</span>
-                <span className="seo-faq-arrow icon icon-caret-down" aria-hidden="true" />
-              </summary>
-              <div className="seo-faq-answer faq-answer">{faq.answer}</div>
-            </details>
-          ))}
+      {/* ---------- FAQ ---------- */}
+      <section className="mk-section">
+        <div className="mk-wrap">
+          <div className="mk-section__head">
+            <span className="mk-eyebrow">Good to know</span>
+            <h2 className="mk-display mk-section__title">Frequently asked questions</h2>
+          </div>
+          <div className="seo-faqs mk-faq">
+            {HOME_FAQS.map((faq, i) => (
+              <details key={faq.question} open={i === 0}>
+                <summary>
+                  <span className="seo-faq-number">{i + 1}.</span>
+                  <span>{faq.question}</span>
+                  <span className="seo-faq-arrow icon icon-caret-down" aria-hidden="true" />
+                </summary>
+                <div className="seo-faq-answer faq-answer">{faq.answer}</div>
+              </details>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* ---------- closing CTA ---------- */}
+      <section className="mk-section" style={{ paddingTop: 0 }}>
+        <div className="mk-wrap">
+          <div className="mk-band">
+            <h2 className="mk-display mk-band__title">Ready to swap trustlessly?</h2>
+            <p className="mk-band__sub">
+              Keep custody the whole time. No bridge, no CEX, no counterparty risk. Open the app and swap in minutes.
+            </p>
+            <a href={`${APP_ORIGIN}/`} className="mk-btn mk-btn--primary">
+              {HERO.primaryCta.label}
+            </a>
+          </div>
+        </div>
+      </section>
 
       <SiteFooterView noTooltip />
     </div>

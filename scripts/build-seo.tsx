@@ -8,6 +8,7 @@ import { renderHead, renderLandingHead, ORIGIN } from '../src/seo/seoHead';
 import { APP_ORIGIN } from '../src/seo/homeContent';
 import { LandingPage } from '../src/seo/LandingPage';
 import { LandingHome } from '../src/seo/LandingHome';
+import { LANDING_CSS } from '../src/seo/landingStyles';
 import type { ResolvedRoute } from '../src/seo/types';
 
 const BUILD = path.resolve('build');          // vite app build: read manifest + assets from here
@@ -33,7 +34,7 @@ function siblingScore(r: ResolvedRoute, route: ResolvedRoute): number {
   return 4;
 }
 
-function htmlDocument(headHtml: string, body: string, css: string): string {
+function htmlDocument(headHtml: string, body: string, css: string, headExtra = ''): string {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -42,6 +43,7 @@ function htmlDocument(headHtml: string, body: string, css: string): string {
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="${css}" />
     ${headHtml}
+    ${headExtra}
   </head>
   <body>
     <div id="root" class="background">${body}</div>
@@ -95,9 +97,13 @@ function main() {
     fs.writeFileSync(path.join(dir, 'index.html'), htmlDocument(renderHead(route), body, css));
   }
 
-  // Landing page at the marketing root.
+  // Landing page at the marketing root. Its bespoke stylesheet ships inline and scoped
+  // (.mk-home) so it stays self-contained and never touches the app or the /swap pages.
   const landingBody = renderToStaticMarkup(React.createElement(LandingHome));
-  fs.writeFileSync(path.join(OUT, 'index.html'), htmlDocument(renderLandingHead(), landingBody, css));
+  fs.writeFileSync(
+    path.join(OUT, 'index.html'),
+    htmlDocument(renderLandingHead(), landingBody, css, `<style>${LANDING_CSS}</style>`),
+  );
 
   // One sitemap + robots on the canonical www origin.
   const urls = ['/', ...resolved.map((r) => `/swap/${r.slug}`)];
