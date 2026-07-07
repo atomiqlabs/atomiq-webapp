@@ -47,14 +47,17 @@ export function SiteFooterView(props: {
   popularRoutes?: { slug: string; label: string }[];
   popularRoutesHrefMode?: PopularRoutesHrefMode;
   hideSocialLinks?: boolean;
-  showTopAccentBorder?: boolean;
 }) {
   const popularRoutes = props.popularRoutes ?? POPULAR_ROUTES;
   const popularRoutesHrefMode = props.popularRoutesHrefMode ?? 'relative';
   return (
-    <footer
-      className={`site-footer${props.showTopAccentBorder ? ' site-footer--with-top-accent' : ''} text-white container pt-5 pb-4`}
-    >
+    <footer className="site-footer text-white container pt-5 pb-4">
+      <div className="site-footer__social">
+        <span className="site-footer__social-line" aria-hidden="true" />
+        {props.hideSocialLinks ? null : (
+          <SocialFooterView isHorizontal noTooltip={props.noTooltip} />
+        )}
+      </div>
       <div className="row">
         {COLUMNS.map((col) => (
           <div className="col-6 col-md-3 col-lg-3 pb-3" key={col.title}>
@@ -90,12 +93,6 @@ export function SiteFooterView(props: {
               </li>
             ))}
           </ul>
-
-          {props.hideSocialLinks ? null : (
-            <div className="site-footer__social">
-              <SocialFooterView isHorizontal noTooltip={props.noTooltip} />
-            </div>
-          )}
         </div>
       </div>
     </footer>

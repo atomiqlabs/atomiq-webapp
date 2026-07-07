@@ -405,7 +405,6 @@ export function SwapNew() {
         <SiteFooterView
           noTooltip
           hideSocialLinks
-          showTopAccentBorder
           popularRoutesHrefMode="absolute"
         />
       </div>

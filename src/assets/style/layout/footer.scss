@@ -21,16 +21,16 @@
 .site-footer {
   @apply text-left;
 
-  &--with-top-accent {
-    @apply border-t border-secondary border-opacity-25
-  }
-
   &__popular {
     @apply flex flex-col;
   }
 
   &__social {
-    @apply mt-3 flex justify-start;
+    @apply mb-4 flex items-center gap-3;
+  }
+
+  &__social-line {
+    @apply flex-1 border-t border-secondary border-opacity-25;
   }
 
   &__social .social-footer {

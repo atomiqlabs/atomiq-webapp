@@ -12,7 +12,7 @@ const socialLink = [
 // plain links with no tooltip. The app (with React) uses the OverlayTrigger overlay.
 export function SocialFooterView(props: { isHorizontal: boolean; noTooltip?: boolean }) {
   return (
-    <div className={`social-footer ${props.isHorizontal ? 'is-horizontal pt-3' : ''}`}>
+    <div className={`social-footer ${props.isHorizontal ? 'is-horizontal' : ''}`}>
       {socialLink.map(({ link, image, title }) =>
         props.noTooltip ? (
           <a key={link} href={link} target="_blank" rel="noreferrer" className="social-footer__link">

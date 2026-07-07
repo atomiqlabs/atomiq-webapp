@@ -10,9 +10,18 @@ describe('SiteFooterView', () => {
     expect(html).toContain('Resources');
     expect(html).toContain('Legal');
     expect(html).toContain('Popular routes');
+    expect(html).toContain('site-footer__social-line');
     expect(html).toContain('href="https://docs.atomiq.exchange/"');
     expect(html).toContain('href="https://twitter.com/atomiqlabs"'); // from SocialFooterView
   });
+
+  it('keeps the accent row when footer socials are hidden', () => {
+    const hiddenSocialsHtml = renderToStaticMarkup(<SiteFooterView noTooltip hideSocialLinks />);
+
+    expect(hiddenSocialsHtml).toContain('site-footer__social-line');
+    expect(hiddenSocialsHtml).not.toContain('href="https://twitter.com/atomiqlabs"');
+  });
+
   it('uses relative /swap route links (same www origin)', () => {
     expect(html).toMatch(/href="\/swap\/[a-z0-9-]+\/"/);
     expect(html).not.toContain('href="https://app.atomiq.exchange/swap/');
