@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 // @ts-ignore
 import react from '@vitejs/plugin-react';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
     plugins: [
@@ -13,6 +14,10 @@ export default defineConfig({
                 process: true,
             },
         }),
+        ...(process.env.ANALYZE ? [
+            visualizer({ filename: 'stats.html', template: 'treemap', gzipSize: true, brotliSize: true }),
+            visualizer({ filename: 'stats.json', template: 'raw-data', gzipSize: true, brotliSize: true }),
+        ] : []),
     ],
 
     define: {

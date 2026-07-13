@@ -16,6 +16,10 @@ yarn.lock
 /_build
 /dist-marketing
 
+# bundle analyzer output (npm run analyze)
+/stats.html
+/stats.json
+
 # misc
 .DS_Store
 .env.local
