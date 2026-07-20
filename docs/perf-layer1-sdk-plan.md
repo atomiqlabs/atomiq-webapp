@@ -14,9 +14,26 @@
 - The four CJS consumers (`atomiq-lp`, `atomiq-relay`, `server-base`, `atomiq-swaps-be`) must still build and run unchanged (they resolve the `require`/`main` condition → `dist`).
 - Set `"sideEffects": false` **only after** auditing the package for import-time side effects; if any module runs code at import (global/`window` assignment, top-level `new`, prototype patching), allowlist it: `"sideEffects": ["./dist-esm/thatModule.js"]`.
 - `module: es2022` for the ESM build; keep `moduleResolution: node`.
-- Publish order: **`base` → `sdk`** (sdk depends on base); `btc-mempool` and `messenger-nostr` are independent.
+- **Dependency order for build/test/publish: `base` → (`btc-mempool` + `messenger-nostr`) → `sdk`** (mempool + nostr depend on base; sdk depends on all three). Wire dependents to upstreams via **GitHub feature-branch installs** — `npm install atomiqlabs/<repo>#perf/esm-treeshake` — after pushing each branch; do NOT copy files between `node_modules`. (Revised per Adam 2026-07-20; see the Revision section.)
 - Commit format `<area>: <imperative what>`; never add an AI co-author/attribution trailer.
 - Work each package on a branch `perf/esm-treeshake` off `develop`; do not commit on `develop`.
+
+---
+
+## Revision — 2026-07-20 (per Adam): git feature-branch workflow + dependency order
+
+**Done and unchanged (do NOT redo):** `@atomiqlabs/base` (branch `perf/esm-treeshake`, commit `fa1add3`) and `@atomiqlabs/sdk` (commit `0763f46`) — packaging complete, verified to tree-shake (SDK-own 539 KB → 1,958 B).
+
+**Adam's objection to the original Tasks 3–4:** the file-copy-into-`node_modules` in Task 4 was a measurement shortcut; the proper mechanism is **GitHub feature-branch dependencies**, and the work should go in **strict dependency order**. Revised sequence:
+
+1. **`base`** — done (`fa1add3`). **Push** the branch.
+2. **`btc-mempool`** (`/Users/marci/dev/Atomiq/atomiq-btc-mempool`, v1.1.2, cloned) — clean (`commonjs`, has a `build` script, `@atomiqlabs` deps: `base` only). Apply the identical Task 1/2 recipe; then `npm install atomiqlabs/atomiq-base#perf/esm-treeshake` to repoint its `@atomiqlabs/base` dep at the feature branch; commit; **push**.
+3. **`messenger-nostr`** (`/Users/marci/dev/Atomiq/atomiq-messenger-nostr`, v2.0.1, cloned) — **SPECIAL CASE, needs Adam:** no emit `build` script (only `build:ts4/ts5 --noEmit` typecheck) and `tsconfig module: nodenext` while its source uses *extensionless* relative imports (which `nodenext` normally rejects) — so it's unclear how its committed `dist` is produced. Resolve the build mechanism with Adam before applying the recipe; then same pattern (+ `npm install atomiqlabs/atomiq-base#…`), commit, **push**.
+4. **`sdk`** — packaging done (`0763f46`); add ONE commit that `npm install`s `atomiqlabs/atomiq-{base,btc-mempool,messenger-nostr}#perf/esm-treeshake` (repoint its three `@atomiqlabs` deps to the feature branches); **push**.
+5. **Integrated verification (replaces Task 4's file-copy):** in the webapp, `npm install atomiqlabs/atomiq-sdk#perf/esm-treeshake` — transitively pulls the whole ESM chain — then `npm run build` (the real Vite production build) and confirm the initial chunk shrinks vs the W0 baseline (`docs/perf-tier1-baseline.md`).
+6. **Publish (Task 5)** follows the same order, each package repointing its `@atomiqlabs` deps from the feature-branch git URL to the newly-published version before publishing.
+
+**Tasks 3–4 below are superseded by this section; Task 5's order is superseded by the order above.**
 
 ---
 
