@@ -1,5 +1,7 @@
 # Wallet-connector deferral — design
 
+> **Superseded (2026-07-13) by `docs/perf-epic-design.md`**, which folds this in. Kept as history.
+
 Date: 2026-07-13. Repo: `atomiq-webapp`. Companion to `docs/perf-tier1-design.md` / `docs/perf-tier1-plan.md`. Approved direction (Marci + Adam, 2026-07-13): keep the existing provider pattern (`ChainsProvider` stays the component that wraps the app and provides `ChainsContext`); contain the lazy-loading inside it; always-defer (no localStorage-connected flag in this pass).
 
 ## Why

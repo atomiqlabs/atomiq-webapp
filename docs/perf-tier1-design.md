@@ -1,5 +1,7 @@
 # Web performance — Tier 1 design
 
+> **Superseded (2026-07-13) by `docs/perf-epic-design.md`**, which consolidates this + the connector-deferral design + the SDK-tree-shaking finding into one master design. Kept as history.
+
 Date: 2026-07-13. Scope: `atomiq-webapp` (serves both `app.atomiq.exchange` — the SPA — and `www.atomiq.exchange` — the statically prerendered SEO landing pages built by `scripts/build-seo.tsx`). Both sit behind a Cloudflare proxy.
 
 ## Goal
