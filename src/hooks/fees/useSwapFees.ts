@@ -2,12 +2,12 @@ import { useMemo } from 'react';
 import {
   Fee,
   FeeType,
-  FromBTCLNSwap,
-  FromBTCSwap,
+  isFromBTCLNSwap,
+  isFromBTCSwap,
   ISwap,
-  IToBTCSwap,
+  isIToBTCSwap,
+  isSpvFromBTCSwap,
   PercentagePPM,
-  SpvFromBTCSwap,
   TokenAmount,
 } from '@atomiqlabs/sdk';
 import { useWithAwait } from '../utils/useWithAwait';
@@ -62,7 +62,7 @@ export function useSwapFees(
         };
       }
     });
-    if (swap instanceof FromBTCSwap) {
+    if (isFromBTCSwap(swap)) {
       const amount = swap.getClaimerBounty();
       fees.push({
         text: 'Watchtower fee',
@@ -84,13 +84,13 @@ export function useSwapFees(
     if (swap == null || fees == null || !fetchUsdAndNetworkFees) return null;
     let networkFeeSrc: Promise<TokenAmount>;
     let networkFeeDst: Promise<TokenAmount>;
-    if (swap instanceof IToBTCSwap) {
+    if (isIToBTCSwap(swap)) {
       //Network fee at source
       networkFeeSrc = swap.getSmartChainNetworkFee();
-    } else if (swap instanceof FromBTCLNSwap) {
+    } else if (isFromBTCLNSwap(swap)) {
       networkFeeDst = swap.getSmartChainNetworkFee();
     }
-    if (swap instanceof FromBTCSwap || swap instanceof SpvFromBTCSwap) {
+    if (isFromBTCSwap(swap) || isSpvFromBTCSwap(swap)) {
       if (btcWallet != null && btcFeeRate != null)
         networkFeeSrc = swap.estimateBitcoinFee(btcWallet, btcFeeRate);
     }

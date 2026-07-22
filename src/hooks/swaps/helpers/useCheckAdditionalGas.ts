@@ -1,7 +1,7 @@
 import {useContext} from "react";
 import {ChainsContext} from "../../../context/ChainsContext";
 import {useWithAwait} from "../../utils/useWithAwait";
-import {IEscrowSelfInitSwap, isSCToken, ISwap, TokenAmount, toTokenAmount} from "@atomiqlabs/sdk";
+import {isIEscrowSelfInitSwap, isSCToken, ISwap, TokenAmount, toTokenAmount} from "@atomiqlabs/sdk";
 import {SwapperContext} from "../../../context/SwapperContext";
 import {ChainsConfig} from "../../../data/ChainsConfig";
 import {useWallet} from "../../wallets/useWallet";
@@ -20,7 +20,7 @@ export function useCheckAdditionalGas(quote: ISwap) {
       required: TokenAmount;
     };
     let address: string;
-    if (quote instanceof IEscrowSelfInitSwap) {
+    if (isIEscrowSelfInitSwap(quote)) {
       result = await quote.hasEnoughForTxFees();
       address = quote._getInitiator();
     } else {
