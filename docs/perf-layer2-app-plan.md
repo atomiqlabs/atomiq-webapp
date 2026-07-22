@@ -12,30 +12,65 @@ Layer 1 made the SDK tree-shakeable; on its own it changes nothing in the app, b
 - [ ] Temporarily install the tree-shakeable SDK from the branch: `npm install atomiqlabs/atomiq-sdk#perf/esm-treeshake` (transitively pulls base/mempool/nostr from their branches — proven working in the 2026-07-20 integration test). This is the "link locally" step; it stays until Adam publishes, at which point the dep flips to a published `^X.Y.Z` in one line before Layer 2 merges to `develop`.
 - [ ] Capture a fresh baseline with the branch SDK, Layer-2 changes NOT yet applied: `npm run build`, record initial-chunk gz size and the SDK/chain footprint from the bundle analyzer (this is the number every task below is measured against; expected ≈ the 1,842 → 1,792 KB gz "flat" figure from Layer 1).
 
-## Decision to approve before W2 — the escrow guard at `useCheckAdditionalGas`
+## Resolved approach — add swap instance type guards to the SDK (supersedes the old escrow-guard question)
 
-The design note says to replace `quote instanceof IEscrowSelfInitSwap` with the SDK's `isIEscrowSelfInitSwapInit()` and to export that guard from the SDK barrel (`index.ts`) with a typedoc. Two concrete problems at that specific call site (`hooks/swaps/helpers/useCheckAdditionalGas.ts:23`, which then calls `quote.hasEnoughForTxFees()` and `quote._getInitiator()`):
+The original design note (replace `instanceof IEscrowSelfInitSwap` with `isIEscrowSelfInitSwapInit()`, export it from the barrel) does not fit the `useCheckAdditionalGas.ts:23` call site, which then calls `quote.hasEnoughForTxFees()` / `quote._getInitiator()`: `isIEscrowSelfInitSwapInit(obj): obj is IEscrowSelfInitSwapInit<T>` narrows to the **Init data shape** (no instance methods → those calls don't type-check), and its runtime check wants `typeof obj.feeRate === "string"` while serialization produces the string via `feeRate.toString()` (SDK `IEscrowSelfInitSwap.ts:214`) — so it can return `false` on a live instance it should match. Root cause: the SDK has **no instance-level type guards for swaps** — only `isXInit()` guards for serialized init objects, plus token guards (`isSCToken`, `isBtcToken`), but nothing that narrows an `ISwap` to a subclass. The clean fix is to add them (W2a), which puts the type→class mapping in the SDK (single source of truth, Adam-owned), narrows to the **class** (instance methods available), checks via `getType()` (robust on live instances), and stays tree-shakeable (light free functions; the classes stay type-only in consumers). `isIEscrowSelfInitSwapInit` is left as-is — it is correct for its own purpose (validating serialized init objects), just not for narrowing instances.
 
-1. Type narrowing: `isIEscrowSelfInitSwapInit(obj): obj is IEscrowSelfInitSwapInit<T>` narrows to the **Init data shape** (`{feeRate, signatureData, ...}`), which has none of the instance methods the call site uses — so `quote.hasEnoughForTxFees()` would not type-check after that guard.
-2. Runtime: the guard requires `typeof obj.feeRate === "string"`. Serialization emits `feeRate.toString()` (SDK `IEscrowSelfInitSwap.ts:214`), which implies the in-memory `this.feeRate` may not be a `string` — so the guard can return `false` for a live swap instance it should match.
+## W2 — add swap instance guards to the SDK, consume them in the app (replaces the 5 `instanceof` sites)
 
-**Recommendation:** use a `getType()`-set instance predicate `isEscrowSelfInitSwap(swap): swap is IEscrowSelfInitSwap` over `{FROM_BTC, FROM_BTCLN, TO_BTC, TO_BTCLN}` (verified: those four concrete classes — `FromBTCSwap`, `FromBTCLNSwap`, `ToBTCSwap`, `ToBTCLNSwap` — are exactly the ones extending `IEscrowSelfInitSwap`; `FromBTCLNAutoSwap` extends `IEscrowSwap` and `SpvFromBTCSwap` extends `ISwap`, so both are correctly excluded). `IEscrowSelfInitSwap` is imported `import type` (erased), so no class weight lands. This is robust on live instances and consistent with the other four sites. Adam's requested barrel-export + typedoc of `isIEscrowSelfInitSwapInit` is then **decoupled** from the app wiring — include it to honor the request (it's harmless and used at the SDK's own init sites), or drop it. **Marci/Adam: confirm the predicate approach + whether to still add the barrel export.**
+Goal: stop importing swap **classes** as runtime values in the app, so they erase to type-only imports and drop off the eager path — and put the type→class mapping in the SDK where it belongs, not in a webapp-local file. `SwapType` stays a value import (tiny enum, already on the light path). After this the swap panels need no lazy-loading.
 
-## W2 — `getType()` instead of `instanceof` (5 sites)
+Verified enum + class mapping (SDK `enums/SwapType.ts` + each class's `TYPE`): `FROM_BTC=0`(`FromBTCSwap`), `FROM_BTCLN=1`(`FromBTCLNSwap`), `TO_BTC=2`(`ToBTCSwap`), `TO_BTCLN=3`(`ToBTCLNSwap`), `TRUSTED_FROM_BTC=4`(`OnchainForGasSwap`), `TRUSTED_FROM_BTCLN=5`(`LnForGasSwap`), `SPV_VAULT_FROM_BTC=6`(`SpvFromBTCSwap`), `FROM_BTCLN_AUTO=7`(`FromBTCLNAutoSwap`). Families: `IToBTCSwap`={TO_BTC, TO_BTCLN}; `IFromBTCSelfInitSwap`={FROM_BTC, FROM_BTCLN}; `IEscrowSelfInitSwap`=their union {FROM_BTC, FROM_BTCLN, TO_BTC, TO_BTCLN}.
 
-Goal: stop importing the swap **classes** as runtime values, so they become type-only imports (erased at build) and no longer drag their crypto weight onto the eager path. `SwapType` stays a value import (tiny enum, already on the light path). After this, the swap panels need no lazy-loading.
+### W2a — SDK branch (`sdk#perf/esm-treeshake`): add instance type guards — draft spec for Adam
 
-Verified enum + class mapping (from SDK `enums/SwapType.ts` and each class's `TYPE`): `FROM_BTC=0`(`FromBTCSwap`), `FROM_BTCLN=1`(`FromBTCLNSwap`), `TO_BTC=2`(`ToBTCSwap`), `TO_BTCLN=3`(`ToBTCLNSwap`), `TRUSTED_FROM_BTC=4`, `TRUSTED_FROM_BTCLN=5`, `SPV_VAULT_FROM_BTC=6`(`SpvFromBTCSwap`), `FROM_BTCLN_AUTO=7`. `IToBTCSwap` = `{TO_BTC, TO_BTCLN}`; `IEscrowSelfInitSwap` = `{FROM_BTC, FROM_BTCLN, TO_BTC, TO_BTCLN}`.
+Free functions co-located with each class / family (matches the existing `isSCToken` free-function convention), barrel-exported from `index.ts` with a typedoc line each. Concrete guards are a single `getType()` compare; **family guards use an exhaustive `switch` with a `never` default**, so adding a future `SwapType` fails the SDK build until it is classified — this structurally removes the mapping-drift risk. Free functions (not static `Class.is()` methods) are required: a static method would force importing the class to call it, defeating the tree-shaking goal.
 
-- [ ] Create `src/utils/swapTypeGuards.ts` centralizing the predicates as typed type-guards, classes imported `import type` and only `SwapType` imported as a value: `isFromBTCSwap` (`=== FROM_BTC`), `isFromBTCLNSwap` (`=== FROM_BTCLN`), `isToBTCSwap` (`=== TO_BTC || === TO_BTCLN`), `isSpvFromBTCSwap` (`=== SPV_VAULT_FROM_BTC`), `isEscrowSelfInitSwap` (the four-value set above). One home for the mapping keeps it unit-testable and prevents drift.
+Needed by the app now (the 5 sites):
+
+| guard | narrows to | `getType()` match | file (co-locate) |
+|---|---|---|---|
+| `isFromBTCSwap` | `FromBTCSwap` | `FROM_BTC` | `swaps/escrow_swaps/frombtc/onchain/FromBTCSwap.ts` |
+| `isFromBTCLNSwap` | `FromBTCLNSwap` | `FROM_BTCLN` | `swaps/escrow_swaps/frombtc/ln/FromBTCLNSwap.ts` |
+| `isSpvFromBTCSwap` | `SpvFromBTCSwap` | `SPV_VAULT_FROM_BTC` | `swaps/spv_swaps/SpvFromBTCSwap.ts` |
+| `isIToBTCSwap` | `IToBTCSwap` | `{TO_BTC, TO_BTCLN}` | `swaps/escrow_swaps/tobtc/IToBTCSwap.ts` |
+| `isIEscrowSelfInitSwap` | `IEscrowSelfInitSwap` | `{FROM_BTC, FROM_BTCLN, TO_BTC, TO_BTCLN}` | `swaps/escrow_swaps/IEscrowSelfInitSwap.ts` |
+
+Recommended to complete the set (same pattern, cheap, keeps the API symmetric — Adam's call): `isToBTCSwap` (TO_BTC), `isToBTCLNSwap` (TO_BTCLN), `isOnchainForGasSwap` (TRUSTED_FROM_BTC), `isLnForGasSwap` (TRUSTED_FROM_BTCLN), `isFromBTCLNAutoSwap` (FROM_BTCLN_AUTO), `isIFromBTCSelfInitSwap` ({FROM_BTC, FROM_BTCLN}).
+
+Patterns:
+
+```ts
+// concrete — in the class's own file, next to its TYPE definition
+export function isFromBTCSwap<T extends ChainType = ChainType>(swap: ISwap<T>): swap is FromBTCSwap<T> {
+    return swap.getType() === SwapType.FROM_BTC;
+}
+
+// family — exhaustive; the never default forces classifying any new SwapType
+export function isIEscrowSelfInitSwap<T extends ChainType = ChainType>(swap: ISwap<T>): swap is IEscrowSelfInitSwap<T> {
+    switch (swap.getType()) {
+        case SwapType.FROM_BTC: case SwapType.FROM_BTCLN:
+        case SwapType.TO_BTC:   case SwapType.TO_BTCLN:   return true;
+        case SwapType.TRUSTED_FROM_BTC: case SwapType.TRUSTED_FROM_BTCLN:
+        case SwapType.SPV_VAULT_FROM_BTC: case SwapType.FROM_BTCLN_AUTO: return false;
+        default: { const _exhaustive: never = swap.getType(); return false; }
+    }
+}
+```
+
+- [ ] Add the guards (thread each class's exact generics — some carry extra type params with defaults; Adam owns the precise signatures).
+- [ ] Barrel-export all from `src/index.ts` with a typedoc line each.
+- [ ] SDK unit test: assert every guard's truth set across all 8 `SwapType` values (the `never` default is the compile-time half of this).
+- [ ] Commit to `sdk#perf/esm-treeshake`; flag the new API for Adam's review (additive, backwards-compatible); re-`npm install` the branch in the webapp.
+
+### W2b — webapp: consume the SDK guards at the 5 sites
+
 - [ ] `hooks/fees/useSwapFees.ts:65` — `swap instanceof FromBTCSwap` → `isFromBTCSwap(swap)` (watchtower/claimer-bounty fee; FROM_BTC only).
-- [ ] `hooks/fees/useSwapFees.ts:87` — `swap instanceof IToBTCSwap` → `isToBTCSwap(swap)`.
+- [ ] `hooks/fees/useSwapFees.ts:87` — `swap instanceof IToBTCSwap` → `isIToBTCSwap(swap)`.
 - [ ] `hooks/fees/useSwapFees.ts:90` — `swap instanceof FromBTCLNSwap` → `isFromBTCLNSwap(swap)`.
 - [ ] `hooks/fees/useSwapFees.ts:93` — `swap instanceof FromBTCSwap || swap instanceof SpvFromBTCSwap` → `isFromBTCSwap(swap) || isSpvFromBTCSwap(swap)`.
-- [ ] `hooks/swaps/helpers/useCheckAdditionalGas.ts:23` — `quote instanceof IEscrowSelfInitSwap` → `isEscrowSelfInitSwap(quote)` (see decision above).
-- [ ] Change the swap-class imports in both files to `import type` (drop `FromBTCSwap`, `FromBTCLNSwap`, `IToBTCSwap`, `SpvFromBTCSwap`, `IEscrowSelfInitSwap` from the value-import lists). Keep `SwapType`, `isSCToken`, and the genuinely-runtime helpers as value imports.
-- [ ] (Optional, per decision) SDK branch: add `isIEscrowSelfInitSwapInit` to `src/index.ts` barrel (currently `index.ts:99` exports only `{IEscrowSelfInitSwap}`) + a typedoc comment on the function. One line + a comment; commit to `sdk#perf/esm-treeshake`, then re-`npm install` the branch in the webapp.
-- [ ] Unit test `swapTypeGuards.test.ts`: assert each predicate's truth set across all 8 `SwapType` values (locks the abstract-base mappings against the old `instanceof` behavior — the design's flagged risk).
+- [ ] `hooks/swaps/helpers/useCheckAdditionalGas.ts:23` — `quote instanceof IEscrowSelfInitSwap` → `isIEscrowSelfInitSwap(quote)` (narrows to the class, so `.hasEnoughForTxFees()` / `._getInitiator()` stay callable).
+- [ ] Replace the value imports of the swap classes with the guard imports; if any class name is still referenced purely as a type, keep it `import type`. No webapp-local `swapTypeGuards.ts` — the SDK is the source of truth.
 - [ ] Verify: `npm run typecheck` clean; bundle analyzer shows the swap classes no longer in the eager chunk.
 
 ## W3a — generated static token metadata
@@ -75,7 +110,7 @@ W2 → W3a → W3b → W4, in that order (independent enough to land as separate
 ## Testing & acceptance
 
 - [ ] Per-task analyzer assertion (above) — each workstream removes an identifiable eager chunk.
-- [ ] `swapTypeGuards.test.ts` (W2) — predicates match old `instanceof` across all 8 `SwapType` values.
+- [ ] SDK guard unit test (W2a) — every guard's truth set across all 8 `SwapType` values; the family guards' `never` default is the compile-time half.
 - [ ] `tokenMeta.generated` drift test (W3a).
 - [ ] Manual smoke of every swap type + deep-linked token pairs + wallet connect/disconnect/reconnect (W4).
 - [ ] Final: real `npm run build`, entry-chunk gz materially below the W0/branch baseline; a swap completes end-to-end on the ESM webapp; `npm run typecheck` clean.
@@ -86,7 +121,7 @@ Entry chunk should drop from ~1.79 MB gz toward the light-SDK path (tens of KB o
 
 ## Risks
 
-- Abstract-base `getType()` mapping (W2) — unit-tested against every enum value; the `IEscrowSelfInitSwap` set is the subtle one (see decision).
+- Family-guard mapping (W2a) — the abstract-base sets (`IToBTCSwap`, `IEscrowSelfInitSwap`) must enumerate exactly; the SDK guards' exhaustive `switch` + `never` default makes a mis-mapping a compile error, and the unit test covers the runtime side. Now an SDK change (Adam-owned API) rather than app-local, so it stays correct for every consumer.
 - `ConnectorBridge` state-lift loops (W4) — the hooks return fresh objects each render; memoize the `chains` map and lift via a single effect, as the current `WrappedChainsProvider` already does.
 - Connect-during-load window + returning-user autoConnect a beat later (W4) — accepted; needs the error boundary + a pending-connect handoff.
 - Publish coordination — the SDK dep stays on the git branch through development; flip to published semver only at merge. If Adam adds the barrel export, re-install the branch.
