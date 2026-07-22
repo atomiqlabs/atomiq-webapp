@@ -1,6 +1,6 @@
 # Perf epic — Layer 2 implementation plan (app-side runtime decoupling)
 
-Status: DRAFT for Marci's review — do not start coding until approved. Created 2026-07-21. Design source: `docs/perf-epic-design.md` §"Layer 2". Enabler (Layer 1) is DONE on the four `@atomiqlabs` `perf/esm-treeshake` branches (base `bffbbcd` → btc-mempool `1ec1a78` + messenger-nostr `3e14048` → sdk `fa7e2bc`), tree-shakeable and native-ESM-correct.
+Status: APPROVED by Adam 2026-07-22; W2-W4 DELIVERED 2026-07-22 on branch `perf/layer2-app` (`af2b616..61bd26d`, entry chunk −24% raw / −25% gz); **W5 added 2026-07-22 after post-delivery bundle tracing — open**. Created 2026-07-21. Design source: `docs/perf-epic-design.md` §"Layer 2". Enabler (Layer 1) is DONE on the four `@atomiqlabs` `perf/esm-treeshake` branches (base `bffbbcd` → btc-mempool `1ec1a78` + messenger-nostr `3e14048` → sdk `cdddd3d` incl. the instance guards), tree-shakeable and native-ESM-correct.
 
 ## Goal
 
@@ -102,6 +102,28 @@ Goal (biggest/riskiest): `ChainsProvider` wraps `WrappedChainsProvider` in `Sola
 - [ ] Keep the connect flow working against lifted state: the modal + `connectWalletPromiseCbk` ref live in the shell; `_connectWallet`/`_disconnect` come from the `chains` map once the bridge populates. Handle the connect-during-load window (user clicks Connect before the bridge mounts) and an error boundary per `perf-epic-design.md` §Layer 2 (folds in the old `perf-connector-deferral-design.md` behavior). With always-defer the connector layer populates a beat after paint, before any realistic Connect click.
 - [ ] Confirm no other module imports `WalletTypes`/`Chain`/`ChainIdentifiers` types from `ChainsProvider` in a way that breaks when the hooks move (these are type exports — should be fine, but grep).
 - [ ] Verify: analyzer shows the wallet-adapter + BTC-wallet + `@scure/btc-signer` weight in a post-paint async chunk, not the entry chunk; manual smoke — fresh load (no wallet), connect each chain, disconnect, reconnect, and returning-user autoConnect (a beat later, accepted).
+
+## W5 — decouple `ChainsConfig` runtime construction + finish the eager-path burn-down (added 2026-07-22)
+
+**Why (found by tracing `stats.json` after W2-W4 landed):** the entry chunk still carries `@noble/curves` (~383 KB gz module weight), `ethers` (~238), `starknet` (~150), `@solana/spl-token` (~122), all three `@atomiqlabs/chain-*` runtimes, ~106 KB of SDK, and `@scure/btc-signer` (~79) — because **`src/data/ChainsConfig.ts` is a second eager anchor the original design never identified**. It constructs, at module level: `new MempoolApi` + `new MempoolBitcoinRpc` (SDK/btc-mempool), `new Connection` (`@solana/web3.js`) + `new SolanaFees` (chain-solana), `new RpcProviderWithRetries`/`WebSocketChannelWithRetries` (chain-starknet → `starknet`), and `JsonRpcProviderWithRetries`/`WebSocketProviderWithRetries` per EVM chain (chain-evm → `ethers`), plus it imports `constants` from `starknet` for chain ids. `ChainsConfig` is imported eagerly by `Tokens.ts`, `SwapperProvider.tsx`, `useCheckAdditionalGas.ts` and others, so Rollup hoists every module it shares with the lazy chunks back into the entry. Separately, `useQuote.ts` and the bitcoin wallet base classes keep `@scure/btc-signer` + heavy SDK bitcoin classes eager. W2-W4 severed the connector/Factory paths (proven: `ConnectorBridge` async chunk exists); W5 severs the config/quote paths — this is where the promised "entry = light SDK + app UI" actually lands, and the lever for the mobile Lighthouse score.
+
+### W5a — split `ChainsConfig` into eager data + lazy runtime
+
+- [ ] `src/data/ChainsConfig.ts` becomes **data-only** (keeps the export name, module path, and nested per-chain shape for the fields eager consumers use): enabled-ness (per-chain presence), `blockExplorer`, `network`, `assetBalances`, `chainId`, `chainType`, `evmConfig`, mempool URL lists. NO heavy imports: replace `constants.StarknetChainId.SN_MAIN/SN_SEPOLIA` with the literal chain-id strings (type-only import if a type is wanted); `BitcoinNetwork` (SDK enum) is a light tree-shakeable import and may stay; drop/inline `WalletAdapterNetwork` if `@solana/wallet-adapter-base` proves non-light. Acceptance: `ChainsConfig.ts` imports nothing that transitively reaches `starknet`, `ethers`, `@solana/web3.js`, `chain-*`, or SDK runtime classes.
+- [ ] New `src/data/ChainsRuntime.ts` (imported ONLY from lazy graphs): exports a **memoized** `getChainsRuntime()` that builds the full old-shape object — data fields + constructed `mempoolApi`, `rpc` (MempoolBitcoinRpc), Solana `Connection`+`SolanaFees` (+ `fetchWithTimeout`, which moves here), Starknet `RpcProviderWithRetries`/`WebSocketChannelWithRetries`, EVM providers. Memoization matters: `SwapperProvider` (via its existing dynamic import) and the bridge's chain hooks must share the SAME provider/connection instances, as they implicitly do today.
+- [ ] Repoint consumers by the rule: eager modules (`Tokens.ts`, `useCheckAdditionalGas.ts`, any UI reading explorer links/balances/flags) touch only data fields from `ChainsConfig`; runtime objects are reachable only via `getChainsRuntime()` from lazy graphs (`SwapperProvider`'s `loadSwapper()` dynamic import; the chain hooks inside `ConnectorBridge`). Map every current `ChainsConfig` consumer and classify before editing.
+
+### W5b — defer the remaining bitcoin-stack eager path
+
+- [ ] Trace and break the static chains keeping `@scure/btc-signer` + SDK bitcoin wallet classes in the entry: `src/hooks/quoting/useQuote.ts` and the `src/wallets/bitcoin/base/*` value-imports reachable from eager hooks (e.g. `useFromBtcQuote`, `useSpvVaultFromBtcQuote`). Convert type-position imports to `import type`; where runtime use is real (PSBT building, address parsing), move it behind a dynamic import or into the bridge-loaded graph so it lands in a lazy chunk. Behavior byte-identical; only load timing changes.
+
+### W5c — entry-audit burn-down + measurement
+
+- [ ] Rebuild with `npm run analyze`; from `stats.json`, assert the entry chunk contains NO modules from: `starknet`, `ethers`, `@solana/web3.js`, `@solana/spl-token`, `@coral-xyz/anchor`, `@atomiqlabs/chain-*`, `@scure/btc-signer`; and that SDK-in-entry collapses toward the light helpers. Chase any survivor by its import chain (same tracing as above) until the list is clean or each survivor has a documented reason.
+- [ ] Target: entry chunk ≈ app src + React/UI + polyfills + light SDK — order ~500 KB gz (from 1,305). Record before/after in the progress ledger.
+- [ ] Verify: `npm run typecheck` + `npm test` (unchanged known failures only) + `npm run build`; Playwright smoke vs `vite preview` (first paint renders, no console errors); Lighthouse re-run against a **compressed** static serve (`npx serve -s build`), mobile + desktop, recorded alongside the pre-W5 run (mobile 28 uncompressed / see 2026-07-22 measurements).
+
+Risks: instance-sharing (Factory vs hooks must reuse the same providers — the memoized getter is load-bearing); `as const` typing shape drift for `ChainsConfig` consumers (keep field names/types identical for the data fields); a data-module import that silently reaches a heavy package via re-exports (the stats.json audit is the gate, not eyeballing imports).
 
 ## Sequencing
 
