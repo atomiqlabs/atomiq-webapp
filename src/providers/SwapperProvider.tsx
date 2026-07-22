@@ -1,4 +1,4 @@
-import {Swapper} from "@atomiqlabs/sdk";
+import type {Swapper} from "@atomiqlabs/sdk";
 import {useEffect, useRef, useState} from "react";
 import {useLocation} from "react-router-dom";
 import {FEConstants} from "../FEConstants";
@@ -6,9 +6,6 @@ import {ChainsConfig} from "../data/ChainsConfig";
 import {SwapperContext} from "../context/SwapperContext";
 import EventEmitter from "events";
 import {useLocalStorage} from "../hooks/utils/useLocalStorage";
-import {Factory} from "../utils/SwapperFactory";
-
-console.log('Factory: ', Factory);
 
 const noSwapperPaths = new Set(['/about', '/faq', '/explorer']);
 
@@ -44,6 +41,7 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
     abortController.current = new AbortController();
     let _swapper: Swapper<any>;
     try {
+      const {Factory} = await import("../utils/SwapperFactory");
       _swapper = Factory.newSwapper({
         chains: ChainsConfig,
         intermediaryUrl: useLp,
