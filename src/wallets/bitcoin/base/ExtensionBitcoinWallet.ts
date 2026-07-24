@@ -1,6 +1,7 @@
 import { BitcoinNetwork, CoinselectAddressTypes, BitcoinWallet } from '@atomiqlabs/sdk';
 import { NETWORK, TEST_NETWORK, Transaction } from '@scure/btc-signer';
 import { ChainsConfig } from "../../../data/ChainsConfig";
+import { ChainsRuntime } from "../../../data/ChainsRuntime";
 
 const feeMultiplier = 1.25;
 
@@ -12,7 +13,7 @@ export abstract class ExtensionBitcoinWallet extends BitcoinWallet {
 
   constructor(wasAutomaticallyInitiated?: boolean) {
     super(
-      ChainsConfig.BITCOIN.rpc,
+      ChainsRuntime.BITCOIN.rpc,
       ChainsConfig.BITCOIN.network === BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK,
       feeMultiplier,
       import.meta.env.VITE_OVERRIDE_BITCOIN_FEE == null

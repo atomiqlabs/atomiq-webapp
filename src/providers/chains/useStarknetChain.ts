@@ -6,6 +6,7 @@ import { Chain, WalletListData } from '../ChainsProvider';
 import { useLocalStorage } from '../../hooks/utils/useLocalStorage';
 import { timeoutPromise } from '../../utils/Utils';
 import {ChainsConfig} from "../../data/ChainsConfig";
+import {ChainsRuntime} from "../../data/ChainsRuntime";
 import Controller from "@cartridge/controller";
 import {Chains} from "../../utils/Chains";
 
@@ -106,7 +107,7 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner>
       setStarknetWalletData(null);
       return;
     }
-    const walletAccount = await WalletAccount.connect(ChainsConfig.STARKNET?.rpcUrl, swo);
+    const walletAccount = await WalletAccount.connect(ChainsRuntime.STARKNET?.rpcUrl, swo);
     const chainId = await wallet.requestChainId(walletAccount.walletProvider);
     console.log(`useStarknetWalletContext(): connected wallet chainId: ${chainId}, name: ${swo.name}, id: ${swo.id}`);
     if (chainId != null && ChainsConfig.STARKNET?.chainId !== chainId) {

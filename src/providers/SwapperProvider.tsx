@@ -43,8 +43,9 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
     let _swapper: Swapper<any>;
     try {
       const {Factory} = await tryWithRetries(() => import("../utils/SwapperFactory"), {maxRetries: 3, delay: 500, exponential: true});
+      const {ChainsRuntime} = await import("../data/ChainsRuntime");
       _swapper = Factory.newSwapper({
-        chains: ChainsConfig,
+        chains: ChainsRuntime,
         intermediaryUrl: useLp,
         getRequestTimeout: 15000,
         postRequestTimeout: 30000,
@@ -54,7 +55,7 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
           affiliate: affiliateLink,
           feeOverrideCode: 'frontend'
         },
-        mempoolApi: ChainsConfig.BITCOIN.mempoolApi,
+        mempoolApi: ChainsRuntime.BITCOIN.mempoolApi,
         defaultTrustedIntermediaryUrl: FEConstants.trustedGasSwapLp,
         automaticClockDriftCorrection: true,
         dontCheckPastSwaps: true, //Check manually after loading the swapper
