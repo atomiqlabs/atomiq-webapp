@@ -215,7 +215,10 @@
     }
 
     .base-button__content {
-      @apply gap-1;
+      // Full-width + centered so the content box always spans the button; label
+      // swaps (e.g. "Initializing swap backend..." -> "Amounts empty") re-center
+      // inside a stable box instead of resizing and shifting.
+      @apply gap-1 w-full justify-center;
     }
     &.is-large {
       @apply h-[64px] text-[18px];

@@ -158,7 +158,7 @@ a {
 
 body {
   margin: 0;
-  font-family: WorkSans, sans-serif;
+  font-family: WorkSans, 'WorkSans Fallback', sans-serif;
   font-style: normal;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
