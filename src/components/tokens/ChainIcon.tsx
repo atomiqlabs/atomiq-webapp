@@ -1,17 +1,17 @@
 import { Token } from '@atomiqlabs/sdk';
 import * as React from 'react';
 import { TokenIcon } from './TokenIcon';
-import { useChain } from '../../hooks/chains/useChain';
+import {Chains} from "../../utils/Chains";
 
-export function ChainIcon(props: { token: Token }) {
-  const tokenChain = useChain(props.token);
+export function ChainIcon(props: { token: Token, className?: string }) {
+  const tokenChain = Chains[props.token.chainId];
 
   return (
-    <div className="chain-icon">
+    <div className={(props.className ?? "")+" chain-icon"}>
       <TokenIcon tokenOrTicker={props.token} className="chain-icon__img" />
       <img
-        src={tokenChain?.chain.icon}
-        alt={tokenChain?.chain.name}
+        src={tokenChain?.icon}
+        alt={tokenChain?.name}
         className="chain-icon__currency"
       />
     </div>

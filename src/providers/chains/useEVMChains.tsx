@@ -14,6 +14,7 @@ import {ChainsConfig} from '../../data/ChainsConfig';
 import {alpenChain, alpenChainId} from './evm/AlpenChainSpec';
 import {goatChain, goatChainId} from './evm/GoatChainSpec';
 import {ChainSwitchingSigner} from "./evm/ChainSwitchingSigner";
+import {Chains} from "../../utils/Chains";
 
 const BLOCKED_CONNECTORS = [
   "app.phantom"
@@ -206,10 +207,7 @@ export function useCitreaChain(enabled: boolean): Chain<EVMSigner> {
     if(!enabled) return null;
     return {
       ...common,
-      chain: {
-        name: 'Citrea',
-        icon: '/icons/chains/CITREA.svg',
-      },
+      chain: Chains.CITREA,
       chainId: 'CITREA'
     };
   }, [common]);
@@ -222,10 +220,7 @@ export function useBotanixChain(enabled: boolean): Chain<EVMSigner> {
     if(!enabled) return null;
     return {
       ...common,
-      chain: {
-        name: 'Botanix',
-        icon: '/icons/chains/BOTANIX.svg',
-      },
+      chain: Chains.BOTANIX,
       chainId: 'BOTANIX'
     };
   }, [common]);
@@ -238,10 +233,7 @@ export function useAlpenChain(enabled: boolean): Chain<EVMSigner> {
     if(!enabled) return null;
     return {
       ...common,
-      chain: {
-        name: 'Alpen',
-        icon: '/icons/chains/ALPEN.svg',
-      },
+      chain: Chains.ALPEN,
       chainId: 'ALPEN'
     };
   }, [common]);
@@ -254,10 +246,7 @@ export function useGoatChain(enabled: boolean): Chain<EVMSigner> {
     if(!enabled) return null;
     return {
       ...common,
-      chain: {
-        name: 'GOAT',
-        icon: '/icons/chains/GOAT.svg',
-      },
+      chain: Chains.GOAT,
       chainId: 'GOAT'
     };
   }, [common]);

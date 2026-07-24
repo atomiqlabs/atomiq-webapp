@@ -7,6 +7,7 @@ import { useLocalStorage } from '../../hooks/utils/useLocalStorage';
 import { timeoutPromise } from '../../utils/Utils';
 import {ChainsConfig} from "../../data/ChainsConfig";
 import Controller from "@cartridge/controller";
+import {Chains} from "../../utils/Chains";
 
 // Create the instance once, at module level
 const controller = new Controller({
@@ -208,10 +209,7 @@ export function useStarknetChain(enabled: boolean): Chain<StarknetBrowserSigner>
       !enabled
         ? null
         : {
-            chain: {
-              name: 'Starknet',
-              icon: '/icons/chains/STARKNET.svg',
-            },
+            chain: Chains.STARKNET,
             wallet:
               starknetWalletData == null || starknetSigner == null
                 ? null

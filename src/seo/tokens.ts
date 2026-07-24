@@ -1,11 +1,36 @@
 import type { SeoToken } from './types';
 import {Tokens} from "../utils/SwapperFactory";
-import {SCToken} from "@atomiqlabs/sdk";
+import {isSCToken, SCToken, Token} from "@atomiqlabs/sdk";
+
+// 'SOLANA' -> 'Solana'. Works for every curated chain; the BTC side sets its names above.
+function chainNameOf(chainId: string): string {
+  return chainId.charAt(0) + chainId.slice(1).toLowerCase();
+}
+
+export function toSeoToken(t: Token): SeoToken {
+  if(isSCToken(t)) {
+    return {
+      key: `${t.ticker.toLowerCase()}-${t.chainId.toLowerCase()}`,
+      ticker: t.ticker,
+      chainKey: t.chainId.toLowerCase(),
+      chainName: chainNameOf(t.chainId),
+      tokenId: `${t.chainId}:${t.address}`,
+      isBtcSide: false,
+      token: t,
+    };
+  } else {
+    if(t.lightning) {
+      return { key: 'lightning', ticker: 'BTC-LN', chainKey: 'lightning', chainName: 'Lightning Network', tokenId: 'LIGHTNING', isBtcSide: true, token: t };
+    } else {
+      return { key: 'bitcoin',   ticker: 'BTC', chainKey: 'bitcoin',   chainName: 'Bitcoin',           tokenId: 'BITCOIN',   isBtcSide: true, token: t };
+    }
+  }
+}
 
 export const BTC_SIDE: SeoToken[] = [
-  { key: 'bitcoin',   ticker: 'BTC', chainKey: 'bitcoin',   chainName: 'Bitcoin',           tokenId: 'BITCOIN',   isBtcSide: true },
-  { key: 'lightning', ticker: 'BTC', chainKey: 'lightning', chainName: 'Lightning Network', tokenId: 'LIGHTNING', isBtcSide: true },
-];
+  Tokens.BITCOIN.BTC,
+  Tokens.BITCOIN.BTCLN
+].map(toSeoToken);
 
 // Curated set of smart-chain tokens to generate pages for, as [chainId, SDK token key]
 // into Factory.Tokens. Ticker/name/identifier are read from the SDK so this list can never
@@ -13,7 +38,6 @@ export const BTC_SIDE: SeoToken[] = [
 const CURATED: SCToken[] = [
   Tokens.SOLANA.SOL,
   Tokens.SOLANA.USDC,
-  Tokens.SOLANA.WBTC,
   Tokens.STARKNET.STRK,
   Tokens.STARKNET.ETH,
   Tokens.STARKNET.WBTC,
@@ -22,18 +46,4 @@ const CURATED: SCToken[] = [
   Tokens.CITREA.CBTC
 ];
 
-// 'SOLANA' -> 'Solana'. Works for every curated chain; the BTC side sets its names above.
-function chainNameOf(chainId: string): string {
-  return chainId.charAt(0) + chainId.slice(1).toLowerCase();
-}
-
-export const SMART_CHAIN_TOKENS: SeoToken[] = CURATED.map((t) => {
-  return {
-    key: `${t.ticker.toLowerCase()}-${t.chainId.toLowerCase()}`,
-    ticker: t.ticker,
-    chainKey: t.chainId.toLowerCase(),
-    chainName: chainNameOf(t.chainId),
-    tokenId: `${t.chainId}:${t.address}`,
-    isBtcSide: false,
-  };
-});
+export const SMART_CHAIN_TOKENS: SeoToken[] = CURATED.map(toSeoToken);

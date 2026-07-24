@@ -12,6 +12,7 @@ import {
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 import {ChainsConfig} from "../../data/ChainsConfig";
+import {Chains} from "../../utils/Chains";
 
 const wallets = [
   new PhantomWalletAdapter(),
@@ -48,10 +49,7 @@ export function useSolanaChain(enabled: boolean): Chain<SolanaSigner> {
     if (!enabled) return null;;
 
     return {
-      chain: {
-        name: 'Solana',
-        icon: '/icons/chains/SOLANA.svg',
-      },
+      chain: Chains.SOLANA,
       wallet:
         solanaSigner == null
           ? null

@@ -1,12 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { LandingPage } from '../LandingPage';
+import { appSwapHref } from '../homeContent';
 import type { ResolvedRoute } from '../types';
 
+// Only `token.ticker` is read (for the sibling-chip icon), so the fixtures stub just that.
 const route: ResolvedRoute = {
   slug: 'bitcoin-to-usdc-solana',
-  from: { key: 'bitcoin', ticker: 'BTC', chainKey: 'bitcoin', chainName: 'Bitcoin', tokenId: 'BITCOIN', isBtcSide: true },
-  to: { key: 'usdc-solana', ticker: 'USDC', chainKey: 'solana', chainName: 'Solana', tokenId: 'SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', isBtcSide: false },
+  from: { key: 'bitcoin', ticker: 'BTC', chainKey: 'bitcoin', chainName: 'Bitcoin', tokenId: 'BITCOIN', isBtcSide: true, token: { ticker: 'BTC' } as any },
+  to: { key: 'usdc-solana', ticker: 'USDC', chainKey: 'solana', chainName: 'Solana', tokenId: 'SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', isBtcSide: false, token: { ticker: 'USDC' } as any },
   title: 'Swap BTC to USDC on Solana | Atomiq',
   description: 'desc',
   h1: 'Swap BTC to USDC on Solana',
@@ -17,23 +19,49 @@ const route: ResolvedRoute = {
   ctaHref: '/?tokenIn=BITCOIN&tokenOut=SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
 };
 
+const sibling: ResolvedRoute = {
+  slug: 'usdc-solana-to-bitcoin',
+  from: route.to,
+  to: route.from,
+  title: 'Swap USDC on Solana to BTC | atomiq.exchange',
+  description: 'desc',
+  h1: 'Swap USDC on Solana to BTC',
+  intro: 'intro',
+  faqs: [],
+  tokenInId: route.to.tokenId,
+  tokenOutId: route.from.tokenId,
+  ctaHref: 'https://app.atomiq.exchange/?tokenIn=SOLANA:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&tokenOut=BITCOIN',
+};
+
 describe('LandingPage', () => {
-  const html = renderToStaticMarkup(<LandingPage route={route} siblingSlugs={['usdc-solana-to-bitcoin']} />);
+  const html = renderToStaticMarkup(<LandingPage route={route} siblings={[sibling]} />);
   it('renders the h1 and intro', () => {
     expect(html).toContain('<h1');
     expect(html).toContain('Swap BTC to USDC on Solana');
     expect(html).toContain('trustlessly');
   });
-  it('renders the CTA deep-link', () => {
+  it('renders the CTA deep-link into the app with the pair prefilled', () => {
     // renderToStaticMarkup HTML-encodes & as &amp; in attributes
-    expect(html).toContain(`href="${route.ctaHref.replace(/&/g, '&amp;')}"`);
+    const expected = appSwapHref(route.from.tokenId, route.to.tokenId).replace(/&/g, '&amp;');
+    expect(html).toContain(`href="${expected}"`);
   });
   it('renders FAQ text expanded (crawlable, no accordion)', () => {
     expect(html).toContain('What is Solana?');
     expect(html).toContain('Solana is fast.');
   });
-  it('links to sibling pages and home', () => {
+  it('lists sibling routes as chips linking to their SEO pages, plus home', () => {
+    expect(html).toContain('Other swap routes');
     expect(html).toContain('href="/swap/usdc-solana-to-bitcoin"');
     expect(html).toContain('href="/"');
+  });
+  it('mirrors the sibling routes in the footer (with the /swap/<slug>/ SEO link)', () => {
+    expect(html).toContain('href="/swap/usdc-solana-to-bitcoin/"');
+  });
+  it('renders the full site footer', () => {
+    expect(html).toContain('Quick Links');
+    expect(html).toContain('All rights reserved');
+  });
+  it('points app links at the app subdomain (absolute)', () => {
+    expect(html).toContain('href="https://app.atomiq.exchange/');
   });
 });

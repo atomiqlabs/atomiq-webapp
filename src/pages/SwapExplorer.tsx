@@ -10,8 +10,9 @@ import { ExplorerTotals } from '../components/explorer/ExplorerTotals';
 import { BaseButton } from '../components/common/BaseButton';
 import { ChainsContext } from '../context/ChainsContext';
 import { Chain } from '../providers/ChainsProvider';
-import { smartChainTokenArray, TokenIcons } from '../utils/Tokens';
+import { smartChainTokenArray } from '../utils/Tokens';
 import { MultiSelectDropdown } from '../components/common/MultiSelectDropdown';
+import {TokenIcons} from "../utils/TokenIcons";
 
 const tokenTickers = Array.from(new Set(smartChainTokenArray.map((val) => val.ticker)));
 

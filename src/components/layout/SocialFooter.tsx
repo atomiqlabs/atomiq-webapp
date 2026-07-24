@@ -4,6 +4,7 @@ import { SocialFooterView } from './SocialFooterView';
 
 export function SocialFooter(props: {}) {
   const location = useLocation();
-  const isHorizontal = location.pathname === '/history' || location.pathname === '/explorer';
-  return <SocialFooterView isHorizontal={isHorizontal} />;
+  if (location.pathname !== '/') return null;
+
+  return <SocialFooterView isHorizontal={false} />;
 }

@@ -182,18 +182,6 @@
   }
 
   .chain-icon {
-    @apply h-fit w-max;
-  }
-
-  .chain-icon__img {
-    @media (max-width: 991.98px) {
-      @apply w-8 h-8;
-    }
-  }
-
-  .chain-icon__currency {
-    @media (max-width: 991.98px) {
-      @apply w-4 h-4;
-    }
+    @apply w-8 h-8;
   }
 }

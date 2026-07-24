@@ -1,5 +1,6 @@
-import {TokenIcons, TokenIconsChainSpecific} from '../../utils/Tokens';
+
 import {isSCToken, Token} from '@atomiqlabs/sdk';
+import {TokenIcons, TokenIconsChainSpecific} from "../../utils/TokenIcons";
 
 function getTokenIconUrl(tokenOrTicker: string | Token) {
   if(typeof(tokenOrTicker)==="string") return TokenIcons[tokenOrTicker];

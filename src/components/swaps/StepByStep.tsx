@@ -2,9 +2,9 @@ import Icon from 'react-icons-kit';
 import * as React from 'react';
 import classNames from 'classnames';
 import { ISwap } from '@atomiqlabs/sdk';
-import { TokenIcons } from '../../utils/Tokens';
 import { useQuoteAmountsAndAddress } from '../../hooks/swaps/helpers/useQuoteAmountsAndAddress';
 import {truncateAmount} from "../../utils/Utils";
+import {TokenIcons} from "../../utils/TokenIcons";
 
 export type SingleStep = {
   icon: any;

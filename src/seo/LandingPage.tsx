@@ -1,65 +1,33 @@
 import { MainNavigationView, NavItem } from '../components/layout/MainNavigationView';
-import { SocialFooterView } from '../components/layout/SocialFooterView';
-import type {ResolvedRoute, SeoToken} from './types';
+import { SiteFooterView } from '../components/layout/SiteFooterView';
+import { BENEFITS, APP_ORIGIN, DOCS_URL, appSwapHref, routeChipLabel } from './homeContent';
+import { TokenIcons } from '../utils/TokenIcons';
+import type { ResolvedRoute } from './types';
+import {ChainIcon} from "../components/tokens/ChainIcon";
 
+// Swap/Explorer navigate to the app (absolute, cross-subdomain); Docs/SDK/legal are external.
 const NAV_ITEMS: NavItem[] = [
-  { link: '/', icon: 'swap-nav', title: 'Swap' },
-  { link: '/explorer', icon: 'Explorer', title: 'Explorer' },
+  { link: `${APP_ORIGIN}/`, icon: 'swap-nav', title: 'Swap' },
+  { link: `${APP_ORIGIN}/explorer`, icon: 'Explorer', title: 'Explorer' },
   { link: 'https://docs.atomiq.exchange/', icon: 'book', title: 'Docs', external: true },
-  { link: 'https://npmjs.com/@atomiqlabs/sdk', icon: 'embed2', title: 'SDK', external: true },
-  { link: 'https://www.atomiqlabs.com/terms-of-service', icon: 'file-text', title: 'Terms of Service', external: true },
-  { link: 'https://www.atomiqlabs.com/privacy-cookie-policy', icon: 'user', title: 'Privacy Policy', external: true },
+  { link: 'https://docs.atomiq.exchange/sdk-guide/', icon: 'embed2', title: 'SDK', external: true },
+  { link: 'https://docs.atomiq.exchange/rest-api-guide/', icon: 'file-text', title: 'API', external: true }
 ];
 
-// Reuse the app's swap-CTA look (BaseButton `--primary`: the purple gradient) so the
-// landing buttons match the rest of the app. These are plain anchors because the static
-// pages ship no React runtime; the classes carry the styling.
-const CTA_CLASS =
-  'btn base-button base-button--primary base-button--large w-100 d-flex align-items-center justify-content-center text-white text-decoration-none';
 const LAUNCH_CLASS =
   'btn base-button base-button--primary base-button--smaller d-inline-flex align-items-center text-white text-decoration-none';
-// Translucent card surface (matches the About page's `bg-white/10` cards) on a plain div,
-// which sidesteps the bootstrap `.card` background winning the cascade.
-const CARD_CLASS = 'bg-white/10 rounded-2xl p-4';
-
-const BENEFITS: { title: string; text: string }[] = [
-  {
-    title: 'Trustless & atomic',
-    text: 'You keep custody the entire time and can always reclaim your funds if a swap does not complete.',
-  },
-  {
-    title: 'No bridge or CEX',
-    text: 'No custodial bridge and no centralized exchange: no deposits, no withdrawals, no counterparty risk.',
-  },
-  {
-    title: 'Bitcoin-secured',
-    text: 'Swaps are verified against Bitcoin proof-of-work via an on-chain Bitcoin light client.',
-  },
-  {
-    title: 'RFQ pricing',
-    text: 'Competitive quotes straight from market makers, with no AMM pools and no slippage.',
-  },
-];
-
-function prettyToken(token: SeoToken): string {
-  if(token.isBtcSide) {
-    return token.chainName;
-  } else {
-    return token.ticker+" on "+token.chainName;
-  }
-}
 
 export function LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRoute[] }) {
   const { route, siblings } = props;
   const counterpartyChain = route.from.isBtcSide ? route.to.chainName : route.from.chainName;
 
   return (
-    <div className="App d-flex flex-column">
+    <div className="App d-flex flex-column mk-home">
       <MainNavigationView
         navItems={NAV_ITEMS}
         walletSlot={
           <div className="d-flex justify-content-end">
-            <a href="/" className={LAUNCH_CLASS}>
+            <a href={`${APP_ORIGIN}/`} className={LAUNCH_CLASS}>
               Launch App
             </a>
           </div>
@@ -69,71 +37,103 @@ export function LandingPage(props: { route: ResolvedRoute; siblings: ResolvedRou
         noTooltip
       />
 
-      <div className="flex-fill text-white container text-start mt-4 mt-md-5 mb-5">
-        <h1 className="page-title">{route.h1}</h1>
-
-        <div className={`${CARD_CLASS} mb-3`}>
-          <p className="mb-4">{route.intro}</p>
-          <a href={route.ctaHref} className={CTA_CLASS}>
-            Swap {route.from.ticker} to {route.to.ticker}
-          </a>
-        </div>
-
-        <h2 className="page-title mt-5">Why swap with Atomiq</h2>
-        <div className="row">
-          {BENEFITS.map((b) => (
-            <div className="col-12 col-md-6 col-lg-3 pb-3" key={b.title}>
-              <div className={`${CARD_CLASS} height-100`}>
-                <h3 className="fs-5 fw-semibold mb-2">{b.title}</h3>
-                <p className="mb-0 text-white text-opacity-75">{b.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <h2 className="page-title mt-5">What you need</h2>
-        <div className={`${CARD_CLASS} mb-3`}>
-          <p className="mb-0">
-            A Bitcoin wallet and a {counterpartyChain} wallet. Connect both in the app to begin your swap.
-          </p>
-        </div>
-
-        <h2 className="page-title mt-5">FAQ</h2>
-        {/* Native <details> accordion: matches the main FAQ look with zero JS, and keeps
-            every answer in the crawlable HTML so the SEO signal is preserved. */}
-        <div className="seo-faqs">
-          {route.faqs.map((faq, i) => (
-            <details key={i} open={i === 0}>
-              <summary>
-                <span className="seo-faq-number">{i + 1}.</span>
-                <span>{faq.question}</span>
-                <span className="seo-faq-arrow icon icon-caret-down" aria-hidden="true" />
-              </summary>
-              <div className="seo-faq-answer faq-answer">{faq.answer}</div>
-            </details>
-          ))}
-        </div>
-
-        <h2 className="page-title mt-5">Other swap routes</h2>
-        <div className={`${CARD_CLASS} mb-3`}>
-          <ul className="mb-0 ps-3 d-flex flex-column gap-1">
-            {siblings.map((sibling) => (
-              <li key={sibling.slug}>
-                <a href={`/swap/${sibling.slug}`} className="text-white">
-                  {prettyToken(sibling.from)} → {prettyToken(sibling.to)}
-                </a>
-              </li>
-            ))}
-            <li className="mt-2">
-              <a href="/" className="text-white">
-                Open the atomiq.exchange app
+      {/* ---------- hero ---------- */}
+      <section className="mk-hero">
+        <div className="mk-wrap">
+          <div className="mk-hero__inner">
+            <span className="mk-eyebrow">{route.from.ticker} → {route.to.ticker}</span>
+            <h1 className="mk-display mk-section__title">{route.h1}</h1>
+            <p className="mk-hero__sub">{route.intro}</p>
+            <div className="mk-cta">
+              <a href={appSwapHref(route.from.tokenId, route.to.tokenId)} className="mk-btn mk-btn--primary">
+                Swap {route.from.ticker} to {route.to.ticker}
               </a>
-            </li>
-          </ul>
+              <a href={DOCS_URL} className="mk-btn mk-btn--ghost" target="_blank" rel="noreferrer">
+                Read Docs
+                <span className="mk-btn__arrow" aria-hidden="true">→</span>
+              </a>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <SocialFooterView isHorizontal={false} noTooltip />
+      {/* ---------- why atomiq ---------- */}
+      <section className="mk-section">
+        <div className="mk-wrap">
+          <div className="mk-section__head">
+            <span className="mk-eyebrow">Why atomiq</span>
+            <h2 className="mk-display mk-section__title">Why swap with Atomiq</h2>
+          </div>
+          <div className="mk-grid">
+            {BENEFITS.map((b) => (
+              <div className="mk-card" key={b.title}>
+                <h3 className="mk-card__title">{b.title}</h3>
+                <p className="mk-card__text">{b.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- what you need ---------- */}
+      <section className="mk-section">
+        <div className="mk-wrap">
+          <div className="mk-section__head">
+            <span className="mk-eyebrow">Before you start</span>
+            <h2 className="mk-display mk-section__title">What you need</h2>
+          </div>
+          <div className="mk-note">
+            A Bitcoin wallet and a {counterpartyChain} wallet. Connect both in the app to begin your swap.
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- other swap routes → sibling SEO pages (internal linking, popular-route chip style) ---------- */}
+      <section className="mk-section">
+        <div className="mk-wrap">
+          <div className="mk-section__head">
+            <span className="mk-eyebrow">Keep exploring</span>
+            <h2 className="mk-display mk-section__title">Other swap routes</h2>
+          </div>
+          <div className="mk-routes">
+            {siblings.map((sibling) => (
+              <a className="mk-route" href={`/swap/${sibling.slug}/`} key={sibling.slug}>
+                <ChainIcon className="mk-route__icon" token={sibling.from.token}/>
+                <span>{routeChipLabel(sibling.from, sibling.to)}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- FAQ ---------- */}
+      <section className="mk-section">
+        <div className="mk-wrap">
+          <div className="mk-section__head">
+            <span className="mk-eyebrow">Good to know</span>
+            <h2 className="mk-display mk-section__title">FAQ</h2>
+          </div>
+          {/* Native <details> accordion: matches the main FAQ look with zero JS, and keeps
+              every answer in the crawlable HTML so the SEO signal is preserved. */}
+          <div className="seo-faqs mk-faq">
+            {route.faqs.map((faq, i) => (
+              <details key={i} open={i === 0}>
+                <summary>
+                  <span className="seo-faq-number">{i + 1}.</span>
+                  <span>{faq.question}</span>
+                  <span className="seo-faq-arrow icon icon-caret-down" aria-hidden="true" />
+                </summary>
+                <div className="seo-faq-answer faq-answer">{faq.answer}</div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <SiteFooterView
+        noTooltip
+        popularRoutes={siblings.map((s) => ({ slug: s.slug, label: routeChipLabel(s.from, s.to) }))}
+      />
     </div>
   );
 }
