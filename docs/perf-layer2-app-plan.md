@@ -1,6 +1,6 @@
 # Perf epic — Layer 2 implementation plan (app-side runtime decoupling)
 
-Status: APPROVED by Adam 2026-07-22; W2-W4 DELIVERED 2026-07-22 on branch `perf/layer2-app` (`af2b616..61bd26d`, entry chunk −24% raw / −25% gz); **W5 added 2026-07-22 after post-delivery bundle tracing — open**. Created 2026-07-21. Design source: `docs/perf-epic-design.md` §"Layer 2". Enabler (Layer 1) is DONE on the four `@atomiqlabs` `perf/esm-treeshake` branches (base `bffbbcd` → btc-mempool `1ec1a78` + messenger-nostr `3e14048` → sdk `cdddd3d` incl. the instance guards), tree-shakeable and native-ESM-correct.
+Status: APPROVED by Adam 2026-07-22; W2-W4 DELIVERED 2026-07-22 on branch `perf/layer2-app` (`af2b616..61bd26d`, entry chunk −24% raw / −25% gz); **W5 added 2026-07-22 after post-delivery bundle tracing; DELIVERED 2026-07-24 (`b84cbe5..7a6f66f`, entry chunk 1,286 KB raw / 398 KB gz — −73%/−69% vs pre-W5, −80%/−77% vs pre-Layer-2)**. Created 2026-07-21. Design source: `docs/perf-epic-design.md` §"Layer 2". Enabler (Layer 1) is DONE on the four `@atomiqlabs` `perf/esm-treeshake` branches (base `bffbbcd` → btc-mempool `1ec1a78` + messenger-nostr `3e14048` → sdk `cdddd3d` incl. the instance guards), tree-shakeable and native-ESM-correct.
 
 ## Goal
 
@@ -124,6 +124,8 @@ Goal (biggest/riskiest): `ChainsProvider` wraps `WrappedChainsProvider` in `Sola
 - [ ] Verify: `npm run typecheck` + `npm test` (unchanged known failures only) + `npm run build`; Playwright smoke vs `vite preview` (first paint renders, no console errors); Lighthouse re-run against a **compressed** static serve (`npx serve -s build`), mobile + desktop, recorded alongside the pre-W5 run (mobile 28 uncompressed / see 2026-07-22 measurements).
 
 Risks: instance-sharing (Factory vs hooks must reuse the same providers — the memoized getter is load-bearing); `as const` typing shape drift for `ChainsConfig` consumers (keep field names/types identical for the data fields); a data-module import that silently reaches a heavy package via re-exports (the stats.json audit is the gate, not eyeballing imports).
+
+**W5 result (2026-07-24, commits `b84cbe5` W5a / `0cb81bb` W5b / `7a6f66f` W5c):** entry chunk 4,759 KB raw / 1,305 KB gz → 1,286 / 398, under the ~500 gz target. Banned-package audit (`scripts/entry-audit.mjs`, re-runnable gate) passes: starknet, ethers, @solana/web3.js, @solana/spl-token, @coral-xyz/anchor, @atomiqlabs/chain-* all at zero in the entry. Documented allowlisted residual: `@scure/btc-signer` (~66 module parts) + SDK `FromBTCSwap.js`/`SpvFromBTCSwap.js`, because the SDK co-locates the swap state enums (`FromBTCSwapState`, `SpvFromBTCSwapState`) and guards (`isFromBTCSwap`, `isSpvFromBTCSwap`) in the same modules that import btc-signer, and four eager hooks (`useFromBtcQuote`, `useSpvVaultFromBtcQuote`, `useSwapState`, `useSwapFees`) use them as runtime values — eviction needs either a swap-panel lazy split (app side) or an upstream SDK split putting enums/guards in a light module (Adam). Pending: Lighthouse re-run vs compressed serve; manual full-swap-flow smoke before merge.
 
 ## Sequencing
 
