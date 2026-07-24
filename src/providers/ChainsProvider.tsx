@@ -12,7 +12,8 @@ import {ConnectWalletModal} from '../components/wallets/ConnectWalletModal';
 import { EVMSigner } from '@atomiqlabs/chain-evm';
 import {EVMWalletWrapper, useAlpenChain, useBotanixChain, useCitreaChain, useGoatChain} from './chains/useEVMChains';
 import {ChainsConfig} from '../data/ChainsConfig';
-import {LNURLWithdraw, Token} from "@atomiqlabs/sdk";
+import {LNURLWithdraw, SwapType, Token} from "@atomiqlabs/sdk";
+import type {WalletBalanceResult} from "../hooks/wallets/useWalletBalance";
 
 export type WalletListData = {
   name: string;
@@ -31,6 +32,14 @@ export type Chain<T> = {
     icon: string;
     address?: string;
     getSwapLimits?: (input: boolean, token: Token) => {min?: bigint, max?: bigint};
+    getBalance?: (params: {
+      currency: Token;
+      swapType: SwapType;
+      swapChainId?: string;
+      requestGasDrop?: boolean;
+      minBtcFeeRate?: number;
+      input?: boolean;
+    }) => Promise<WalletBalanceResult>;
     onlyInput?: boolean;
     instance: T;
     additionalWalletActions?: {icon: JSX.Element | string, text: string, onClick: () => void}[]

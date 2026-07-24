@@ -6,7 +6,15 @@ import { useChain } from '../chains/useChain';
 import {useWallet} from "./useWallet";
 
 export type WalletBalanceResult = {
-  balance: TokenAmount;
+  /**
+   * Authoritative amount for limits, affordability checks, and execution.
+   * Undefined means generic wallet-balance enforcement is intentionally disabled.
+   */
+  balance?: TokenAmount;
+  /**
+   * Presentation-only amount. Never use this for affordability or execution.
+   */
+  displayBalance?: TokenAmount;
   feeRate?: number;
 };
 
@@ -24,10 +32,7 @@ export function useWalletBalance(
 
   const pauseRef = useStateRef(pause);
 
-  const [maxSpendable, setMaxSpendable] = useState<{
-    balance: TokenAmount;
-    feeRate?: number;
-  }>(null);
+  const [maxSpendable, setMaxSpendable] = useState<WalletBalanceResult>(null);
 
   useEffect(() => {
     setMaxSpendable(null);
@@ -38,8 +43,18 @@ export function useWalletBalance(
 
     let canceled = false;
 
-    let getBalance: () => Promise<{ balance: TokenAmount; feeRate?: number }>;
-    if (isBtcToken(currency)) {
+    let getBalance: () => Promise<WalletBalanceResult>;
+    if (wallet.getBalance != null) {
+      getBalance = () =>
+        wallet.getBalance({
+          currency,
+          swapType,
+          swapChainId,
+          requestGasDrop,
+          minBtcFeeRate,
+          input,
+        });
+    } else if (isBtcToken(currency)) {
       getBalance = () =>
         swapper.Utils.getBitcoinSpendableBalance(wallet.instance, swapChainId, {
           gasDrop: requestGasDrop,
@@ -80,6 +95,7 @@ export function useWalletBalance(
     swapType === SwapType.SPV_VAULT_FROM_BTC ? swapChainId : null,
     swapType === SwapType.SPV_VAULT_FROM_BTC ? requestGasDrop : false,
     minBtcFeeRate,
+    input,
   ]);
 
   return maxSpendable;
