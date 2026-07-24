@@ -228,7 +228,12 @@ td {
     bottom: calc(var(--background-bottom-blob-size) / -2 - 23rem);
     transform: translateX(-50%);
     background: url('/blur-blob-bottom.webp') center / contain no-repeat;
-    position: absolute;
+    //Viewport-anchored (not absolute) so the blob's layout box does NOT track
+    //#root's height as content streams in on hydration — that growth was the real
+    //Cumulative Layout Shift source (the base bottom-anchor moved, not the toggle).
+    //fixed decouples it from content flow; combined with the transform-only swap-page
+    //nudge below, the blob no longer shifts.
+    position: fixed;
     pointer-events: none;
   }
 
@@ -247,9 +252,14 @@ td {
     pointer-events: none;
   }
 
-  //Moves the magenta blob a bit up on the main swap page
+  //Moves the magenta blob a bit up on the main swap page.
+  //Expressed as a transform delta (not a `bottom` change) so that when .swap-page
+  //mounts on hydration the blob moves via the compositor only — its layout box is
+  //unchanged, so this produces no Cumulative Layout Shift (transforms are excluded
+  //from CLS). translateY(-35rem) reproduces the old bottom delta exactly:
+  //base bottom (S/-2 - 23rem) - 35rem == the old swap-page bottom (S/-2 + 12rem).
   &:has(.swap-page):after {
-    bottom: calc(var(--background-bottom-blob-size) / -2 + 12rem);
+    transform: translateX(-50%) translateY(-35rem);
   }
 }
 
