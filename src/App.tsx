@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { ReactNode, useContext } from 'react';
 import { QuickScan } from './pages/quickscan/QuickScan';
 import { QuickScanExecute } from './pages/quickscan/QuickScanExecute';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -16,6 +16,7 @@ import { ChainsProvider } from './providers/ChainsProvider';
 import { SocialFooter } from './components/layout/SocialFooter';
 import { NotFound } from './pages/NotFound';
 import {SwapperProvider} from "./providers/SwapperProvider";
+import { IntermediateBitcoinWalletProvider } from './providers/IntermediateBitcoinWalletProvider';
 
 global.atomiqLogLevel = 5;
 
@@ -62,16 +63,24 @@ function WrappedApp() {
   );
 }
 
+export function AppProviders({ children }: { children: ReactNode }) {
+  return (
+    <BrowserRouter>
+      <SwapperProvider>
+        <IntermediateBitcoinWalletProvider>
+          <ChainsProvider>{children}</ChainsProvider>
+        </IntermediateBitcoinWalletProvider>
+      </SwapperProvider>
+    </BrowserRouter>
+  );
+}
+
 function App() {
   return (
     <div className="App d-flex flex-column">
-      <BrowserRouter>
-        <ChainsProvider>
-          <SwapperProvider>
-            <WrappedApp />
-          </SwapperProvider>
-        </ChainsProvider>
-      </BrowserRouter>
+      <AppProviders>
+        <WrappedApp />
+      </AppProviders>
     </div>
   );
 }
