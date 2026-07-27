@@ -6,20 +6,41 @@ import { Chain } from '../ChainsProvider';
 import {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {BitcoinWalletType, getInstalledBitcoinWallets} from "../../wallets/bitcoin/utils/BitcoinWalletUtils";
 import {Chains} from "../../utils/Chains";
+import { IBitcoinWallet } from '@atomiqlabs/sdk';
+import { useIntermediateBitcoinWallet } from '../../hooks/wallets/useIntermediateBitcoinWallet';
+import {WalletBalanceCallbackResult} from "../../hooks/wallets/useWalletBalance";
+
+type BitcoinWalletState = {
+    wallet: IBitcoinWallet;
+    wasAutomaticallyConnected: boolean;
+    icon: string;
+    name: string;
+    onlyInput?: boolean;
+    getBalance?: () => Promise<WalletBalanceCallbackResult>
+}
+
+function wrapExtensionWallet(wallet: ExtensionBitcoinWallet): BitcoinWalletState {
+    return {
+        wallet,
+        wasAutomaticallyConnected: wallet.wasAutomaticallyInitiated,
+        name: wallet.getName(),
+        icon: wallet.getIcon()
+    };
+}
 
 export function useBitcoinChain(
   enabled: boolean,
   connectedOtherChainWallets: { [chainName: string]: string }
-): Chain<ExtensionBitcoinWallet> {
-  const [bitcoinWallet, setBitcoinWallet] = React.useState<ExtensionBitcoinWallet>(undefined);
+): Chain<IBitcoinWallet> {
+  const intermediateWallet = useIntermediateBitcoinWallet();
+  const [bitcoinWallet, setBitcoinWallet] = React.useState<BitcoinWalletState>(undefined);
   const [nonInstalledWallets, setNonInstalledWallets] = useState<BitcoinWalletType[]>([]);
-  const [usableWallets, setUsableWallets] = useState<BitcoinWalletType[]>([]);
+  const [usableWallets, setUsableWallets] = useState<BitcoinWalletType[] | null>(null);
 
   const [autoConnect, setAutoConnect] = useLocalStorage<boolean>('btc-wallet-autoconnect', true);
   const bitcoinWalletRef = useStateRef(bitcoinWallet);
 
   const prevConnectedWalletRef = useRef<{ [chainName: string]: string }>({});
-
   useEffect(() => {
     if (!enabled) return;
     for (let chainName in connectedOtherChainWallets) {
@@ -30,8 +51,10 @@ export function useBitcoinChain(
       const activeWallet = ExtensionBitcoinWallet.loadState();
       if (oldWalletName != null && newWalletName == null && activeWallet?.name === oldWalletName) {
         setAutoConnect(true);
-        if (bitcoinWalletRef.current != null && bitcoinWalletRef.current.wasAutomaticallyInitiated)
-          disconnect(true);
+        if (
+            bitcoinWalletRef.current != null &&
+            bitcoinWalletRef.current.wasAutomaticallyConnected
+        ) disconnect(true);
       }
       prevConnectedWalletRef.current[chainName] = newWalletName;
       if (newWalletName == null) continue;
@@ -48,7 +71,7 @@ export function useBitcoinChain(
         if (bitcoinWalletType != null)
           bitcoinWalletType
             .use({ multichainConnected: true })
-            .then((wallet) => setBitcoinWallet(wallet))
+            .then((wallet) => activeWallet==null && setBitcoinWallet(wrapExtensionWallet(wallet)))
             .catch((e) => {
               console.error(e);
             });
@@ -57,19 +80,56 @@ export function useBitcoinChain(
     }
   }, [connectedOtherChainWallets, usableWallets]);
 
+  const intermediateWalletBalance = (intermediateWallet.confirmedBalance ?? 0n) + (intermediateWallet.unconfirmedBalance ?? 0n);
+  useEffect(() => {
+    if (!usableWallets) return;
+    if (intermediateWalletBalance===0n) {
+      if(bitcoinWalletRef.current?.name==="Intermediate wallet") {
+        disconnect();
+      }
+      return;
+    }
+    if (intermediateWallet.wallet==null) return;
+    setBitcoinWallet({
+      name: 'Intermediate wallet',
+      icon: '/icons/chains/BITCOIN.svg',
+      wallet: intermediateWallet.wallet,
+      wasAutomaticallyConnected: false,
+      onlyInput: true,
+      getBalance: async () => {
+        const rawBalance = await intermediateWallet.refreshBalance();
+        if (rawBalance == null) return {balance: undefined};
+        return {
+          balance: undefined,
+          displayBalance: rawBalance.confirmedBalance + rawBalance.unconfirmedBalance
+        };
+      }
+    });
+  }, [
+    usableWallets,
+    intermediateWallet.wallet,
+    intermediateWalletBalance,
+    intermediateWallet.refreshBalance
+  ]);
+
   useEffect(() => {
     if (!enabled) return;
     getInstalledBitcoinWallets()
       .then((resp) => {
-        setUsableWallets(resp.installed);
-        setNonInstalledWallets(resp.installable);
         if (resp.active != null && bitcoinWallet == null) {
           resp
             .active()
-            .then((wallet) => setBitcoinWallet(wallet))
+            .then((wallet) => setBitcoinWallet(wrapExtensionWallet(wallet)))
             .catch((e) => {
               console.error(e);
+            })
+            .finally(() => {
+              setUsableWallets(resp.installed);
+              setNonInstalledWallets(resp.installable);
             });
+        } else {
+          setUsableWallets(resp.installed);
+          setNonInstalledWallets(resp.installable);
         }
       })
       .catch((e) => console.error(e));
@@ -77,9 +137,10 @@ export function useBitcoinChain(
 
   useEffect(() => {
     if (!enabled) return;
-    if (bitcoinWallet == null) return;
+    const wallet = bitcoinWallet?.wallet;
+    if (wallet == null || !(wallet instanceof ExtensionBitcoinWallet)) return;
     let listener: (newWallet: ExtensionBitcoinWallet) => void;
-    bitcoinWallet.onWalletChanged(
+      wallet.onWalletChanged(
       (listener = (newWallet: ExtensionBitcoinWallet) => {
         console.log(
           'useBitcoinWalletData(): useEffect(walletChangeListener): New bitcoin wallet set: ',
@@ -90,19 +151,19 @@ export function useBitcoinChain(
           setBitcoinWallet(undefined);
           return;
         }
-        if (bitcoinWallet.getReceiveAddress() === newWallet.getReceiveAddress()) return;
-        setBitcoinWallet(newWallet);
+        if (wallet.getReceiveAddress() === newWallet.getReceiveAddress()) return;
+        setBitcoinWallet(wrapExtensionWallet(newWallet));
       })
     );
     return () => {
-      bitcoinWallet.offWalletChanged(listener);
+        wallet.offWalletChanged(listener);
     };
   }, [bitcoinWallet]);
 
   const connectWallet: (bitcoinWalletType: BitcoinWalletType) => Promise<void> = useCallback(
     async (bitcoinWalletType: BitcoinWalletType) => {
       const wallet = await bitcoinWalletType.use();
-      return setBitcoinWallet(wallet);
+      return setBitcoinWallet(wrapExtensionWallet(wallet));
     },
     []
   );
@@ -112,9 +173,9 @@ export function useBitcoinChain(
       if (
         skipToggleAutoConnect !== true &&
         bitcoinWalletRef.current != null &&
-        bitcoinWalletRef.current.wasAutomaticallyInitiated
-      )
-        setAutoConnect(false);
+        bitcoinWalletRef.current.wasAutomaticallyConnected
+      ) setAutoConnect(false);
+
       ExtensionBitcoinWallet.clearState();
       setBitcoinWallet(undefined);
     },
@@ -135,35 +196,38 @@ export function useBitcoinChain(
   );
 
   return useMemo(
-    () =>
-      !enabled
-        ? null
-        : {
-            chain: Chains.BITCOIN,
-            wallet:
-              bitcoinWallet == null
-                ? null
-                : {
-                    name: bitcoinWallet.getName(),
-                    icon: bitcoinWallet.getIcon(),
-                    instance: bitcoinWallet,
-                    address: bitcoinWallet.getReceiveAddress(),
-                  },
-            installedWallets: usableWallets.map((w) => ({
-              name: w.name,
-              icon: w.iconUrl,
-              isConnected: w.name === bitcoinWallet?.getName(),
-            })),
-            nonInstalledWallets: nonInstalledWallets.map((w) => ({
-              name: w.name,
-              icon: w.iconUrl,
-              downloadLink: w.installUrl,
-            })),
-            chainId: 'BITCOIN',
-            _connectWallet: connect,
-            _disconnect: bitcoinWallet != null ? disconnect : null,
-            hasWallets: usableWallets.length > 0 || nonInstalledWallets.length > 0,
-          },
+    () => {
+      if (!enabled) return null;
+
+      return {
+        chain: Chains.BITCOIN,
+        wallet:
+          bitcoinWallet != null
+            ? {
+                name: bitcoinWallet.name,
+                icon: bitcoinWallet.icon,
+                instance: bitcoinWallet.wallet,
+                address: bitcoinWallet.wallet.getReceiveAddress(),
+                onlyInput: bitcoinWallet.onlyInput,
+                getBalance: bitcoinWallet.getBalance
+              }
+            : null,
+        installedWallets: (usableWallets ?? []).map((w) => ({
+          name: w.name,
+          icon: w.iconUrl,
+          isConnected: w.name === bitcoinWallet?.name,
+        })),
+        nonInstalledWallets: nonInstalledWallets.map((w) => ({
+          name: w.name,
+          icon: w.iconUrl,
+          downloadLink: w.installUrl,
+        })),
+        chainId: 'BITCOIN',
+        _connectWallet: connect,
+        _disconnect: bitcoinWallet != null ? disconnect : null,
+        hasWallets: usableWallets?.length > 0 || nonInstalledWallets.length > 0,
+      };
+    },
     [bitcoinWallet, usableWallets, nonInstalledWallets, connect, disconnect]
   );
 }

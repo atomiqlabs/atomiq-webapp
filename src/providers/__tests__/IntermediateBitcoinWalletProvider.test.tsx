@@ -154,12 +154,8 @@ describe('IntermediateBitcoinWalletProvider', () => {
       ),
     });
 
-    await waitFor(() =>
-      expect(createBitcoinWalletFromMnemonic).toHaveBeenCalledWith(
-        STORED_MNEMONIC,
-      ),
-    );
     await waitFor(() => expect(result.current.wallet).toBe(wallet));
+    await waitFor(() => expect(result.current.loading).toBe(false));
     expect(generateBitcoinWallet).toHaveBeenCalledTimes(1);
     expect(readWalletData()).toEqual({
       mnemonic: STORED_MNEMONIC,

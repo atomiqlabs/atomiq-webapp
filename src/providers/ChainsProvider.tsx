@@ -12,8 +12,9 @@ import {ConnectWalletModal} from '../components/wallets/ConnectWalletModal';
 import { EVMSigner } from '@atomiqlabs/chain-evm';
 import {EVMWalletWrapper, useAlpenChain, useBotanixChain, useCitreaChain, useGoatChain} from './chains/useEVMChains';
 import {ChainsConfig} from '../data/ChainsConfig';
-import {LNURLWithdraw, SwapType, Token} from "@atomiqlabs/sdk";
-import type {WalletBalanceResult} from "../hooks/wallets/useWalletBalance";
+import {IBitcoinWallet, LNURLWithdraw, SwapType, Token} from "@atomiqlabs/sdk";
+import type {SingleAddressBitcoinWallet} from "@atomiqlabs/sdk";
+import {WalletBalanceCallbackResult, WalletBalanceResult} from "../hooks/wallets/useWalletBalance";
 
 export type WalletListData = {
   name: string;
@@ -39,7 +40,7 @@ export type Chain<T> = {
       requestGasDrop?: boolean;
       minBtcFeeRate?: number;
       input?: boolean;
-    }) => Promise<WalletBalanceResult>;
+    }) => Promise<WalletBalanceCallbackResult>;
     onlyInput?: boolean;
     instance: T;
     additionalWalletActions?: {icon: JSX.Element | string, text: string, onClick: () => void}[]
@@ -53,7 +54,7 @@ export type Chain<T> = {
 };
 
 export type WalletTypes = {
-  BITCOIN: ExtensionBitcoinWallet;
+  BITCOIN: IBitcoinWallet;
   LIGHTNING: WebLNProvider | {_lnurl: LNURLWithdraw};
   SOLANA: SolanaSigner;
   STARKNET: StarknetSigner;
