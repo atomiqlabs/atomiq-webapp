@@ -64,7 +64,13 @@ export function MainNavigationView(props: {
           <a className="navbar-brand" href="/">
             <div className="d-flex flex-row" style={{ fontSize: '1.5rem' }}>
               <img src="/main_logo.png" className="main-navigation__logo is-desktop" alt="atomiq" />
-              <img src="/logo192.png" className="main-navigation__logo is-mobile" alt="atomiq" />
+              <img
+                src="/logo96.webp"
+                width={27}
+                height={27}
+                className="main-navigation__logo is-mobile"
+                alt="atomiq"
+              />
               {networkBadge.show && (
                 <Badge className="main-navigation__network ms-2 my-0 align-items-center font-smallest" bg="danger">
                   {networkBadge.label}
