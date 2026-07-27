@@ -49,6 +49,7 @@ export type SwapPageState = {
     wallet?: {
       data: Chain<any>['wallet'];
       spendable?: TokenAmount;
+      displayBalance?: TokenAmount;
       btcFeeRate?: number;
       disconnect: () => void;
     };
@@ -721,6 +722,7 @@ export function useSwapPage(): SwapPageState {
           : {
               data: inputWallet,
               spendable: maxSpendable?.balance,
+              displayBalance: maxSpendable?.displayBalance ?? maxSpendable?.balance,
               btcFeeRate: maxSpendable?.feeRate,
               disconnect: () => disconnectWallet(inputChainData.chainId),
             },

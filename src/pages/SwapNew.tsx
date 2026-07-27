@@ -41,18 +41,18 @@ export function SwapNew() {
                   <div className="swap-panel__card__header">
                     <div className="swap-panel__card__title">You pay</div>
 
-                    {swapPage.input.wallet?.spendable != null ? (
+                    {swapPage.input.wallet?.displayBalance != null ? (
                       <div className="swap-connected-wallet">
                         <div className="swap-panel__card__wallet">
                           <WalletInfoBadge
                             noText={false}
                             simple={true}
                             setMax={() =>
-                              swapPage.input.amount.onChange(swapPage.input.wallet.spendable.amount)
+                              swapPage.input.amount.onChange(swapPage.input.wallet.displayBalance.amount)
                             }
                             currency={swapPage.input.token.value}
                             variantButton="clear"
-                            maxSpendable={swapPage.input.wallet?.spendable}
+                            maxSpendable={swapPage.input.wallet?.displayBalance}
                             input={true}
                           />
                         </div>
