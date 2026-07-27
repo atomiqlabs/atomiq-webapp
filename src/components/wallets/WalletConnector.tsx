@@ -36,10 +36,10 @@ function MultichainWalletMenuItem(props: { wallet: MultichainWallet; className?:
             id={'dropdown' + props.wallet.name}
             className="p-0 bg-opacity-50 cursor-pointer align-items-center d-flex flex-row pe-1"
           >
-            <img className="mr-0.5" width={24} height={24} src={props.wallet.icon} />
+            <img className="mr-0.5" width={24} height={24} src={props.wallet.icon} alt={props.wallet.name} />
             {chains.map((value, i) => {
               return (
-                <img className={i===0 ? "" : "-ml-1"} style={{zIndex: 10-i}} width={18} height={18} key={value.name} src={value.icon} />
+                <img className={i===0 ? "" : "-ml-1"} style={{zIndex: 10-i}} width={18} height={18} key={value.name} src={value.icon} alt={value.name} />
               );
             })}
           </Badge>
@@ -58,7 +58,7 @@ function MultichainWalletMenuItem(props: { wallet: MultichainWallet; className?:
           <div key={value.chainId}>
             <Dropdown.Header>
               <div className="sc-subtitle">
-                <img width={24} height={24} src={value.icon} className="sc-icon" />
+                <img width={24} height={24} src={value.icon} className="sc-icon" alt="" />
                 <div className="sc-text">{value.name}</div>
                 {/*  TODO add copy address*/}
               </div>

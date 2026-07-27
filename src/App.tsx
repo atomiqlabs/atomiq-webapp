@@ -29,7 +29,7 @@ function WrappedApp() {
   return (
     <>
       <MainNavigation />
-      <div className="d-flex flex-grow-1 flex-column mt-4 mt-md-5">
+      <main className="d-flex flex-grow-1 flex-column mt-4 mt-md-5">
         {(isSwapperError || isChainsError) && (
           <div className="no-wallet-overlay d-flex align-items-center">
             <div className="mt-auto height-50 d-flex justify-content-center align-items-center flex-fill">
@@ -59,7 +59,7 @@ function WrappedApp() {
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
-      </div>
+      </main>
       <SocialFooter/>
     </>
   );

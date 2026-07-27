@@ -127,6 +127,7 @@ export function SwapNew() {
                       swapPage.changeDirection();
                     }}
                     size="lg"
+                    aria-label="Reverse swap direction"
                     className="swap-panel__toggle__button"
                     style={{
                       transition: 'transform 0.35s ease',

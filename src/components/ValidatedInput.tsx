@@ -1,6 +1,6 @@
 import { Form, InputGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import * as React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 
 import { copy } from 'react-icons-kit/fa/copy';
@@ -102,6 +102,9 @@ function ValidatedInput(props: {
   const textEndRef = useRef<HTMLDivElement>(null);
 
   const [isFocused, setIsFocused] = useState(false);
+  //Every ValidatedInput used to fall back to the same hardcoded 'validationCustom01'
+  //controlId, so a page with more than one of them emitted duplicate DOM ids.
+  const fallbackControlId = useId();
 
   useEffect(() => {
     const current = props.type === 'textarea' ? inputTextAreaRef.current : inputRef.current;
@@ -326,7 +329,7 @@ function ValidatedInput(props: {
         if (props.onSubmit != null) props.onSubmit();
       }}
     >
-      <Form.Group controlId={props.inputId == null ? 'validationCustom01' : undefined}>
+      <Form.Group controlId={props.inputId == null ? fallbackControlId : undefined}>
         {props.label ? <Form.Label className={props.labelClassName}>{props.label}</Form.Label> : ''}
         <InputGroup className={'has-validation'}>
           {props.type === 'checkbox' ? (

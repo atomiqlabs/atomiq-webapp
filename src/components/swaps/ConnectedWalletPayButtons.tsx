@@ -28,7 +28,7 @@ export function ConnectedWalletPayButtons(props: {
           ) : (
             ''
           )}
-          Pay with <img width={20} height={20} src={props.wallet.icon} /> {props.wallet.name}
+          Pay with <img width={20} height={20} src={props.wallet.icon} alt="" /> {props.wallet.name}
         </BaseButton>
 
         <BaseButton

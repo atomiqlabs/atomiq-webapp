@@ -87,7 +87,7 @@ export function TokensDropdown(props: {
             return (
               <Nav.Item key={val}>
                 <Nav.Link eventKey={val} className="currency-dropdown__nav-link">
-                  <img src={'/icons/chains/' + val + '.svg'} className="currency-icon-medium" />
+                  <img src={'/icons/chains/' + val + '.svg'} alt={val} className="currency-icon-medium" />
                 </Nav.Link>
               </Nav.Item>
             );

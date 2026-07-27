@@ -8,14 +8,20 @@ function getTokenIconUrl(tokenOrTicker: string | Token) {
   return TokenIconsChainSpecific[tokenOrTicker.chainId]?.[tokenOrTicker.ticker] ?? TokenIcons[tokenOrTicker.ticker];
 }
 
+function getTokenTicker(tokenOrTicker: string | Token) {
+  return typeof(tokenOrTicker)==="string" ? tokenOrTicker : tokenOrTicker.ticker;
+}
+
 export function TokenIcon(props: {
   tokenOrTicker: string | Token;
   className?: string;
   style?: any;
+  alt?: string;
 }) {
   return (
     <img
       src={getTokenIconUrl(props.tokenOrTicker)}
+      alt={props.alt ?? getTokenTicker(props.tokenOrTicker)}
       className={props.className}
       style={props.style}
     />
