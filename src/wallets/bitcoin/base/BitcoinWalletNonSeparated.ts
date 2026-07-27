@@ -11,9 +11,10 @@ export abstract class BitcoinWalletNonSeparated extends ExtensionBitcoinWallet {
 
   protected async _getUtxoPool(
     sendingAddress: string,
+    sendingPublicKey: string,
     sendingAddressType: CoinselectAddressTypes
   ): Promise<BitcoinWalletUtxo[]> {
-    let utxos = await super._getUtxoPool(sendingAddress, sendingAddressType);
+    let utxos = await super._getUtxoPool(sendingAddress, sendingPublicKey, sendingAddressType);
     if(this.network!==NETWORK) return utxos; //No utxo checking for testnets
     if(this._isOrdinalsAddress(sendingAddress) && utxos.length>0) {
       try {

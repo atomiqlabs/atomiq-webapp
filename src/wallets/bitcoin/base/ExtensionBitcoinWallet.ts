@@ -1,4 +1,4 @@
-import { BitcoinNetwork, CoinselectAddressTypes, BitcoinWallet } from '@atomiqlabs/sdk';
+import {BitcoinNetwork, CoinselectAddressTypes, BitcoinWallet, BitcoinWalletUtxo} from '@atomiqlabs/sdk';
 import { NETWORK, TEST_NETWORK, Transaction } from '@scure/btc-signer';
 import { ChainsConfig } from "../../../data/ChainsConfig";
 
@@ -104,4 +104,18 @@ export abstract class ExtensionBitcoinWallet extends BitcoinWallet {
 
     return psbt;
   }
+
+  getAddressInfo(change: boolean): { address: string; publicKey: string; } {
+    const acc = this.toBitcoinWalletAccounts()[0]
+    return {address: acc.address, publicKey: acc.pubkey};
+  }
+
+  async getUtxoPool(): Promise<BitcoinWalletUtxo[]> {
+    return (await Promise.all(
+      this.toBitcoinWalletAccounts().map(
+        acc => this._getUtxoPool(acc.address, acc.pubkey, acc.addressType)
+      )
+    )).flat();
+  }
+
 }
