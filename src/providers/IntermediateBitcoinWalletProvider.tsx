@@ -52,14 +52,14 @@ export function IntermediateBitcoinWalletProvider({
   const refreshBalance = useCallback(async (abortSignal?: AbortSignal) => {
     try {
       const balance = await tryWithRetries(
-          () => wallet.getBalance(), undefined, undefined, abortSignal
+          () => walletRef.current.getBalance(), undefined, undefined, abortSignal
       );
       setBalance(balance);
       return balance;
     } catch (e) {
       console.error("Balance fetch error: ", e);
     }
-  }, [wallet]);
+  }, []);
 
   useEffect(() => {
     const abortController = new AbortController();
