@@ -225,15 +225,18 @@ td {
     width: var(--background-bottom-blob-size);
     height: var(--background-bottom-blob-size);
     left: 50%;
-    bottom: calc(var(--background-bottom-blob-size) / -2 - 23rem);
+    //Anchored from the TOP against the viewport height, not from the BOTTOM of #root.
+    //The blob still scrolls with the page (position: absolute), so it stays revealed
+    //as you scroll down — but its offset no longer depends on #root's height, which
+    //grows as content streams in on hydration. That growth was moving the old
+    //bottom-anchored box and causing a ~1.0 Cumulative Layout Shift; 100vh is constant,
+    //so there is no shift. Renders in the same place: the old
+    //`bottom: calc(S/-2 - 23rem)` put the blob's centre 23rem below the container
+    //bottom, which for the first viewport is `top: calc(100vh + 23rem - S/2)`.
+    top: calc(100vh + 23rem - var(--background-bottom-blob-size) / 2);
     transform: translateX(-50%);
     background: url('/blur-blob-bottom.webp') center / contain no-repeat;
-    //Viewport-anchored (not absolute) so the blob's layout box does NOT track
-    //#root's height as content streams in on hydration — that growth was the real
-    //Cumulative Layout Shift source (the base bottom-anchor moved, not the toggle).
-    //fixed decouples it from content flow; combined with the transform-only swap-page
-    //nudge below, the blob no longer shifts.
-    position: fixed;
+    position: absolute;
     pointer-events: none;
   }
 
