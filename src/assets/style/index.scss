@@ -233,7 +233,7 @@ td {
     //so there is no shift. Renders in the same place: the old
     //`bottom: calc(S/-2 - 23rem)` put the blob's centre 23rem below the container
     //bottom, which for the first viewport is `top: calc(100vh + 23rem - S/2)`.
-    top: -20rem;
+    top: -60rem;
     transform: translateX(-50%);
     background: url('/blur-blob-bottom.webp') center / contain no-repeat;
     position: absolute;
@@ -253,16 +253,6 @@ td {
     filter: blur(519.22px);
     transform: rotate(150deg);
     pointer-events: none;
-  }
-
-  //Moves the magenta blob a bit up on the main swap page.
-  //Expressed as a transform delta (not a `bottom` change) so that when .swap-page
-  //mounts on hydration the blob moves via the compositor only — its layout box is
-  //unchanged, so this produces no Cumulative Layout Shift (transforms are excluded
-  //from CLS). translateY(-35rem) reproduces the old bottom delta exactly:
-  //base bottom (S/-2 - 23rem) - 35rem == the old swap-page bottom (S/-2 + 12rem).
-  &:has(.swap-page):after {
-    transform: translateX(-50%) translateY(-35rem);
   }
 }
 
