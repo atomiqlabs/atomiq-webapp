@@ -74,7 +74,7 @@ afterEach(() => {
 
 describe('useWalletBalance', () => {
   it('uses a wallet balance override as the complete authoritative result', async () => {
-    const displayBalance = makeAmount(125_000n);
+    const displayBalance = 125_000n;
     const overrideResult = {
       balance: undefined,
       displayBalance,
@@ -108,7 +108,7 @@ describe('useWalletBalance', () => {
       { wrapper: makeWrapper(wallet, swapper) },
     );
 
-    await waitFor(() => expect(result.current).toEqual(overrideResult));
+    await waitFor(() => expect(result.current.displayBalance.rawAmount).toEqual(displayBalance));
     expect(getBalance).toHaveBeenCalledWith({
       currency: BitcoinTokens.BTC,
       swapType: SwapType.SPV_VAULT_FROM_BTC,

@@ -1,9 +1,15 @@
-import { isBtcToken, isSCToken, SwapType, Token, TokenAmount } from '@atomiqlabs/sdk';
+import {isBtcToken, isSCToken, SwapType, Token, TokenAmount, toTokenAmount} from '@atomiqlabs/sdk';
 import { useContext, useEffect, useState } from 'react';
 import { SwapperContext } from '../../context/SwapperContext';
 import { useStateRef } from '../utils/useStateRef';
 import { useChain } from '../chains/useChain';
 import {useWallet} from "./useWallet";
+
+export type WalletBalanceCallbackResult = {
+  balance?: bigint,
+  displayBalance?: bigint,
+  feeRate?: number
+}
 
 export type WalletBalanceResult = {
   /**
@@ -45,8 +51,8 @@ export function useWalletBalance(
 
     let getBalance: () => Promise<WalletBalanceResult>;
     if (wallet.getBalance != null) {
-      getBalance = () =>
-        wallet.getBalance({
+      getBalance = async () => {
+        const result = await wallet.getBalance({
           currency,
           swapType,
           swapChainId,
@@ -54,6 +60,12 @@ export function useWalletBalance(
           minBtcFeeRate,
           input,
         });
+        return {
+          balance: result.balance==null ? undefined : toTokenAmount(result.balance, currency, swapper.prices),
+          displayBalance: result.displayBalance==null ? undefined : toTokenAmount(result.displayBalance, currency, swapper.prices),
+          feeRate: result.feeRate
+        }
+      };
     } else if (isBtcToken(currency)) {
       getBalance = () =>
         swapper.Utils.getBitcoinSpendableBalance(wallet.instance, swapChainId, {
