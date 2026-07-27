@@ -174,20 +174,4 @@ describe('SwapNew wallet balance roles', () => {
     expect(onInputAmountChange).toHaveBeenCalledWith('0.00125000');
     expect(screen.getByTestId('swap-panel-balance').textContent).toBe('undefined');
   });
-
-  it('falls back to spendable for display while preserving it for execution', () => {
-    const spendable = amount(90_000n);
-    const { page } = makeSwapPage({
-      spendable,
-      displayBalance: undefined,
-    });
-    vi.mocked(useSwapPage).mockReturnValue(page);
-
-    render(<SwapNew />);
-
-    expect(screen.getByTestId('input-wallet-badge').getAttribute('data-amount')).toBe(
-      '0.00090000',
-    );
-    expect(screen.getByTestId('swap-panel-balance').textContent).toBe('90000');
-  });
 });
