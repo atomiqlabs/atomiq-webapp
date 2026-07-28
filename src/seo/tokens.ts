@@ -1,5 +1,5 @@
 import type { SeoToken } from './types';
-import {Tokens} from "../utils/SwapperFactory";
+import {Tokens} from "../data/tokenMeta.generated";
 import {isSCToken, SCToken, Token} from "@atomiqlabs/sdk";
 
 // 'SOLANA' -> 'Solana'. Works for every curated chain; the BTC side sets its names above.
@@ -32,9 +32,10 @@ export const BTC_SIDE: SeoToken[] = [
   Tokens.BITCOIN.BTCLN
 ].map(toSeoToken);
 
-// Curated set of smart-chain tokens to generate pages for, as [chainId, SDK token key]
-// into Factory.Tokens. Ticker/name/identifier are read from the SDK so this list can never
-// drift from the canonical token table. Comment a line out to drop that token's pages.
+// Curated set of smart-chain tokens to generate pages for, read from the
+// build-time-generated Tokens table (src/data/tokenMeta.generated.ts) so this
+// list can never drift from the canonical token table and the SEO build never
+// pulls the SDK Factory. Comment a line out to drop that token's pages.
 const CURATED: SCToken[] = [
   Tokens.SOLANA.SOL,
   Tokens.SOLANA.USDC,

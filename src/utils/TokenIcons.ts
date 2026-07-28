@@ -1,4 +1,4 @@
-import {Tokens} from "./SwapperFactory";
+import {Tokens} from "../data/tokenMeta.generated";
 
 type TokensType = typeof Tokens;
 type TokenTickers = {

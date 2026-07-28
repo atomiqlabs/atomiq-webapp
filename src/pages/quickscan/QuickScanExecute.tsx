@@ -20,7 +20,7 @@ import { useLocalStorage } from '../../hooks/utils/useLocalStorage';
 import { ErrorAlert } from '../../components/_deprecated/ErrorAlert';
 import { useStateWithOverride } from '../../hooks/utils/useStateWithOverride';
 import {SwapPanel} from "../../components/swappanels/SwapPanel";
-import {Tokens} from "../../utils/SwapperFactory";
+import {Tokens} from "../../data/tokenMeta.generated";
 
 export function QuickScanExecute() {
   const { initializedSwapper } = useContext(SwapperContext);

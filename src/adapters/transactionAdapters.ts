@@ -8,7 +8,7 @@ import {
   Token
 } from '@atomiqlabs/sdk';
 import {ChainsConfig} from "../data/ChainsConfig";
-import {TokenResolver, Tokens} from "../utils/SwapperFactory";
+import {TokenResolver, Tokens} from "../data/tokenMeta.generated";
 
 export interface TransactionEntryProps {
   id?: string;

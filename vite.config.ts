@@ -1,12 +1,30 @@
 import path from 'path';
-import { defineConfig } from 'vite';
+import { execSync } from 'child_process';
+import { defineConfig, Plugin } from 'vite';
 // @ts-ignore
 import react from '@vitejs/plugin-react';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { visualizer } from 'rollup-plugin-visualizer';
 
+// Regenerates src/data/tokenMeta.generated.ts before every dev server start and every
+// build, so the committed file can never silently go stale relative to the SDK's token
+// tables. Fails the build loudly (throws) if generation errors.
+function genTokensPlugin(): Plugin {
+    return {
+        name: 'gen-tokens',
+        buildStart() {
+            try {
+                execSync('npx tsx scripts/genTokens.ts', { cwd: __dirname, stdio: 'inherit' });
+            } catch (e) {
+                throw new Error('[gen-tokens] failed to generate src/data/tokenMeta.generated.ts: ' + (e as Error).message);
+            }
+        },
+    };
+}
+
 export default defineConfig({
     plugins: [
+        genTokensPlugin(),
         react(),
         nodePolyfills({
             globals: {

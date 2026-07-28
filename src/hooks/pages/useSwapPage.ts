@@ -37,7 +37,7 @@ import {usePricing} from '../pricing/usePricing';
 import {WebLNProvider} from 'webln';
 import {useExistingSwap} from '../quoting/useExistingSwap';
 import {ChainsConfig} from "../../data/ChainsConfig";
-import {Tokens} from "../../utils/SwapperFactory";
+import {Tokens} from "../../data/tokenMeta.generated";
 import {useStateRef} from "../utils/useStateRef";
 import {useWallet} from "../wallets/useWallet";
 import {useStateWithRef} from "../utils/useStateWithRef";

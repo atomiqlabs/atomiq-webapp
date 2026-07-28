@@ -2,7 +2,7 @@ import type {FaqItem, SeoRoute, SeoToken} from './types';
 import { BASE_FAQS } from './baseFaqs';
 import { BTC_SIDE, SMART_CHAIN_TOKENS } from './tokens';
 import {pairTokens} from './routes';
-import {Tokens} from "../utils/SwapperFactory";
+import {Tokens} from "../data/tokenMeta.generated";
 
 // The app / deep-link origin. The marketing site lives on www.atomiq.exchange (see seoHead ORIGIN);
 // every app-directed link is absolute to this subdomain.

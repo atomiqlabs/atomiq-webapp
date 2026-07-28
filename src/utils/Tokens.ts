@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import {BitcoinNetwork, isBtcToken, isSCToken, SCToken, toHumanReadableString, Token} from '@atomiqlabs/sdk';
 import {ChainsConfig} from "../data/ChainsConfig";
-import {TokenResolver, Tokens} from "./SwapperFactory";
+import {TokenResolver, Tokens} from "../data/tokenMeta.generated";
 
 export const smartChainTokenArray: SCToken[] = [];
 
