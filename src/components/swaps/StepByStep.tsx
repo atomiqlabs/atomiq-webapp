@@ -14,15 +14,6 @@ export type SingleStep = {
   address?: string;
 };
 
-export type WalletData = {
-  icon: string;
-  chainIcon?: string;
-  amount: string;
-  dollarValue?: string;
-  address?: string;
-  chainName?: string;
-};
-
 export function StepByStep(props: {
   steps: SingleStep[];
   quote?: ISwap;
@@ -44,9 +35,9 @@ export function StepByStep(props: {
                   alt="Source"
                   className="swap-steps-wallet__icon__img"
                 />
-                {input.chain.chain.icon && (
+                {input.chain?.icon && (
                   <img
-                    src={input.chain.chain.icon}
+                    src={input.chain?.icon}
                     alt="Chain"
                     className="swap-steps-wallet__icon__currency"
                   />
@@ -75,9 +66,9 @@ export function StepByStep(props: {
                     alt="Destination"
                     className="swap-steps-wallet__icon__img"
                   />
-                  {output.chain.chain.icon && (
+                  {output.chain?.icon && (
                     <img
-                      src={output.chain.chain.icon}
+                      src={output.chain?.icon}
                       alt="Chain"
                       className="swap-steps-wallet__icon__currency"
                     />
@@ -119,7 +110,7 @@ export function StepByStep(props: {
       {address && output && (
         <div className="swap-steps__address">
           <div>
-            Dest<span className="is-desktop">ination</span> {output.chain.chain.name ?? ''}{' '}
+            Dest<span className="is-desktop">ination</span> {output.chain?.name ?? ''}{' '}
             <span className="is-desktop">Wallet</span> Address:
           </div>
           <div>{address.short}</div>

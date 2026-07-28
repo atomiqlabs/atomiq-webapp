@@ -1,14 +1,11 @@
 import { Spinner } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { SwapTopbar } from './SwapTopbar';
 import * as React from 'react';
 import { useCallback, useContext, useEffect } from 'react';
 import { AbstractSigner } from '@atomiqlabs/sdk';
 import { SwapperContext } from '../context/SwapperContext';
 import { useAnchorNavigate } from '../hooks/navigation/useAnchorNavigate';
 import { useAsync } from '../hooks/utils/useAsync';
-import { ErrorAlert } from '../components/_deprecated/ErrorAlert';
-import { useChain } from '../hooks/chains/useChain';
 import { Chain } from '../providers/ChainsProvider';
 import { TrustedFromBTCLNSwapPanel } from '../components/swappanels/frombtc/trusted/TrustedFromBTCLNSwapPanel';
 import { SwapStepAlert } from '../components/swaps/SwapStepAlert';

@@ -48,7 +48,6 @@ export function WalletInfoBadge({
   if (wallet == null && hasWallets == null) {
     return <></>;
   }
-  const isLightning = isBtcToken(currency) && currency.lightning;
 
   if (simple && wallet != null) {
     return (

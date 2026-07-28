@@ -1,13 +1,12 @@
 import {Dropdown, Nav, Spinner} from 'react-bootstrap';
 import * as React from 'react';
 import { isSCToken, Token } from '@atomiqlabs/sdk';
-import { TokenIcon } from './TokenIcon';
 import { useEffect, useMemo, useState } from 'react';
 import { toTokenIdentifier } from '../../utils/Tokens';
-import {useChain} from "../../hooks/chains/useChain";
 import { ChainIcon } from './ChainIcon';
 import {Icon} from "react-icons-kit";
 import { ic_not_interested } from 'react-icons-kit/md/ic_not_interested';
+import {Chains} from "../../utils/Chains";
 
 export function TokensDropdown(props: {
   tokensList: Token[] | null;
@@ -51,8 +50,6 @@ export function TokensDropdown(props: {
     });
   }, [searchQuery, chainId, tokensByChainId, props.tokensList]);
 
-  const tokenChain = useChain(props.value);
-
   return (
     <Dropdown
       show={show}
@@ -74,7 +71,7 @@ export function TokensDropdown(props: {
             {props.value == null ? 'Select currency' : props.value.ticker}
           </div>
           <div className="currency-dropdown__second">
-            on {tokenChain?.chain.name ?? ''}
+            on {Chains[props.value?.chainId].name ?? ''}
           </div>
         </div>
         <div className="currency-dropdown__dropdown icon icon-dropdown"></div>

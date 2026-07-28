@@ -3,7 +3,6 @@ import { Chain } from '../../providers/ChainsProvider';
 import { ISwap, SpvFromBTCSwap, SpvFromBTCSwapState } from '@atomiqlabs/sdk';
 import { useEffect, useMemo, useState } from 'react';
 import { useStateRef } from '../utils/useStateRef';
-import { useChain } from '../chains/useChain';
 import { useSmartChainWallet } from '../wallets/useSmartChainWallet';
 import { useAsync } from '../utils/useAsync';
 import { useAbortSignalRef } from '../utils/useAbortSignal';

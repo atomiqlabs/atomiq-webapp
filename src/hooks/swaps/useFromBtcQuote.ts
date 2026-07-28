@@ -1,7 +1,6 @@
 import {FromBTCSwap, FromBTCSwapState, ISwap, SwapType, TokenAmount} from "@atomiqlabs/sdk";
 import {useContext, useEffect, useMemo, useState} from "react";
 import {ChainsContext} from "../../context/ChainsContext";
-import {useChain} from "../chains/useChain";
 import {useSmartChainWallet} from "../wallets/useSmartChainWallet";
 import {useAsync} from "../utils/useAsync";
 import {useStateRef} from "../utils/useStateRef";

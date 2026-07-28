@@ -257,7 +257,7 @@ export function useSwapPage(): SwapPageState {
 
   //WebLN
   const webLnForOutput =
-    outputChainData?.chainId === 'LIGHTNING' && outputWallet != null;
+    outputToken?.chainId === 'LIGHTNING' && outputWallet != null;
   useEffect(() => {
     if (!webLnForOutput) {
       setAddressFromWebLn(null);

@@ -2,7 +2,6 @@ import { isBtcToken, isSCToken, SwapType, Token, TokenAmount } from '@atomiqlabs
 import { useContext, useEffect, useState } from 'react';
 import { SwapperContext } from '../../context/SwapperContext';
 import { useStateRef } from '../utils/useStateRef';
-import { useChain } from '../chains/useChain';
 import {useWallet} from "./useWallet";
 
 export type WalletBalanceResult = {

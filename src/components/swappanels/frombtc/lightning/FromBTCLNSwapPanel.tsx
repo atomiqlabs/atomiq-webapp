@@ -16,8 +16,8 @@ import { DisconnectedWalletQrAndAddress } from '../../../swaps/DisconnectedWalle
 import { SwapExpiryProgressBar } from '../../../swaps/SwapExpiryProgressBar';
 import { ScrollAnchor } from '../../../ScrollAnchor';
 import { SwapFeePanel } from '../../../fees/SwapFeePanel';
-import {useChain} from "../../../../hooks/chains/useChain";
 import {ChainsConfig} from "../../../../data/ChainsConfig";
+import {Chains} from "../../../../utils/Chains";
 
 /*
 Steps:
@@ -34,7 +34,7 @@ export function FromBTCLNSwapPanel(props: {
   abortSwap?: () => void;
   notEnoughForGas: bigint;
 }) {
-  const chain = useChain(props.quote?.chainIdentifier);
+  const chain = Chains[props.quote?.chainIdentifier];
   const page = useFromBtcLnQuote(props.quote, props.UICallback);
 
   const gasAlert = (
@@ -111,7 +111,7 @@ export function FromBTCLNSwapPanel(props: {
               once you inititated a Lightning Network payment from your wallet app.{' '}
               <strong>
                 The Lightning Network payment will only succeed/confirm once{' '}
-                you come back to the dApp and settle the swap on the {chain?.chain.name} side!
+                you come back to the dApp and settle the swap on the {chain?.name} side!
               </strong>
             </>
           }

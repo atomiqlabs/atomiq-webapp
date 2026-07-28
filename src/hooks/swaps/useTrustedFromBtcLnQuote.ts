@@ -3,7 +3,6 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { useAbortSignalRef } from '../utils/useAbortSignal';
 import { useAsync } from '../utils/useAsync';
 import { SingleStep } from '../../components/swaps/StepByStep';
-import { useChain } from '../chains/useChain';
 import { ChainsContext } from '../../context/ChainsContext';
 import { Chain } from "../../providers/ChainsProvider";
 import { WebLNProvider } from "webln";
