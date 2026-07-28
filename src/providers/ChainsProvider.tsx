@@ -1,18 +1,14 @@
-import {SolanaWalletWrapper, useSolanaChain} from './chains/useSolanaChain';
 import { ChainsContext } from '../context/ChainsContext';
-import { useCallback, useMemo, useRef, useState } from 'react';
-import {useStarknetChain} from './chains/useStarknetChain';
-import {useLightningNetwork} from './chains/useLightningNetwork';
-import {useBitcoinChain} from './chains/useBitcoinChain';
-import {WebLNProvider} from 'webln';
-import {SolanaSigner} from '@atomiqlabs/chain-solana';
-import {StarknetSigner} from '@atomiqlabs/chain-starknet';
-import {ExtensionBitcoinWallet} from '../wallets/bitcoin/base/ExtensionBitcoinWallet';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as React from 'react';
+import type {WebLNProvider} from 'webln';
+import type {SolanaSigner} from '@atomiqlabs/chain-solana';
+import type {StarknetSigner} from '@atomiqlabs/chain-starknet';
+import type {ExtensionBitcoinWallet} from '../wallets/bitcoin/base/ExtensionBitcoinWallet';
 import {ConnectWalletModal} from '../components/wallets/ConnectWalletModal';
-import { EVMSigner } from '@atomiqlabs/chain-evm';
-import {EVMWalletWrapper, useAlpenChain, useBotanixChain, useCitreaChain, useGoatChain} from './chains/useEVMChains';
-import {ChainsConfig} from '../data/ChainsConfig';
-import {LNURLWithdraw, Token} from "@atomiqlabs/sdk";
+import {ErrorBoundary} from '../components/ErrorBoundary';
+import type { EVMSigner } from '@atomiqlabs/chain-evm';
+import type {LNURLWithdraw, Token} from "@atomiqlabs/sdk";
 
 export type WalletListData = {
   name: string;
@@ -56,46 +52,17 @@ export type WalletTypes = {
 
 export type ChainIdentifiers = keyof WalletTypes;
 
-function WrappedChainsProvider(props: { children: React.ReactNode }) {
-  const solanaResult = useSolanaChain(!!ChainsConfig.SOLANA);
-  const starknetResult = useStarknetChain(!!ChainsConfig.STARKNET);
-  const citreaResult = useCitreaChain(!!ChainsConfig.CITREA);
-  const botanixResult = useBotanixChain(!!ChainsConfig.BOTANIX);
-  const alpenResult = useAlpenChain(!!ChainsConfig.ALPEN);
-  const goatResult = useGoatChain(!!ChainsConfig.GOAT);
-  const lightningResult = useLightningNetwork(!!ChainsConfig.LIGHTNING);
-  const bitcoinResult = useBitcoinChain(!!ChainsConfig.BITCOIN, {
-    STARKNET: starknetResult?.wallet?.name,
-    SOLANA: solanaResult?.wallet?.name,
-    CITREA: citreaResult?.wallet?.name,
-    BOTANIX: botanixResult?.wallet?.name,
-    ALPEN: alpenResult?.wallet?.name,
-    GOAT: goatResult?.wallet?.name
-  });
+const LazyConnectorBridge = lazy(() => import('./ConnectorBridge'));
 
-  const chains = useMemo(() => {
-    const chainsData: Record<string, Chain<any>> = {};
+function handleConnectorBridgeError(error: Error, errorInfo: React.ErrorInfo) {
+  console.error('ConnectorBridge failed to load or crashed', error, errorInfo);
+}
 
-    // Add wallets and chain data based on configuration
-    if (solanaResult) chainsData.SOLANA = solanaResult;
-    if (starknetResult) chainsData.STARKNET = starknetResult;
-    if (citreaResult) chainsData.CITREA = citreaResult;
-    if (botanixResult) chainsData.BOTANIX = botanixResult;
-    if (alpenResult) chainsData.ALPEN = alpenResult;
-    if (lightningResult) chainsData.LIGHTNING = lightningResult;
-    if (bitcoinResult) chainsData.BITCOIN = bitcoinResult;
-    if (goatResult) chainsData.GOAT = goatResult;
+export function ChainsProvider(props: { children: React.ReactNode }) {
+  const [chains, setChains] = useState<Record<string, Chain<any>>>({});
 
-    return chainsData;
-  }, [
-    solanaResult,
-    starknetResult,
-    citreaResult,
-    botanixResult,
-    alpenResult,
-    lightningResult,
-    bitcoinResult
-  ]);
+  const [mountBridge, setMountBridge] = useState<boolean>(false);
+  useEffect(() => setMountBridge(true), []);
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalChainId, setModalChainId] = useState<string>();
@@ -171,17 +138,14 @@ function WrappedChainsProvider(props: { children: React.ReactNode }) {
           }
         }}
       />
+      {mountBridge && (
+        <ErrorBoundary onError={handleConnectorBridgeError}>
+          <Suspense fallback={null}>
+            <LazyConnectorBridge onChains={setChains} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
       {props.children}
     </ChainsContext.Provider>
-  );
-}
-
-export function ChainsProvider(props: { children: React.ReactNode }) {
-  return (
-    <SolanaWalletWrapper>
-      <EVMWalletWrapper>
-        <WrappedChainsProvider>{props.children}</WrappedChainsProvider>
-      </EVMWalletWrapper>
-    </SolanaWalletWrapper>
   );
 }
