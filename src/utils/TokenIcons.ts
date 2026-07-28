@@ -1,4 +1,6 @@
-import {Tokens} from "../data/tokenMeta.generated";
+// Type-only: `typeof Tokens` needs no runtime value, and a value import here would
+// drag the whole SDK Factory into the eager bundle (see scripts/entry-audit.mjs).
+import type {Tokens} from "./SwapperFactory";
 
 type TokensType = typeof Tokens;
 type TokenTickers = {
