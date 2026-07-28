@@ -42,8 +42,13 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
     abortController.current = new AbortController();
     let _swapper: Swapper<any>;
     try {
-      const {Factory} = await tryWithRetries(() => import("../utils/SwapperFactory"), {maxRetries: 3, delay: 500, exponential: true});
-      const {ChainsRuntime} = await import("../data/ChainsRuntime");
+      const [{Factory}, {ChainsRuntime}] = await tryWithRetries(
+        () => Promise.all([
+          import("../utils/SwapperFactory"),
+          import("../data/ChainsRuntime")
+        ]),
+        {maxRetries: 3, delay: 500, exponential: true}
+      );
       _swapper = Factory.newSwapper({
         chains: ChainsRuntime,
         intermediaryUrl: useLp,
