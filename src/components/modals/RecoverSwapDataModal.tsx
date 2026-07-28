@@ -94,7 +94,7 @@ export function RecoverSwapDataModal(props: {
             <p className="text-start">
               Addresses to be re-scanned:
             </p>
-            {initializedSwapper?.getSmartChains().map(chainId => chains[chainId]).filter(val => val.wallet != null).map((chain: Chain<any>) => (
+            {initializedSwapper?.getSmartChains().map(chainId => chains[chainId]).filter(val => val?.wallet != null).map((chain: Chain<any>) => (
               <div className="flex flex-row" key={chain.chainId}>
                 <div className="swap-steps__address">
                   <div>

@@ -12,7 +12,7 @@ export function useWallet(tokenOrChainId: Token | string, input?: boolean): Chai
       ? tokenOrChainId
       : getChainIdentifierForCurrency(tokenOrChainId)
   ];
-  if(!chain.wallet) return null;
+  if(!chain?.wallet) return null;
   if(input===false && chain.wallet.onlyInput) return null;
   return chain.wallet;
 }

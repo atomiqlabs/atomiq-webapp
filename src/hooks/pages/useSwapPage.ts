@@ -244,7 +244,7 @@ export function useSwapPage(): SwapPageState {
     // a connected wallet would block the address from being used, therefore the wallet
     // is disconnected here
     if (
-        outputChainData.wallet != null &&
+        outputChainData?.wallet != null &&
         outputChainData.wallet.address != null &&
         outputChainData.wallet.address !== addressData.address
     ) {

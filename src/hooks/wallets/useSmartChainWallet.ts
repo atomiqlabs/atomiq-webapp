@@ -10,7 +10,7 @@ export function useSmartChainWallet(
 ): Chain<AbstractSigner>['wallet'] {
   const chainsData = useContext(ChainsContext);
   const wallet: Chain<AbstractSigner>['wallet'] =
-    chainsData.chains[swap.chainIdentifier].wallet;
+    chainsData.chains[swap.chainIdentifier]?.wallet;
   if (wallet == null) return undefined;
   if (input===false && wallet.onlyInput) return undefined;
   if (requireSameAsInitiator) {

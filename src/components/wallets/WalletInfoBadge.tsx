@@ -41,7 +41,7 @@ export function WalletInfoBadge({
   setMax?: () => void;
   input?: boolean;
 }) {
-  const { hasWallets, chainId } = useChain(currency);
+  const { hasWallets, chainId } = useChain(currency) ?? {};
   const wallet = useWallet(currency, input);
   const { connectWallet, disconnectWallet, changeWallet } = useContext(ChainsContext);
 
