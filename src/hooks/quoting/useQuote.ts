@@ -1,43 +1,30 @@
-import { useContext, useMemo, useRef } from 'react';
+import { useContext, useMemo } from 'react';
 import {
-  BitcoinNetwork,
   fromHumanReadableString,
   isBtcToken,
   isLNURLWithdraw,
   isSCToken,
+} from '@atomiqlabs/sdk';
+import type {
   ISwap,
   LNURLPay,
   LNURLWithdraw,
-  SpvFromBTCSwap,
   Swapper,
-  SwapType,
   Token,
 } from '@atomiqlabs/sdk';
 import { SwapperContext } from '../../context/SwapperContext';
 import { useWithAwait } from '../utils/useWithAwait';
-import { useChain } from '../chains/useChain';
-import { Address, NETWORK, TEST_NETWORK } from '@scure/btc-signer';
-import { FEConstants } from '../../FEConstants';
-import randomBytes from 'randombytes';
 import { toTokenIdentifier } from '../../utils/Tokens';
-import {ChainsConfig} from "../../data/ChainsConfig";
 import {useWallet} from "../wallets/useWallet";
 
 const btcFeeMaxOffset = 3;
 const btcFeeMaxMultiple = 1.5;
 
-const RANDOM_BTC_ADDRESS = Address(
-  ChainsConfig.BITCOIN.network === BitcoinNetwork.MAINNET ? NETWORK : TEST_NETWORK
-).encode({
-  type: 'wsh',
-  hash: randomBytes(32),
-});
-
 function getRandomAddress(swapper: Swapper<any>, token: Token): string {
   if (isSCToken(token)) {
     return swapper.Utils.randomAddress(token.chainId);
   } else if (isBtcToken(token) && !token.lightning) {
-    return RANDOM_BTC_ADDRESS;
+    return swapper.Utils.randomAddress("BITCOIN");
   }
   return null;
 }
