@@ -13,9 +13,8 @@ import {
 import { useWithAwait } from '../utils/useWithAwait';
 import { capitalizeFirstLetter } from '../../utils/Utils';
 import { getChainIdentifierForCurrency } from '../../utils/Tokens';
-import { useChain } from '../chains/useChain';
 import { Chain } from '../../providers/ChainsProvider';
-import {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
+import type {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {useWallet} from "../wallets/useWallet";
 
 export type FeeDetails = {

@@ -9,6 +9,7 @@ import {ConnectWalletModal} from '../components/wallets/ConnectWalletModal';
 import {ErrorBoundary} from '../components/ErrorBoundary';
 import type { EVMSigner } from '@atomiqlabs/chain-evm';
 import type {LNURLWithdraw, Token} from "@atomiqlabs/sdk";
+import {tryWithRetries} from "../utils/Utils";
 
 export type WalletListData = {
   name: string;
@@ -52,14 +53,13 @@ export type WalletTypes = {
 
 export type ChainIdentifiers = keyof WalletTypes;
 
-const LazyConnectorBridge = lazy(() => import('./ConnectorBridge'));
-
-function handleConnectorBridgeError(error: Error, errorInfo: React.ErrorInfo) {
-  console.error('ConnectorBridge failed to load or crashed', error, errorInfo);
-}
+const LazyConnectorBridge = lazy(
+  () => tryWithRetries(() => import('./ConnectorBridge'), {maxRetries: 3, delay: 500, exponential: true})
+);
 
 export function ChainsProvider(props: { children: React.ReactNode }) {
   const [chains, setChains] = useState<Record<string, Chain<any>>>({});
+  const [error, setError] = useState<Error | null>(null);
 
   const [mountBridge, setMountBridge] = useState<boolean>(false);
   useEffect(() => setMountBridge(true), []);
@@ -103,6 +103,7 @@ export function ChainsProvider(props: { children: React.ReactNode }) {
   return (
     <ChainsContext.Provider
       value={{
+        loadError: error,
         chains,
         connectWallet,
         disconnectWallet,
@@ -139,7 +140,10 @@ export function ChainsProvider(props: { children: React.ReactNode }) {
         }}
       />
       {mountBridge && (
-        <ErrorBoundary onError={handleConnectorBridgeError}>
+        <ErrorBoundary onError={(error, errorInfo) => {
+          console.error('ConnectorBridge failed to load or crashed', error, errorInfo);
+          setError(error);
+        }}>
           <Suspense fallback={null}>
             <LazyConnectorBridge onChains={setChains} />
           </Suspense>

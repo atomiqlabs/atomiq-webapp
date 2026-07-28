@@ -6,6 +6,7 @@ import {ChainsConfig} from "../data/ChainsConfig";
 import {SwapperContext} from "../context/SwapperContext";
 import EventEmitter from "events";
 import {useLocalStorage} from "../hooks/utils/useLocalStorage";
+import {tryWithRetries} from "../utils/Utils";
 
 const noSwapperPaths = new Set(['/about', '/faq', '/explorer']);
 
@@ -41,7 +42,7 @@ export function SwapperProvider(props: { children: React.ReactNode }) {
     abortController.current = new AbortController();
     let _swapper: Swapper<any>;
     try {
-      const {Factory} = await import("../utils/SwapperFactory");
+      const {Factory} = await tryWithRetries(() => import("../utils/SwapperFactory"), {maxRetries: 3, delay: 500, exponential: true});
       _swapper = Factory.newSwapper({
         chains: ChainsConfig,
         intermediaryUrl: useLp,
