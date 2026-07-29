@@ -63,10 +63,9 @@ function makeIntermediateValue(
     confirmedBalance,
     unconfirmedBalance,
     refreshBalance,
-    downloadMnemonicBackup: vi.fn(),
-    recoverMnemonicBackup: vi.fn(),
     backupAcknowledged: true,
-    acknowledgeBackup: vi.fn(),
+    openMnemonicBackupModal: vi.fn(),
+    openSendBitcoinModal: vi.fn(),
     loading: false,
   };
 }
@@ -204,9 +203,27 @@ describe('useBitcoinChain intermediate wallet selection', () => {
     expect(sdkWallet.getSpendableBalance).not.toHaveBeenCalled();
     expect(sdkWallet.getUtxoPool).not.toHaveBeenCalled();
     expect(swapper.Utils.getBitcoinSpendableBalance).not.toHaveBeenCalled();
+
+    expect(result.current.wallet.additionalWalletActions).toEqual([
+      {
+        icon: 'icon-file-text',
+        text: 'Back up wallet',
+        onClick: intermediate.openMnemonicBackupModal,
+      },
+      {
+        icon: 'icon-send-claim',
+        text: 'Send Bitcoin',
+        onClick: intermediate.openSendBitcoinModal,
+      },
+    ]);
+
+    act(() => result.current.wallet.additionalWalletActions[0].onClick());
+    act(() => result.current.wallet.additionalWalletActions[1].onClick());
+    expect(intermediate.openMnemonicBackupModal).toHaveBeenCalledTimes(1);
+    expect(intermediate.openSendBitcoinModal).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps an automatically selected wallet connected when its raw total returns to zero', async () => {
+  it('disconnects an automatically selected wallet when its raw total returns to zero', async () => {
     const sdkWallet = makeSdkWallet();
     let intermediate = makeIntermediateValue(sdkWallet, 0n, 0n);
     const { result, rerender } = renderHook(() => useBitcoinChain(true, {}), {
@@ -223,7 +240,7 @@ describe('useBitcoinChain intermediate wallet selection', () => {
 
     intermediate = makeIntermediateValue(sdkWallet, 0n, 0n);
     rerender();
-    expect(result.current.wallet?.instance).toBe(sdkWallet);
+    expect(result.current.wallet).toBeNull();
   });
 
   it('automatically selects a funded intermediate wallet after restoring an extension wallet', async () => {

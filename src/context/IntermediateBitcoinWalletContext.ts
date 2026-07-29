@@ -14,10 +14,9 @@ export type IntermediateBitcoinWalletContextValue = {
   unconfirmedBalance?: bigint;
   refreshBalance: () => Promise<IntermediateBitcoinWalletBalance | undefined>;
 
-  downloadMnemonicBackup: () => void;
-  recoverMnemonicBackup: (file: File) => Promise<void>;
   backupAcknowledged: boolean;
-  acknowledgeBackup: () => void;
+  openMnemonicBackupModal: () => void;
+  openSendBitcoinModal: () => void;
 
   loading: boolean;
   error?: Error;

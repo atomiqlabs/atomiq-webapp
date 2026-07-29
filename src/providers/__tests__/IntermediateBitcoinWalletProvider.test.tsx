@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { act } from 'react';
-import { renderHook, waitFor } from '@testing-library/react';
+import { fireEvent, renderHook, screen, waitFor } from '@testing-library/react';
 import EventEmitter from 'events';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SwapperContext } from '../../context/SwapperContext';
@@ -18,8 +18,6 @@ const INTERMEDIATE_BTC_BALANCE_POLL_MS = 60_000;
 
 const STORED_MNEMONIC =
   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
-const RECOVERED_MNEMONIC =
-  'legal winner thank year wave sausage worth useful legal winner thank yellow';
 
 type StoredWalletData = {
   mnemonic: string;
@@ -53,7 +51,13 @@ function makeWallet(
       confirmedBalance,
       unconfirmedBalance,
     }),
-    getSpendableBalance: vi.fn(),
+    getSpendableBalance: vi.fn().mockResolvedValue({
+      balance: confirmedBalance + unconfirmedBalance,
+      feeRate: 1,
+      totalFee: 0,
+    }),
+    getTransactionFee: vi.fn(),
+    sendTransaction: vi.fn(),
     getUtxoPool: vi.fn(),
   } as any;
 }
@@ -88,15 +92,6 @@ function makeWrapper(swapper: any, strict = false) {
   };
 }
 
-function makeFile(content: string, name = 'backup.txt') {
-  const file = new File([content], name, { type: 'text/plain' });
-  Object.defineProperty(file, 'text', {
-    configurable: true,
-    value: vi.fn().mockResolvedValue(content),
-  });
-  return file;
-}
-
 beforeEach(() => {
   window.localStorage.clear();
   vi.clearAllMocks();
@@ -108,6 +103,33 @@ afterEach(() => {
 });
 
 describe('IntermediateBitcoinWalletProvider', () => {
+  it('exposes functions that open both provider-owned modals', async () => {
+    const wallet = makeWallet('bc1qmodals');
+    storeWalletData();
+
+    const { result } = renderHook(() => useIntermediateBitcoinWallet(), {
+      wrapper: makeWrapper(
+        makeSwapper({
+          createBitcoinWalletFromMnemonic: vi.fn().mockResolvedValue(wallet),
+          generateBitcoinWallet: vi.fn(),
+        }),
+      ),
+    });
+    await waitFor(() => expect(result.current.wallet).toBe(wallet));
+
+    expect(screen.queryByText('Back up Bitcoin wallet')).toBeNull();
+    expect(screen.queryByText('Send Bitcoin')).toBeNull();
+
+    act(() => result.current.openMnemonicBackupModal());
+    expect(screen.getByText('Back up Bitcoin wallet')).not.toBeNull();
+
+    act(() => result.current.openSendBitcoinModal());
+    expect(screen.getByText('Send Bitcoin')).not.toBeNull();
+    await waitFor(() =>
+      expect(screen.getByText('0.00000000 BTC')).not.toBeNull()
+    );
+  });
+
   it('restores the stored wallet record without exposing secret or public-key fields', async () => {
     const wallet = makeWallet('bc1qstored');
     const createBitcoinWalletFromMnemonic = vi.fn().mockResolvedValue(wallet);
@@ -187,108 +209,6 @@ describe('IntermediateBitcoinWalletProvider', () => {
       mnemonic: STORED_MNEMONIC,
       acknowledged: true,
     });
-  });
-
-  it('validates and eventually installs a mnemonic recovered from a formatted backup', async () => {
-    const originalWallet = makeWallet('bc1qoriginal');
-    const recoveredWallet = makeWallet('bc1qrecovered', 25_000n);
-    const createBitcoinWalletFromMnemonic = vi
-      .fn()
-      .mockImplementation((mnemonic: string) =>
-        Promise.resolve(
-          mnemonic === RECOVERED_MNEMONIC
-            ? recoveredWallet
-            : originalWallet,
-        ),
-      );
-    storeWalletData(STORED_MNEMONIC, false);
-
-    const { result } = renderHook(() => useIntermediateBitcoinWallet(), {
-      wrapper: makeWrapper(
-        makeSwapper({
-          createBitcoinWalletFromMnemonic,
-          generateBitcoinWallet: vi.fn(),
-        }),
-      ),
-    });
-    await waitFor(() => expect(result.current.wallet).toBe(originalWallet));
-
-    await act(async () => {
-      await result.current.recoverMnemonicBackup(
-        makeFile(`Recovery phrase: ${RECOVERED_MNEMONIC}\n`),
-      );
-    });
-
-    await waitFor(() => expect(result.current.wallet).toBe(recoveredWallet));
-    await waitFor(() => expect(result.current.confirmedBalance).toBe(25_000n));
-    expect(result.current.address).toBe('bc1qrecovered');
-    expect(readWalletData()).toEqual({
-      mnemonic: RECOVERED_MNEMONIC,
-      acknowledged: true,
-    });
-    expect(result.current.backupAcknowledged).toBe(true);
-    expect(createBitcoinWalletFromMnemonic).toHaveBeenLastCalledWith(
-      RECOVERED_MNEMONIC,
-    );
-  });
-
-  it('rejects an invalid recovery file without changing the active wallet record', async () => {
-    const originalWallet = makeWallet('bc1qoriginal');
-    const recoveryError = new Error(`invalid ${RECOVERED_MNEMONIC}`);
-    const createBitcoinWalletFromMnemonic = vi
-      .fn()
-      .mockResolvedValueOnce(originalWallet)
-      .mockRejectedValueOnce(recoveryError);
-    storeWalletData(STORED_MNEMONIC, false);
-
-    const { result } = renderHook(() => useIntermediateBitcoinWallet(), {
-      wrapper: makeWrapper(
-        makeSwapper({
-          createBitcoinWalletFromMnemonic,
-          generateBitcoinWallet: vi.fn(),
-        }),
-      ),
-    });
-    await waitFor(() => expect(result.current.wallet).toBe(originalWallet));
-
-    await expect(
-      result.current.recoverMnemonicBackup(makeFile(RECOVERED_MNEMONIC)),
-    ).rejects.toBe(recoveryError);
-
-    expect(result.current.wallet).toBe(originalWallet);
-    expect(result.current.address).toBe('bc1qoriginal');
-    expect(result.current.error).toBeNull();
-    expect(readWalletData()).toEqual({
-      mnemonic: STORED_MNEMONIC,
-      acknowledged: false,
-    });
-  });
-
-  it('rejects empty and oversized recovery files before SDK validation', async () => {
-    const wallet = makeWallet('bc1qoriginal');
-    const createBitcoinWalletFromMnemonic = vi.fn().mockResolvedValue(wallet);
-    storeWalletData();
-
-    const { result } = renderHook(() => useIntermediateBitcoinWallet(), {
-      wrapper: makeWrapper(
-        makeSwapper({
-          createBitcoinWalletFromMnemonic,
-          generateBitcoinWallet: vi.fn(),
-        }),
-      ),
-    });
-    await waitFor(() => expect(result.current.wallet).toBe(wallet));
-    createBitcoinWalletFromMnemonic.mockClear();
-
-    await expect(
-      result.current.recoverMnemonicBackup(makeFile('')),
-    ).rejects.toThrow('Unable to recover intermediate Bitcoin wallet');
-
-    const oversized = makeFile('x'.repeat(64 * 1024 + 1));
-    await expect(
-      result.current.recoverMnemonicBackup(oversized),
-    ).rejects.toThrow('Unable to recover intermediate Bitcoin wallet');
-    expect(createBitcoinWalletFromMnemonic).not.toHaveBeenCalled();
   });
 
   it('fails fast when the consumer hook is outside the provider', () => {
@@ -431,7 +351,8 @@ describe('IntermediateBitcoinWalletProvider', () => {
     await waitFor(() => expect(result.current.wallet).toBe(wallet));
     expect(result.current.backupAcknowledged).toBe(false);
 
-    act(() => result.current.downloadMnemonicBackup());
+    act(() => result.current.openMnemonicBackupModal());
+    fireEvent.click(screen.getByRole('button', { name: 'Download backup' }));
     expect(downloadTextFile).toHaveBeenCalledTimes(1);
     const [filename, content] = vi.mocked(downloadTextFile).mock.calls[0];
     expect(filename).toBe(
@@ -441,7 +362,12 @@ describe('IntermediateBitcoinWalletProvider', () => {
     expect(content).toContain(`Recovery phrase: ${STORED_MNEMONIC}`);
     expect(content.toLowerCase()).toContain('warning');
 
-    act(() => result.current.acknowledgeBackup());
+    fireEvent.click(
+      screen.getByRole('checkbox', {
+        name: 'I downloaded and safely stored the backup file',
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm backup' }));
     expect(readWalletData()).toEqual({
       mnemonic: STORED_MNEMONIC,
       acknowledged: true,

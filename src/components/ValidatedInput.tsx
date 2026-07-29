@@ -327,7 +327,11 @@ function ValidatedInput(props: {
       }}
     >
       <Form.Group controlId={props.inputId == null ? 'validationCustom01' : undefined}>
-        {props.label ? <Form.Label className={props.labelClassName}>{props.label}</Form.Label> : ''}
+        {props.label ? (
+          <Form.Label htmlFor={props.inputId} className={props.labelClassName}>
+            {props.label}
+          </Form.Label>
+        ) : ''}
         <InputGroup className={'has-validation'}>
           {props.type === 'checkbox' ? (
             <Form.Check

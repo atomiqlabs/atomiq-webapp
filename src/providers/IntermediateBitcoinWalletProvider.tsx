@@ -9,6 +9,9 @@ import { useLocalStorage } from '../hooks/utils/useLocalStorage';
 import { downloadTextFile } from '../utils/Files';
 import {tryWithRetries} from '../utils/Utils';
 import {useStateRef} from "../hooks/utils/useStateRef";
+import {IntermediateBitcoinWalletBackupModal} from "../components/modals/IntermediateBitcoinWalletBackupModal";
+import {IntermediateBitcoinWalletSendModal} from "../components/modals/IntermediateBitcoinWalletSendModal";
+import type {SingleAddressBitcoinWallet} from "@atomiqlabs/sdk";
 
 const INTERMEDIATE_BTC_MNEMONIC_KEY =
     'atomiq-intermediate-btc-mnemonic-v1';
@@ -28,20 +31,24 @@ export function IntermediateBitcoinWalletProvider({
     null
   );
   const [balance, setBalance] = useState<IntermediateBitcoinWalletBalance | null>(null);
+  const [backupModalOpened, setBackupModalOpened] = useState(false);
+  const [sendBitcoinModalOpened, setSendBitcoinModalOpened] = useState(false);
 
   const [loadOrCreateWallet, providerLoading, wallet, providerError] = useAsync(async (saveNewMnemonic?: string) => {
     if (swapper == null) return;
 
     const storedMnemonic = saveNewMnemonic ?? storedDataRef.current?.mnemonic;
+    let _wallet: SingleAddressBitcoinWallet;
     if(storedMnemonic==null) {
       const {wallet, mnemonic} = await swapper.Utils.generateBitcoinWallet();
       setStoredData({mnemonic, acknowledged: false});
-      return wallet;
+      _wallet = wallet;
     } else {
-      const wallet = await swapper.Utils.createBitcoinWalletFromMnemonic(storedMnemonic);
+      _wallet = await swapper.Utils.createBitcoinWalletFromMnemonic(storedMnemonic);
       if(saveNewMnemonic!=null) setStoredData({mnemonic: saveNewMnemonic, acknowledged: true});
-      return wallet;
     }
+    console.log("Generated/restored bitcoin wallet address: ", _wallet.getReceiveAddress());
+    return _wallet;
   }, [swapper], true);
   const walletRef = useStateRef(wallet);
 
@@ -123,6 +130,22 @@ export function IntermediateBitcoinWalletProvider({
     setStoredData({...storedDataRef.current, acknowledged: true});
   }, []);
 
+  const openMnemonicBackupModal = useCallback(() => {
+    setBackupModalOpened(true);
+  }, []);
+
+  const closeMnemonicBackupModal = useCallback(() => {
+    setBackupModalOpened(false);
+  }, []);
+
+  const openSendBitcoinModal = useCallback(() => {
+    setSendBitcoinModalOpened(true);
+  }, []);
+
+  const closeSendBitcoinModal = useCallback(() => {
+    setSendBitcoinModalOpened(false);
+  }, []);
+
   const address = wallet?.getReceiveAddress();
   const backupAcknowledged = storedData?.acknowledged ?? false;
 
@@ -133,10 +156,9 @@ export function IntermediateBitcoinWalletProvider({
       confirmedBalance: wallet==null ? 0n : balance?.confirmedBalance,
       unconfirmedBalance: wallet==null ? 0n : balance?.unconfirmedBalance,
       refreshBalance,
-      downloadMnemonicBackup,
-      recoverMnemonicBackup,
       backupAcknowledged,
-      acknowledgeBackup,
+      openMnemonicBackupModal,
+      openSendBitcoinModal,
       loading: providerLoading,
       error: providerError,
     }),
@@ -145,10 +167,9 @@ export function IntermediateBitcoinWalletProvider({
       address,
       balance,
       refreshBalance,
-      downloadMnemonicBackup,
-      recoverMnemonicBackup,
       backupAcknowledged,
-      acknowledgeBackup,
+      openMnemonicBackupModal,
+      openSendBitcoinModal,
       providerLoading,
       providerError,
     ]
@@ -157,6 +178,19 @@ export function IntermediateBitcoinWalletProvider({
   return (
     <IntermediateBitcoinWalletContext.Provider value={value}>
       {children}
+      <IntermediateBitcoinWalletBackupModal
+        opened={backupModalOpened}
+        close={closeMnemonicBackupModal}
+        downloadBackup={downloadMnemonicBackup}
+        acknowledgeBackup={acknowledgeBackup}
+        available={wallet != null && storedData?.mnemonic != null}
+      />
+      <IntermediateBitcoinWalletSendModal
+        opened={sendBitcoinModalOpened}
+        close={closeSendBitcoinModal}
+        wallet={wallet ?? undefined}
+        refreshBalance={refreshBalance}
+      />
     </IntermediateBitcoinWalletContext.Provider>
   );
 }

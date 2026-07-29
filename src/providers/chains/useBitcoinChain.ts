@@ -17,6 +17,11 @@ type BitcoinWalletState = {
     name: string;
     onlyInput?: boolean;
     getBalance?: () => Promise<WalletBalanceCallbackResult>
+    additionalWalletActions?: {
+      icon: JSX.Element | string;
+      text: string;
+      onClick: () => void;
+    }[];
 }
 
 function wrapExtensionWallet(wallet: ExtensionBitcoinWallet): BitcoinWalletState {
@@ -103,13 +108,27 @@ export function useBitcoinChain(
           balance: undefined,
           displayBalance: rawBalance.confirmedBalance + rawBalance.unconfirmedBalance
         };
-      }
+      },
+      additionalWalletActions: [
+        {
+          icon: 'icon-file-text',
+          text: 'Back up wallet',
+          onClick: intermediateWallet.openMnemonicBackupModal,
+        },
+        {
+          icon: 'icon-send-claim',
+          text: 'Send Bitcoin',
+          onClick: intermediateWallet.openSendBitcoinModal,
+        },
+      ],
     });
   }, [
     usableWallets,
     intermediateWallet.wallet,
     intermediateWalletBalance,
-    intermediateWallet.refreshBalance
+    intermediateWallet.refreshBalance,
+    intermediateWallet.openMnemonicBackupModal,
+    intermediateWallet.openSendBitcoinModal,
   ]);
 
   useEffect(() => {
@@ -209,7 +228,8 @@ export function useBitcoinChain(
                 instance: bitcoinWallet.wallet,
                 address: bitcoinWallet.wallet.getReceiveAddress(),
                 onlyInput: bitcoinWallet.onlyInput,
-                getBalance: bitcoinWallet.getBalance
+                getBalance: bitcoinWallet.getBalance,
+                additionalWalletActions: bitcoinWallet.additionalWalletActions,
               }
             : null,
         installedWallets: (usableWallets ?? []).map((w) => ({

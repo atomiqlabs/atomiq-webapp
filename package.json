@@ -7,7 +7,7 @@
     "@atomiqlabs/chain-evm": "^2.4.5",
     "@atomiqlabs/chain-solana": "^13.5.13",
     "@atomiqlabs/chain-starknet": "^8.4.3",
-    "@atomiqlabs/sdk": "^8.9.5",
+    "@atomiqlabs/sdk": "github:atomiqlabs/atomiq-sdk#ab/external-wallet-deposit-ai",
     "@cartridge/controller": "^0.13.6",
     "@scure/btc-signer": "1.7.0",
     "@solana/wallet-adapter-base": "0.9.27",
