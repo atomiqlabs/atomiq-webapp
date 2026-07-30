@@ -22,6 +22,7 @@ import randomBytes from 'randombytes';
 import { toTokenIdentifier } from '../../utils/Tokens';
 import {ChainsConfig} from "../../data/ChainsConfig";
 import {useWallet} from "../wallets/useWallet";
+import {useIntermediateBitcoinWallet} from "../wallets/useIntermediateBitcoinWallet";
 
 const btcFeeMaxOffset = 3;
 const btcFeeMaxMultiple = 1.5;
@@ -72,6 +73,18 @@ export function useQuote(
     return null;
   }, [swapper, inToken, outToken]);
 
+  const intermediateBitcoinWallet = useIntermediateBitcoinWallet();
+  const isSpvFromBtc = swapType === SwapType.SPV_VAULT_FROM_BTC;
+  const isIntermediateSelected =
+    inputWallet?.instance != null &&
+    inputWallet.instance === intermediateBitcoinWallet.wallet;
+  const extensionBitcoinWallet =
+    isSpvFromBtc && inputWallet != null && !isIntermediateSelected
+      ? inputWallet
+      : undefined;
+  const spvInputSource =
+    extensionBitcoinWallet?.address ?? intermediateBitcoinWallet.wallet;
+
   const [result, loading, error, refresh] = useWithAwait(
     () => {
       console.log(
@@ -94,15 +107,25 @@ export function useQuote(
           ' pause: ' +
           pause
       );
-      if (initializedSwapper == null || inToken == null || outToken == null || amount == null || pause)
+      if (
+        initializedSwapper == null ||
+        inToken == null ||
+        outToken == null ||
+        amount == null ||
+        pause ||
+        (isSpvFromBtc && spvInputSource == null)
+      )
         return null;
       const outAddress = (address as any) ?? getRandomAddress(initializedSwapper, outToken);
       if (outAddress == null) return null;
-      const inAddress = (inputAddress as any) ?? getRandomAddress(initializedSwapper, inToken);
+      const inAddress = isSpvFromBtc
+        ? spvInputSource
+        : (inputAddress as any) ?? getRandomAddress(initializedSwapper, inToken);
       const rawAmount = fromHumanReadableString(amount, exactIn ? inToken : outToken);
       return initializedSwapper
         .swap(inToken, outToken, rawAmount, exactIn, inAddress, outAddress, {
           gasAmount: gasDropAmount,
+          bitcoinFeeRate: btcFeeRate,
           maxAllowedNetworkFeeRate:
             btcFeeRate == null ? null : btcFeeMaxOffset + btcFeeRate * btcFeeMaxMultiple,
           stickyAddress,
@@ -120,6 +143,8 @@ export function useQuote(
       toTokenIdentifier(inToken),
       toTokenIdentifier(outToken),
       inputAddress,
+      spvInputSource,
+      isSpvFromBtc,
       address,
       gasDropAmount,
     ],
