@@ -291,21 +291,14 @@ The active fee UI is simpler than the legacy summary screen: `SwapFeePanel` does
 For `SpvFromBTCSwap`, split the responsibilities cleanly:
 
 - `useSwapPage.ts` owns the input amount displayed in the main input field. It should show the total BTC input budget for the swap flow.
-- `SpvVaultFromBTCSwapPanel.tsx` owns the QR/deeplink amount. In external mode it should show `externalSwapModeInfo.requiredAdditionalUtxoAmount`, which may be lower than the main input amount when selected existing UTXOs are already held by the intermediate wallet.
+- `SpvVaultFromBTCSwapPanel.tsx` owns the QR/deeplink amount. In external mode it should show `getExternalDepositAmount()`, which may be lower than the main input amount when selected existing UTXOs are already held by the intermediate wallet.
 - `useSwapFees.ts` owns the fee rows shown in `SwapFeePanel`. It should include the Bitcoin input network fee when it can be estimated or derived.
-- Do not rely on a simple PSBT-mode `swap.getInput().rawAmount` assumption for any user-facing deposit amount if the expected Bitcoin network fee needs to be added.
+- Do not rely on a simple PSBT-mode `swap.getInput().rawAmount` assumption for any user-facing deposit amount in the external wallet mode, show the amount from `getExternalDepositAmount()`.
 
 Recommended model:
 
 - Prefer SDK external mode: when `swap.getSwapMode?.() === "external"`, `swap.getInput()` should already be the user-facing total BTC input amount and `swap.getFeeBreakdown()` should already include a `FeeType.NETWORK_INPUT` row.
-- Keep a compatibility fallback while the SDK external mode is missing: extend `useSwapFees` to accept an options object, for example `{ expectedBtcDepositAmount?: TokenAmount | bigint }`, instead of adding SPV math directly to `SwapFeePanel`.
-- In the compatibility fallback only, derive a synthetic Bitcoin input network fee as `expectedBtcDepositAmount.rawAmount - swap.getInput().rawAmount` and add it as a `Bitcoin network fee` row. This applies to fake-UTXO exact-input quotes and normal exact-output quotes after `expectedBtcDepositAmount` is calculated.
 - For real-wallet SPV quotes, keep using `swap.estimateBitcoinFee(btcWallet, btcFeeRate)` when a wallet and fee rate are available.
-- Keep enough information in `useSwapPage.ts` so the input field can show:
-  - external mode quote: the total BTC input budget, using `swap.getInput()` once the SDK mode is available
-  - compatibility fake-UTXO quote: the exact amount the user must deposit into the intermediate wallet
-  - connected intermediate wallet real-balance quote: the spendable amount derived from real UTXOs
-- Pass compatibility expected-deposit context into `SwapFeePanel` only while the SDK cannot expose the fee through `swap.getFeeBreakdown()`.
 - Keep `SwapFeePanel` deterministic when async fee estimation is still loading: show approximate values or omit the network fee until known, but do not show a misleading lower fee total.
 - Do not make `GenericFeePanel` responsible for SPV-specific calculations. It should remain a presentational accordion for price, expiry, and fee rows.
 
@@ -315,24 +308,7 @@ Acceptance criteria:
 - `SwapFeePanel` shows the Bitcoin input network fee separately from swap/watchtower/output fees.
 - For non-SPV swaps, current fee display behavior does not change.
 
-## 12. Swap page amount plumbing
-
-Update `src/hooks/pages/useSwapPage.ts` as needed so the visible input amount for SPV intermediate-wallet quotes is the total BTC input budget for the swap flow, not merely the PSBT-mode `quote.getInput().amount` if that value represents the post-fee spendable amount in a fake-UTXO quote.
-
-Suggested approach:
-
-- Add a helper, for example `getDisplayedInputAmount({ quote, exactIn, typedAmount, swapType, walletMode })`.
-- For SDK external mode quotes, use `quote.getInput()` because external mode should make this getter return the total user-facing BTC input amount.
-- For SPV fake-UTXO exact-input quotes, keep the typed `amount` as the displayed input amount and expected deposit amount.
-- For SPV real-wallet quotes, use the quote/wallet-derived input amount as today unless SDK semantics require adding a separately estimated network fee.
-- Store or derive external deposit context and pass it to:
-  - `useSpvVaultFromBtcQuote`
-  - `SpvVaultFromBTCSwapPanel`
-  - `SwapFeePanel` / `useSwapFees`
-
-This should prevent the UI from mixing the total BTC input budget with the required additional top-up deposit amount.
-
-## 13. State and edge cases
+## 12. State and edge cases
 
 - Quote expires before deposit: show expired state and tell the user not to send funds. If funds later arrive in the intermediate wallet, auto-connect it as input for a new quote.
 - Deposit arrives after quote expiry: do not sign. Show or allow re-quote from intermediate balance.
@@ -342,7 +318,7 @@ This should prevent the UI from mixing the total BTC input budget with the requi
 - New deposit UTXO amount exactly matches but fee rate has moved: `executeExternalDeposit()` should use `Math.max(feeRate, quote.minimumBtcFeeRate)` and spend the selected existing UTXOs plus the actual new UTXO fully.
 - Dust/change: no change output should remain in the intermediate wallet on the exact-match path.
 
-## 14. Testing
+## 13. Testing
 
 Unit tests:
 
@@ -370,7 +346,7 @@ Integration/manual tests:
 - Refresh/reload after deposit and verify the intermediate wallet auto-connects from persisted mnemonic.
 - Verify the intermediate wallet is never available as BTC output.
 
-## 15. File change list
+## 14. File change list
 
 New:
 
@@ -390,7 +366,7 @@ Modified:
 - `src/components/fees/SwapFeePanel.tsx`
 - `src/hooks/fees/useSwapFees.ts`
 
-## 16. Required SDK improvements
+## 15. Required SDK improvements
 
 Add first-class SPV external-deposit support to the SDK so the webapp does not need to duplicate fake-UTXO construction, Bitcoin PSBT funding estimation, CPFP fee math, address-swap presentation, or polling/execution glue.
 
@@ -583,7 +559,7 @@ Semantics:
 
 For the first webapp implementation, `existingUtxos` will usually be `[]`; if the intermediate wallet already has a non-zero balance it should normally auto-connect as the input wallet and quote from real UTXOs. Supporting `existingUtxos` in the SDK helper still matters because it keeps the primitive correct for partial wallet funding and avoids another helper later.
 
-## 17. Decisions and open questions
+## 16. Decisions and open questions
 
 Resolved decisions:
 
