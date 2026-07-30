@@ -1,9 +1,17 @@
 import { SingleStep } from '../../components/swaps/StepByStep';
 import { Chain } from '../../providers/ChainsProvider';
-import { ISwap, SpvFromBTCSwap, SpvFromBTCSwapState } from '@atomiqlabs/sdk';
-import { useEffect, useMemo, useState } from 'react';
+import {
+  IBitcoinWallet,
+  InvalidBitcoinDepositError,
+  ISwap,
+  SpvFromBTCSwap,
+  SpvFromBTCExternalDepositInvalidUtxo,
+  SpvFromBTCSwapMode,
+  SpvFromBTCSwapState,
+  TokenAmount,
+} from '@atomiqlabs/sdk';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useStateRef } from '../utils/useStateRef';
-import { useChain } from '../chains/useChain';
 import { useSmartChainWallet } from '../wallets/useSmartChainWallet';
 import { useAsync } from '../utils/useAsync';
 import { useAbortSignalRef } from '../utils/useAbortSignal';
@@ -17,25 +25,65 @@ import { ic_refresh } from 'react-icons-kit/md/ic_refresh';
 import { getDeltaText } from '../../utils/Utils';
 import { SwapPageUIState } from '../pages/useSwapPage';
 import {TxDataType} from "../../types/swaps/TxDataType";
-import {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {useSwapState} from "./helpers/useSwapState";
 import {useWallet} from "../wallets/useWallet";
+import {useIntermediateBitcoinWallet} from "../wallets/useIntermediateBitcoinWallet";
+import {ChainsContext} from "../../context/ChainsContext";
+import {useLocalStorage} from "../utils/useLocalStorage";
+import {useWithAwait} from "../utils/useWithAwait";
 
 export type SpvVaultFromBtcPage = {
   executionSteps?: SingleStep[];
   step1init?: {
-    bitcoinWallet?: Chain<ExtensionBitcoinWallet>['wallet'];
-    hasEnoughBalance?: boolean;
-    init?: {
-      onClick: () => void;
-      loading: boolean;
-      disabled: boolean;
+    backupRequired?: {
+      backup: () => void;
+    };
+    walletConnected?: {
+      hasEnoughBalance?: boolean;
+      payWithBrowserWallet: {
+        loading: boolean;
+        onClick: () => void;
+        disabled: boolean;
+      };
+      useExternalWallet?: {
+        onClick: () => void;
+      };
+    };
+    walletDisconnected?: {
+      address: {
+        value: string;
+        hyperlink: string;
+        copy: () => boolean;
+      };
+      addressCopyWarningModal?: {
+        btcAmount: TokenAmount;
+        close: (accepted: boolean) => void;
+        showAgain: {
+          checked: boolean;
+          onChange: (checked: boolean) => void;
+        };
+      };
+      payWithBitcoinWallet: {
+        onClick: () => void;
+      };
+      payWithBrowserWallet: {
+        loading: boolean;
+        onClick: () => void;
+      };
+      depositStatus?: {
+        expectedAmount: TokenAmount;
+        invalidDeposits?: SpvFromBTCExternalDepositInvalidUtxo[];
+      };
     };
     error?: {
       title: string;
-      error: Error;
+      description?: string;
+      error?: Error;
+      type: 'warning' | 'error';
+      retry?: () => void;
+      requiresRequote?: boolean;
     };
-    expiry?: {
+    expiry: {
       remaining: number;
       total: number;
     };
@@ -82,10 +130,26 @@ export function useSpvVaultFromBtcQuote(
   inputWalletBalance?: bigint
 ): SpvVaultFromBtcPage {
   const UICallbackRef = useStateRef(UICallback);
+  const intermediateWallet = useIntermediateBitcoinWallet();
+  const { connectWallet, disconnectWallet } = useContext(ChainsContext);
+  const bitcoinWallet = useWallet('BITCOIN', true);
 
+  const isIntermediateWalletSelected =
+    bitcoinWallet?.instance != null &&
+    bitcoinWallet.instance === intermediateWallet.wallet;
+  const extensionBitcoinWallet =
+    bitcoinWallet != null && !isIntermediateWalletSelected
+      ? bitcoinWallet
+      : undefined;
+  const useBitcoinWallet: IBitcoinWallet = bitcoinWallet?.instance ?? intermediateWallet.wallet;
+
+  const [swapMode, setSwapMode] = useState<SpvFromBTCSwapMode>(
+    quote.getSwapMode()
+  );
   const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(
     quote,
     (state: SpvFromBTCSwapState) => {
+      setSwapMode(quote.getSwapMode());
       if (
         state === SpvFromBTCSwapState.CREATED ||
         state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED ||
@@ -95,23 +159,22 @@ export function useSpvVaultFromBtcQuote(
     }
   );
 
-  const bitcoinWallet = useWallet('BITCOIN', true);
   const smartChainWallet = useSmartChainWallet(quote, undefined, false);
 
   const [txData, setTxData] = useState<TxDataType>(null);
-
-  const [onSend, sendLoading, sendSuccess, sendError] = useAsync(() => {
-    if (UICallbackRef.current) UICallbackRef.current(quote, 'lock');
-    return quote
-      .sendBitcoinTransaction(
-        bitcoinWallet.instance,
-        feeRate != null ? Math.max(feeRate, quote.minimumBtcFeeRate) : undefined
-      )
-      .then((val) => {
+  const [onSend, sendLoading, sendSuccess, sendError] = useAsync(
+    async () => {
+      if (UICallbackRef.current) UICallbackRef.current(quote, 'lock');
+      try {
+        const result = await quote.sendBitcoinTransaction(
+          useBitcoinWallet,
+          useBitcoinWallet !== intermediateWallet.wallet && feeRate != null
+            ? Math.max(feeRate, quote.minimumBtcFeeRate)
+            : undefined
+        );
         if (UICallbackRef.current) UICallbackRef.current(quote, 'hide');
-        return val;
-      })
-      .catch((e) => {
+        return result;
+      } catch (error) {
         if (UICallbackRef.current) {
           const state = quote.getState();
           if (
@@ -120,9 +183,46 @@ export function useSpvVaultFromBtcQuote(
             state === SpvFromBTCSwapState.QUOTE_EXPIRED
           ) UICallbackRef.current(quote, 'show');
         }
-        throw e;
-      });
-  }, [quote, bitcoinWallet, feeRate]);
+        throw error;
+      }
+    },
+    [quote, feeRate, useBitcoinWallet, intermediateWallet.wallet]
+  );
+
+  const requiresExternalDeposit = quote?.requiresExternalDeposit();
+  const [onWaitForExternalDeposit, waitingForExternalDeposit, , externalDepositError] = useAsync(async (abortSignal: AbortSignal) => {
+    try {
+      await quote.waitForExternalDeposit(
+        intermediateWallet.wallet,
+        undefined,
+        5,
+        undefined,
+        abortSignal
+      );
+      if (abortSignal.aborted || quote.getSwapMode() !== 'intermediate_wallet') return;
+
+      await intermediateWallet.refreshBalance();
+      if (abortSignal.aborted || quote.getSwapMode() !== 'intermediate_wallet') return;
+
+      void onSend();
+    } catch (error) {
+      if (abortSignal.aborted) return;
+      if (error instanceof InvalidBitcoinDepositError) {
+        await intermediateWallet.refreshBalance();
+      }
+      throw error;
+    }
+  }, [quote, intermediateWallet.wallet, intermediateWallet.refreshBalance, onSend]);
+
+  const connectBrowserWalletAndPay = useCallback(async () => {
+    const connected = await connectWallet('BITCOIN');
+    if (!connected) return false;
+    setCallPayFlag(true);
+  }, [connectWallet]);
+
+  const useExternalWallet = useCallback(async () => {
+    await disconnectWallet('BITCOIN').catch(e => console.error('Unable to disconnect bitcoin wallet: ', e));
+  }, [disconnectWallet]);
 
   const abortSignalRef = useAbortSignalRef([quote]);
 
@@ -162,14 +262,26 @@ export function useSpvVaultFromBtcQuote(
     }
   }, [state]);
 
+  //Open mnemonic backup modal automatically on intermediate wallet quotes
+  useEffect(() => {
+    if (quote.getSwapMode() === 'intermediate_wallet' && !intermediateWallet.backupAcknowledged) {
+      intermediateWallet.openMnemonicBackupModal();
+    }
+  }, [quote]);
+
+  //Copy address warning
+  const [copyWarningModalOpened, setCopyWarningModalOpened] = useState(false);
+  const [showCopyWarning, setShowCopyWarning] = useLocalStorage('crossLightning-copywarning', true);
+
   const hasEnoughBalance = useMemo(
     () =>
-      inputWalletBalance == null || quote == null
+      extensionBitcoinWallet==null || inputWalletBalance == null || quote == null || quote.getInput().isUnknown
         ? true
         : inputWalletBalance >= quote.getInput().rawAmount,
-    [inputWalletBalance, quote]
+    [inputWalletBalance, quote, extensionBitcoinWallet]
   );
 
+  //Swap states
   const isQuoteExpired =
     state === SpvFromBTCSwapState.QUOTE_EXPIRED ||
     (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && !sendLoading && !waitingPayment);
@@ -191,6 +303,49 @@ export function useSpvVaultFromBtcQuote(
     state === SpvFromBTCSwapState.CLOSED;
   const isSuccess = state === SpvFromBTCSwapState.CLAIMED || state === SpvFromBTCSwapState.FRONTED;
 
+  //Automatic quote mode switching
+  const expectedSwapMode: SpvFromBTCSwapMode | undefined = useMemo(() => {
+    if(!isCreated) return undefined;
+    if(extensionBitcoinWallet) return 'psbt';
+    if(intermediateWallet.wallet) return 'intermediate_wallet';
+  }, [isCreated, extensionBitcoinWallet, intermediateWallet]);
+
+  const [, modeSwitchLoading, modeSwitchError, retryModeSwitch] = useWithAwait(async () => {
+    if(!isCreated) return;
+    if(quote.getSwapMode()===expectedSwapMode) return;
+
+    if (expectedSwapMode==='psbt') {
+      await quote.setSwapModePsbt(false);
+    } else if(expectedSwapMode==='intermediate_wallet') {
+      try {
+        await quote.returnToIntermediateWalletSwapMode();
+      } catch {
+        await quote.setSwapModeIntermediateWallet(intermediateWallet.wallet, undefined, feeRate);
+      }
+    }
+  }, [quote, expectedSwapMode, intermediateWallet.wallet, isCreated], false);
+
+  //Automatic payment when switching to extension wallet
+  const onSendRef = useStateRef(onSend);
+  const [callPayFlag, setCallPayFlag] = useState<boolean>(false);
+  useEffect(() => {
+    if (!callPayFlag || swapMode!=="psbt" || modeSwitchLoading || extensionBitcoinWallet?.instance == null) return;
+    setCallPayFlag(false);
+    void onSendRef.current();
+  }, [callPayFlag, extensionBitcoinWallet?.instance, swapMode, modeSwitchLoading]);
+
+  //Automatic external deposit waiting
+  const [externalDepositRetry, setExternalDepositRetry] = useState(0);
+  useEffect(() => {
+    if (externalDepositError!=null && externalDepositError instanceof InvalidBitcoinDepositError) return;
+    if (!isCreated || !requiresExternalDeposit) return;
+
+    const abortController = new AbortController();
+    onWaitForExternalDeposit(abortController.signal);
+    return () => abortController.abort();
+  }, [isCreated, requiresExternalDeposit, externalDepositRetry, onWaitForExternalDeposit, externalDepositError]);
+
+  //Automatic settlement await
   const isAlreadyClaimable = useMemo(
     () => quote?.isClaimable(),
     [quote]
@@ -285,47 +440,168 @@ export function useSpvVaultFromBtcQuote(
       type: 'success',
     };
 
-  const step1init = useMemo(
-    () =>
-      !isCreated
-        ? undefined
-        : {
-            bitcoinWallet: bitcoinWallet,
-            hasEnoughBalance,
-            init:
-              bitcoinWallet != null
-                ? {
-                    onClick: onSend,
-                    loading: sendLoading,
-                    disabled: sendLoading || !hasEnoughBalance,
-                  }
-                : undefined,
-            error:
-              sendError != null
-                ? {
-                    title: 'Failed to send Bitcoin transaction',
-                    error: sendError,
-                  }
-                : undefined,
-            expiry:
-              hasEnoughBalance && !sendLoading
-                ? {
-                    remaining: quoteTimeRemaining,
-                    total: totalQuoteTime,
-                  }
-                : undefined,
+  const backupRequired =
+    swapMode === 'intermediate_wallet' &&
+    !intermediateWallet.backupAcknowledged;
+
+  const expectedExternalDeposit = requiresExternalDeposit
+    ? quote.getExternalDepositAmount()
+    : undefined;
+
+  const step1init = useMemo<SpvVaultFromBtcPage['step1init']>(() => {
+    if (!isCreated) return undefined;
+
+    const invalidDeposits = externalDepositError instanceof InvalidBitcoinDepositError
+      ? externalDepositError.invalidUtxos
+      : undefined;
+
+    let error: SpvVaultFromBtcPage['step1init']['error'];
+    if (!backupRequired) {
+      if (invalidDeposits?.length > 0) {
+        const reason = invalidDeposits[0].reason;
+        error = {
+          title:
+            invalidDeposits.length > 1
+              ? 'Multiple Bitcoin deposits received'
+              : reason === 'amount_too_small'
+                ? 'BTC amount too low'
+                : reason === 'amount_too_large'
+                  ? 'BTC amount too high'
+                  : 'Bitcoin deposit fee too low',
+          description:
+            invalidDeposits.length > 1
+              ? 'Multiple deposits were received. Please create a fresh quote from the deposited wallet balance.'
+              : reason === 'deposit_fee_too_low'
+                ? 'The received UTXO cannot fund the Bitcoin transaction fee required by this quote. Please create a fresh quote.'
+                : 'The received deposit does not match the exact amount required by this quote. Please create a fresh quote from the deposited wallet balance.',
+          error: externalDepositError,
+          type: 'error',
+          requiresRequote: true,
+        };
+      } else if (externalDepositError != null) {
+        error = {
+          title: 'Connection problem',
+          description: 'Error occurred while waiting for the Bitcoin deposit, please retry.',
+          error: externalDepositError,
+          type: 'warning',
+          retry: () => setExternalDepositRetry((value) => value + 1),
+        };
+      } else if (sendError != null) {
+        error = {
+          title: 'Failed to send Bitcoin transaction',
+          error: sendError,
+          type: 'error',
+          retry: onSend,
+        };
+      } else if (modeSwitchError != null) {
+        error = {
+          title: 'Failed to switch Bitcoin payment mode',
+          error: modeSwitchError,
+          type: 'error',
+          retry: retryModeSwitch
+        };
+      }
+    }
+
+    const walletConnected = !backupRequired && !requiresExternalDeposit
+      ? {
+        hasEnoughBalance,
+        payWithBrowserWallet: {
+          loading: sendLoading,
+          onClick: onSend,
+          disabled: sendLoading || !hasEnoughBalance
+        },
+        useExternalWallet: extensionBitcoinWallet == null
+          ? undefined
+          : {
+            onClick: useExternalWallet,
           },
-    [
-      isCreated,
-      bitcoinWallet,
-      hasEnoughBalance,
-      onSend,
-      sendError,
-      sendLoading,
-      quoteTimeRemaining,
-      totalQuoteTime,
-    ]
-  );
+      }
+      : undefined;
+
+    const walletDisconnected = !backupRequired && requiresExternalDeposit
+      ? {
+        address: {
+          value: quote.getAddress(),
+          hyperlink: quote.getHyperlink(),
+          copy: () => {
+            if (!showCopyWarning) {
+              navigator.clipboard.writeText(quote.getAddress());
+              return true;
+            }
+            setCopyWarningModalOpened(true);
+            return false;
+          },
+        },
+        addressCopyWarningModal: copyWarningModalOpened
+          ? {
+            btcAmount: expectedExternalDeposit,
+            close: (accepted: boolean) => {
+              if (accepted) {
+                navigator.clipboard.writeText(quote.getAddress());
+              }
+              setCopyWarningModalOpened(false);
+            },
+            showAgain: {
+              checked: showCopyWarning,
+              onChange: setShowCopyWarning,
+            },
+          }
+          : undefined,
+        payWithBitcoinWallet: {
+          onClick: () => {
+            window.location.href = quote.getHyperlink();
+          },
+        },
+        payWithBrowserWallet: {
+          loading: sendLoading || modeSwitchLoading,
+          onClick: connectBrowserWalletAndPay,
+        },
+        depositStatus: {
+          expectedAmount: expectedExternalDeposit,
+          invalidDeposits,
+        }
+      }
+      : undefined;
+
+    return {
+      backupRequired: backupRequired
+        ? {
+            backup: intermediateWallet.openMnemonicBackupModal,
+          }
+        : undefined,
+      walletConnected,
+      walletDisconnected,
+      error,
+      expiry: {
+        remaining: quoteTimeRemaining,
+        total: totalQuoteTime,
+      },
+    };
+  }, [
+    isCreated,
+    backupRequired,
+    externalDepositError,
+    sendError,
+    extensionBitcoinWallet,
+    onSend,
+    modeSwitchError,
+    modeSwitchLoading,
+    retryModeSwitch,
+    sendLoading,
+    useExternalWallet,
+    requiresExternalDeposit,
+    expectedExternalDeposit,
+    quote,
+    showCopyWarning,
+    copyWarningModalOpened,
+    setShowCopyWarning,
+    connectBrowserWalletAndPay,
+    intermediateWallet.openMnemonicBackupModal,
+    quoteTimeRemaining,
+    totalQuoteTime,
+    hasEnoughBalance
+  ]);
 
   const step2broadcasting = useMemo(
     () =>
