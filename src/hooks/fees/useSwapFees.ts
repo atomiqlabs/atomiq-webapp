@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import {useMemo, useState} from 'react';
 import {
   Fee,
   FeeType,
@@ -7,7 +7,7 @@ import {
   ISwap,
   IToBTCSwap,
   PercentagePPM,
-  SpvFromBTCSwap,
+  SpvFromBTCSwap, SpvFromBTCSwapMode,
   TokenAmount,
 } from '@atomiqlabs/sdk';
 import { useWithAwait } from '../utils/useWithAwait';
@@ -17,6 +17,8 @@ import { useChain } from '../chains/useChain';
 import { Chain } from '../../providers/ChainsProvider';
 import {ExtensionBitcoinWallet} from "../../wallets/bitcoin/base/ExtensionBitcoinWallet";
 import {useWallet} from "../wallets/useWallet";
+import {useSwapState} from "../swaps/helpers/useSwapState";
+import {Chains} from "../../utils/Chains";
 
 export type FeeDetails = {
   text: string;
@@ -41,27 +43,52 @@ export function useSwapFees(
 } {
   const bitcoinWallet: Chain<ExtensionBitcoinWallet>["wallet"] = useWallet('BITCOIN', true);
 
+  const [spvSwapMode, setSpvSwapMode] = useState<SpvFromBTCSwapMode | null>(null);
+  useSwapState(swap, () => {
+    if(swap instanceof SpvFromBTCSwap) {
+      setSpvSwapMode(swap.getSwapMode());
+    } else {
+      setSpvSwapMode(null);
+    }
+  });
+
+  const feeBreakdown = useMemo(
+    () => swap?.getFeeBreakdown() ?? [],
+    [swap, spvSwapMode]
+  );
+  const hasNetworkInputFee = feeBreakdown.some(
+    (value) => value.type === FeeType.NETWORK_INPUT
+  );
+
   const fees = useMemo(() => {
     if (swap == null) return null;
-    const fees: FeeDetails[] = swap.getFeeBreakdown().map((value) => {
-      if (value.type === FeeType.SWAP) {
-        return {
-          text: 'Swap fee',
-          fee: value.fee,
-          composition: value.fee.composition,
-        };
-      }
-      if (value.type === FeeType.NETWORK_OUTPUT) {
-        return {
-          text:
-            capitalizeFirstLetter(getChainIdentifierForCurrency(value.fee.amountInDstToken.token)) +
-            ' network fee',
-          description: 'Transaction fees on the output network',
-          fee: value.fee,
-          composition: value.fee.composition,
-        };
-      }
-    });
+    const fees = feeBreakdown
+      .map<FeeDetails | undefined>((value) => {
+        if (value.type === FeeType.NETWORK_INPUT) {
+          return {
+            text: `${Chains[value.fee.amountInSrcToken.token.chainId]?.name} network fee`,
+            description: 'Transaction fees on the input network',
+            fee: value.fee,
+            composition: value.fee.composition,
+          };
+        }
+        if (value.type === FeeType.SWAP) {
+          return {
+            text: 'Swap fee',
+            fee: value.fee,
+            composition: value.fee.composition,
+          };
+        }
+        if (value.type === FeeType.NETWORK_OUTPUT) {
+          return {
+            text: `${Chains[value.fee.amountInDstToken.token.chainId]?.name} network fee`,
+            description: 'Transaction fees on the output network',
+            fee: value.fee,
+            composition: value.fee.composition,
+          };
+        }
+      })
+      .filter((value): value is FeeDetails => value != null);
     if (swap instanceof FromBTCSwap) {
       const amount = swap.getClaimerBounty();
       fees.push({
@@ -77,7 +104,7 @@ export function useSwapFees(
       });
     }
     return fees;
-  }, [swap]);
+  }, [swap, feeBreakdown]);
 
   const btcWallet = bitcoinWallet?.instance;
   const [feesWithUsdValue, feesLoading] = useWithAwait(() => {
@@ -90,7 +117,10 @@ export function useSwapFees(
     } else if (swap instanceof FromBTCLNSwap) {
       networkFeeDst = swap.getSmartChainNetworkFee();
     }
-    if (swap instanceof FromBTCSwap || swap instanceof SpvFromBTCSwap) {
+    if (
+      (swap instanceof FromBTCSwap || swap instanceof SpvFromBTCSwap) &&
+      !hasNetworkInputFee
+    ) {
       if (btcWallet != null && btcFeeRate != null)
         networkFeeSrc = swap.estimateBitcoinFee(btcWallet, btcFeeRate);
     }
@@ -141,7 +171,14 @@ export function useSwapFees(
       );
 
     return Promise.all(promises).then((values) => values.filter((val) => val != null));
-  }, [fees, swap, btcWallet, btcFeeRate, fetchUsdAndNetworkFees]);
+  }, [
+    fees,
+    swap,
+    btcWallet,
+    btcFeeRate,
+    fetchUsdAndNetworkFees,
+    hasNetworkInputFee,
+  ]);
 
   const totalUsdFee: number = useMemo(() => {
     if (feesWithUsdValue == null) return;
