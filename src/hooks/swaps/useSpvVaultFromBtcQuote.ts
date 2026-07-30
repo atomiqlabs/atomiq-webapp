@@ -39,6 +39,7 @@ export type SpvVaultFromBtcPage = {
       backup: () => void;
     };
     walletConnected?: {
+      bitcoinWallet?: Chain<"BITCOIN">['wallet'];
       hasEnoughBalance?: boolean;
       payWithBrowserWallet: {
         loading: boolean;
@@ -505,6 +506,7 @@ export function useSpvVaultFromBtcQuote(
 
     const walletConnected = !backupRequired && !requiresExternalDeposit
       ? {
+        bitcoinWallet: extensionBitcoinWallet,
         hasEnoughBalance,
         payWithBrowserWallet: {
           loading: sendLoading,
