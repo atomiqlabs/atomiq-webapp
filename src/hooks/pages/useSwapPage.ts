@@ -7,7 +7,8 @@ import {
   fromTokenIdentifier,
   getChainIdentifierForCurrency,
   includesToken,
-  smartChainTokenArray, toHumanReadable,
+  smartChainTokenArray,
+  toHumanReadable,
 } from '../../utils/Tokens';
 import {
   fromHumanReadableString,
@@ -41,8 +42,18 @@ import {Tokens} from "../../utils/SwapperFactory";
 import {useStateRef} from "../utils/useStateRef";
 import {useWallet} from "../wallets/useWallet";
 import {useStateWithRef} from "../utils/useStateWithRef";
+import {useIntermediateBitcoinWallet} from "../wallets/useIntermediateBitcoinWallet";
 
 export type SwapPageUIState = 'show' | 'lock' | 'hide';
+
+export function choseAmountWithPrecedence(primary: string, secondary: string) {
+  try {
+    const primaryBN = new BigNumber(primary);
+    const secondaryBN = new BigNumber(secondary);
+    if(primaryBN.eq(secondaryBN)) return secondary;
+  } catch (e) {}
+  return primary ?? secondary;
+}
 
 export type SwapPageState = {
   input: {
@@ -166,7 +177,13 @@ export function useSwapPage(): SwapPageState {
     () => swapper?.getSwapType(inputToken, outputToken),
     [swapper, inputToken, outputToken]
   );
-  const swapTypeData = useMemo(() => swapper?.SwapTypeInfo[swapType], [swapper, swapType]);
+  const swapTypeData = useMemo(() => {
+    if(swapper==null) return;
+    const swapTypeData = swapper.SwapTypeInfo[swapType];
+    //Override input wallet requirement since we support spv vault swap with intermediate wallet
+    if(swapType===SwapType.SPV_VAULT_FROM_BTC) return {...swapTypeData, requiresInputWallet: false};
+    return swapTypeData;
+  }, [swapper, swapType]);
   const scCurrency = isSCToken(inputToken)
     ? inputToken
     : isSCToken(outputToken)
@@ -462,6 +479,11 @@ export function useSwapPage(): SwapPageState {
   const outputMaxSpendable = useWalletBalance(outputToken, swapType);
 
   //Swap limits
+  const intermediateWallet = useIntermediateBitcoinWallet();
+  const isIntermediateWalletSelected =
+    intermediateWallet.wallet != null &&
+    inputWallet?.instance === intermediateWallet.wallet;
+
   const inputLimits = useMemo(() => {
     let limits = {...swapInputLimits};
     if (inputWallet?.getSwapLimits!=null) {
@@ -478,12 +500,14 @@ export function useSwapPage(): SwapPageState {
       }
     }
     if (maxSpendable?.balance == null) return limits;
+    //Don't set the maximum bound when input wallet is the intermediate wallet
+    if(isIntermediateWalletSelected) return limits;
     const maxSpendableBigNum = new BigNumber(maxSpendable.balance.amount);
     limits.max = limits.max == null
       ? maxSpendableBigNum
       : BigNumber.min(limits.max, maxSpendableBigNum);
     return limits;
-  }, [inputToken, swapInputLimits, maxSpendable, inputWallet]);
+  }, [inputToken, swapInputLimits, maxSpendable, inputWallet, isIntermediateWalletSelected]);
   const inputAmountValidator = useCallback(numberValidator(inputLimits, true), [inputLimits]);
 
   const outputLimits = useMemo(() => {
@@ -538,8 +562,8 @@ export function useSwapPage(): SwapPageState {
     if (quote != null)
       return [
         randomQuote ? address : quote.getOutputAddress(),
-        exactIn ? amount : quote.getInput().amount,
-        !exactIn ? amount : quote.getOutput().amount,
+        choseAmountWithPrecedence(quote.getInput().amount, exactIn ? amount : undefined),
+        choseAmountWithPrecedence(quote.getOutput().amount, !exactIn ? amount : undefined),
         (outputWallet?.address ?? addressFromWebLn) === quote.getOutputAddress(),
       ];
     // if(isFixedAmount) return [_address, "", addressData.amount.amount, outputChainData?.wallet?.address!=null];
@@ -561,6 +585,7 @@ export function useSwapPage(): SwapPageState {
   ]);
   const notEnoughBalance =
     quote != null &&
+    (!(quote instanceof SpvFromBTCSwap) || !isIntermediateWalletSelected) &&
     maxSpendable?.balance != null &&
     !quote.getInput().isUnknown &&
     quote.getInput().rawAmount > maxSpendable.balance.rawAmount;
@@ -590,15 +615,15 @@ export function useSwapPage(): SwapPageState {
 
   //Show "Use external wallet" when amount is too high
   const showUseExternalWallet = useMemo(() => {
-    if (maxSpendable?.balance == null || swapper == null) return false;
-    if (swapper.SwapTypeInfo[swapType].requiresInputWallet) return false;
+    if (maxSpendable?.balance == null || swapper == null || !notEnoughBalance) return false;
+    if (swapTypeData?.requiresInputWallet) return false;
     const parsedAmount = new BigNumber(inputAmount);
     const balance = new BigNumber(maxSpendable.balance.amount);
     return (
       parsedAmount.gt(balance) &&
       (swapInputLimits?.max == null || parsedAmount.lte(swapInputLimits.max))
     );
-  }, [swapper, maxSpendable?.balance, inputAmount, swapInputLimits?.max, swapType]);
+  }, [swapper, maxSpendable?.balance, inputAmount, swapInputLimits?.max, swapTypeData, notEnoughBalance]);
 
   const addressValidationStatus = useMemo<{
     status: 'error' | 'success' | 'warning';
