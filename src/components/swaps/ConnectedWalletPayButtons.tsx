@@ -4,12 +4,12 @@ import * as React from 'react';
 import { Chain } from '../../providers/ChainsProvider';
 
 export function ConnectedWalletPayButtons(props: {
-  wallet: Chain<any>['wallet'];
+  wallet?: Chain<any>['wallet'];
   payWithBrowserWallet: {
     loading: boolean;
     onClick: () => void;
   };
-  useExternalWallet: {
+  useExternalWallet?: {
     onClick: () => void;
   };
 }) {
@@ -28,17 +28,25 @@ export function ConnectedWalletPayButtons(props: {
           ) : (
             ''
           )}
-          Pay with <img width={20} height={20} src={props.wallet.icon} /> {props.wallet.name}
+          {
+            props.wallet!=null
+              ? (
+                <>Pay with <img width={20} height={20} src={props.wallet.icon} /> {props.wallet.name}</>
+              )
+              : "Swap"
+          }
         </BaseButton>
 
-        <BaseButton
-          variant="secondary"
-          textSize="sm"
-          className="d-flex flex-row align-items-center"
-          onClick={props.useExternalWallet.onClick}
-        >
-          Use a QR/wallet address
-        </BaseButton>
+        {props.useExternalWallet ? (
+          <BaseButton
+            variant="secondary"
+            textSize="sm"
+            className="d-flex flex-row align-items-center"
+            onClick={props.useExternalWallet.onClick}
+          >
+            Use a QR/wallet address
+          </BaseButton>
+        ) : null}
       </div>
     </div>
   );

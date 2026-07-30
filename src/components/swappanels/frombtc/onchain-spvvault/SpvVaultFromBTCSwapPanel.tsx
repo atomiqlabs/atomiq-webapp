@@ -12,6 +12,11 @@ import { BaseButton } from '../../../common/BaseButton';
 import { SwapConfirmations } from '../../../swaps/SwapConfirmations';
 import { SwapFeePanel } from '../../../fees/SwapFeePanel';
 import {ChainsConfig} from "../../../../data/ChainsConfig";
+import {ImportantNoticeModal} from "../../../swaps/ImportantNoticeModal";
+import {ConnectedWalletPayButtons} from "../../../swaps/ConnectedWalletPayButtons";
+import {DisconnectedWalletQrAndAddress} from "../../../swaps/DisconnectedWalletQrAndAddress";
+import {SwapExpiryProgressBar} from "../../../swaps/SwapExpiryProgressBar";
+import {ScrollAnchor} from "../../../ScrollAnchor";
 
 /*
 Steps:
@@ -52,30 +57,119 @@ export function SpvVaultFromBTCSwapPanel(props: {
   if (page.step1init) {
     return (
       <>
-        {swapFees}
-
-        <SwapStepAlert
-          show={!!page.step1init.error}
-          type="error"
-          icon={ic_warning}
-          title={page.step1init.error?.title}
-          error={page.step1init.error?.error}
+        <ImportantNoticeModal
+          opened={!!page.step1init.walletDisconnected?.addressCopyWarningModal}
+          close={page.step1init.walletDisconnected?.addressCopyWarningModal?.close}
+          setShowAgain={
+            page.step1init.walletDisconnected?.addressCopyWarningModal?.showAgain.onChange
+          }
+          text={
+            <>
+              Make sure you send{' '}
+              <b>
+                EXACTLY{' '}
+                {page.step1init.walletDisconnected?.addressCopyWarningModal?.btcAmount.toString()}
+              </b>
+              , as sending a different amount will not be accepted!
+            </>
+          }
+          buttonText="Understood, copy address"
         />
 
-        <ButtonWithWallet
-          chainId="BITCOIN"
-          onClick={page.step1init.init?.onClick}
-          className="swap-panel__action"
-          disabled={page.step1init.init?.disabled}
-          size="lg"
-        >
-          {page.step1init.init?.loading ? (
-            <Spinner animation="border" size="sm" className="mr-2" />
-          ) : (
-            ''
-          )}
-          Swap
-        </ButtonWithWallet>
+        {swapFees}
+
+        <div className="swap-panel__card">
+          <SwapStepAlert
+            show={!!page.step1init.error}
+            type={page.step1init.error?.type ?? 'error'}
+            icon={ic_warning}
+            title={page.step1init.error?.title}
+            description={page.step1init.error?.description}
+            error={page.step1init.error?.error}
+            action={
+              page.step1init.error?.requiresRequote
+                ? {
+                    type: 'button',
+                    text: 'Refresh quote',
+                    onClick: props.refreshQuote,
+                    variant: 'secondary',
+                  }
+                : page.step1init.error?.retry
+                  ? {
+                      type: 'button',
+                      text: 'Retry',
+                      onClick: page.step1init.error.retry,
+                      variant: 'secondary',
+                    }
+                  : undefined
+            }
+          />
+
+          {page.step1init.backupRequired ? (
+            <div className="swap-panel__card__group">
+              <SwapStepAlert
+                type="warning"
+                title="Back up your Bitcoin wallet"
+                description="Download and acknowledge the recovery phrase before displaying the intermediate-wallet payment address."
+              />
+              <BaseButton
+                variant="secondary"
+                onClick={page.step1init.backupRequired.backup}
+              >
+                Back up Bitcoin wallet
+              </BaseButton>
+            </div>
+          ) : null}
+
+          {page.step1init.walletConnected ? (
+            <ConnectedWalletPayButtons
+              wallet={page.step1init.walletConnected.bitcoinWallet}
+              payWithBrowserWallet={
+                page.step1init.walletConnected.payWithBrowserWallet
+              }
+              useExternalWallet={
+                page.step1init.walletConnected.useExternalWallet
+              }
+            />
+          ) : null}
+
+          {page.step1init.walletDisconnected && page.step1init.walletDisconnected.depositStatus?.invalidDeposits==null ? (
+            <DisconnectedWalletQrAndAddress
+              address={{
+                ...page.step1init.walletDisconnected.address,
+                description: 'Bitcoin wallet address',
+              }}
+              payWithDeeplink={{
+                ...page.step1init.walletDisconnected.payWithBitcoinWallet,
+                text: 'Pay with BTC wallet',
+              }}
+              payWithBrowserWallet={{
+                ...page.step1init.walletDisconnected.payWithBrowserWallet,
+                text: 'Pay with browser wallet',
+              }}
+              alert={
+                <>
+                  Send{' '}
+                  <strong>
+                    EXACTLY {page.step1init.walletDisconnected.depositStatus?.expectedAmount.toString()}
+                  </strong>{' '}
+                  to the address below.
+                </>
+              }
+            />
+          ) : null}
+
+          <div className="swap-panel__card__group">
+            <SwapExpiryProgressBar
+              timeRemaining={page.step1init.expiry.remaining}
+              totalTime={page.step1init.expiry.total}
+              expiryText="Quote expired, please do not send any funds!"
+              quoteAlias="Quote"
+            />
+          </div>
+
+          <ScrollAnchor trigger={true} />
+        </div>
       </>
     );
   }
