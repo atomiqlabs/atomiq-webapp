@@ -75,6 +75,21 @@ function makeQuote() {
 
 function step1(overrides?: Record<string, any>) {
   return {
+    init: {
+      onClick: vi.fn(),
+      disabled: false,
+      loading: false,
+    },
+    expiry: {
+      remaining: 90,
+      total: 120,
+    },
+    ...overrides,
+  };
+}
+
+function paymentStep(overrides?: Record<string, any>) {
+  return {
     expiry: {
       remaining: 90,
       total: 120,
@@ -100,11 +115,52 @@ describe('SpvVaultFromBTCSwapPanel payment step', () => {
     vi.mocked(useSpvVaultFromBtcQuote).mockReset();
   });
 
-  it('shows fees and both payment-source actions for an extension wallet', () => {
+  it('shows fees and the initial Swap action before payment', () => {
+    const initialize = vi.fn();
+    renderPanel({
+      step1init: step1({
+        init: {
+          onClick: initialize,
+          disabled: false,
+          loading: false,
+        },
+      }),
+    });
+
+    expect(screen.getByTestId('swap-fees')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Swap' }));
+    expect(initialize).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('disconnected-wallet')).toBeNull();
+  });
+
+  it('shows how existing intermediate-wallet balance affects initialization', () => {
+    const requiredAdditionalDeposit = amount(25_000n);
+    renderPanel({
+      step1init: step1({
+        note: {
+          willExecuteAutomatically: false,
+          requiredAdditionalDeposit,
+        },
+      }),
+    });
+
+    expect(
+      screen.getByText(
+        `Will request an additional deposit of ${requiredAdditionalDeposit.toString()}`,
+      ),
+    ).toBeDefined();
+    expect(
+      screen.queryByText(
+        'Will automatically execute with already deposited BTC balance',
+      ),
+    ).toBeNull();
+  });
+
+  it('shows both payment-source actions without repeating fees', () => {
     const pay = vi.fn();
     const useExternal = vi.fn();
     renderPanel({
-      step1init: step1({
+      step2paymentWait: paymentStep({
         walletConnected: {
           bitcoinWallet: {
             name: 'Browser wallet',
@@ -122,7 +178,7 @@ describe('SpvVaultFromBTCSwapPanel payment step', () => {
       }),
     });
 
-    expect(screen.getByTestId('swap-fees')).toBeDefined();
+    expect(screen.queryByTestId('swap-fees')).toBeNull();
     fireEvent.click(screen.getByText('Use a QR/wallet address'));
     expect(useExternal).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', {name: /Browser wallet/}));
@@ -131,7 +187,7 @@ describe('SpvVaultFromBTCSwapPanel payment step', () => {
 
   it('omits the external-wallet action for a fully funded intermediate wallet', () => {
     renderPanel({
-      step1init: step1({
+      step2paymentWait: paymentStep({
         walletConnected: {
           bitcoinWallet: {
             name: 'Intermediate wallet',
@@ -150,10 +206,34 @@ describe('SpvVaultFromBTCSwapPanel payment step', () => {
     expect(screen.queryByText('Use a QR/wallet address')).toBeNull();
   });
 
+  it('disables payment while the hook is preparing the selected wallet mode', () => {
+    renderPanel({
+      step2paymentWait: paymentStep({
+        walletConnected: {
+          bitcoinWallet: {
+            name: 'Browser wallet',
+            icon: '/wallet.svg',
+            instance: {},
+          },
+          payWithBrowserWallet: {
+            loading: false,
+            disabled: true,
+            onClick: vi.fn(),
+          },
+        },
+      }),
+    });
+
+    expect(
+      (screen.getByRole('button', {name: /Browser wallet/}) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+  });
+
   it('renders the backup page before either payment control', () => {
     const backup = vi.fn();
     renderPanel({
-      step1init: step1({
+      step2paymentWait: paymentStep({
         backupRequired: { backup },
       }),
     });
@@ -170,7 +250,7 @@ describe('SpvVaultFromBTCSwapPanel payment step', () => {
     const payWithBitcoinWallet = vi.fn();
     const quote = makeQuote();
     vi.mocked(useSpvVaultFromBtcQuote).mockReturnValue({
-      step1init: step1({
+      step2paymentWait: paymentStep({
         walletDisconnected: {
           address: {
             value: 'bc1qdeposit',
@@ -184,9 +264,9 @@ describe('SpvVaultFromBTCSwapPanel payment step', () => {
           payWithBitcoinWallet: {
             onClick: payWithBitcoinWallet,
           },
-        },
-        depositStatus: {
-          expectedAmount,
+          depositStatus: {
+            expectedAmount,
+          },
         },
       }),
     } as any);
@@ -217,7 +297,7 @@ describe('SpvVaultFromBTCSwapPanel payment step', () => {
   it('uses the external deposit amount in the copy-warning modal', () => {
     const expectedAmount = amount(25_000n);
     renderPanel({
-      step1init: step1({
+      step2paymentWait: paymentStep({
         walletDisconnected: {
           address: {
             value: 'bc1qdeposit',
@@ -239,9 +319,9 @@ describe('SpvVaultFromBTCSwapPanel payment step', () => {
           payWithBitcoinWallet: {
             onClick: vi.fn(),
           },
-        },
-        depositStatus: {
-          expectedAmount,
+          depositStatus: {
+            expectedAmount,
+          },
         },
       }),
     });
@@ -251,39 +331,70 @@ describe('SpvVaultFromBTCSwapPanel payment step', () => {
     );
   });
 
-  it('renders invalid-deposit re-quote content and hides the QR', () => {
+  it('renders invalid-deposit failures as terminal swap results', () => {
     const refreshQuote = vi.fn();
     renderPanel(
       {
-        step1init: step1({
-          depositStatus: {
-            expectedAmount: amount(25_000n),
-            invalidDeposits: [
-              {
-                reason: 'amount_too_small',
-              },
-            ],
-          },
-          error: {
-            title: 'BTC amount too low',
-            description: 'Please create a fresh quote.',
-            type: 'error',
-            requiresRequote: true,
-          },
-        }),
+        step6: {
+          state: 'failed',
+          errorTitle: 'BTC amount too low',
+          errorMessage:
+            'The received deposit does not match the exact amount required by this swap.',
+        },
       },
       refreshQuote,
     );
 
     expect(screen.getByText('BTC amount too low')).toBeDefined();
+    expect(
+      screen.getByText(
+        'The received deposit does not match the exact amount required by this swap.',
+      ),
+    ).toBeDefined();
     expect(screen.queryByTestId('disconnected-wallet')).toBeNull();
-    fireEvent.click(screen.getByText('Refresh quote'));
+    expect(screen.queryByTestId('swap-fees')).toBeNull();
+    fireEvent.click(screen.getByText('New Swap'));
     expect(refreshQuote).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows fees without a terminal warning for an uninitialized expiry', () => {
+    const refreshQuote = vi.fn();
+    renderPanel(
+      {
+        step6: {
+          state: 'expired_uninitialized',
+          errorTitle: 'Swap expired',
+          errorMessage: 'Swap has expired, please create a new quote!',
+        },
+      },
+      refreshQuote,
+    );
+
+    expect(screen.getByTestId('swap-fees')).toBeDefined();
+    expect(screen.queryByText('Swap expired')).toBeNull();
+    fireEvent.click(screen.getByText('New Swap'));
+    expect(refreshQuote).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the terminal warning without fees for an initialized expiry', () => {
+    renderPanel({
+      step6: {
+        state: 'expired',
+        errorTitle: 'Swap expired',
+        errorMessage: 'Already deposited Bitcoin balance will be used.',
+      },
+    });
+
+    expect(screen.queryByTestId('swap-fees')).toBeNull();
+    expect(screen.getByText('Swap expired')).toBeDefined();
+    expect(
+      screen.getByText('Already deposited Bitcoin balance will be used.'),
+    ).toBeDefined();
   });
 
   it('keeps the expiry progress visible while awaiting payment', () => {
     renderPanel({
-      step1init: step1({
+      step2paymentWait: paymentStep({
         backupRequired: { backup: vi.fn() },
       }),
     });
@@ -299,7 +410,7 @@ describe('SpvVaultFromBTCSwapPanel payment step', () => {
   it('preserves confirmation and success rendering', () => {
     const quote = makeQuote();
     vi.mocked(useSpvVaultFromBtcQuote).mockReturnValue({
-      step3awaitingConfirmations: {
+      step4awaitingConfirmations: {
         txData: {
           txId: 'btc-tx',
         },
@@ -315,9 +426,8 @@ describe('SpvVaultFromBTCSwapPanel payment step', () => {
     expect(screen.getByTestId('confirmations').textContent).toBe('btc-tx');
 
     vi.mocked(useSpvVaultFromBtcQuote).mockReturnValue({
-      step5: {
+      step6: {
         state: 'success',
-        showConnectWalletButton: false,
       },
     } as any);
     rerender(

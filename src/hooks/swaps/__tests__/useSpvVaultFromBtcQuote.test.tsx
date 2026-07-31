@@ -36,12 +36,6 @@ vi.mock('../../wallets/useSmartChainWallet', () => ({
   useSmartChainWallet: () => ({ instance: {} }),
 }));
 
-vi.mock('../../utils/useAbortSignal', () => ({
-  useAbortSignalRef: () => ({
-    current: new AbortController().signal,
-  }),
-}));
-
 const prices = {
   getUsdValue: vi.fn().mockResolvedValue(0),
 };
@@ -79,43 +73,68 @@ function deferred<T = void>() {
   };
 }
 
+function emitSwapState(
+  state: SpvFromBTCSwapState,
+  initiated = hookState.swapState.isInitiated,
+) {
+  hookState.swapState = {
+    ...hookState.swapState,
+    state,
+    isInitiated: initiated,
+  };
+  hookState.swapStateCallback?.(state, initiated);
+}
+
 function makeQuote(options?: {
   mode?: 'psbt' | 'intermediate_wallet';
   requiresDeposit?: boolean;
   waitForExternalDeposit?: ReturnType<typeof vi.fn>;
+  inputAmount?: bigint;
+  externalDepositAmount?: bigint;
 }) {
   let mode = options?.mode ?? 'psbt';
   const requiresDeposit = options?.requiresDeposit ?? false;
-  const quote = {
+  const externalDepositWait =
+    options?.waitForExternalDeposit ?? pendingWait();
+  const quote: any = {
     minimumBtcFeeRate: 5,
     getSwapMode: vi.fn(() => mode),
-    getState: vi.fn(() => SpvFromBTCSwapState.CREATED),
-    getExternalDepositAmount: vi.fn(() => makeAmount(25_000n)),
+    getState: vi.fn(() => hookState.swapState.state),
+    isInitiated: vi.fn(() => hookState.swapState.isInitiated),
+    getInput: vi.fn(() => ({
+      isUnknown: false,
+      rawAmount: options?.inputAmount ?? 100_000n,
+    })),
+    getExternalDepositAmount: vi.fn(() =>
+      makeAmount(options?.externalDepositAmount ?? 25_000n),
+    ),
     requiresExternalDeposit: vi.fn(() => requiresDeposit),
     getAddress: vi.fn(() => 'bc1qdeposit'),
     getHyperlink: vi.fn(() => 'bitcoin:bc1qdeposit?amount=0.00025'),
     sendBitcoinTransaction: vi.fn().mockResolvedValue('txid'),
-    waitForExternalDeposit:
-      options?.waitForExternalDeposit ?? pendingWait(),
+    waitForExternalDeposit: vi.fn((...args: any[]) => {
+      emitSwapState(SpvFromBTCSwapState.CREATED, true);
+      return externalDepositWait(...args);
+    }),
     waitForBitcoinTransaction: vi.fn(),
     waitTillClaimedOrFronted: vi.fn(),
     isClaimable: vi.fn(() => false),
     claim: vi.fn(),
     setSwapModePsbt: vi.fn(async () => {
       mode = 'psbt';
-      hookState.swapStateCallback?.(SpvFromBTCSwapState.CREATED, false);
+      emitSwapState(SpvFromBTCSwapState.CREATED);
     }),
     returnToIntermediateWalletSwapMode: vi.fn(async () => {
       mode = 'intermediate_wallet';
-      hookState.swapStateCallback?.(SpvFromBTCSwapState.CREATED, false);
+      emitSwapState(SpvFromBTCSwapState.CREATED);
     }),
     setSwapModeIntermediateWallet: vi.fn(async () => {
       mode = 'intermediate_wallet';
-      hookState.swapStateCallback?.(SpvFromBTCSwapState.CREATED, false);
+      emitSwapState(SpvFromBTCSwapState.CREATED);
     }),
     emitSwapMode: (nextMode: 'psbt' | 'intermediate_wallet') => {
       mode = nextMode;
-      hookState.swapStateCallback?.(SpvFromBTCSwapState.CREATED, false);
+      emitSwapState(SpvFromBTCSwapState.CREATED);
     },
   };
   return quote;
@@ -173,6 +192,17 @@ function makeWrapper(
   };
 }
 
+async function clickInitialize(result: { current: any }) {
+  await waitFor(() =>
+    expect(result.current.step1init?.init.disabled).toBe(false),
+  );
+  await act(async () => {
+    result.current.step1init.init.onClick();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
+
 describe('useSpvVaultFromBtcQuote payment step', () => {
   beforeEach(() => {
     window.localStorage.clear();
@@ -198,19 +228,17 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
       { wrapper: makeWrapper() },
     );
 
-    expect(result.current.step1init.walletConnected).toBeDefined();
-    expect(result.current.step1init.walletConnected.useExternalWallet).toBeDefined();
+    expect(result.current.step1init).toBeDefined();
+    expect(result.current.step2paymentWait).toBeUndefined();
 
-    await act(async () => {
-      await result.current.step1init.walletConnected.payWithBrowserWallet.onClick();
-    });
+    await clickInitialize(result);
 
     expect(quote.sendBitcoinTransaction).toHaveBeenCalledWith(
       extensionWallet.instance,
       5,
     );
-    expect(uiCallback).toHaveBeenNthCalledWith(1, quote, 'lock');
-    expect(uiCallback).toHaveBeenNthCalledWith(2, quote, 'hide');
+    expect(uiCallback).toHaveBeenCalledOnce();
+    expect(uiCallback).toHaveBeenCalledWith(quote, 'hide');
   });
 
   it('uses the same payment action for a fully funded intermediate wallet', async () => {
@@ -230,10 +258,12 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
       { wrapper: makeWrapper() },
     );
 
-    expect(result.current.step1init.walletConnected.useExternalWallet).toBeUndefined();
-    await act(async () => {
-      await result.current.step1init.walletConnected.payWithBrowserWallet.onClick();
+    expect(result.current.step1init).toBeDefined();
+    expect(result.current.step1init.note).toEqual({
+      willExecuteAutomatically: true,
+      requiredAdditionalDeposit: undefined,
     });
+    await clickInitialize(result);
 
     expect(quote.sendBitcoinTransaction).toHaveBeenCalledWith(
       hookState.intermediate.wallet,
@@ -241,7 +271,83 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
     );
   });
 
-  it('shows and automatically opens the backup gate without delaying deposit waiting', async () => {
+  it('describes an additional deposit only when existing balance contributes to the swap', async () => {
+    const partialDepositQuote = makeQuote({
+      mode: 'intermediate_wallet',
+      requiresDeposit: true,
+      inputAmount: 100_000n,
+      externalDepositAmount: 25_000n,
+    });
+    const { result, unmount } = renderHook(
+      () => useSpvVaultFromBtcQuote(partialDepositQuote as any, vi.fn()),
+      { wrapper: makeWrapper() },
+    );
+
+    await waitFor(() =>
+      expect(result.current.step1init?.init.loading).toBe(false),
+    );
+    expect(result.current.step1init?.note?.willExecuteAutomatically).toBe(false);
+    expect(
+      result.current.step1init?.note?.requiredAdditionalDeposit?.toString(),
+    ).toBe(makeAmount(25_000n).toString());
+
+    unmount();
+
+    const fullDepositQuote = makeQuote({
+      mode: 'intermediate_wallet',
+      requiresDeposit: true,
+      inputAmount: 25_000n,
+      externalDepositAmount: 25_000n,
+    });
+    const fullDeposit = renderHook(
+      () => useSpvVaultFromBtcQuote(fullDepositQuote as any, vi.fn()),
+      { wrapper: makeWrapper() },
+    );
+
+    await waitFor(() =>
+      expect(fullDeposit.result.current.step1init?.init.loading).toBe(false),
+    );
+    expect(fullDeposit.result.current.step1init?.note).toBeUndefined();
+  });
+
+  it('reopens backup instead of sending a fully funded intermediate wallet', async () => {
+    hookState.intermediate = makeIntermediate({
+      backupAcknowledged: false,
+    });
+    const quote = makeQuote({
+      mode: 'intermediate_wallet',
+      requiresDeposit: false,
+    });
+    const { result } = renderHook(
+      () => useSpvVaultFromBtcQuote(quote as any, vi.fn()),
+      { wrapper: makeWrapper() },
+    );
+
+    expect(hookState.intermediate.openMnemonicBackupModal).not.toHaveBeenCalled();
+    await clickInitialize(result);
+
+    expect(hookState.intermediate.openMnemonicBackupModal).toHaveBeenCalledTimes(1);
+    expect(quote.sendBitcoinTransaction).not.toHaveBeenCalled();
+    expect(result.current.step2paymentWait).toBeUndefined();
+  });
+
+  it('disables initialization when the connected extension balance is insufficient', async () => {
+    hookState.wallet = makeExtensionWallet();
+    const quote = makeQuote({ mode: 'psbt' });
+    const { result } = renderHook(
+      () => useSpvVaultFromBtcQuote(quote as any, vi.fn(), 5, 50_000n),
+      { wrapper: makeWrapper() },
+    );
+
+    await waitFor(() =>
+      expect(result.current.step1init.init.loading).toBe(false),
+    );
+    expect(result.current.step1init.init.disabled).toBe(true);
+    expect(quote.sendBitcoinTransaction).not.toHaveBeenCalled();
+    expect(result.current.step2paymentWait).toBeUndefined();
+  });
+
+  it('opens the backup gate on initialization without delaying deposit waiting', async () => {
     hookState.intermediate = makeIntermediate({
       backupAcknowledged: false,
     });
@@ -256,15 +362,20 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
       { wrapper: makeWrapper() },
     );
 
-    await waitFor(() =>
-      expect(waitForExternalDeposit).toHaveBeenCalledTimes(1),
-    );
-    expect(hookState.intermediate.openMnemonicBackupModal).toHaveBeenCalledTimes(1);
-    expect(result.current.step1init.backupRequired).toBeDefined();
-    expect(result.current.step1init.walletConnected).toBeUndefined();
-    expect(result.current.step1init.walletDisconnected).toBeUndefined();
+    expect(waitForExternalDeposit).not.toHaveBeenCalled();
+    expect(hookState.intermediate.openMnemonicBackupModal).not.toHaveBeenCalled();
+    expect(result.current.step1init).toBeDefined();
+    expect(result.current.step2paymentWait).toBeUndefined();
 
-    act(() => result.current.step1init.backupRequired.backup());
+    await clickInitialize(result);
+
+    await waitFor(() =>
+      expect(result.current.step2paymentWait?.backupRequired).toBeDefined(),
+    );
+    expect(waitForExternalDeposit).toHaveBeenCalledTimes(1);
+    expect(hookState.intermediate.openMnemonicBackupModal).toHaveBeenCalledTimes(1);
+
+    act(() => result.current.step2paymentWait.backupRequired.backup());
     expect(hookState.intermediate.openMnemonicBackupModal).toHaveBeenCalledTimes(2);
 
     hookState.intermediate = {
@@ -273,11 +384,63 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
     };
     rerender();
 
-    expect(result.current.step1init.backupRequired).toBeUndefined();
-    expect(result.current.step1init.walletDisconnected.address.value).toBe(
+    expect(result.current.step2paymentWait.backupRequired).toBeUndefined();
+    expect(result.current.step2paymentWait.walletDisconnected.address.value).toBe(
       'bc1qdeposit',
     );
     expect(waitForExternalDeposit).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the backup gate without auto-opening it for a recovered initiated quote', async () => {
+    hookState.intermediate = makeIntermediate({
+      backupAcknowledged: false,
+    });
+    hookState.swapState = {
+      ...hookState.swapState,
+      isInitiated: true,
+    };
+    const waitForExternalDeposit = pendingWait();
+    const quote = makeQuote({
+      mode: 'intermediate_wallet',
+      requiresDeposit: true,
+      waitForExternalDeposit,
+    });
+    const { result } = renderHook(
+      () => useSpvVaultFromBtcQuote(quote as any, vi.fn()),
+      { wrapper: makeWrapper() },
+    );
+
+    await waitFor(() =>
+      expect(result.current.step2paymentWait?.backupRequired).toBeDefined(),
+    );
+    expect(waitForExternalDeposit).toHaveBeenCalledTimes(1);
+    expect(hookState.intermediate.openMnemonicBackupModal).not.toHaveBeenCalled();
+
+    act(() => result.current.step2paymentWait.backupRequired.backup());
+    expect(hookState.intermediate.openMnemonicBackupModal).toHaveBeenCalledTimes(1);
+  });
+
+  it('resumes external deposit waiting for an SDK-initiated quote', async () => {
+    hookState.swapState = {
+      ...hookState.swapState,
+      isInitiated: true,
+    };
+    const waitForExternalDeposit = pendingWait();
+    const quote = makeQuote({
+      mode: 'intermediate_wallet',
+      requiresDeposit: true,
+      waitForExternalDeposit,
+    });
+    const { result } = renderHook(
+      () => useSpvVaultFromBtcQuote(quote as any, vi.fn()),
+      { wrapper: makeWrapper() },
+    );
+
+    expect(result.current.step1init).toBeUndefined();
+    expect(result.current.step2paymentWait).toBeDefined();
+    await waitFor(() =>
+      expect(waitForExternalDeposit).toHaveBeenCalledTimes(1),
+    );
   });
 
   it('waits for an exact deposit and continues through the existing send path', async () => {
@@ -288,10 +451,13 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
       waitForExternalDeposit,
     });
 
-    renderHook(
+    const { result } = renderHook(
       () => useSpvVaultFromBtcQuote(quote as any, vi.fn()),
       { wrapper: makeWrapper() },
     );
+
+    expect(waitForExternalDeposit).not.toHaveBeenCalled();
+    await clickInitialize(result);
 
     await waitFor(() =>
       expect(quote.sendBitcoinTransaction).toHaveBeenCalledWith(
@@ -310,7 +476,7 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
     expect((quote as any).execute).toBeUndefined();
   });
 
-  it('exposes SDK invalid deposits unchanged and stops automatic execution', async () => {
+  it('moves an SDK invalid deposit to the failed terminal state', async () => {
     const invalidDeposits = [
       {
         key: 'tx:0',
@@ -333,19 +499,102 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
       { wrapper: makeWrapper() },
     );
 
+    await clickInitialize(result);
+
     await waitFor(() =>
-      expect(result.current.step1init.error?.requiresRequote).toBe(true),
+      expect(result.current.step6?.state).toBe('failed'),
     );
-    expect(
-      result.current.step1init.walletDisconnected.depositStatus.invalidDeposits,
-    ).toBe(invalidDeposits);
-    expect(result.current.step1init.error.title).toBe('BTC amount too low');
-    expect(result.current.step1init.walletDisconnected).toBeDefined();
+    expect(result.current.step2paymentWait).toBeUndefined();
+    expect(result.current.step6.errorTitle).toBe('BTC amount too low');
+    expect(result.current.step6.errorMessage).toContain(
+      'already deposited Bitcoin balance will be used',
+    );
+    expect(result.current.executionSteps[0].text).toBe(
+      'Invalid Bitcoin deposit',
+    );
     expect(hookState.intermediate.refreshBalance).toHaveBeenCalledTimes(1);
     expect(quote.sendBitcoinTransaction).not.toHaveBeenCalled();
 
     rerender();
     expect(waitForExternalDeposit).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows an uninitialized expired quote without implying that funds were sent', async () => {
+    hookState.swapState = {
+      ...hookState.swapState,
+      state: SpvFromBTCSwapState.QUOTE_EXPIRED,
+      isInitiated: false,
+    };
+    const quote = makeQuote({ mode: 'psbt' });
+    const { result } = renderHook(
+      () => useSpvVaultFromBtcQuote(quote as any, vi.fn()),
+      { wrapper: makeWrapper() },
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(result.current.step6).toEqual({
+      state: 'expired_uninitialized',
+      errorTitle: 'Swap expired',
+      errorMessage: 'Swap has expired, please create a new quote!',
+    });
+    expect(result.current.executionSteps).toBeUndefined();
+  });
+
+  it('uses the deposited-balance recovery copy for an initialized intermediate quote', async () => {
+    hookState.swapState = {
+      ...hookState.swapState,
+      state: SpvFromBTCSwapState.QUOTE_EXPIRED,
+      isInitiated: true,
+    };
+    const quote = makeQuote({ mode: 'intermediate_wallet' });
+    const { result } = renderHook(
+      () => useSpvVaultFromBtcQuote(quote as any, vi.fn()),
+      { wrapper: makeWrapper() },
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(result.current.step6?.state).toBe('expired');
+    expect(result.current.step6?.errorTitle).toBe('Swap expired');
+    expect(result.current.step6?.errorMessage).toContain(
+      'already deposited Bitcoin balance will be used automatically',
+    );
+    expect(result.current.executionSteps).toBeDefined();
+  });
+
+  it('treats soft expiry as terminal while an external-deposit wait is active', async () => {
+    const waitForExternalDeposit = pendingWait();
+    const quote = makeQuote({
+      mode: 'intermediate_wallet',
+      requiresDeposit: true,
+      waitForExternalDeposit,
+    });
+    const { result, rerender, unmount } = renderHook(
+      () => useSpvVaultFromBtcQuote(quote as any, vi.fn()),
+      { wrapper: makeWrapper() },
+    );
+
+    await clickInitialize(result);
+    await waitFor(() =>
+      expect(result.current.step2paymentWait).toBeDefined(),
+    );
+
+    act(() => {
+      emitSwapState(SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED, true);
+      rerender();
+    });
+
+    expect(result.current.step2paymentWait).toBeUndefined();
+    expect(result.current.step6?.state).toBe('expired');
+    expect(waitForExternalDeposit).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      unmount();
+      await Promise.resolve();
+    });
   });
 
   it('switches to PSBT mode after browser connection and pays exactly once', async () => {
@@ -365,11 +614,13 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
       { wrapper: makeWrapper(connectWallet) },
     );
 
+    await clickInitialize(result);
+
     await waitFor(() =>
-      expect(result.current.step1init.walletDisconnected).toBeDefined(),
+      expect(result.current.step2paymentWait?.walletDisconnected).toBeDefined(),
     );
     await act(async () => {
-      await result.current.step1init.walletDisconnected.payWithBrowserWallet.onClick();
+      await result.current.step2paymentWait.walletDisconnected.payWithBrowserWallet.onClick();
     });
 
     await waitFor(() =>
@@ -383,11 +634,18 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
       extensionWallet.instance,
       7,
     );
+    await waitFor(() =>
+      expect(waitForExternalDeposit.mock.calls[0][4].aborted).toBe(true),
+    );
   });
 
   it('restores intermediate mode after disconnecting an extension wallet', async () => {
     const extensionWallet = makeExtensionWallet();
     hookState.wallet = extensionWallet;
+    hookState.swapState = {
+      ...hookState.swapState,
+      isInitiated: true,
+    };
     const quote = makeQuote({ mode: 'psbt' });
     quote.returnToIntermediateWalletSwapMode.mockRejectedValueOnce(
       new Error('No retained metadata'),
@@ -401,7 +659,7 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
     );
 
     await act(async () => {
-      await result.current.step1init.walletConnected.useExternalWallet.onClick();
+      await result.current.step2paymentWait.walletConnected.useExternalWallet.onClick();
     });
     rerender();
 

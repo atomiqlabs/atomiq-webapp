@@ -45,7 +45,7 @@ export function SpvVaultFromBTCSwapPanel(props: {
     <div className="mt-3">
       <SwapFeePanel
         swap={props.quote}
-        isExpired={page.step5?.state === 'expired'}
+        isExpired={page.step6?.state === 'expired' || page.step6?.state === 'expired_uninitialized'}
         onRefreshQuote={props.refreshQuote}
         totalTime={page.step1init?.expiry?.total}
         remainingTime={page.step1init?.expiry?.remaining}
@@ -57,18 +57,76 @@ export function SpvVaultFromBTCSwapPanel(props: {
   if (page.step1init) {
     return (
       <>
+        {page.step1init.note && (
+          <div className="simple-fee-screen text-start px-3 py-2 mt-3">
+            <div className="simple-fee-screen__quote">
+              {page.step1init.note.willExecuteAutomatically && (
+                <>
+                  <span className="icon icon-info"></span>
+                  <span>Will automatically execute with already deposited BTC balance</span>
+                </>
+              )}
+              {page.step1init.note.requiredAdditionalDeposit && (
+                <>
+                  <span className="icon icon-info"></span>
+                  <span>Will request an additional deposit of {page.step1init.note.requiredAdditionalDeposit.toString()}</span>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {swapFees}
+
+        <SwapStepAlert
+          show={!!page.step1init.error}
+          type={page.step1init.error?.type ?? 'error'}
+          icon={ic_warning}
+          title={page.step1init.error?.title}
+          description={page.step1init.error?.description}
+          error={page.step1init.error?.error}
+          action={
+            page.step1init.error?.retry
+              ? {
+                type: 'button',
+                text: 'Retry',
+                onClick: page.step1init.error.retry,
+                variant: 'secondary',
+              }
+              : undefined
+          }
+        />
+
+        <BaseButton
+          className="swap-panel__action"
+          onClick={page.step1init.init.onClick}
+          disabled={page.step1init.init.disabled}
+          size="lg"
+        >
+          {page.step1init.init.loading ? (
+            <Spinner animation="border" size="sm" className="mr-2" />
+          ) : null}
+          Swap
+        </BaseButton>
+      </>
+    );
+  }
+
+  if (page.step2paymentWait) {
+    return (
+      <>
         <ImportantNoticeModal
-          opened={!!page.step1init.walletDisconnected?.addressCopyWarningModal}
-          close={page.step1init.walletDisconnected?.addressCopyWarningModal?.close}
+          opened={!!page.step2paymentWait.walletDisconnected?.addressCopyWarningModal}
+          close={page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.close}
           setShowAgain={
-            page.step1init.walletDisconnected?.addressCopyWarningModal?.showAgain.onChange
+            page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.showAgain.onChange
           }
           text={
             <>
               Make sure you send{' '}
               <b>
                 EXACTLY{' '}
-                {page.step1init.walletDisconnected?.addressCopyWarningModal?.btcAmount.toString()}
+                {page.step2paymentWait.walletDisconnected?.addressCopyWarningModal?.btcAmount.toString()}
               </b>
               , as sending a different amount will not be accepted!
             </>
@@ -76,36 +134,36 @@ export function SpvVaultFromBTCSwapPanel(props: {
           buttonText="Understood, copy address"
         />
 
-        {swapFees}
-
         <div className="swap-panel__card">
+          {stepByStep}
+
           <SwapStepAlert
-            show={!!page.step1init.error}
-            type={page.step1init.error?.type ?? 'error'}
+            show={!!page.step2paymentWait.error}
+            type={page.step2paymentWait.error?.type ?? 'error'}
             icon={ic_warning}
-            title={page.step1init.error?.title}
-            description={page.step1init.error?.description}
-            error={page.step1init.error?.error}
+            title={page.step2paymentWait.error?.title}
+            description={page.step2paymentWait.error?.description}
+            error={page.step2paymentWait.error?.error}
             action={
-              page.step1init.error?.requiresRequote
+              page.step2paymentWait.error?.requiresRequote
                 ? {
                     type: 'button',
                     text: 'Refresh quote',
                     onClick: props.refreshQuote,
                     variant: 'secondary',
                   }
-                : page.step1init.error?.retry
+                : page.step2paymentWait.error?.retry
                   ? {
                       type: 'button',
                       text: 'Retry',
-                      onClick: page.step1init.error.retry,
+                      onClick: page.step2paymentWait.error.retry,
                       variant: 'secondary',
                     }
                   : undefined
             }
           />
 
-          {page.step1init.backupRequired ? (
+          {page.step2paymentWait.backupRequired ? (
             <div className="swap-panel__card__group">
               <SwapStepAlert
                 type="warning"
@@ -114,44 +172,44 @@ export function SpvVaultFromBTCSwapPanel(props: {
               />
               <BaseButton
                 variant="secondary"
-                onClick={page.step1init.backupRequired.backup}
+                onClick={page.step2paymentWait.backupRequired.backup}
               >
                 Back up Bitcoin wallet
               </BaseButton>
             </div>
           ) : null}
 
-          {page.step1init.walletConnected ? (
+          {page.step2paymentWait.walletConnected ? (
             <ConnectedWalletPayButtons
-              wallet={page.step1init.walletConnected.bitcoinWallet}
+              wallet={page.step2paymentWait.walletConnected.bitcoinWallet}
               payWithBrowserWallet={
-                page.step1init.walletConnected.payWithBrowserWallet
+                page.step2paymentWait.walletConnected.payWithBrowserWallet
               }
               useExternalWallet={
-                page.step1init.walletConnected.useExternalWallet
+                page.step2paymentWait.walletConnected.useExternalWallet
               }
             />
           ) : null}
 
-          {page.step1init.walletDisconnected && page.step1init.walletDisconnected.depositStatus?.invalidDeposits==null ? (
+          {page.step2paymentWait.walletDisconnected ? (
             <DisconnectedWalletQrAndAddress
               address={{
-                ...page.step1init.walletDisconnected.address,
+                ...page.step2paymentWait.walletDisconnected.address,
                 description: 'Bitcoin wallet address',
               }}
               payWithDeeplink={{
-                ...page.step1init.walletDisconnected.payWithBitcoinWallet,
+                ...page.step2paymentWait.walletDisconnected.payWithBitcoinWallet,
                 text: 'Pay with BTC wallet',
               }}
               payWithBrowserWallet={{
-                ...page.step1init.walletDisconnected.payWithBrowserWallet,
+                ...page.step2paymentWait.walletDisconnected.payWithBrowserWallet,
                 text: 'Pay with browser wallet',
               }}
               alert={
                 <>
                   Send{' '}
                   <strong>
-                    EXACTLY {page.step1init.walletDisconnected.depositStatus?.expectedAmount.toString()}
+                    EXACTLY {page.step2paymentWait.walletDisconnected.depositStatus?.expectedAmount.toString()}
                   </strong>{' '}
                   to the address below.
                 </>
@@ -161,8 +219,8 @@ export function SpvVaultFromBTCSwapPanel(props: {
 
           <div className="swap-panel__card__group">
             <SwapExpiryProgressBar
-              timeRemaining={page.step1init.expiry.remaining}
-              totalTime={page.step1init.expiry.total}
+              timeRemaining={page.step2paymentWait.expiry.remaining}
+              totalTime={page.step2paymentWait.expiry.total}
               expiryText="Quote expired, please do not send any funds!"
               quoteAlias="Quote"
             />
@@ -174,22 +232,22 @@ export function SpvVaultFromBTCSwapPanel(props: {
     );
   }
 
-  if (page.step2broadcasting) {
+  if (page.step3broadcasting) {
     return (
       <div className="swap-panel__card">
         {stepByStep}
 
         <SwapStepAlert
-          show={!!page.step2broadcasting.error}
+          show={!!page.step3broadcasting.error}
           type={'warning'}
           icon={ic_warning}
-          title={page.step2broadcasting.error?.title}
-          error={page.step2broadcasting.error?.error}
+          title={page.step3broadcasting.error?.title}
+          error={page.step3broadcasting.error?.error}
           actionElement={
-            page.step2broadcasting.error?.retry && (
+            page.step3broadcasting.error?.retry && (
               <BaseButton
                 className="swap-step-alert__button"
-                onClick={page.step2broadcasting.error?.retry}
+                onClick={page.step3broadcasting.error?.retry}
                 variant="secondary"
               >
                 <i className="icon icon-retry" />
@@ -202,22 +260,22 @@ export function SpvVaultFromBTCSwapPanel(props: {
     );
   }
 
-  if (page.step3awaitingConfirmations) {
+  if (page.step4awaitingConfirmations) {
     return (
       <div className="swap-panel__card">
         {stepByStep}
 
         <SwapStepAlert
-          show={!!page.step3awaitingConfirmations.error}
+          show={!!page.step4awaitingConfirmations.error}
           type={'error'}
           icon={ic_warning}
-          title={page.step3awaitingConfirmations.error?.title}
-          error={page.step3awaitingConfirmations.error?.error}
+          title={page.step4awaitingConfirmations.error?.title}
+          error={page.step4awaitingConfirmations.error?.error}
           actionElement={
-            page.step3awaitingConfirmations.error?.retry && (
+            page.step4awaitingConfirmations.error?.retry && (
               <BaseButton
                 className="swap-step-alert__button"
-                onClick={page.step3awaitingConfirmations.error?.retry}
+                onClick={page.step4awaitingConfirmations.error?.retry}
                 variant="secondary"
               >
                 <i className="icon icon-retry" />
@@ -227,32 +285,32 @@ export function SpvVaultFromBTCSwapPanel(props: {
           }
         />
 
-        <SwapConfirmations txData={page.step3awaitingConfirmations.txData} />
+        <SwapConfirmations txData={page.step4awaitingConfirmations.txData} />
       </div>
     );
   }
 
-  if (page.step4claim) {
+  if (page.step5claim) {
     return (
       <div className="swap-panel__card">
         {stepByStep}
 
         <SwapStepAlert
-          show={!!page.step4claim.error}
-          type={page.step4claim.error?.type}
+          show={!!page.step5claim.error}
+          type={page.step5claim.error?.type}
           icon={ic_warning}
-          title={page.step4claim.error?.title}
-          error={page.step4claim.error?.error}
-          action={page.step4claim.error?.retry && {
+          title={page.step5claim.error?.title}
+          error={page.step5claim.error?.error}
+          action={page.step5claim.error?.retry && {
             type: 'button',
             text: 'Retry',
             variant: 'secondary',
-            onClick: page.step4claim.error?.retry,
+            onClick: page.step5claim.error?.retry,
             icon: <i className="icon icon-retry"/>
           }}
         />
 
-        {page.step4claim.waitingForWatchtowerClaim ? (
+        {page.step5claim.waitingForWatchtowerClaim ? (
           <div className="swap-confirmations">
             <div className="swap-confirmations__estimate">
               <Spinner />
@@ -273,11 +331,11 @@ export function SpvVaultFromBTCSwapPanel(props: {
                 <ButtonWithWallet
                   className="swap-step-alert__button"
                   chainId={props.quote?.chainIdentifier}
-                  onClick={page.step4claim.claim.onClick}
-                  disabled={page.step4claim.claim.disabled}
+                  onClick={page.step5claim.claim.onClick}
+                  disabled={page.step5claim.claim.disabled}
                   variant="secondary"
                 >
-                  {page.step4claim.claim.loading ? (
+                  {page.step5claim.claim.loading ? (
                     <Spinner animation="border" size="sm" className="mr-2" />
                   ) : (
                     <i className="icon icon-claim" />
@@ -292,49 +350,43 @@ export function SpvVaultFromBTCSwapPanel(props: {
     );
   }
 
-  if (page.step5) {
+  if (page.step6) {
     return (
       <>
-        {page.step5.state === 'expired' && swapFees}
+        {page.step6.state === 'expired_uninitialized' && swapFees}
 
         <div className="swap-panel__card">
-          {page.step5.state !== 'expired' ? stepByStep : ''}
+          {page.step6.state !== 'expired_uninitialized' ? stepByStep : ''}
 
-          {page.step5.state === 'success' ? (
-            <SwapStepAlert
-              type="success"
-              icon={ic_check_circle}
-              title="Swap success"
-              description="Your swap was executed successfully!"
-              action={
-                ChainsConfig[props.quote.chainIdentifier]?.blockExplorer!=null
-                  ? {
-                    type: 'link',
-                    text: 'View transaction',
-                    href: ChainsConfig[props.quote.chainIdentifier].blockExplorer + props.quote.getOutputTxId(),
-                  }
-                  : undefined
-              }
-            />
-          ) : (
-            ''
-          )}
+          <SwapStepAlert
+            show={page.step6.state === 'success'}
+            type="success"
+            icon={ic_check_circle}
+            title="Swap success"
+            description="Your swap was executed successfully!"
+            action={
+              ChainsConfig[props.quote.chainIdentifier]?.blockExplorer!=null
+                ? {
+                  type: 'link',
+                  text: 'View transaction',
+                  href: ChainsConfig[props.quote.chainIdentifier].blockExplorer + props.quote.getOutputTxId(),
+                }
+                : undefined
+            }
+          />
 
-          {page.step5.state === 'failed' ? (
-            <SwapStepAlert
-              type="danger"
-              icon={ic_warning}
-              title="Swap failed"
-              description="Swap transaction reverted, no funds were sent!"
-            />
-          ) : (
-            ''
-          )}
+          <SwapStepAlert
+            show={page.step6.state === 'failed' || page.step6.state === 'expired'}
+            type="danger"
+            icon={ic_warning}
+            title={page.step6.errorTitle}
+            description={page.step6.errorMessage}
+          />
         </div>
 
-        {<BaseButton onClick={() => props.refreshQuote()} variant="primary" className="swap-panel__action">
+        <BaseButton onClick={() => props.refreshQuote()} variant="primary" className="swap-panel__action">
           New Swap
-        </BaseButton>}
+        </BaseButton>
       </>
     );
   }

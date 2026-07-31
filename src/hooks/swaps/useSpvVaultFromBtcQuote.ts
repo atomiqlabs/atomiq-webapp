@@ -5,12 +5,13 @@ import {
   InvalidBitcoinDepositError,
   ISwap,
   SpvFromBTCSwap,
-  SpvFromBTCExternalDepositInvalidUtxo,
   SpvFromBTCSwapMode,
   SpvFromBTCSwapState,
   TokenAmount,
+  BitcoinTokens,
+  toHumanReadableString,
 } from '@atomiqlabs/sdk';
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useStateRef } from '../utils/useStateRef';
 import { useSmartChainWallet } from '../wallets/useSmartChainWallet';
 import { useAsync } from '../utils/useAsync';
@@ -35,6 +36,28 @@ import {useWithAwait} from "../utils/useWithAwait";
 export type SpvVaultFromBtcPage = {
   executionSteps?: SingleStep[];
   step1init?: {
+    init: {
+      onClick: () => void;
+      disabled: boolean;
+      loading: boolean;
+    };
+    error?: {
+      title: string;
+      description?: string;
+      error?: Error;
+      type: 'warning' | 'error';
+      retry?: () => void;
+    };
+    expiry: {
+      remaining: number;
+      total: number;
+    };
+    note?: {
+      willExecuteAutomatically: boolean;
+      requiredAdditionalDeposit?: TokenAmount;
+    }
+  };
+  step2paymentWait?: {
     backupRequired?: {
       backup: () => void;
     };
@@ -73,7 +96,6 @@ export type SpvVaultFromBtcPage = {
       };
       depositStatus?: {
         expectedAmount: TokenAmount;
-        invalidDeposits?: SpvFromBTCExternalDepositInvalidUtxo[];
       };
     };
     error?: {
@@ -89,14 +111,14 @@ export type SpvVaultFromBtcPage = {
       total: number;
     };
   };
-  step2broadcasting?: {
+  step3broadcasting?: {
     error?: {
       title: string;
       error: Error;
       retry: () => void;
     };
   };
-  step3awaitingConfirmations?: {
+  step4awaitingConfirmations?: {
     txData: TxDataType;
     error?: {
       title: string;
@@ -104,7 +126,7 @@ export type SpvVaultFromBtcPage = {
       retry: () => void;
     };
   };
-  step4claim?: {
+  step5claim?: {
     waitingForWatchtowerClaim: boolean;
     claim: {
       onClick: () => void;
@@ -118,8 +140,10 @@ export type SpvVaultFromBtcPage = {
       retry?: () => void;
     };
   };
-  step5?: {
-    state: 'success' | 'failed' | 'expired';
+  step6?: {
+    state: 'success' | 'failed' | 'expired' | 'expired_uninitialized';
+    errorMessage?: string;
+    errorTitle?: string;
   };
 };
 
@@ -143,54 +167,45 @@ export function useSpvVaultFromBtcQuote(
       : undefined;
   const useBitcoinWallet: IBitcoinWallet = bitcoinWallet?.instance ?? intermediateWallet.wallet;
 
+  const requiresExternalDeposit = quote?.requiresExternalDeposit();
+  const expectedExternalDeposit = requiresExternalDeposit
+    ? quote.getExternalDepositAmount()
+    : undefined;
+
   const [swapMode, setSwapMode] = useState<SpvFromBTCSwapMode>(
     quote.getSwapMode()
   );
   const { state, totalQuoteTime, quoteTimeRemaining, isInitiated } = useSwapState(
     quote,
-    (state: SpvFromBTCSwapState) => {
+    (state: SpvFromBTCSwapState, initiated: boolean) => {
       setSwapMode(quote.getSwapMode());
-      if (
-        state === SpvFromBTCSwapState.CREATED ||
-        state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED ||
-        state === SpvFromBTCSwapState.QUOTE_EXPIRED
-      ) return;
+      if (!initiated) return;
       if (UICallbackRef.current) UICallbackRef.current(quote, 'hide');
     }
   );
+  const backupRequired =
+    swapMode === 'intermediate_wallet' &&
+    !intermediateWallet.backupAcknowledged;
 
   const smartChainWallet = useSmartChainWallet(quote, undefined, false);
 
   const [txData, setTxData] = useState<TxDataType>(null);
   const [onSend, sendLoading, sendSuccess, sendError] = useAsync(
-    async () => {
-      if (UICallbackRef.current) UICallbackRef.current(quote, 'lock');
-      try {
-        const result = await quote.sendBitcoinTransaction(
-          useBitcoinWallet,
-          useBitcoinWallet !== intermediateWallet.wallet && feeRate != null
-            ? Math.max(feeRate, quote.minimumBtcFeeRate)
-            : undefined
-        );
-        if (UICallbackRef.current) UICallbackRef.current(quote, 'hide');
-        return result;
-      } catch (error) {
-        if (UICallbackRef.current) {
-          const state = quote.getState();
-          if (
-            state === SpvFromBTCSwapState.CREATED ||
-            state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED ||
-            state === SpvFromBTCSwapState.QUOTE_EXPIRED
-          ) UICallbackRef.current(quote, 'show');
-        }
-        throw error;
-      }
+    () => {
+      if(UICallbackRef.current!=null) UICallbackRef.current(quote, 'hide');
+      return quote.sendBitcoinTransaction(
+        useBitcoinWallet,
+        useBitcoinWallet !== intermediateWallet.wallet && feeRate != null
+          ? Math.max(feeRate, quote.minimumBtcFeeRate)
+          : undefined
+      );
     },
     [quote, feeRate, useBitcoinWallet, intermediateWallet.wallet]
   );
 
-  const requiresExternalDeposit = quote?.requiresExternalDeposit();
-  const [onWaitForExternalDeposit, waitingForExternalDeposit, , externalDepositError] = useAsync(async (abortSignal: AbortSignal) => {
+  const modeSwitchAbortSignal = useAbortSignalRef([quote, swapMode]);
+  const [onWaitForExternalDeposit, waitingForExternalDeposit, , externalDepositError] = useAsync(async () => {
+    const abortSignal = modeSwitchAbortSignal.current;
     try {
       await quote.waitForExternalDeposit(
         intermediateWallet.wallet,
@@ -225,7 +240,6 @@ export function useSpvVaultFromBtcQuote(
   }, [disconnectWallet]);
 
   const abortSignalRef = useAbortSignalRef([quote]);
-
   const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => {
     return quote.waitForBitcoinTransaction(
       (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
@@ -256,18 +270,20 @@ export function useSpvVaultFromBtcQuote(
     return quote.claim(smartChainWallet.instance);
   }, [quote, smartChainWallet]);
 
+  //Automatic wait for payment trigger
   useEffect(() => {
     if (state === SpvFromBTCSwapState.POSTED || state === SpvFromBTCSwapState.BROADCASTED) {
       onWaitForPayment();
     }
   }, [state]);
 
-  //Open mnemonic backup modal automatically on intermediate wallet quotes
+  //External deposit waiting starts when the user initiates the swap, or resumes for an initiated swap.
   useEffect(() => {
-    if (quote.getSwapMode() === 'intermediate_wallet' && !intermediateWallet.backupAcknowledged) {
-      intermediateWallet.openMnemonicBackupModal();
+    if (quote!=null && quote.isInitiated() && quote.getState() === SpvFromBTCSwapState.CREATED) {
+      if (swapMode==="intermediate_wallet" && quote.requiresExternalDeposit() && intermediateWallet.wallet!=null)
+        void onWaitForExternalDeposit();
     }
-  }, [quote]);
+  }, [quote, swapMode, intermediateWallet.wallet!=null]);
 
   //Copy address warning
   const [copyWarningModalOpened, setCopyWarningModalOpened] = useState(false);
@@ -282,30 +298,46 @@ export function useSpvVaultFromBtcQuote(
   );
 
   //Swap states
-  const isQuoteExpired =
-    state === SpvFromBTCSwapState.QUOTE_EXPIRED ||
-    (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && !sendLoading && !waitingPayment);
-  const isCreated =
-    state === SpvFromBTCSwapState.CREATED ||
-    (state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED && sendLoading);
-  const isSending = state === SpvFromBTCSwapState.CREATED && sendLoading;
-  const isBroadcasting =
-    state === SpvFromBTCSwapState.SIGNED ||
-    state === SpvFromBTCSwapState.POSTED ||
-    (state === SpvFromBTCSwapState.BROADCASTED && txData == null);
-  const isReceived = state === SpvFromBTCSwapState.BROADCASTED && txData != null;
-  const isBtcTxConfirmed = state === SpvFromBTCSwapState.BTC_TX_CONFIRMED;
-  const isClaimable = isBtcTxConfirmed && !claimLoading;
-  const isClaiming = isBtcTxConfirmed && claimLoading;
+  const isFailedExternalDeposit =
+    expectedExternalDeposit != null &&
+    externalDepositError instanceof InvalidBitcoinDepositError &&
+    externalDepositError.invalidUtxos?.length > 0;
   const isFailed =
     state === SpvFromBTCSwapState.FAILED ||
     state === SpvFromBTCSwapState.DECLINED ||
-    state === SpvFromBTCSwapState.CLOSED;
-  const isSuccess = state === SpvFromBTCSwapState.CLAIMED || state === SpvFromBTCSwapState.FRONTED;
+    state === SpvFromBTCSwapState.CLOSED ||
+    isFailedExternalDeposit;
+  const isQuoteExpired = !isFailed && (
+    state === SpvFromBTCSwapState.QUOTE_EXPIRED ||
+    (
+      state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED &&
+      !sendLoading &&
+      !waitingPayment
+    )
+  );
+  const isCreated = !isFailed && (
+    state === SpvFromBTCSwapState.CREATED ||
+    (
+      state === SpvFromBTCSwapState.QUOTE_SOFT_EXPIRED &&
+      sendLoading
+    )
+  );
+  const isSending = !isFailed && state === SpvFromBTCSwapState.CREATED && sendLoading;
+  const isBroadcasting = !isFailed && (
+    state === SpvFromBTCSwapState.SIGNED ||
+    state === SpvFromBTCSwapState.POSTED ||
+    (state === SpvFromBTCSwapState.BROADCASTED && txData == null)
+  );
+  const isReceived = !isFailed && state === SpvFromBTCSwapState.BROADCASTED && txData != null;
+  const isBtcTxConfirmed = !isFailed && state === SpvFromBTCSwapState.BTC_TX_CONFIRMED;
+  const isClaimable = !isFailed && isBtcTxConfirmed && !claimLoading;
+  const isClaiming = !isFailed && isBtcTxConfirmed && claimLoading;
+  const isSuccess = !isFailed && (
+    state === SpvFromBTCSwapState.CLAIMED || state === SpvFromBTCSwapState.FRONTED
+  );
 
   //Automatic quote mode switching
   const expectedSwapMode: SpvFromBTCSwapMode | undefined = useMemo(() => {
-    if(!isCreated) return undefined;
     if(extensionBitcoinWallet) return 'psbt';
     if(intermediateWallet.wallet) return 'intermediate_wallet';
   }, [isCreated, extensionBitcoinWallet, intermediateWallet]);
@@ -333,17 +365,6 @@ export function useSpvVaultFromBtcQuote(
     setCallPayFlag(false);
     void onSendRef.current();
   }, [callPayFlag, extensionBitcoinWallet?.instance, swapMode, modeSwitchLoading]);
-
-  //Automatic external deposit waiting
-  const [externalDepositRetry, setExternalDepositRetry] = useState(0);
-  useEffect(() => {
-    if (externalDepositError!=null && externalDepositError instanceof InvalidBitcoinDepositError) return;
-    if (!isCreated || !requiresExternalDeposit) return;
-
-    const abortController = new AbortController();
-    onWaitForExternalDeposit(abortController.signal);
-    return () => abortController.abort();
-  }, [isCreated, requiresExternalDeposit, externalDepositRetry, onWaitForExternalDeposit, externalDepositError]);
 
   //Automatic settlement await
   const isAlreadyClaimable = useMemo(
@@ -408,7 +429,7 @@ export function useSpvVaultFromBtcQuote(
   if (isFailed)
     executionSteps[0] = {
       icon: ic_refresh,
-      text: 'Bitcoin payment reverted',
+      text: isFailedExternalDeposit ? 'Invalid Bitcoin deposit' : 'Bitcoin payment reverted',
       type: 'failed',
     };
 
@@ -440,51 +461,118 @@ export function useSpvVaultFromBtcQuote(
       type: 'success',
     };
 
-  const backupRequired =
-    swapMode === 'intermediate_wallet' &&
-    !intermediateWallet.backupAcknowledged;
+  const swapModeReady =
+    expectedSwapMode != null &&
+    swapMode === expectedSwapMode &&
+    !modeSwitchLoading &&
+    modeSwitchError == null;
 
-  const expectedExternalDeposit = requiresExternalDeposit
-    ? quote.getExternalDepositAmount()
-    : undefined;
+  const initializeSwap = useCallback(() => {
+    if (!swapModeReady) return;
+    if (!requiresExternalDeposit && !backupRequired && !hasEnoughBalance) return;
+    if (backupRequired) {
+      intermediateWallet.openMnemonicBackupModal();
+    }
+    if (requiresExternalDeposit) {
+      void onWaitForExternalDeposit();
+    } else if(!backupRequired) {
+      void onSend();
+    }
+  }, [
+    swapModeReady,
+    requiresExternalDeposit,
+    onWaitForExternalDeposit,
+    backupRequired,
+    hasEnoughBalance,
+    intermediateWallet.openMnemonicBackupModal,
+    onSend
+  ]);
+
+  const initializationLoading =
+    modeSwitchLoading || sendLoading || waitingForExternalDeposit;
 
   const step1init = useMemo<SpvVaultFromBtcPage['step1init']>(() => {
-    if (!isCreated) return undefined;
+    if (!isCreated || isInitiated) return undefined;
 
-    const invalidDeposits = externalDepositError instanceof InvalidBitcoinDepositError
-      ? externalDepositError.invalidUtxos
-      : undefined;
+    const error =
+      modeSwitchError != null
+        ? {
+            title: 'Failed to switch Bitcoin payment mode',
+            error: modeSwitchError,
+            type: 'error' as const,
+            retry: retryModeSwitch,
+          }
+        : externalDepositError != null
+          ? {
+              title: 'Connection problem',
+              description: 'Error occurred while starting the Bitcoin deposit wait, please retry.',
+              error: externalDepositError,
+              type: 'warning' as const,
+              retry: onWaitForExternalDeposit,
+            }
+          : sendError != null
+            ? {
+                title: 'Failed to send Bitcoin transaction',
+                error: sendError,
+                type: 'error' as const,
+                retry: onSend,
+              }
+            : undefined;
 
-    let error: SpvVaultFromBtcPage['step1init']['error'];
+    return {
+      init: {
+        onClick: initializeSwap,
+        loading: initializationLoading,
+        disabled:
+          initializationLoading ||
+          !swapModeReady ||
+          (!requiresExternalDeposit && !backupRequired && !hasEnoughBalance),
+      },
+      error,
+      expiry: {
+        remaining: quoteTimeRemaining,
+        total: totalQuoteTime,
+      },
+      note: swapMode==="intermediate_wallet" && (!requiresExternalDeposit || quote?.getInput().rawAmount!==expectedExternalDeposit?.rawAmount)
+        ? {
+          willExecuteAutomatically: !requiresExternalDeposit,
+          requiredAdditionalDeposit: expectedExternalDeposit
+        }
+        : undefined
+    };
+  }, [
+    isCreated,
+    isInitiated,
+    modeSwitchError,
+    retryModeSwitch,
+    externalDepositError,
+    onWaitForExternalDeposit,
+    sendError,
+    onSend,
+    initializeSwap,
+    initializationLoading,
+    swapModeReady,
+    requiresExternalDeposit,
+    backupRequired,
+    hasEnoughBalance,
+    quoteTimeRemaining,
+    totalQuoteTime,
+    swapMode,
+    expectedExternalDeposit
+  ]);
+
+  const step2paymentWait = useMemo<SpvVaultFromBtcPage['step2paymentWait']>(() => {
+    if (!isCreated || !isInitiated) return undefined;
+
+    let error: SpvVaultFromBtcPage['step2paymentWait']['error'];
     if (!backupRequired) {
-      if (invalidDeposits?.length > 0) {
-        const reason = invalidDeposits[0].reason;
-        error = {
-          title:
-            invalidDeposits.length > 1
-              ? 'Multiple Bitcoin deposits received'
-              : reason === 'amount_too_small'
-                ? 'BTC amount too low'
-                : reason === 'amount_too_large'
-                  ? 'BTC amount too high'
-                  : 'Bitcoin deposit fee too low',
-          description:
-            invalidDeposits.length > 1
-              ? 'Multiple deposits were received. Please create a fresh quote from the deposited wallet balance.'
-              : reason === 'deposit_fee_too_low'
-                ? 'The received UTXO cannot fund the Bitcoin transaction fee required by this quote. Please create a fresh quote.'
-                : 'The received deposit does not match the exact amount required by this quote. Please create a fresh quote from the deposited wallet balance.',
-          error: externalDepositError,
-          type: 'error',
-          requiresRequote: true,
-        };
-      } else if (externalDepositError != null) {
+      if (externalDepositError != null && !(externalDepositError instanceof InvalidBitcoinDepositError)) {
         error = {
           title: 'Connection problem',
           description: 'Error occurred while waiting for the Bitcoin deposit, please retry.',
           error: externalDepositError,
           type: 'warning',
-          retry: () => setExternalDepositRetry((value) => value + 1),
+          retry: onWaitForExternalDeposit,
         };
       } else if (sendError != null) {
         error = {
@@ -508,9 +596,9 @@ export function useSpvVaultFromBtcQuote(
         bitcoinWallet: extensionBitcoinWallet,
         hasEnoughBalance,
         payWithBrowserWallet: {
-          loading: sendLoading,
+          loading: sendLoading || modeSwitchLoading,
           onClick: onSend,
-          disabled: sendLoading || !hasEnoughBalance
+          disabled: sendLoading || modeSwitchLoading || !swapModeReady || !hasEnoughBalance
         },
         useExternalWallet: extensionBitcoinWallet == null
           ? undefined
@@ -559,8 +647,7 @@ export function useSpvVaultFromBtcQuote(
           onClick: connectBrowserWalletAndPay,
         },
         depositStatus: {
-          expectedAmount: expectedExternalDeposit,
-          invalidDeposits,
+          expectedAmount: expectedExternalDeposit
         }
       }
       : undefined;
@@ -581,8 +668,10 @@ export function useSpvVaultFromBtcQuote(
     };
   }, [
     isCreated,
+    isInitiated,
     backupRequired,
     externalDepositError,
+    onWaitForExternalDeposit,
     sendError,
     extensionBitcoinWallet,
     onSend,
@@ -601,10 +690,11 @@ export function useSpvVaultFromBtcQuote(
     intermediateWallet.openMnemonicBackupModal,
     quoteTimeRemaining,
     totalQuoteTime,
-    hasEnoughBalance
+    hasEnoughBalance,
+    swapModeReady
   ]);
 
-  const step2broadcasting = useMemo(
+  const step3broadcasting = useMemo(
     () =>
       !isBroadcasting
         ? undefined
@@ -621,7 +711,7 @@ export function useSpvVaultFromBtcQuote(
     [isBroadcasting, waitPaymentError, onWaitForPayment]
   );
 
-  const step3awaitingConfirmations = useMemo(
+  const step4awaitingConfirmations = useMemo(
     () =>
       !isReceived
         ? undefined
@@ -639,7 +729,7 @@ export function useSpvVaultFromBtcQuote(
     [isReceived, txData, waitPaymentError, onWaitForPayment]
   );
 
-  const step4claim = useMemo(
+  const step5claim = useMemo(
     () =>
       !isClaimable && !isClaiming
         ? undefined
@@ -676,26 +766,67 @@ export function useSpvVaultFromBtcQuote(
     ]
   );
 
-  const step5 = useMemo(
-    () =>
-      !isSuccess && !isFailed && !isQuoteExpired
-        ? undefined
-        : {
-            state: isSuccess
-              ? ('success' as const)
-              : isFailed
-                ? ('failed' as const)
-                : ('expired' as const),
-          },
-    [isSuccess, isFailed, isQuoteExpired]
-  );
+  const step6 = useMemo(() => {
+    if(isSuccess) return {state: "success" as const};
+    if(isQuoteExpired || isFailed) {
+      let errorMessage: string | undefined;
+      let errorTitle: string | undefined;
+
+      if(isFailedExternalDeposit) {
+        const invalidDeposits = externalDepositError.invalidUtxos;
+        if(invalidDeposits.length > 1) {
+          errorTitle = 'Multiple Bitcoin deposits received';
+          errorMessage = 'Multiple Bitcoin deposits were received. Please create a new quote - your already deposited Bitcoin balance will be used!';
+        } else {
+          const invalidDeposit = invalidDeposits[0];
+          switch(invalidDeposit.reason) {
+            case "amount_too_large":
+              errorTitle ??= 'BTC amount too high';
+            case "amount_too_small":
+              errorTitle ??= 'BTC amount too low';
+              errorMessage = `The received ${toHumanReadableString(invalidDeposit.actualAmount, BitcoinTokens.BTC)} BTC deposit does not match the exact amount required by this swap. Please create a new quote - your already deposited Bitcoin balance will be used!`;
+              break;
+            case "deposit_fee_too_low":
+              errorTitle = 'Bitcoin deposit fee too low';
+              errorMessage = 'The Bitcoin deposit transaction uses a network fee that is too small to continue with this swap. Please create a new quote that takes into account this smaller deposit fee rate - your already deposited Bitcoin balance will be used!';
+              break;
+          }
+        }
+      } else if(isFailed) {
+        errorTitle = 'Swap failed';
+        if(swapMode==="intermediate_wallet") {
+          errorMessage = 'Failed to broadcast Bitcoin swap transaction, please create a new quote and retry. Your already deposited Bitcoin balance will be used!';
+        } else {
+          errorMessage = 'Failed to broadcast Bitcoin swap transaction, no funds were sent, please create a new quote and retry.';
+        }
+      } else if(isQuoteExpired) {
+        errorTitle = 'Swap expired';
+        if(swapMode==="intermediate_wallet") {
+          errorMessage = 'Swap has expired. If you\'ve already sent the Bitcoin payment, just create a new quote - your already deposited Bitcoin balance will be used automatically!';
+        } else {
+          errorMessage = 'Swap has expired, please create a new quote!';
+        }
+      }
+
+      return {
+        state: isFailed
+          ? ('failed' as const)
+          : isInitiated
+            ? ('expired' as const)
+            : ('expired_uninitialized' as const),
+        errorMessage,
+        errorTitle
+      };
+    }
+  }, [isSuccess, isFailed, isQuoteExpired, isInitiated, isFailedExternalDeposit, externalDepositError, swapMode]);
 
   return {
-    executionSteps: isInitiated && !isCreated ? executionSteps : undefined,
+    executionSteps: isInitiated ? executionSteps : undefined,
     step1init,
-    step2broadcasting,
-    step3awaitingConfirmations,
-    step4claim,
-    step5,
+    step2paymentWait,
+    step3broadcasting,
+    step4awaitingConfirmations,
+    step5claim,
+    step6,
   };
 }

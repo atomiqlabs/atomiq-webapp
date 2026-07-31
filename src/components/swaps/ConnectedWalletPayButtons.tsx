@@ -7,6 +7,7 @@ export function ConnectedWalletPayButtons(props: {
   wallet?: Chain<any>['wallet'];
   payWithBrowserWallet: {
     loading: boolean;
+    disabled?: boolean;
     onClick: () => void;
   };
   useExternalWallet?: {
@@ -20,7 +21,10 @@ export function ConnectedWalletPayButtons(props: {
           variant="secondary"
           textSize="sm"
           className="d-flex flex-row align-items-center"
-          disabled={props.payWithBrowserWallet.loading}
+          disabled={
+            props.payWithBrowserWallet.loading ||
+            props.payWithBrowserWallet.disabled
+          }
           onClick={props.payWithBrowserWallet.onClick}
         >
           {props.payWithBrowserWallet.loading ? (
