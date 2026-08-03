@@ -22,6 +22,7 @@ type BitcoinWalletState = {
       text: string;
       onClick: () => void;
     }[];
+    cannotDisconnect?: boolean;
 }
 
 function wrapExtensionWallet(wallet: ExtensionBitcoinWallet): BitcoinWalletState {
@@ -86,49 +87,69 @@ export function useBitcoinChain(
   }, [connectedOtherChainWallets, usableWallets]);
 
   const intermediateWalletBalance = (intermediateWallet.confirmedBalance ?? 0n) + (intermediateWallet.unconfirmedBalance ?? 0n);
-  useEffect(() => {
-    if (!usableWallets) return;
+  const intermediateWalletObject: BitcoinWalletState | undefined = useMemo(() => intermediateWallet.wallet==null ? undefined : ({
+    name: 'Intermediate wallet',
+    icon: '/icons/chains/BITCOIN.svg',
+    wallet: intermediateWallet.wallet,
+    wasAutomaticallyConnected: false,
+    onlyInput: true,
+    getBalance: async () => {
+      const rawBalance = await intermediateWallet.refreshBalance();
+      if (rawBalance == null) return {balance: undefined};
+      return {
+        balance: undefined,
+        displayBalance: rawBalance.confirmedBalance + rawBalance.unconfirmedBalance
+      };
+    },
+    additionalWalletActions: [
+      {
+        icon: 'icon-file-text',
+        text: 'Back up wallet',
+        onClick: intermediateWallet.openMnemonicBackupModal,
+      },
+      {
+        icon: 'icon-send-claim',
+        text: 'Send Bitcoin',
+        onClick: intermediateWallet.openSendBitcoinModal,
+      },
+    ],
+    cannotDisconnect: true
+  }), [
+    intermediateWallet.wallet,
+    intermediateWallet.refreshBalance,
+    intermediateWallet.openMnemonicBackupModal,
+    intermediateWallet.openSendBitcoinModal
+  ]);
+
+  const tryConnectIntermediateWallet = useCallback(() => {
     if (intermediateWalletBalance===0n) {
       if(bitcoinWalletRef.current?.name==="Intermediate wallet") {
-        disconnect();
+        disconnect(undefined, true);
       }
       return;
     }
-    if (intermediateWallet.wallet==null) return;
-    setBitcoinWallet({
-      name: 'Intermediate wallet',
-      icon: '/icons/chains/BITCOIN.svg',
-      wallet: intermediateWallet.wallet,
-      wasAutomaticallyConnected: false,
-      onlyInput: true,
-      getBalance: async () => {
-        const rawBalance = await intermediateWallet.refreshBalance();
-        if (rawBalance == null) return {balance: undefined};
-        return {
-          balance: undefined,
-          displayBalance: rawBalance.confirmedBalance + rawBalance.unconfirmedBalance
-        };
-      },
-      additionalWalletActions: [
-        {
-          icon: 'icon-file-text',
-          text: 'Back up wallet',
-          onClick: intermediateWallet.openMnemonicBackupModal,
-        },
-        {
-          icon: 'icon-send-claim',
-          text: 'Send Bitcoin',
-          onClick: intermediateWallet.openSendBitcoinModal,
-        },
-      ],
-    });
+    if (intermediateWalletObject==null) return;
+    setBitcoinWallet(intermediateWalletObject);
+  }, [intermediateWalletBalance, intermediateWalletObject]);
+
+  //Fires on initial usable wallets load
+  useEffect(() => {
+    if (!usableWallets) return;
+    tryConnectIntermediateWallet();
   }, [
     usableWallets,
-    intermediateWallet.wallet,
     intermediateWalletBalance,
-    intermediateWallet.refreshBalance,
-    intermediateWallet.openMnemonicBackupModal,
-    intermediateWallet.openSendBitcoinModal,
+    tryConnectIntermediateWallet
+  ]);
+
+  //Fires when bitcoin wallet is disconnected
+  useEffect(() => {
+    if (!usableWallets) return;
+    if (bitcoinWallet) return;
+    tryConnectIntermediateWallet();
+  }, [
+    bitcoinWallet,
+    tryConnectIntermediateWallet
   ]);
 
   useEffect(() => {
@@ -187,13 +208,15 @@ export function useBitcoinChain(
     []
   );
 
-  const disconnect: (skipToggleAutoConnect?: boolean) => void = useCallback(
-    (skipToggleAutoConnect?: boolean) => {
+  const disconnect: (skipToggleAutoConnect?: boolean, force?: boolean) => void = useCallback(
+    (skipToggleAutoConnect?: boolean, force?: boolean) => {
       if (
         skipToggleAutoConnect !== true &&
         bitcoinWalletRef.current != null &&
         bitcoinWalletRef.current.wasAutomaticallyConnected
       ) setAutoConnect(false);
+
+      if(!force && bitcoinWalletRef.current?.cannotDisconnect) return;
 
       ExtensionBitcoinWallet.clearState();
       setBitcoinWallet(undefined);
@@ -230,6 +253,7 @@ export function useBitcoinChain(
                 onlyInput: bitcoinWallet.onlyInput,
                 getBalance: bitcoinWallet.getBalance,
                 additionalWalletActions: bitcoinWallet.additionalWalletActions,
+                cannotDisconnect: bitcoinWallet.cannotDisconnect
               }
             : null,
         installedWallets: (usableWallets ?? []).map((w) => ({
