@@ -222,6 +222,10 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
     const extensionWallet = makeExtensionWallet();
     hookState.wallet = extensionWallet;
     const quote = makeQuote({ mode: 'psbt' });
+    quote.sendBitcoinTransaction.mockImplementation(async () => {
+      emitSwapState(SpvFromBTCSwapState.CREATED, true);
+      return 'txid';
+    });
     const uiCallback = vi.fn();
     const { result } = renderHook(
       () => useSpvVaultFromBtcQuote(quote as any, uiCallback, 3),
@@ -237,8 +241,29 @@ describe('useSpvVaultFromBtcQuote payment step', () => {
       extensionWallet.instance,
       5,
     );
-    expect(uiCallback).toHaveBeenCalledOnce();
-    expect(uiCallback).toHaveBeenCalledWith(quote, 'hide');
+    expect(uiCallback).toHaveBeenNthCalledWith(1, quote, 'lock');
+    expect(uiCallback).toHaveBeenNthCalledWith(2, quote, 'hide');
+  });
+
+  it('restores the quote form when PSBT sending fails before initiation', async () => {
+    const sendError = new Error('Failed to send');
+    hookState.wallet = makeExtensionWallet();
+    const quote = makeQuote({ mode: 'psbt' });
+    quote.sendBitcoinTransaction.mockRejectedValue(sendError);
+    const uiCallback = vi.fn();
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { result } = renderHook(
+      () => useSpvVaultFromBtcQuote(quote as any, uiCallback, 3),
+      { wrapper: makeWrapper() },
+    );
+
+    await clickInitialize(result);
+
+    await waitFor(() =>
+      expect(result.current.step1init?.error?.error).toBe(sendError),
+    );
+    expect(uiCallback).toHaveBeenNthCalledWith(1, quote, 'lock');
+    expect(uiCallback).toHaveBeenNthCalledWith(2, quote, 'show');
   });
 
   it('uses the same payment action for a fully funded intermediate wallet', async () => {

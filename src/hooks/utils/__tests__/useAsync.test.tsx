@@ -105,4 +105,39 @@ describe('useAsync', () => {
     });
     expect(consoleError).toHaveBeenCalledTimes(1);
   });
+
+  it('clears retained success and error state', async () => {
+    const error = new Error('expected failure');
+    const { result, rerender } = renderHook(
+      ({ shouldFail }) =>
+        useAsync(
+          async () => {
+            if (shouldFail) throw error;
+            return 'done';
+          },
+          [shouldFail],
+          true,
+        ),
+      { initialProps: { shouldFail: false } },
+    );
+
+    await act(async () => {
+      await result.current[0]();
+    });
+    expect(result.current[2]).toBe('done');
+
+    act(() => result.current[4]());
+    expect(result.current[2]).toBeNull();
+    expect(result.current[3]).toBeNull();
+
+    rerender({ shouldFail: true });
+    await act(async () => {
+      await result.current[0]();
+    });
+    expect(result.current[3]).toBe(error);
+
+    act(() => result.current[4]());
+    expect(result.current[2]).toBeNull();
+    expect(result.current[3]).toBeNull();
+  });
 });

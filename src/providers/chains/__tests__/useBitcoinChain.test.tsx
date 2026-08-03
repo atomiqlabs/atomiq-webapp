@@ -189,6 +189,7 @@ describe('useBitcoinChain intermediate wallet selection', () => {
       address: 'bc1qintermediate',
       instance: sdkWallet,
       onlyInput: true,
+      cannotDisconnect: true,
     });
 
     const balance = await result.current.wallet.getBalance({
@@ -267,7 +268,7 @@ describe('useBitcoinChain intermediate wallet selection', () => {
     });
   });
 
-  it('disconnects through the shared path, preserves storage, and reconnects after a balance change', async () => {
+  it('ignores manual disconnect and removes the intermediate wallet when its balance reaches zero', async () => {
     const clearState = vi
       .spyOn(ExtensionBitcoinWallet, 'clearState')
       .mockImplementation(() => undefined);
@@ -315,14 +316,19 @@ describe('useBitcoinChain intermediate wallet selection', () => {
     expect(walletHook.result.current.output).toBeNull();
 
     act(() => result.current._disconnect());
-    await waitFor(() => expect(result.current.wallet).toBeNull());
-    expect(clearState).toHaveBeenCalledTimes(1);
+    expect(result.current.wallet?.instance).toBe(sdkWallet);
+    expect(clearState).not.toHaveBeenCalled();
     expect(
       JSON.parse(window.localStorage.getItem(INTERMEDIATE_BTC_MNEMONIC_KEY)),
     ).toEqual({
       mnemonic: 'private mnemonic',
       acknowledged: true,
     });
+
+    intermediate = makeIntermediateValue(sdkWallet, 0n, 0n);
+    rerender();
+    await waitFor(() => expect(result.current.wallet).toBeNull());
+    expect(clearState).toHaveBeenCalledTimes(1);
 
     intermediate = makeIntermediateValue(sdkWallet, 101n, 0n);
     rerender();
