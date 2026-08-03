@@ -4,7 +4,7 @@ export function useAsync<Args extends any[], Result>(
   executor: (...args: Args) => Promise<Result>,
   deps: any[],
   suppressErrorLogging?: boolean
-): [(...args: Args) => Promise<Result>, boolean, Result, any] {
+): [(...args: Args) => Promise<Result>, boolean, Result, any, () => void] {
   const [loading, setLoading] = useState<boolean>(false);
   const [success, setSuccess] = useState<Result>(null);
   const [error, setError] = useState<any>(null);
@@ -33,5 +33,10 @@ export function useAsync<Args extends any[], Result>(
       });
   }, deps.concat([suppressErrorLogging]));
 
-  return [fn, loading, success, error];
+  const clearFn = useCallback(() => {
+    setSuccess(null);
+    setError(null);
+  }, []);
+
+  return [fn, loading, success, error, clearFn];
 }
