@@ -155,6 +155,7 @@ export function useSpvVaultFromBtcQuote(
 ): SpvVaultFromBtcPage {
   const UICallbackRef = useStateRef(UICallback);
   const intermediateWallet = useIntermediateBitcoinWallet();
+  const intermediateWalletRef = useStateRef(intermediateWallet);
   const { connectWallet, disconnectWallet } = useContext(ChainsContext);
   const bitcoinWallet = useWallet('BITCOIN', true);
 
@@ -190,17 +191,21 @@ export function useSpvVaultFromBtcQuote(
   const smartChainWallet = useSmartChainWallet(quote, undefined, false);
 
   const [txData, setTxData] = useState<TxDataType>(null);
-  const [onSend, sendLoading, sendSuccess, sendError] = useAsync(
+  const [onSend, sendLoading, sendSuccess, sendError, clearSendError] = useAsync(
     () => {
-      if(UICallbackRef.current!=null) UICallbackRef.current(quote, 'hide');
+      if(UICallbackRef.current!=null && !quote.isInitiated()) UICallbackRef.current(quote, 'lock');
       return quote.sendBitcoinTransaction(
         useBitcoinWallet,
-        useBitcoinWallet !== intermediateWallet.wallet && feeRate != null
+        useBitcoinWallet !== intermediateWalletRef.current.wallet && feeRate != null
           ? Math.max(feeRate, quote.minimumBtcFeeRate)
           : undefined
-      );
+      ).catch(e => {
+        console.error("useSpvVaultFromBtcQuote(): Send tx error: ", e);
+        if(UICallbackRef.current!=null && !quote.isInitiated()) UICallbackRef.current(quote, 'show');
+        throw e;
+      });
     },
-    [quote, feeRate, useBitcoinWallet, intermediateWallet.wallet]
+    [quote, feeRate, useBitcoinWallet]
   );
 
   const modeSwitchAbortSignal = useAbortSignalRef([quote, swapMode]);
@@ -208,7 +213,7 @@ export function useSpvVaultFromBtcQuote(
     const abortSignal = modeSwitchAbortSignal.current;
     try {
       await quote.waitForExternalDeposit(
-        intermediateWallet.wallet,
+        intermediateWalletRef.current.wallet,
         undefined,
         5,
         undefined,
@@ -216,18 +221,18 @@ export function useSpvVaultFromBtcQuote(
       );
       if (abortSignal.aborted || quote.getSwapMode() !== 'intermediate_wallet') return;
 
-      await intermediateWallet.refreshBalance();
+      await intermediateWalletRef.current.refreshBalance();
       if (abortSignal.aborted || quote.getSwapMode() !== 'intermediate_wallet') return;
 
       void onSend();
     } catch (error) {
       if (abortSignal.aborted) return;
       if (error instanceof InvalidBitcoinDepositError) {
-        await intermediateWallet.refreshBalance();
+        await intermediateWalletRef.current.refreshBalance();
       }
       throw error;
     }
-  }, [quote, intermediateWallet.wallet, intermediateWallet.refreshBalance, onSend]);
+  }, [quote, onSend]);
 
   const connectBrowserWalletAndPay = useCallback(async () => {
     const connected = await connectWallet('BITCOIN');
@@ -241,11 +246,16 @@ export function useSpvVaultFromBtcQuote(
 
   const abortSignalRef = useAbortSignalRef([quote]);
   const [onWaitForPayment, waitingPayment, waitPaymentSuccess, waitPaymentError] = useAsync(() => {
+    let previousTxId: string | undefined;
     return quote.waitForBitcoinTransaction(
       (txId: string, confirmations: number, confirmationTarget: number, txEtaMs: number) => {
         if (txId == null) {
           setTxData(null);
           return;
+        }
+        if(previousTxId!==txId && intermediateWalletRef.current!=null) {
+          void intermediateWalletRef.current.refreshBalance();
+          previousTxId = txId;
         }
         setTxData({
           txId,
@@ -355,6 +365,7 @@ export function useSpvVaultFromBtcQuote(
         await quote.setSwapModeIntermediateWallet(intermediateWallet.wallet, undefined, feeRate);
       }
     }
+    clearSendError();
   }, [quote, expectedSwapMode, intermediateWallet.wallet, isCreated], false);
 
   //Automatic payment when switching to extension wallet
@@ -471,7 +482,7 @@ export function useSpvVaultFromBtcQuote(
     if (!swapModeReady) return;
     if (!requiresExternalDeposit && !backupRequired && !hasEnoughBalance) return;
     if (backupRequired) {
-      intermediateWallet.openMnemonicBackupModal();
+      intermediateWalletRef.current.openMnemonicBackupModal();
     }
     if (requiresExternalDeposit) {
       void onWaitForExternalDeposit();
@@ -484,7 +495,6 @@ export function useSpvVaultFromBtcQuote(
     onWaitForExternalDeposit,
     backupRequired,
     hasEnoughBalance,
-    intermediateWallet.openMnemonicBackupModal,
     onSend
   ]);
 
@@ -514,8 +524,7 @@ export function useSpvVaultFromBtcQuote(
             ? {
                 title: 'Failed to send Bitcoin transaction',
                 error: sendError,
-                type: 'error' as const,
-                retry: onSend,
+                type: 'error' as const
               }
             : undefined;
 
@@ -564,6 +573,8 @@ export function useSpvVaultFromBtcQuote(
   const step2paymentWait = useMemo<SpvVaultFromBtcPage['step2paymentWait']>(() => {
     if (!isCreated || !isInitiated) return undefined;
 
+    const displayWalletConnected = !backupRequired && !requiresExternalDeposit;
+
     let error: SpvVaultFromBtcPage['step2paymentWait']['error'];
     if (!backupRequired) {
       if (externalDepositError != null && !(externalDepositError instanceof InvalidBitcoinDepositError)) {
@@ -579,7 +590,7 @@ export function useSpvVaultFromBtcQuote(
           title: 'Failed to send Bitcoin transaction',
           error: sendError,
           type: 'error',
-          retry: onSend,
+          retry: displayWalletConnected ? undefined : onSend,
         };
       } else if (modeSwitchError != null) {
         error = {
@@ -591,7 +602,7 @@ export function useSpvVaultFromBtcQuote(
       }
     }
 
-    const walletConnected = !backupRequired && !requiresExternalDeposit
+    const walletConnected = displayWalletConnected
       ? {
         bitcoinWallet: extensionBitcoinWallet,
         hasEnoughBalance,
@@ -608,7 +619,7 @@ export function useSpvVaultFromBtcQuote(
       }
       : undefined;
 
-    const walletDisconnected = !backupRequired && requiresExternalDeposit
+    const walletDisconnected = !backupRequired && requiresExternalDeposit && !sendError
       ? {
         address: {
           value: quote.getAddress(),
