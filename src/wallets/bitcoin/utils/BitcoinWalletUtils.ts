@@ -1,5 +1,4 @@
 import { ExtensionBitcoinWallet } from '../base/ExtensionBitcoinWallet';
-import { PhantomBitcoinWallet } from '../PhantomBitcoinWallet';
 import { XverseBitcoinWallet } from '../XverseBitcoinWallet';
 import { UnisatBitcoinWallet } from '../UnisatBitcoinWallet';
 import { MagicEdenBitcoinWallet } from '../MagicEdenBitcoinWallet';
@@ -19,15 +18,10 @@ export type BitcoinWalletType = {
 
 const network = ChainsConfig.BITCOIN.network;
 
+//Phantom removed: as of extension v26.17 Phantom no longer exposes any Bitcoin dapp API
+// (neither window.phantom.bitcoin nor a Wallet Standard registration), so it could only ever
+// show up as "installable" and send users to a pointless download page. See issue #59.
 const bitcoinWalletList: BitcoinWalletType[] = [
-  {
-    iconUrl: PhantomBitcoinWallet.iconUrl,
-    name: PhantomBitcoinWallet.walletName,
-    installUrl: PhantomBitcoinWallet.installUrl,
-    detect: PhantomBitcoinWallet.isInstalled,
-    use: PhantomBitcoinWallet.init,
-    supportsCurrentBtcNetwork: PhantomBitcoinWallet.supportedNetwork.includes(network),
-  },
   {
     iconUrl: XverseBitcoinWallet.iconUrl,
     name: XverseBitcoinWallet.walletName,
