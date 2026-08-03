@@ -16,6 +16,11 @@ export function HistoryPage() {
   const [reloadCount, setReloadCount] = useState<number>(0);
 
   useEffect(() => {
+    if (syncing) return;
+    setReloadCount(val => val + 1);
+  }, [syncing]);
+
+  useEffect(() => {
     const listener = () => {
       setReloadCount(val => val+1);
     };
