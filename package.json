@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "dependencies": {
+    "@atomiqlabs/base": "github:atomiqlabs/atomiq-base#perf/esm-treeshake",
     "@atomiqlabs/chain-evm": "^2.4.5",
     "@atomiqlabs/chain-solana": "^13.5.13",
     "@atomiqlabs/chain-starknet": "^8.4.3",
