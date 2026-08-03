@@ -14,6 +14,7 @@ type MultichainWallet = {
       icon: string;
       chainId: string;
       additionalWalletActions?: {icon: JSX.Element | string, text: string, onClick: () => void}[];
+      cannotDisconnect?: boolean;
     };
   };
 };
@@ -64,10 +65,10 @@ function MultichainWalletMenuItem(props: { wallet: MultichainWallet; className?:
               </div>
             </Dropdown.Header>
             <div className="dropdown-list">
-              <Dropdown.Item onClick={() => disconnectWallet(value.chainId)}>
-                <div className="icon icon-disconnect"></div>
-                Disconnect Wallet
-              </Dropdown.Item>
+              {!value.cannotDisconnect && <Dropdown.Item onClick={() => disconnectWallet(value.chainId)}>
+                  <div className="icon icon-disconnect"></div>
+                  Disconnect Wallet
+              </Dropdown.Item>}
               <Dropdown.Item onClick={() => changeWallet(value.chainId)}>
                 <div className="icon icon-change-wallet"></div>
                 Change Wallet
@@ -111,7 +112,8 @@ export function WalletConnector() {
         name: chainData.chain.name,
         icon: chainData.chain.icon,
         chainId: chain,
-        additionalWalletActions: chainData.wallet.additionalWalletActions
+        additionalWalletActions: chainData.wallet.additionalWalletActions,
+        cannotDisconnect: chainData.wallet.cannotDisconnect
       };
     }
 

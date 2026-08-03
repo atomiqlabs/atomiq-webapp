@@ -81,9 +81,17 @@ export function WalletInfoBadge({
           </div>
         )}
         <div className="wallet-connections__simple__disconnect">
-          <OverlayTrigger overlay={<Tooltip>Disconnect wallet</Tooltip>}>
-            <div className="icon icon-disconnect" onClick={() => disconnectWallet(chainId)}></div>
-          </OverlayTrigger>
+          {wallet.cannotDisconnect
+            ? (
+              <OverlayTrigger overlay={<Tooltip>Change wallet</Tooltip>}>
+                <div className="icon icon-connect" onClick={() => changeWallet(chainId)}></div>
+              </OverlayTrigger>
+            )
+            : (
+              <OverlayTrigger overlay={<Tooltip>Disconnect wallet</Tooltip>}>
+                <div className="icon icon-disconnect" onClick={() => disconnectWallet(chainId)}></div>
+              </OverlayTrigger>
+            )}
         </div>
       </div>
     );

@@ -43,7 +43,8 @@ export type Chain<T> = {
     }) => Promise<WalletBalanceCallbackResult>;
     onlyInput?: boolean;
     instance: T;
-    additionalWalletActions?: {icon: JSX.Element | string, text: string, onClick: () => void}[]
+    additionalWalletActions?: {icon: JSX.Element | string, text: string, onClick: () => void}[],
+    cannotDisconnect?: boolean;
   };
   installedWallets: Array<WalletListData & { isConnected?: boolean }>;
   nonInstalledWallets: Array<WalletListData>;
