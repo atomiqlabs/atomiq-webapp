@@ -1,6 +1,4 @@
 import { useContext } from 'react';
-import { QuickScan } from './pages/quickscan/QuickScan';
-import { QuickScanExecute } from './pages/quickscan/QuickScanExecute';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { SwapperContext } from './context/SwapperContext';
 import { HistoryPage } from './pages/HistoryPage';
@@ -47,10 +45,6 @@ function WrappedApp() {
         <Routes>
           <Route path="/">
             <Route index element={<SwapNew />}></Route>
-            <Route path="scan">
-              <Route index element={<QuickScan />} />
-              <Route path="2" element={<QuickScanExecute />} />
-            </Route>
             <Route path="history" element={<HistoryPage />} />
             <Route path="gas" element={<SwapForGas />} />
             <Route path="faq" element={<FAQPage />} />
